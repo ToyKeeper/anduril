@@ -31,7 +31,15 @@ To build a .hex file from a .c file, in Windows:
 After wiring everything up, this tests the connection to the ATTINY13A chip:
 
   avrdude -p t13 -c usbasp -n
-  (you may need to put 'sudo' in front, on UNIX systems)
+  (you may need to put 'sudo' in front, on UNIX systems...
+  or set the suid bit on the avrdude binary, which is convenient but a
+  potential security risk)
+
+To test if you can flash firmware correctly, or to restore a light to something
+like a default state, try flashing the NLITE driver from DrJones.  It's similar
+to the default nanjg / qlite firmware, but better.
+
+  ./bin/flash.sh DrJones/NLITE/nlite.hex
 
 For a quick test to make sure your tool chain works and your flashing tools
 are working, try the 'hello world' program:
@@ -40,53 +48,5 @@ are working, try the 'hello world' program:
   make
   make flash
 
-Or, to check just your flashing hardware, you can skip the build step and
-send the already-compiled version I included:
-
-  cd hello_world
-  make flash-example
-
-To flash NLITE, which is a good second test...  (this is the output from my
-terminal, which may or may not be quite correct...  not sure what the sck
-period error is about, and the verify fails, but it otherwise works)
-
-  ~/src/torches/DrJones/NLITE/> sudo avrdude -p t13 -c usbasp -u -Uflash:w:nlite.hex:a -Ulfuse:w:0x75:m -Uhfuse:w:0xFF:m
-
-  avrdude: warning: cannot set sck period. please check for usbasp firmware update.
-  avrdude: AVR device initialized and ready to accept instructions
-
-  Reading | ################################################## | 100% 0.00s
-
-  avrdude: Device signature = 0x1e9007
-  avrdude: NOTE: FLASH memory has been specified, an erase cycle will be performed
-           To disable this feature, specify the -D option.
-  avrdude: current erase-rewrite cycle count is -268439553 (if being tracked)
-  avrdude: erasing chip
-  avrdude: warning: cannot set sck period. please check for usbasp firmware update.
-  avrdude: reading input file "nlite.hex"
-  avrdude: input file nlite.hex auto detected as Intel Hex
-  avrdude: writing flash (524 bytes):
-
-  Writing | ################################################## | 100% 0.44s
-
-
-
-  avrdude: 524 bytes of flash written
-  avrdude: verifying flash memory against nlite.hex:
-  avrdude: load data flash data from input file nlite.hex:
-  avrdude: input file nlite.hex auto detected as Intel Hex
-  avrdude: input file nlite.hex contains 524 bytes
-  avrdude: reading on-chip flash data:
-
-  Reading | ################################################## | 100% 0.30s
-
-
-
-  avrdude: verifying ...
-  avrdude: verification error, first mismatch at byte 0x0004
-           0x37 != 0x13
-  avrdude: verification error; content mismatch
-
-  avrdude done.  Thank you.
-
-  [1]    21327 exit 1     sudo avrdude -p t13 -c usbasp -u -Uflash:w:nlite.hex:a -Ulfuse:w:0x75:m 
+If that works, you should be ready to start making changes to the code, or
+flashing any of the pre-built firmwares.
