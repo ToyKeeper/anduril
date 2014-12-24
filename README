@@ -14,6 +14,12 @@ A general overview of what you need to get going is here:
 
   http://flashlightwiki.com/AVR_Drivers
 
+Some useful hardware for flashing firmware:
+
+  http://www.fasttech.com/product/1002900-atmega-attiny-51-avr-isp-usbasp-usb-programmer
+  http://www.fasttech.com/product/1011800-40-pin-splittable-ribbon-cable-20cm
+  http://www.digikey.com/product-detail/en/5250/501-1311-ND/745102
+
 To set up an attiny dev environment on Ubuntu (13.10):
 
   sudo apt-get install flex byacc bison gcc libusb-dev libc6-dev
