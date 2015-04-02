@@ -23,19 +23,32 @@ Some useful hardware for flashing firmware:
   http://www.fasttech.com/product/1011800-40-pin-splittable-ribbon-cable-20cm
   http://www.digikey.com/product-detail/en/5250/501-1311-ND/745102
 
+For Windows users, these links may be useful:
+
+  Hoop's guide:
+
+    http://budgetlightforum.com/node/36216
+
+  Comfychair's guide:
+
+    http://budgetlightforum.com/node/29081
+
+  WarHawk-AVG's guide:
+
+    http://budgetlightforum.com/node/29684
+
 To set up an attiny dev environment on Ubuntu (13.10):
 
   sudo apt-get install flex byacc bison gcc libusb-dev libc6-dev
   sudo apt-get install gcc-avr avr-libc binutils-avr
   sudo apt-get install avrdude avrdude-doc
 
-Installing attiny dev tools on UNIX systems in general:
+  Optional:  (make avrdude usable by non-root users, is a security risk)
+  sudo chmod u+s $(which avrdude)
+
+Building/installing attiny dev tools on other UNIX systems (in general):
 
   http://www.ladyada.net/learn/avr/setup-unix.html
-
-To build a .hex file from a .c file, in Windows:
-
-  http://budgetlightforum.com/node/29081
 
 After wiring everything up, this tests the connection to the ATTINY13A chip:
 
