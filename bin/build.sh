@@ -21,4 +21,4 @@ function run () {
 run $CC $CFLAGS -o $PROGRAM.o -c $PROGRAM.c
 run $CC $CFLAGS $LDFLAGS -o $PROGRAM.elf $PROGRAM.o
 run $OBJCOPY $OBJCOPYFLAGS $PROGRAM.elf $PROGRAM.hex
-run avr-size $PROGRAM.hex
+run avr-size -C --mcu=attiny13 $PROGRAM.elf | grep Full
