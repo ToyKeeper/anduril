@@ -4,7 +4,7 @@
 # same exact way, here's a script to do the same thing
 
 export PROGRAM=$1
-export MCU=attiny13
+export MCU=attiny25
 export CC=avr-gcc
 export OBJCOPY=avr-objcopy
 export CFLAGS="-Wall -g -Os -mmcu=$MCU -c -std=gnu99"
