@@ -40,7 +40,7 @@ void _delay_ms(uint16_t n)
 #ifdef USE_DELAY_S
 void _delay_s()  // because it saves a bit of ROM space to do it this way
 {
-    _delay_ms(BOGOMIPS);
+    _delay_ms(1000);
 }
 #endif
 #else

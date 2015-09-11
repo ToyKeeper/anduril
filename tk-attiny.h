@@ -32,6 +32,7 @@
     #define V_REF REFS0
     #define BOGOMIPS 950
 #elif (ATTINY == 25)
+    // TODO: Use 6.4 MHz instead of 8 MHz?
     #define F_CPU 8000000UL
     #define EEPSIZE 128
     #define V_REF REFS1
@@ -45,7 +46,7 @@
 #ifdef FET_7135_LAYOUT
 /*
  *           ----
- *         -|1  8|- VCC
+ *   Reset -|1  8|- VCC
  *     OTC -|2  7|- Voltage ADC
  *  Star 3 -|3  6|- PWM (FET)
  *     GND -|4  5|- PWM (1x7135)
@@ -74,7 +75,7 @@
 #ifdef FERRERO_ROCHER_LAYOUT
 /*
  *            ----
- *          -|1  8|- VCC
+ *    Reset -|1  8|- VCC
  * E-switch -|2  7|- Voltage ADC
  *  Red LED -|3  6|- PWM
  *      GND -|4  5|- Green LED
