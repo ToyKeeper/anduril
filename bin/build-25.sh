@@ -4,7 +4,7 @@
 # same exact way, here's a script to do the same thing
 
 export PROGRAM=$1
-export ATTINY=13
+export ATTINY=25
 export MCU=attiny$ATTINY
 export CC=avr-gcc
 export OBJCOPY=avr-objcopy
