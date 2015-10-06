@@ -84,6 +84,19 @@
 // TODO: fill in this section, update Ferrero_Rocher code to use it.
 #endif  // FERRERO_ROCHER_LAYOUT
 
+#ifdef NANJG_LAYOUT
+#define STAR2_PIN   PB0
+#define STAR3_PIN   PB4
+#define STAR4_PIN   PB3
+#define PWM_PIN     PB1
+#define VOLTAGE_PIN PB2
+#define ADC_CHANNEL 0x01    // MUX 01 corresponds with PB2
+#define ADC_DIDR    ADC1D   // Digital input disable bit corresponding with PB2
+#define ADC_PRSCL   0x06    // clk/64
+
+#define PWM_LVL     OCR0B   // OCR0B is the output compare register for PB1
+#endif  // NANJG_LAYOUT
+
 #ifndef PWM_LVL
     Hey, you need to define an I/O pin layout.
 #endif
