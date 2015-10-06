@@ -28,15 +28,20 @@ void _delay_ms(uint16_t n)
 {
     // TODO: make this take tenths of a ms instead of ms,
     // for more precise timing?
-    #ifdef USE_FINE_DELAY
-    if (n==0) { _delay_loop_2(BOGOMIPS/3); }
-    else {
-        while(n-- > 0) _delay_loop_2(BOGOMIPS);
-    }
-    #else
+    //#ifdef USE_FINE_DELAY
+    //if (n==0) { _delay_loop_2(BOGOMIPS/3); }
+    //else {
+    //    while(n-- > 0) _delay_loop_2(BOGOMIPS);
+    //}
+    //#else
     while(n-- > 0) _delay_loop_2(BOGOMIPS);
-    #endif
+    //#endif
 }
+#ifdef USE_FINE_DELAY
+void _delay_zero() {
+    _delay_loop_2(BOGOMIPS/3);
+}
+#endif
 #ifdef USE_DELAY_S
 void _delay_s()  // because it saves a bit of ROM space to do it this way
 {
