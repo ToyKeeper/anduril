@@ -43,13 +43,13 @@ def main(args):
 
 def single_pwm(v):
     """Estimate the PWM levels for a one-channel driver."""
-    visual_min = math.pow(v['lm_min'], 1.0/3)
-    visual_max = math.pow(v['lm_max'], 1.0/3)
+    visual_min = invpower(v['lm_min'])
+    visual_max = invpower(v['lm_max'])
     step_size = (visual_max - visual_min) / (v['num_levels']-1)
     modes = []
     goal = visual_min
     for i in range(v['num_levels']):
-        goal_lm = goal**3
+        goal_lm = power(goal)
         #pwm_float = ((goal_lm / v['lm_max']) * (256-v['pwm_min'])) + v['pwm_min'] - 1
         pwm_float = (((goal_lm-v['lm_min']) / (v['lm_max']-v['lm_min'])) \
                         * (255-v['pwm_min'])) \
@@ -66,13 +66,15 @@ def dual_pwm(v):
     """Estimate the PWM levels for a two-channel driver.
     Assume the first channel is the brighter one, and second will be used for moon/low modes.
     """
-    visual_min = math.pow(v['lm2_min'], 1.0/3)
-    visual_max = math.pow(v['lm_max'], 1.0/3)
+    #visual_min = math.pow(v['lm2_min'], 1.0/power)
+    #visual_max = math.pow(v['lm_max'], 1.0/power)
+    visual_min = invpower(v['lm2_min'])
+    visual_max = invpower(v['lm_max'])
     step_size = (visual_max - visual_min) / (v['num_levels']-1)
     modes = []
     goal = visual_min
     for i in range(v['num_levels']):
-        goal_lm = goal**3
+        goal_lm = power(goal)
         # Up to the second channel's limit, calculate things just like a 
         # single-channel driver (first channel will be zero)
         if goal_lm <= v['lm2_max']:
@@ -124,6 +126,20 @@ def get_value(text, default, args):
         result = raw_input()
     result = result.strip()
     return result
+
+def power(x):
+    #return x**5
+    return x**3
+    #return x**2
+    #return math.e**x
+    #return 2.0**x
+
+def invpower(x):
+    #return math.pow(x, 1/5.0)
+    return math.pow(x, 1/3.0)
+    #return math.pow(x, 1/2.0)
+    #return math.log(x, math.e)
+    #return math.log(x, 2.0)
 
 if __name__ == "__main__":
     import sys
