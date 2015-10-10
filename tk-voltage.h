@@ -23,6 +23,20 @@
 #include "tk-attiny.h"
 #include "tk-calibration.h"
 
+#ifdef TEMPERATURE_MON
+inline void ADC_on_temperature() {
+    // TODO: (?) enable ADC Noise Reduction Mode, Section 17.7 on page 128
+    //       (apparently can only read while the CPU is in idle mode though)
+    // select ADC4 by writing 0b00001111 to ADMUX
+    // 1.1v reference, left-adjust, ADC4
+    ADMUX  = (1 << V_REF) | (1 << ADLAR) | TEMP_CHANNEL;
+    // disable digital input on ADC pin to reduce power consumption
+    //DIDR0 |= (1 << TEMP_DIDR);
+    // enable, start, prescale
+    ADCSRA = (1 << ADEN ) | (1 << ADSC ) | ADC_PRSCL;
+}
+#endif  // TEMPERATURE_MON
+
 #ifdef VOLTAGE_MON
 inline void ADC_on() {
     // disable digital input on ADC pin to reduce power consumption

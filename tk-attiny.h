@@ -70,6 +70,9 @@
 #define ADC_DIDR    ADC1D   // Digital input disable bit corresponding with PB2
 #define ADC_PRSCL   0x06    // clk/64
 
+//#define TEMP_DIDR   ADC4D
+#define TEMP_CHANNEL 0b00001111
+
 #endif  // FET_7135_LAYOUT
 
 #ifdef FERRERO_ROCHER_LAYOUT
