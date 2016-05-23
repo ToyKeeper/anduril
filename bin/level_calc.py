@@ -14,6 +14,7 @@ def main(args):
             (int, 'num_levels', 4, 'How many total levels do you want?'),
             ]
     questions_per_channel = [
+            (str, 'type', '7135', 'Type of channel: ["7135"] or "FET":'),
             (int, 'pwm_min', 6, 'Lowest visible PWM level:'),
             (float, 'lm_min', 0.25, 'How bright is the lowest level, in lumens?'),
             #(int, 'pwm_max', 255, 'Highest PWM level:'),
@@ -42,6 +43,14 @@ def main(args):
         ask(questions_per_channel, chan)
         channels.append(chan)
 
+    # calculate total output of all previous channels
+    for i, channel in enumerate(channels):
+        channel.prev_lm = 0.0
+        for j in range(i):
+            if channels[j].type == '7135':
+                channel.prev_lm += channels[j].lm_max
+
+    # figure out the desired PWM values
     multi_pwm(answers, channels)
 
     if interactive: # Wait on exit, in case user invoked us by clicking an icon
@@ -55,7 +64,16 @@ class Empty:
 
 def multi_pwm(answers, channels):
     lm_min = channels[0].lm_min
-    lm_max = channels[-1].lm_max
+    # figure out the highest mode
+    lm_max = max([(c.lm_max+c.prev_lm) for c in channels])
+    if channels[-1].type == 'FET':
+        if channels[-1].lm_max > channels[-1].prev_lm:
+            # assume the highest output is with only the FET enabled
+            lm_max = channels[-1].lm_max
+        else:
+            # this would be a stupid driver design
+            raise ValueError, "FET channel isn't the most powerful?"
+
     visual_min = invpower(lm_min)
     visual_max = invpower(lm_max)
     step_size = (visual_max - visual_min) / (answers.num_levels-1)
@@ -70,27 +88,39 @@ def multi_pwm(answers, channels):
 
     # Calculate each channel's output for each level
     for cnum, channel in enumerate(channels):
-        prev_channel = Empty() ; prev_channel.lm_max = 0.0
-        if cnum > 0:
-            prev_channel = channels[cnum-1]
         channel.modes = []
         for i in range(answers.num_levels):
             goal_vis, goal_lm = goals[i]
             # This channel already is maxed out
-            if goal_lm >= channel.lm_max:
-                # Handle turbo specially, enable only biggest channel
-                if (i == (answers.num_levels - 1))  and  (cnum < (len(channels)-1)):
+            if goal_lm >= (channel.lm_max + channel.prev_lm):
+                # This shouldn't happen, the FET is assumed to be the highest channel
+                if channel.type == 'FET':
+                    # this would be a stupid driver design
+                    raise ValueError, "FET channel isn't the most powerful?"
+
+                # Handle FET turbo specially
+                if (i == (answers.num_levels - 1)) \
+                        and (cnum < (len(channels)-1)) \
+                        and (channels[-1].type == 'FET'):
                     channel.modes.append(0.0)
+                # Normal non-turbo mode or non-FET turbo
                 else:
                     channel.modes.append(channel.pwm_max)
             # This channel's active ramp-up range
-            elif goal_lm > prev_channel.lm_max:
-                # FIXME: This produces somewhat different values than the 
-                # dual_pwm() algorithm, and I'm not sure which one is "right"
-                diff = channel.lm_max - prev_channel.lm_max
-                needed = goal_lm - prev_channel.lm_max
+            #elif goal_lm > (channel.prev_lm + channel.lm_min):
+            elif goal_lm > channel.prev_lm:
+                # assume 7135 channels all add together
+                if channel.type == '7135':
+                    diff = channel.lm_max - channel.lm_min
+                # assume FET channel gets higher output on its own
+                elif channel.type == 'FET':
+                    diff = channel.lm_max - channel.prev_lm - channel.lm_min
+
+                needed = goal_lm - channel.prev_lm - channel.lm_min
+
                 ratio = needed / diff * (channel.pwm_max-channel.pwm_min)
-                channel.modes.append(ratio + channel.pwm_min)
+                pwm = max(0, ratio + channel.pwm_min)
+                channel.modes.append(pwm)
             # This channel isn't active yet, output too low
             else:
                 channel.modes.append(0)
