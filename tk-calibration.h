@@ -56,7 +56,7 @@
 #define ADC_50p    ADC_38  // the ADC value for 50% full (resting)
 #define ADC_25p    ADC_35  // the ADC value for 25% full (resting)
 #define ADC_0p     ADC_30  // the ADC value for 0% full (resting)
-#define ADC_LOW    ADC_28  // When do we start ramping down
+#define ADC_LOW    ADC_30  // When do we start ramping down
 #define ADC_CRIT   ADC_27  // When do we shut the light off
 
 
