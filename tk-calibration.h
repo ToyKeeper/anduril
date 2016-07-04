@@ -25,31 +25,31 @@
 // These values were measured using RMM's FET+7135.
 // See battcheck/readings.txt for reference values.
 // the ADC values we expect for specific voltages
-#define ADC_44     205
-#define ADC_43     201
-#define ADC_42     196
-#define ADC_41     191
-#define ADC_40     187
-#define ADC_39     182
-#define ADC_38     177
-#define ADC_37     172
-#define ADC_36     168
-#define ADC_35     163
-#define ADC_34     158
-#define ADC_33     153
-#define ADC_32     149
-#define ADC_31     144
-#define ADC_30     139
-#define ADC_29     134
-#define ADC_28     130
-#define ADC_27     125
-#define ADC_26     120
-#define ADC_25     116
-#define ADC_24     111
-#define ADC_23     106
-#define ADC_22     101
-#define ADC_21     97
-#define ADC_20     92
+#define ADC_44     194
+#define ADC_43     189
+#define ADC_42     184
+#define ADC_41     178
+#define ADC_40     173
+#define ADC_39     168
+#define ADC_38     163
+#define ADC_37     158
+#define ADC_36     152
+#define ADC_35     147
+#define ADC_34     142
+#define ADC_33     137
+#define ADC_32     131
+#define ADC_31     126
+#define ADC_30     121
+#define ADC_29     116
+#define ADC_28     111
+#define ADC_27     105
+#define ADC_26     100
+#define ADC_25     95
+#define ADC_24     90
+#define ADC_23     84
+#define ADC_22     79
+#define ADC_21     74
+#define ADC_20     69
 
 #define ADC_100p   ADC_42  // the ADC value for 100% full (resting)
 #define ADC_75p    ADC_40  // the ADC value for 75% full (resting)
