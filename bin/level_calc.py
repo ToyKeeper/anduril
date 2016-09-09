@@ -14,7 +14,7 @@ def main(args):
             (int, 'num_levels', 4, 'How many total levels do you want?'),
             ]
     questions_per_channel = [
-            (str, 'type', '7135', 'Type of channel: ["7135"] or "FET":'),
+            (str, 'type', '7135', 'Type of channel - 7135 or FET:'),
             (int, 'pwm_min', 6, 'Lowest visible PWM level:'),
             (float, 'lm_min', 0.25, 'How bright is the lowest level, in lumens?'),
             #(int, 'pwm_max', 255, 'Highest PWM level:'),
