@@ -4,115 +4,142 @@ import math
 
 interactive = False
 
+
 def main(args):
     """Calculates PWM levels for visually-linear steps.
     """
     # Get parameters from the user
-    v = dict(pwm_max=255, pwm2_max=255)
-    questions = [
+    questions_main = [
+            (int, 'num_channels', 1, 'How many power channels?'),
             (int, 'num_levels', 4, 'How many total levels do you want?'),
-            (int, 'pwm_min', 6, 'Lowest visible PWM level, for moon mode:'),
-            (float, 'lm_min', 0.25, 'How bright is moon mode, in lumens?'),
+            ]
+    questions_per_channel = [
+            (str, 'type', '7135', 'Type of channel - 7135 or FET:'),
+            (int, 'pwm_min', 6, 'Lowest visible PWM level:'),
+            (float, 'lm_min', 0.25, 'How bright is the lowest level, in lumens?'),
             #(int, 'pwm_max', 255, 'Highest PWM level:'),
             (float, 'lm_max', 1000, 'How bright is the highest level, in lumens?'),
-            (str, 'dual_pwm', 'n', 'Use dual PWM? [y/n]'),
-            (float, 'pwm2_min', 6, 'Second channel, lowest visible PWM level:'),
-            (float, 'lm2_min', 0.25, 'Second channel, how bright is the lowest mode, in lumens?'),
-            #(float, 'pwm2_max', 255, 'Second channel, highest PWM level:'),
-            (float, 'lm2_max', 140, 'Second channel, how bright is maximum, in lumens?'),
             ]
-    for typ, name, default, text in questions:
-        value = get_value(text, default, args)
-        if not value:
-            value = default
-        else:
-            value = typ(value)
-        v[name] = value
-        if (name == 'dual_pwm'  and  value == 'n'):
-            # skip remaining questions if not using dual PWM
-            break
 
-    if v['dual_pwm'] == 'y':
-        dual_pwm(v)
-    else:
-        single_pwm(v)
+    def ask(questions, ans):
+        for typ, name, default, text in questions:
+            value = get_value(text, default, args)
+            if not value:
+                value = default
+            else:
+                value = typ(value)
+            setattr(ans, name, value)
+
+    answers = Empty()
+    ask(questions_main, answers)
+    channels = []
+    if not args:
+        print('Describe the channels in order of lowest to highest power.')
+    for chan_num in range(answers.num_channels):
+        if not args:
+            print('===== Channel %s =====' % (chan_num+1))
+        chan = Empty()
+        chan.pwm_max = 255
+        ask(questions_per_channel, chan)
+        channels.append(chan)
+
+    # calculate total output of all previous channels
+    for i, channel in enumerate(channels):
+        channel.prev_lm = 0.0
+        for j in range(i):
+            if channels[j].type == '7135':
+                channel.prev_lm += channels[j].lm_max
+
+    # figure out the desired PWM values
+    multi_pwm(answers, channels)
 
     if interactive: # Wait on exit, in case user invoked us by clicking an icon
         print 'Press Enter to exit:'
         raw_input()
 
-def single_pwm(v):
-    """Estimate the PWM levels for a one-channel driver."""
-    visual_min = invpower(v['lm_min'])
-    visual_max = invpower(v['lm_max'])
-    step_size = (visual_max - visual_min) / (v['num_levels']-1)
-    modes = []
-    goal = visual_min
-    for i in range(v['num_levels']):
-        goal_lm = power(goal)
-        #pwm_float = ((goal_lm / v['lm_max']) * (256-v['pwm_min'])) + v['pwm_min'] - 1
-        pwm_float = (((goal_lm-v['lm_min']) / (v['lm_max']-v['lm_min'])) \
-                        * (255-v['pwm_min'])) \
-                    + v['pwm_min']
-        pwm = int(round(pwm_float))
-        pwm = max(min(pwm,v['pwm_max']),v['pwm_min'])
-        modes.append(pwm)
-        print '%i: visually %.2f (%.2f lm): %.2f/255' % (i+1, goal, goal_lm, pwm_float)
-        goal += step_size
 
-    print 'PWM values:', ','.join([str(i) for i in modes])
+class Empty:
+    pass
 
-def dual_pwm(v):
-    """Estimate the PWM levels for a two-channel driver.
-    Assume the first channel is the brighter one, and second will be used for moon/low modes.
-    """
-    #visual_min = math.pow(v['lm2_min'], 1.0/power)
-    #visual_max = math.pow(v['lm_max'], 1.0/power)
-    visual_min = invpower(v['lm2_min'])
-    visual_max = invpower(v['lm_max'])
-    step_size = (visual_max - visual_min) / (v['num_levels']-1)
-    modes = []
-    goal = visual_min
-    for i in range(v['num_levels']):
-        goal_lm = power(goal)
-        # Up to the second channel's limit, calculate things just like a 
-        # single-channel driver (first channel will be zero)
-        if goal_lm <= v['lm2_max']:
-            pwm1_float = 0.0
-            #pwm2_float = ((goal_lm / v['lm2_max']) * (256-v['pwm2_min'])) + v['pwm2_min'] - 1
-            pwm2_float = (((goal_lm-v['lm2_min']) / (v['lm2_max']-v['lm2_min'])) \
-                             * (255-v['pwm2_min'])) \
-                         + v['pwm2_min']
-            pwm1 = int(round(pwm1_float))
-            pwm2 = int(round(pwm2_float))
-            pwm2 = max(min(pwm2,v['pwm2_max']),v['pwm2_min'])
-            modes.append((int(pwm1),int(pwm2)))
-        # Above the second channel's limit, things get a little more 
-        # complicated (second channel will be 255, first channel will be 
-        # adjusted down by the max output of the second channel)
+
+def multi_pwm(answers, channels):
+    lm_min = channels[0].lm_min
+    # figure out the highest mode
+    lm_max = max([(c.lm_max+c.prev_lm) for c in channels])
+    if channels[-1].type == 'FET':
+        if channels[-1].lm_max > channels[-1].prev_lm:
+            # assume the highest output is with only the FET enabled
+            lm_max = channels[-1].lm_max
         else:
-            if len(modes) == v['num_levels'] -1: # turbo is special
-                #pwm1_float = ((goal_lm / v['lm_max']) * (256-v['pwm_min'])) + v['pwm_min'] - 1
-                pwm1_float = float(v['pwm_max'])
-                # on a FET+7135 driver, turbo works better without the 7135
-                # (we're assuming FET+7135 here)
-                pwm2_float = 0.0
-            else: # not the highest mode yet
-                #pwm1_float = (((goal_lm-v['lm2_max']) / v['lm_max']) * (256-v['pwm_min'])) + v['pwm_min'] - 1
-                pwm1_float = (((goal_lm-v['lm_min']-v['lm2_max']) / (v['lm_max']-v['lm_min'])) \
-                                 * (255-v['pwm_min'])) \
-                             + v['pwm_min']
-                pwm2_float = 255.0
-            pwm1 = int(round(pwm1_float))
-            pwm2 = int(round(pwm2_float))
-            pwm1 = max(min(pwm1,v['pwm_max']),v['pwm_min'])
-            modes.append((int(pwm1),int(pwm2)))
-        print '%i: visually %.2f (%.2f lm): %.2f/255, %.2f/255' % (i+1, goal, goal_lm, pwm1_float, pwm2_float)
-        goal += step_size
+            # this would be a stupid driver design
+            raise ValueError, "FET channel isn't the most powerful?"
 
-    print 'PWM1/FET  values:', ','.join([str(i[0]) for i in modes])
-    print 'PWM2/7135 values:', ','.join([str(i[1]) for i in modes])
-    print 'On a non-FET driver, the last mode should be 255 on both channels.'
+    visual_min = invpower(lm_min)
+    visual_max = invpower(lm_max)
+    step_size = (visual_max - visual_min) / (answers.num_levels-1)
+
+    # Determine ideal lumen levels
+    goals = []
+    goal_vis = visual_min
+    for i in range(answers.num_levels):
+        goal_lm = power(goal_vis)
+        goals.append((goal_vis, goal_lm))
+        goal_vis += step_size
+
+    # Calculate each channel's output for each level
+    for cnum, channel in enumerate(channels):
+        channel.modes = []
+        for i in range(answers.num_levels):
+            goal_vis, goal_lm = goals[i]
+            # This channel already is maxed out
+            if goal_lm >= (channel.lm_max + channel.prev_lm):
+                # This shouldn't happen, the FET is assumed to be the highest channel
+                if channel.type == 'FET':
+                    # this would be a stupid driver design
+                    raise ValueError, "FET channel isn't the most powerful?"
+
+                # Handle FET turbo specially
+                if (i == (answers.num_levels - 1)) \
+                        and (cnum < (len(channels)-1)) \
+                        and (channels[-1].type == 'FET'):
+                    channel.modes.append(0.0)
+                # Normal non-turbo mode or non-FET turbo
+                else:
+                    channel.modes.append(channel.pwm_max)
+            # This channel's active ramp-up range
+            #elif goal_lm > (channel.prev_lm + channel.lm_min):
+            elif goal_lm > channel.prev_lm:
+                # assume 7135 channels all add together
+                if channel.type == '7135':
+                    diff = channel.lm_max - channel.lm_min
+                # assume FET channel gets higher output on its own
+                elif channel.type == 'FET':
+                    diff = channel.lm_max - channel.prev_lm - channel.lm_min
+
+                needed = goal_lm - channel.prev_lm - channel.lm_min
+
+                ratio = needed / diff * (channel.pwm_max-channel.pwm_min)
+                pwm = max(0, ratio + channel.pwm_min)
+                channel.modes.append(pwm)
+            # This channel isn't active yet, output too low
+            else:
+                channel.modes.append(0)
+
+    # Show individual levels in detail
+    for i in range(answers.num_levels):
+        goal_vis, goal_lm = goals[i]
+        pwms = []
+        for channel in channels:
+            pwms.append('%.2f/%i' % (channel.modes[i], channel.pwm_max))
+        print('%i: visually %.2f (%.2f lm): %s' % 
+              (i+1, goal_vis, goal_lm, ', '.join(pwms)))
+
+    # Show values we can paste into source code
+    for cnum, channel in enumerate(channels):
+        print('PWM%s values: %s' % 
+                (cnum+1,
+                 ','.join([str(int(round(i))) for i in channel.modes])))
+
 
 def get_value(text, default, args):
     """Get input from the user, or from the command line args."""
@@ -127,6 +154,7 @@ def get_value(text, default, args):
     result = result.strip()
     return result
 
+
 def power(x):
     #return x**5
     return x**3
@@ -134,12 +162,14 @@ def power(x):
     #return math.e**x
     #return 2.0**x
 
+
 def invpower(x):
     #return math.pow(x, 1/5.0)
     return math.pow(x, 1/3.0)
     #return math.pow(x, 1/2.0)
     #return math.log(x, math.e)
     #return math.log(x, 2.0)
+
 
 if __name__ == "__main__":
     import sys
