@@ -37,6 +37,11 @@ For Windows users, these links may be useful:
 
     http://budgetlightforum.com/node/29684
 
+  Getting a USBasp to work in Windows:
+
+    http://rayshobby.net/dead-simple-driver-installation-for-usbasp-and-usbtiny-on-windows/
+    http://www.protostack.com/accessories/usbasp-avr-programmer
+
 To set up an attiny dev environment on Ubuntu (13.10):
 
   sudo apt-get install flex byacc bison gcc libusb-dev libc6-dev
