@@ -23,6 +23,7 @@
 #ifdef OWN_DELAY
 #include "tk-attiny.h"
 #include <util/delay_basic.h>
+#ifdef USE_DELAY_MS
 // Having own _delay_ms() saves some bytes AND adds possibility to use variables as input
 void _delay_ms(uint16_t n)
 {
@@ -37,15 +38,27 @@ void _delay_ms(uint16_t n)
     while(n-- > 0) _delay_loop_2(BOGOMIPS);
     //#endif
 }
+#endif
 #ifdef USE_FINE_DELAY
 void _delay_zero() {
     _delay_loop_2(BOGOMIPS/3);
 }
 #endif
+#ifdef USE_DELAY_4MS
+void _delay_4ms(uint8_t n)  // because it saves a bit of ROM space to do it this way
+{
+    while(n-- > 0) _delay_loop_2(BOGOMIPS*4);
+}
+#endif
 #ifdef USE_DELAY_S
 void _delay_s()  // because it saves a bit of ROM space to do it this way
 {
+  #ifdef USE_DELAY_MS
     _delay_ms(1000);
+  #endif
+  #ifdef USE_DELAY_4MS
+    _delay_4ms(250);
+  #endif
 }
 #endif
 #else
