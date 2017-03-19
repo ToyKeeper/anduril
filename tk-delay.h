@@ -53,11 +53,12 @@ void _delay_4ms(uint8_t n)  // because it saves a bit of ROM space to do it this
 #ifdef USE_DELAY_S
 void _delay_s()  // because it saves a bit of ROM space to do it this way
 {
-  #ifdef USE_DELAY_MS
-    _delay_ms(1000);
-  #endif
   #ifdef USE_DELAY_4MS
     _delay_4ms(250);
+  #else
+    #ifdef USE_DELAY_MS
+    _delay_ms(1000);
+    #endif
   #endif
 }
 #endif
