@@ -73,6 +73,9 @@
 //#define TEMP_DIDR   ADC4D
 #define TEMP_CHANNEL 0b00001111
 
+#define FAST 0xA3           // fast PWM both channels
+#define PHASE 0xA1          // phase-correct PWM both channels
+
 #endif  // FET_7135_LAYOUT
 
 #ifdef TRIPLEDOWN_LAYOUT
@@ -106,6 +109,9 @@
 //#define TEMP_DIDR   ADC4D
 #define TEMP_CHANNEL 0b00001111
 
+#define FAST 0xA3           // fast PWM both channels
+#define PHASE 0xA1          // phase-correct PWM both channels
+
 #endif  // FET_7135_LAYOUT
 
 #ifdef FERRERO_ROCHER_LAYOUT
@@ -118,6 +124,8 @@
  *            ----
  */
 // TODO: fill in this section, update Ferrero_Rocher code to use it.
+#define FAST 0x23           // fast PWM channel 1 only
+#define PHASE 0x21          // phase-correct PWM channel 1 only
 #endif  // FERRERO_ROCHER_LAYOUT
 
 #ifdef NANJG_LAYOUT
@@ -131,6 +139,10 @@
 #define ADC_PRSCL   0x06    // clk/64
 
 #define PWM_LVL     OCR0B   // OCR0B is the output compare register for PB1
+
+#define FAST 0x23           // fast PWM channel 1 only
+#define PHASE 0x21          // phase-correct PWM channel 1 only
+
 #endif  // NANJG_LAYOUT
 
 #ifndef PWM_LVL
