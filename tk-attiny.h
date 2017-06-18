@@ -36,7 +36,7 @@
     #define F_CPU 8000000UL
     #define EEPSIZE 128
     #define V_REF REFS1
-    #define BOGOMIPS (F_CPU/3200)
+    #define BOGOMIPS (F_CPU/4000)
 #else
     Hey, you need to define ATTINY.
 #endif
