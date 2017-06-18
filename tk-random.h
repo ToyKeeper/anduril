@@ -22,7 +22,10 @@
 
 uint8_t pgm_rand() {
     static uint16_t offset = 255;
-    offset = (offset + 1) & 0x3ff | 0x0100;
+    // loop through ROM space, but avoid the first 256 bytes
+    // because the beginning tends to have a big ramp which
+    // doesn't look very random at all
+    offset = ((offset + 1) & 0x3ff) | 0x0100;
     return pgm_read_byte(offset);
 }
 
