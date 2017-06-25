@@ -23,13 +23,24 @@
 #include "tk-attiny.h"
 #include "tk-calibration.h"
 
-#ifdef TEMPERATURE_MON
+#if defined(TEMPERATURE_MON) || defined(THERMAL_REGULATION)
+#ifdef TEMP_10bit
+#define NEED_ADC_10bit
+#define get_temperature read_adc_10bit
+#else
+#define get_temperature read_adc_8bit
+#endif
+
 inline void ADC_on_temperature() {
     // TODO: (?) enable ADC Noise Reduction Mode, Section 17.7 on page 128
     //       (apparently can only read while the CPU is in idle mode though)
     // select ADC4 by writing 0b00001111 to ADMUX
     // 1.1v reference, left-adjust, ADC4
+    #ifdef TEMP_10bit
+    ADMUX  = (1 << V_REF) | (0 << ADLAR) | TEMP_CHANNEL;
+    #else
     ADMUX  = (1 << V_REF) | (1 << ADLAR) | TEMP_CHANNEL;
+    #endif
     // disable digital input on ADC pin to reduce power consumption
     //DIDR0 |= (1 << TEMP_DIDR);
     // enable, start, prescale
@@ -38,6 +49,7 @@ inline void ADC_on_temperature() {
 #endif  // TEMPERATURE_MON
 
 #ifdef VOLTAGE_MON
+#define NEED_ADC_8bit
 inline void ADC_on() {
     // disable digital input on ADC pin to reduce power consumption
     DIDR0 |= (1 << ADC_DIDR);
@@ -47,7 +59,15 @@ inline void ADC_on() {
     ADCSRA = (1 << ADEN ) | (1 << ADSC ) | ADC_PRSCL;
 }
 
-uint8_t get_voltage() {
+#define get_voltage read_adc_8bit
+#else
+inline void ADC_off() {
+    ADCSRA &= ~(1<<7); //ADC off
+}
+#endif
+
+#ifdef NEED_ADC_8bit
+uint8_t read_adc_8bit() {
     // Start conversion
     ADCSRA |= (1 << ADSC);
     // Wait for completion
@@ -55,9 +75,19 @@ uint8_t get_voltage() {
     // Send back the result
     return ADCH;
 }
-#else
-inline void ADC_off() {
-    ADCSRA &= ~(1<<7); //ADC off
+#endif
+
+#ifdef NEED_ADC_10bit
+uint16_t read_adc_10bit() {
+    // Start conversion
+    ADCSRA |= (1 << ADSC);
+    // Wait for completion
+    while (ADCSRA & (1 << ADSC));
+    // Send back the result
+    //return (ADCH<<8) | (ADCL);  // ADLAR=0
+    //return (ADCH<<2) | (ADCL>>6);  // ADLAR=1
+    ADCSRA |= 0x10;  // clear ADIF flag, else only first reading works
+    return ADC;  // ADLAR=0
 }
 #endif
 
