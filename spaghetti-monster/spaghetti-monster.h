@@ -243,8 +243,10 @@ void empty_event_sequence() {
 void push_event(uint8_t ev_type) {
     ticks_since_last_event = 0;  // something happened
     uint8_t i;
-    for(i=0; current_event[i] && (i<EV_MAX_LEN); i++);
-    if (i < EV_MAX_LEN) {
+    uint8_t prev_event = 0;  // never push the same event twice in a row
+    for(i=0; current_event[i] && (i<EV_MAX_LEN); i++)
+        prev_event = current_event[i];
+    if ((i < EV_MAX_LEN)  &&  (prev_event != ev_type)) {
         current_event[i] = ev_type;
     } else {
         // TODO: ... something?
@@ -418,6 +420,12 @@ uint8_t button_is_pressed() {
 //void button_change_interrupt() {
 ISR(PCINT0_vect) {
 
+    // this interrupt should not be re-entrant
+    //static volatile uint8_t lockout = 0;
+
+    //if (lockout) return;
+    //lockout = 1;
+
     //DEBUG_FLASH;
 
     // something happened
@@ -433,6 +441,7 @@ ISR(PCINT0_vect) {
     // check if sequence matches any defined sequences
     // if so, send event to current state callback
     emit_current_event(0);
+    //lockout = 0;
 }
 
 // clock tick -- this runs every 16ms (62.5 fps)
@@ -458,7 +467,7 @@ ISR(WDT_vect) {
 
     // user held button long enough to count as a long click?
     if (last_event == A_PRESS) {
-        if (ticks_since_last_event == HOLD_TIMEOUT) {
+        if (ticks_since_last_event >= HOLD_TIMEOUT) {
             push_event(A_HOLD);
             emit_current_event(0);
         }
@@ -478,7 +487,7 @@ ISR(WDT_vect) {
             empty_event_sequence();
         }
         // end and clear event after release timeout
-        else if (ticks_since_last_event == RELEASE_TIMEOUT) {
+        else if (ticks_since_last_event >= RELEASE_TIMEOUT) {
             push_event(A_RELEASE_TIMEOUT);
             emit_current_event(0);
             empty_event_sequence();

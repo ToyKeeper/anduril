@@ -21,16 +21,19 @@
 #define USE_LVP
 #define USE_DEBUG_BLINK
 #define USE_DELAY_MS
+#define USE_DELAY_ZERO
 #include "spaghetti-monster.h"
 
 // ../../bin/level_calc.py 2 7 7135 3 0.25 150 FET 1 10 1500
 uint8_t pwm1_modes[] = { 3, 27, 130, 255, 255, 255,   0, };
 uint8_t pwm2_modes[] = { 0,  0,  0,   12,  62, 141, 255, };
 
+// FSM states
 uint8_t off_state(EventPtr event, uint16_t arg);
 uint8_t steady_state(EventPtr event, uint16_t arg);
 uint8_t party_strobe_state(EventPtr event, uint16_t arg);
 
+// brightness control
 uint8_t current_mode = 0;
 
 void set_mode(uint8_t mode) {
@@ -43,6 +46,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     if (event == EV_enter_state) {
         PWM1_LVL = 0;
         PWM2_LVL = 0;
+        // TODO: standby_mode();
         return 0;
     }
     // 1 click: regular mode
@@ -90,7 +94,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     }
     // 2 clicks: go to strobe modes
     else if (event == EV_2clicks) {
-        set_state(party_strobe_state, 2);
+        set_state(party_strobe_state, 0xff);
         return 0;
     }
     // hold: change brightness
@@ -106,18 +110,19 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
 
 uint8_t party_strobe_state(EventPtr event, uint16_t arg) {
     static volatile uint8_t frames = 0;
-    static volatile uint8_t between = 0;
+    static volatile uint8_t between = 2;
     if (event == EV_enter_state) {
-        between = arg;
+        if (arg < 64) between = arg;
         frames = 0;
         return 0;
     }
-    // strobe the emitter
+    // tick: strobe the emitter
     else if (event == EV_tick) {
         if (frames == 0) {
             PWM1_LVL = 255;
             PWM2_LVL = 0;
-            delay_ms(1);
+            if (between < 3) delay_zero();
+            else delay_ms(1);
             PWM1_LVL = 0;
         }
         //frames = (frames + 1) % between;
@@ -132,7 +137,7 @@ uint8_t party_strobe_state(EventPtr event, uint16_t arg) {
     }
     // 2 clicks: go back to regular modes
     else if (event == EV_2clicks) {
-        set_state(steady_state, 1);
+        set_state(steady_state, current_mode);
         return 0;
     }
     // hold: change speed
