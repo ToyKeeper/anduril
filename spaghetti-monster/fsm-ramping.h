@@ -1,5 +1,5 @@
 /*
- * rt-ramping.h: Ramping functions for Round Table.
+ * fsm-ramping.h: Ramping functions for SpaghettiMonster.
  * Handles 1- to 4-channel smooth ramping on a single LED.
  *
  * Copyright (C) 2017 Selene ToyKeeper

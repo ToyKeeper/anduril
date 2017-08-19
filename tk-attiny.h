@@ -165,7 +165,7 @@
 #endif  // NANJG_LAYOUT
 
 
-#ifdef RT_EMISAR_D4_LAYOUT
+#ifdef FSM_EMISAR_D4_LAYOUT
 #define LAYOUT_DEFINED
 /*
  *           ----
@@ -204,7 +204,7 @@
 #endif
 
 
-#ifdef RT_TKSABER_LAYOUT
+#ifdef FSM_TKSABER_LAYOUT
 #define LAYOUT_DEFINED
 /*
  *             ----

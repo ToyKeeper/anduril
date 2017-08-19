@@ -1,6 +1,6 @@
 /*
- * Momentary: Very simple example UI for RoundTable.
- * Is intended to be the simplest possible RT e-switch UI.
+ * Momentary: Very simple example UI for SpaghettiMonster.
+ * Is intended to be the simplest possible FSM e-switch UI.
  * The light is on while the button is held; off otherwise.
  *
  * Copyright (C) 2017 Selene ToyKeeper
@@ -19,10 +19,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define RT_EMISAR_D4_LAYOUT
+#define FSM_EMISAR_D4_LAYOUT
 #define USE_LVP
 #define USE_DEBUG_BLINK
-#include "round-table.c"
+#include "spaghetti-monster.h"
 
 volatile uint8_t brightness;
 volatile uint8_t on_now;

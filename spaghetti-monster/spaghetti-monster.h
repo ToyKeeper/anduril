@@ -1,8 +1,9 @@
 /*
- * RoundTable: Generic foundation code for e-switch flashlights.
+ * SpaghettiMonster: Generic foundation code for e-switch flashlights.
  * Other possible names:
+ * - FSM
+ * - RoundTable
  * - Mostly Harmless
- * - FSM / SpaghettiMonster
  * - ...
  *
  * Copyright (C) 2017 Selene ToyKeeper
