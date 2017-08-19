@@ -20,7 +20,12 @@
  */
 
 #define RT_EMISAR_D4_LAYOUT
+#define USE_LVP
+#define USE_DEBUG_BLINK
+#define OWN_DELAY
+#define USE_DELAY_MS
 #include "round-table.c"
+#include "tk-delay.h"
 
 volatile uint8_t brightness;
 
@@ -34,35 +39,58 @@ void light_off() {
     PWM2_LVL = 0;
 }
 
+//State momentary_state {
 uint8_t momentary_state(EventPtr event, uint16_t arg) {
-    switch(event) {
 
-        case EV_press:
-            brightness = 255;
-            light_on();
-            // reset current event queue
-            empty_event_sequence();
-            return 0;
-
-        case EV_release:
-            light_off();
-            // reset current event queue
-            empty_event_sequence();
-            return 0;
-
-        // LVP / low-voltage protection
-        case EV_voltage_low:
-        case EV_voltage_critical:
-            if (brightness > 0) brightness >>= 1;
-            else {
-                light_off();
-                standby_mode();
-            }
-            return 0;
+    if (event == EV_click1_press) {
+        brightness = 255;
+        light_on();
+        // reset current event queue
+        empty_event_sequence();
+        return 0;
     }
-    return 1;  // event not handled
+
+    else if (event == EV_release) {
+        light_off();
+        // reset current event queue
+        empty_event_sequence();
+        return 0;
+    }
+
+    /*
+    // LVP / low-voltage protection
+    //else if ((event == EV_voltage_low)  ||  (event == EV_voltage_critical)) {
+    else if (event == EV_voltage_low) {
+        if (brightness > 0) brightness >>= 1;
+        else {
+            light_off();
+            standby_mode();
+        }
+        return 0;
+    }
+    */
+
+    // event not handled
+    return 1;
+}
+
+// LVP / low-voltage protection
+void low_voltage() {
+    if (brightness > 0) brightness >>= 1;
+    else {
+        light_off();
+        standby_mode();
+    }
 }
 
 void setup() {
-    set_state(momentary_state);
+    //debug_blink(1);
+    /*
+    brightness = 255;
+    light_on();
+    delay_ms(10);
+    light_off();
+    */
+
+    push_state(momentary_state);
 }

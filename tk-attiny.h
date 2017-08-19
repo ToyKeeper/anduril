@@ -55,8 +55,11 @@
 #endif
 
 
+#include <avr/interrupt.h>
+
 /******************** I/O pin and register layout ************************/
 #ifdef FET_7135_LAYOUT
+#define LAYOUT_DEFINED
 /*
  *           ----
  *   Reset -|1  8|- VCC
@@ -92,6 +95,7 @@
 #endif  // FET_7135_LAYOUT
 
 #ifdef TRIPLEDOWN_LAYOUT
+#define LAYOUT_DEFINED
 /*
  *             ----
  *     Reset -|1  8|- VCC
@@ -128,6 +132,7 @@
 #endif  // TRIPLEDOWN_LAYOUT
 
 #ifdef FERRERO_ROCHER_LAYOUT
+#define LAYOUT_DEFINED
 /*
  *            ----
  *    Reset -|1  8|- VCC
@@ -142,6 +147,7 @@
 #endif  // FERRERO_ROCHER_LAYOUT
 
 #ifdef NANJG_LAYOUT
+#define LAYOUT_DEFINED
 #define STAR2_PIN   PB0
 #define STAR3_PIN   PB4
 #define STAR4_PIN   PB3
@@ -160,6 +166,7 @@
 
 
 #ifdef RT_EMISAR_D4_LAYOUT
+#define LAYOUT_DEFINED
 /*
  *           ----
  *   Reset -|1  8|- VCC
@@ -169,9 +176,12 @@
  *           ----
  */
 
+#define PWM_CHANNELS 2
+
 #define AUXLED_PIN   PB4     // pin 3
 
-#define SWITCH_PIN   PB3     // pin 2, OTC
+#define SWITCH_PIN   PB3     // pin 2
+#define SWITCH_PCINT PCINT3  // pin 2 pin change interrupt
 #define CAP_CHANNEL 0x03    // MUX 03 corresponds with PB3 (Star 4)
 #define CAP_DIDR    ADC3D   // Digital input disable bit corresponding with PB3
 
@@ -195,6 +205,7 @@
 
 
 #ifdef RT_TKSABER_LAYOUT
+#define LAYOUT_DEFINED
 /*
  *             ----
  *     Reset -|1  8|- VCC
@@ -204,6 +215,7 @@
  *             ----
  */
 
+#define PWM_CHANNELS 4
 #define PWM1_PIN PB0        // pin 5
 #define PWM1_LVL OCR0A
 #define PWM2_PIN PB1        // pin 6
@@ -214,6 +226,7 @@
 #define PWM4_LVL OCR1A      // FIXME: does this work?
 
 #define SWITCH_PIN PB2      // pin 7
+#define SWITCH_PCINT PCINT2 // pin 7 pin change interrupt
 
 #define ADC_PRSCL   0x07    // clk/128 (no need to be super fast)
 // FIXME: What is the DIDR for pin 8?
@@ -225,7 +238,7 @@
 #endif  // TKSABER_LAYOUT
 
 
-#ifndef PWM_LVL
+#ifndef LAYOUT_DEFINED
     Hey, you need to define an I/O pin layout.
 #endif
 
