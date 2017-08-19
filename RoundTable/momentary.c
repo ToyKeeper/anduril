@@ -1,7 +1,7 @@
 /*
  * Momentary: Very simple example UI for RoundTable.
  * Is intended to be the simplest possible RT e-switch UI.
- * The light is in while the button is held; off otherwise.
+ * The light is on while the button is held; off otherwise.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -59,6 +59,7 @@ uint8_t momentary_state(EventPtr event, uint16_t arg) {
     else if (event == EV_debug) {
         //PWM1_LVL = arg&0xff;
         DEBUG_FLASH;
+        return 0;
     }
 
     // event not handled
