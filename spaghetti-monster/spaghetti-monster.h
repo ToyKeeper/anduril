@@ -49,7 +49,7 @@ volatile StatePtr current_state;
 uint8_t current_event[EV_MAX_LEN];
 // at 0.016 ms per tick, 255 ticks = 4.08 s
 // TODO: 16 bits?
-static volatile uint8_t ticks_since_last_event = 0;
+static volatile uint16_t ticks_since_last_event = 0;
 
 #ifdef USE_LVP
 // volts * 10
@@ -80,20 +80,23 @@ void debug_blink(uint8_t num) {
 }
 #endif
 
+// timeout durations in ticks (each tick 1/60th s)
+#define HOLD_TIMEOUT 24
+#define RELEASE_TIMEOUT 24
+
 #define A_ENTER_STATE     1
 #define A_LEAVE_STATE     2
 #define A_TICK            3
 #define A_PRESS           4
-#define A_HOLD_START      5
-#define A_HOLD_TICK       6
-#define A_RELEASE         7
-#define A_RELEASE_TIMEOUT 8
+#define A_HOLD            5
+#define A_RELEASE         6
+#define A_RELEASE_TIMEOUT 7
 // TODO: add events for over/under-heat conditions (with parameter for severity)
-#define A_OVERHEATING     9
-#define A_UNDERHEATING    10
+#define A_OVERHEATING     8
+#define A_UNDERHEATING    9
 // TODO: add events for low voltage conditions
-#define A_VOLTAGE_LOW     11
-//#define A_VOLTAGE_CRITICAL 12
+#define A_VOLTAGE_LOW     10
+//#define A_VOLTAGE_CRITICAL 11
 #define A_DEBUG           255  // test event for debugging
 
 // TODO: maybe compare events by number instead of pointer?
@@ -151,11 +154,11 @@ Event EV_click1_complete[] = {
 //        Or "start+tick" with a tick number?
 Event EV_click1_hold[] = {
     A_PRESS,
-    A_HOLD_START,
+    A_HOLD,
     0 };
 Event EV_click1_hold_release[] = {
     A_PRESS,
-    A_HOLD_START,
+    A_HOLD,
     A_RELEASE,
     0 };
 Event EV_click2_press[] = {
@@ -248,7 +251,25 @@ void push_event(uint8_t ev_type) {
     }
 }
 
-#define EMISSION_QUEUE_LEN 8
+// find and return last action in the current event sequence
+/*
+uint8_t last_event(uint8_t offset) {
+    uint8_t i;
+    for(i=0; current_event[i] && (i<EV_MAX_LEN); i++);
+    if (i == EV_MAX_LEN) return current_event[EV_MAX_LEN-offset];
+    else if (i >= offset) return current_event[i-offset];
+    return 0;
+}
+*/
+
+inline uint8_t last_event_num() {
+    uint8_t i;
+    for(i=0; current_event[i] && (i<EV_MAX_LEN); i++);
+    return i;
+}
+
+
+#define EMISSION_QUEUE_LEN 16
 // no comment about "volatile emissions"
 volatile Emission emissions[EMISSION_QUEUE_LEN];
 
@@ -321,22 +342,22 @@ void emit_current_event(uint16_t arg) {
     //return err;
 }
 
-void _set_state(StatePtr new_state) {
+void _set_state(StatePtr new_state, uint16_t arg) {
     // call old state-exit hook (don't use stack)
-    if (current_state != NULL) current_state(EV_leave_state, 0);
+    if (current_state != NULL) current_state(EV_leave_state, arg);
     // set new state
     current_state = new_state;
     // call new state-enter hook (don't use stack)
-    if (new_state != NULL) current_state(EV_enter_state, 0);
+    if (new_state != NULL) current_state(EV_enter_state, arg);
 }
 
-int8_t push_state(StatePtr new_state) {
+int8_t push_state(StatePtr new_state, uint16_t arg) {
     if (state_stack_len < STATE_STACK_SIZE) {
         // TODO: call old state's exit hook?
         //       new hook for non-exit recursion into child?
         state_stack[state_stack_len] = new_state;
         state_stack_len ++;
-        _set_state(new_state);
+        _set_state(new_state, arg);
         return state_stack_len;
     } else {
         // TODO: um...  how is a flashlight supposed to handle a recursion depth error?
@@ -355,14 +376,16 @@ StatePtr pop_state() {
     if (state_stack_len > 0) {
         new_state = state_stack[state_stack_len-1];
     }
-    _set_state(new_state);
+    // FIXME: what should 'arg' be?
+    // FIXME: do we need a EV_reenter_state?
+    _set_state(new_state, 0);
     return old_state;
 }
 
-uint8_t set_state(StatePtr new_state) {
+uint8_t set_state(StatePtr new_state, uint16_t arg) {
     // FIXME: this calls exit/enter hooks it shouldn't
     pop_state();
-    return push_state(new_state);
+    return push_state(new_state, arg);
 }
 
 // TODO? add events to a queue when inside an interrupt
@@ -412,36 +435,12 @@ ISR(PCINT0_vect) {
     emit_current_event(0);
 }
 
-// TODO: implement
+// clock tick -- this runs every 16ms (62.5 fps)
 ISR(WDT_vect) {
-    /*
-    // TODO? safety net for PCINT, in case it misses a press or release
-    uint8_t bp = button_is_pressed();
-    if (bp != button_was_pressed) {
-        // TODO: handle missed button event
-        if (bp) {
-            push_event(A_PRESS);
-        } else {
-            push_event(A_RELEASE);
-        }
-        emit_current_event(0);
-    }
-    */
-
-    //timer ++;  // Is this needed at all?
-
-    /*
-    if (ticks_since_last_event & 0b00000111 ) {
-        DEBUG_FLASH;
-    }
-    */
-
     //if (ticks_since_last_event < 0xff) ticks_since_last_event ++;
-    // increment, but loop from 255 back to 128
+    // increment, but loop from max back to half
     ticks_since_last_event = (ticks_since_last_event + 1) \
-                             | (ticks_since_last_event & 0x80);
-
-    //static uint8_t hold_ticks = 0;  // TODO: 16 bits?
+                             | (ticks_since_last_event & 0x8000);
 
     // callback on each timer tick
     emit(EV_tick, ticks_since_last_event);
@@ -449,13 +448,42 @@ ISR(WDT_vect) {
     // if time since last event exceeds timeout,
     // append timeout to current event sequence, then
     // send event to current state callback
-    // //hold_event(ticks)
-    // //emit(EV_press_hold, hold_ticks);
-    // emit_current_event(hold_ticks);
-    // or
-    // //release_timeout()
-    // //emit(EV_press_release_timeout, 0);
-    // emit_current_event(0);
+
+    // preload recent events
+    uint8_t le_num = last_event_num();
+    uint8_t last_event = 0;
+    uint8_t prev_event = 0;
+    if (le_num >= 1) last_event = current_event[le_num-1];
+    if (le_num >= 2) prev_event = current_event[le_num-2];
+
+    // user held button long enough to count as a long click?
+    if (last_event == A_PRESS) {
+        if (ticks_since_last_event == HOLD_TIMEOUT) {
+            push_event(A_HOLD);
+            emit_current_event(0);
+        }
+    }
+
+    // user is still holding button, so tick
+    else if (last_event == A_HOLD) {
+        emit_current_event(ticks_since_last_event);
+    }
+
+    // detect completed button presses with expired timeout
+    else if (last_event == A_RELEASE) {
+        // no timeout required when releasing a long-press
+        // TODO? move this logic to PCINT() and simplify things here?
+        if (prev_event == A_HOLD) {
+            //emit_current_event(0);  // should have been emitted by PCINT
+            empty_event_sequence();
+        }
+        // end and clear event after release timeout
+        else if (ticks_since_last_event == RELEASE_TIMEOUT) {
+            push_event(A_RELEASE_TIMEOUT);
+            emit_current_event(0);
+            empty_event_sequence();
+        }
+    }
 
     #if defined(USE_LVP) || defined(USE_THERMAL_REGULATION)
     // start a new ADC measurement every 4 ticks
@@ -677,20 +705,36 @@ int main() {
     //PCINT_off();
 
     // configure PWM channels
-    #if PWM_CHANNELS >= 1
+    #if PWM_CHANNELS == 1
     DDRB |= (1 << PWM1_PIN);
     TCCR0B = 0x01; // pre-scaler for timer (1 => 1, 2 => 8, 3 => 64...)
     TCCR0A = PHASE;
-    #elif PWM_CHANNELS >= 2
+    #elif PWM_CHANNELS == 2
+    DDRB |= (1 << PWM1_PIN);
     DDRB |= (1 << PWM2_PIN);
-    #elif PWM_CHANNELS >= 3
-    DDRB |= (1 << PWM3_PIN);
+    TCCR0B = 0x01; // pre-scaler for timer (1 => 1, 2 => 8, 3 => 64...)
+    TCCR0A = PHASE;
+    #elif PWM_CHANNELS == 3
+    DDRB |= (1 << PWM1_PIN);
+    DDRB |= (1 << PWM2_PIN);
+    TCCR0B = 0x01; // pre-scaler for timer (1 => 1, 2 => 8, 3 => 64...)
+    TCCR0A = PHASE;
     // Second PWM counter is ... weird
+    DDRB |= (1 << PWM3_PIN);
     TCCR1 = _BV (CS10);
     GTCCR = _BV (COM1B1) | _BV (PWM1B);
     OCR1C = 255;  // Set ceiling value to maximum
     #elif PWM_CHANNELS == 4
+    DDRB |= (1 << PWM1_PIN);
+    DDRB |= (1 << PWM2_PIN);
+    TCCR0B = 0x01; // pre-scaler for timer (1 => 1, 2 => 8, 3 => 64...)
+    TCCR0A = PHASE;
+    // Second PWM counter is ... weird
+    DDRB |= (1 << PWM3_PIN);
     // FIXME: How exactly do we do PWM on channel 4?
+    TCCR1 = _BV (CS10);
+    GTCCR = _BV (COM1B1) | _BV (PWM1B);
+    OCR1C = 255;  // Set ceiling value to maximum
     DDRB |= (1 << PWM4_PIN);
     #endif
 
@@ -718,7 +762,7 @@ int main() {
     sei();
 
     // fallback for handling a few things
-    push_state(default_state);
+    push_state(default_state, 0);
 
     // call recipe's setup
     setup();
