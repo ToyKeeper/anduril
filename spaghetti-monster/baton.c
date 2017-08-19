@@ -135,11 +135,11 @@ uint8_t party_strobe_state(EventPtr event, uint16_t arg) {
     // tick: strobe the emitter
     else if (event == EV_tick) {
         if (frames == 0) {
-            PWM1_LVL = 255;
-            PWM2_LVL = 0;
+            PWM1_LVL = 0;
+            PWM2_LVL = 255;
             if (between < 3) delay_zero();
             else delay_ms(1);
-            PWM1_LVL = 0;
+            PWM2_LVL = 0;
         }
         //frames = (frames + 1) % between;
         frames++;
