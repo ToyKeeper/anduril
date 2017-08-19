@@ -44,35 +44,28 @@ uint8_t momentary_state(EventPtr event, uint16_t arg) {
     if (event == EV_click1_press) {
         brightness = 255;
         light_on();
-        // don't attempt to parse multiple clicks
-        empty_event_sequence();
+        empty_event_sequence();  // don't attempt to parse multiple clicks
         return 0;
     }
 
     else if (event == EV_release) {
         light_off();
-        // don't attempt to parse multiple clicks
-        empty_event_sequence();
+        empty_event_sequence();  // don't attempt to parse multiple clicks
+        standby_mode();  // sleep while light is off
         return 0;
     }
 
-    else if (event == EV_debug) {
-        //PWM1_LVL = arg&0xff;
-        DEBUG_FLASH;
-        return 0;
-    }
-
-    // event not handled
-    return 1;
+    return 1;  // event not handled
 }
 
 // LVP / low-voltage protection
 void low_voltage() {
-    debug_blink(3);
     if (brightness > 0) {
+        debug_blink(3);
         brightness >>= 1;
         if (on_now) light_on();
     } else {
+        debug_blink(8);
         light_off();
         standby_mode();
     }
@@ -80,6 +73,5 @@ void low_voltage() {
 
 void setup() {
     debug_blink(2);
-
     push_state(momentary_state, 0);
 }

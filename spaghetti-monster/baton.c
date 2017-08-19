@@ -48,7 +48,9 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     if (event == EV_enter_state) {
         PWM1_LVL = 0;
         PWM2_LVL = 0;
-        // TODO: standby_mode();
+        // sleep while off  (lower power use)
+        //empty_event_sequence();  // just in case (but shouldn't be needed)
+        standby_mode();
         return 0;
     }
     // hold (initially): go to lowest level, but allow abort for regular click
@@ -114,7 +116,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     // hold: change brightness
     else if (event == EV_click1_hold) {
         if ((arg % HOLD_TIMEOUT) == 0) {
-            memorized_level = (memorized_level+1) % sizeof(pwm1_modes);
+            memorized_level = (actual_level+1) % sizeof(pwm1_modes);
             set_mode(memorized_level);
         }
         return 0;

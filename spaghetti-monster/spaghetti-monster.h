@@ -240,7 +240,7 @@ void empty_event_sequence() {
     for(uint8_t i=0; i<EV_MAX_LEN; i++) current_event[i] = 0;
 }
 
-void push_event(uint8_t ev_type) {
+uint8_t push_event(uint8_t ev_type) {
     ticks_since_last_event = 0;  // something happened
     uint8_t i;
     uint8_t prev_event = 0;  // never push the same event twice in a row
@@ -248,9 +248,11 @@ void push_event(uint8_t ev_type) {
         prev_event = current_event[i];
     if ((i < EV_MAX_LEN)  &&  (prev_event != ev_type)) {
         current_event[i] = ev_type;
+        return 1;  // event pushed
     } else {
         // TODO: ... something?
     }
+    return 0;  // no event pushed
 }
 
 // find and return last action in the current event sequence
@@ -420,28 +422,20 @@ uint8_t button_is_pressed() {
 //void button_change_interrupt() {
 ISR(PCINT0_vect) {
 
-    // this interrupt should not be re-entrant
-    //static volatile uint8_t lockout = 0;
-
-    //if (lockout) return;
-    //lockout = 1;
-
     //DEBUG_FLASH;
 
-    // something happened
-    //ticks_since_last_event = 0;
+    uint8_t pushed;
 
     // add event to current sequence
     if (button_is_pressed()) {
-        push_event(A_PRESS);
+        pushed = push_event(A_PRESS);
     } else {
-        push_event(A_RELEASE);
+        pushed = push_event(A_RELEASE);
     }
 
     // check if sequence matches any defined sequences
     // if so, send event to current state callback
-    emit_current_event(0);
-    //lockout = 0;
+    if (pushed) emit_current_event(0);
 }
 
 // clock tick -- this runs every 16ms (62.5 fps)
