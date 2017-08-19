@@ -15,6 +15,10 @@ typedef uint8_t (*EventCallbackPtr)(EventPtr event, uint16_t arg);
 typedef uint8_t EventCallback(EventPtr event, uint16_t arg);
 typedef uint8_t State(EventPtr event, uint16_t arg);
 typedef State * StatePtr;
+typedef struct Emission {
+    EventPtr event;
+    uint16_t arg;
+} Emission;
 
 volatile StatePtr current_state;
 #define EV_MAX_LEN 16
@@ -24,7 +28,11 @@ uint8_t current_event[EV_MAX_LEN];
 static volatile uint8_t ticks_since_last_event = 0;
 
 #ifdef USE_LVP
-volatile int16_t voltage;
+// volts * 10
+#define VOLTAGE_LOW 30
+// MCU sees voltage 0.X volts lower than actual, add X to readings
+#define VOLTAGE_FUDGE_FACTOR 2
+volatile uint8_t voltage;
 void low_voltage();
 #endif
 #ifdef USE_THERMAL_REGULATION
@@ -62,6 +70,7 @@ void debug_blink(uint8_t num) {
 // TODO: add events for low voltage conditions
 #define A_VOLTAGE_LOW     11
 //#define A_VOLTAGE_CRITICAL 12
+#define A_DEBUG           255  // test event for debugging
 
 // TODO: maybe compare events by number instead of pointer?
 //       (number = index in event types array)
@@ -70,6 +79,9 @@ void debug_blink(uint8_t num) {
 //       (also eliminates the need to duplicate single-entry events like for voltage or timer tick)
 
 // Event types
+Event EV_debug[] = {
+    A_DEBUG,
+    0 } ;
 Event EV_enter_state[] = {
     A_ENTER_STATE,
     0 } ;
@@ -212,6 +224,35 @@ void push_event(uint8_t ev_type) {
     }
 }
 
+#define EMISSION_QUEUE_LEN 8
+// no comment about "volatile emissions"
+volatile Emission emissions[EMISSION_QUEUE_LEN];
+
+void append_emission(EventPtr event, uint16_t arg) {
+    uint8_t i;
+    // find last entry
+    for(i=0;
+        (i<EMISSION_QUEUE_LEN) && (emissions[i].event != NULL);
+        i++) { }
+    // add new entry
+    if (i < EMISSION_QUEUE_LEN) {
+        emissions[i].event = event;
+        emissions[i].arg = arg;
+    } else {
+        // TODO: if queue full, what should we do?
+    }
+}
+
+void delete_first_emission() {
+    uint8_t i;
+    for(i=0; i<EMISSION_QUEUE_LEN-1; i++) {
+        emissions[i].event = emissions[i+1].event;
+        emissions[i].arg = emissions[i+1].arg;
+    }
+    emissions[i].event = NULL;
+    emissions[i].arg = 0;
+}
+
 // TODO: stack for states, to allow shared utility states like "input a number"
 //       and such, which return to the previous state after finishing
 #define STATE_STACK_SIZE 8
@@ -225,8 +266,8 @@ uint8_t state_stack_len = 0;
 //       255: error (not sure what this would even mean though, or what difference it would make)
 // TODO: function to call stacked callbacks until one returns "handled"
 // Call stacked callbacks for the given event until one handles it.
-uint8_t emit(EventPtr event, uint16_t arg) {
-    // TODO: implement
+//#define emit_now emit
+uint8_t emit_now(EventPtr event, uint16_t arg) {
     for(int8_t i=state_stack_len-1; i>=0; i--) {
         uint8_t err = state_stack[i](event, arg);
         if (! err) return 0;
@@ -234,18 +275,26 @@ uint8_t emit(EventPtr event, uint16_t arg) {
     return 1;  // event not handled
 }
 
+void emit(EventPtr event, uint16_t arg) {
+    // add this event to the queue for later,
+    // so we won't use too much time during an interrupt
+    append_emission(event, arg);
+}
+
 // Search the pre-defined event list for one matching what the user just did,
 // and emit it if one was found.
-uint8_t emit_current_event(uint16_t arg) {
-    uint8_t err = 1;
+void emit_current_event(uint16_t arg) {
+    //uint8_t err = 1;
     for (uint8_t i=0; i<(sizeof(event_sequences)/sizeof(EventPtr)); i++) {
         if (events_match(current_event, event_sequences[i])) {
             //DEBUG_FLASH;
-            err = emit(event_sequences[i], arg);
-            return err;
+            //err = emit(event_sequences[i], arg);
+            //return err;
+            emit(event_sequences[i], arg);
+            return;
         }
     }
-    return err;
+    //return err;
 }
 
 void _set_state(StatePtr new_state) {
@@ -300,19 +349,23 @@ uint8_t set_state(StatePtr new_state) {
 // TODO? new interruptible delay() functions?
 
 
+//static volatile uint8_t button_was_pressed;
+#define BP_SAMPLES 16
 uint8_t button_is_pressed() {
     // debounce a little
-    uint8_t measurement = 0;
-    // measure for 8/64ths of a ms
-    for(uint8_t i=0; i<8; i++) {
+    uint8_t highcount = 0;
+    // measure for 16/64ths of a ms
+    for(uint8_t i=0; i<BP_SAMPLES; i++) {
         // check current value
-        measurement = (measurement << 1) | ((PINB & (1<<SWITCH_PIN)) == 0);
+        uint8_t bit = ((PINB & (1<<SWITCH_PIN)) == 0);
+        highcount += bit;
         // wait a moment
         _delay_loop_2(BOGOMIPS/64);
     }
-    // 0 bits mean "pressed", 1 bits mean "not pressed"
-    // only return "pressed" if all bits match
-    return (measurement != 0);
+    // use most common value
+    uint8_t result = (highcount > (BP_SAMPLES/2));
+    //button_was_pressed = result;
+    return result;
 }
 
 //void button_change_interrupt() {
@@ -337,6 +390,20 @@ ISR(PCINT0_vect) {
 
 // TODO: implement
 ISR(WDT_vect) {
+    /*
+    // TODO? safety net for PCINT, in case it misses a press or release
+    uint8_t bp = button_is_pressed();
+    if (bp != button_was_pressed) {
+        // TODO: handle missed button event
+        if (bp) {
+            push_event(A_PRESS);
+        } else {
+            push_event(A_RELEASE);
+        }
+        emit_current_event(0);
+    }
+    */
+
     //timer ++;  // Is this needed at all?
 
     /*
@@ -345,7 +412,10 @@ ISR(WDT_vect) {
     }
     */
 
-    if (ticks_since_last_event < 0xff) ticks_since_last_event ++;
+    //if (ticks_since_last_event < 0xff) ticks_since_last_event ++;
+    // increment, but loop from 255 back to 128
+    ticks_since_last_event = (ticks_since_last_event + 1) \
+                             | (ticks_since_last_event & 0x80);
 
     //static uint8_t hold_ticks = 0;  // TODO: 16 bits?
 
@@ -363,17 +433,29 @@ ISR(WDT_vect) {
     // //emit(EV_press_release_timeout, 0);
     // emit_current_event(0);
 
-    // add 4-step voltage / temperature thing?
-    // with averaged values,
-    // once every N ticks?
+    #if defined(USE_LVP) || defined(USE_THERMAL_REGULATION)
+    // start a new ADC measurement every 4 ticks
+    static uint8_t adc_trigger = 0;
+    adc_trigger ++;
+    if (adc_trigger > 3) {
+        adc_trigger = 0;
+        ADCSRA |= (1 << ADSC) | (1 << ADIE);
+    }
+    #endif
 }
 
 // TODO: implement?  (or is it better done in main()?)
 ISR(ADC_vect) {
     static uint8_t adc_step = 0;
     #ifdef USE_LVP
+    #ifdef USE_LVP_AVG
+    #define NUM_VOLTAGE_VALUES 4
+    static int16_t voltage_values[NUM_VOLTAGE_VALUES];
+    #endif
     static uint8_t lvp_timer = 0;
-    #define LVP_TIMER_START 255  // TODO: calibrate this value
+    static uint8_t lvp_lowpass = 0;
+    #define LVP_TIMER_START 50  // ticks between LVP warnings
+    #define LVP_LOWPASS_STRENGTH 4
     #endif
 
     #ifdef USE_THERMAL_REGULATION
@@ -384,23 +466,64 @@ ISR(ADC_vect) {
     #define ADC_STEPS 2
     #endif
 
-    int16_t measurement = ADC;  // latest 10-bit ADC reading
+    uint16_t measurement = ADC;  // latest 10-bit ADC reading
 
     adc_step = (adc_step + 1) & (ADC_STEPS-1);
 
     #ifdef USE_LVP
-    // TODO: voltage
-    // TODO: if low, callback EV_voltage_low / EV_voltage_critical
-    //       (but only if it has been more than N ticks since last call)
-    // if (lvp_timer) {
-    //     lvp_timer --;
-    // } else {
-    //     if (voltage is low) {
-    //         uint8_t err = emit(EV_voltage_low, 0);
-    //         if (!err) lvp_timer = LVP_TIMER_START;
-    //     }
-    // }
-    #endif
+    // voltage
+    if (adc_step == 1) {
+        #ifdef USE_LVP_AVG
+        // prime on first execution
+        if (voltage == 0) {
+            for(uint8_t i=0; i<NUM_VOLTAGE_VALUES; i++)
+                voltage_values[i] = measurement;
+            voltage = 42;  // Life, the Universe, and Everything (*)
+        } else {
+            uint16_t total = 0;
+            uint8_t i;
+            for(i=0; i<NUM_VOLTAGE_VALUES-1; i++) {
+                voltage_values[i] = voltage_values[i+1];
+                total += voltage_values[i];
+            }
+            voltage_values[i] = measurement;
+            total += measurement;
+            total = total >> 2;
+
+            voltage = (uint16_t)(1.1*1024*10)/total + VOLTAGE_FUDGE_FACTOR;
+        }
+        #else  // no USE_LVP_AVG
+        // calculate actual voltage: volts * 10
+        // ADC = 1.1 * 1024 / volts
+        // volts = 1.1 * 1024 / ADC
+        voltage = (uint16_t)(1.1*1024*10)/measurement + VOLTAGE_FUDGE_FACTOR;
+        #endif
+        // if low, callback EV_voltage_low / EV_voltage_critical
+        //         (but only if it has been more than N ticks since last call)
+        if (lvp_timer) {
+            lvp_timer --;
+        } else {  // it has been long enough since the last warning
+            if (voltage < VOLTAGE_LOW) {
+                if (lvp_lowpass < LVP_LOWPASS_STRENGTH) {
+                    lvp_lowpass ++;
+                } else {
+                    // try to send out a warning
+                    //uint8_t err = emit(EV_voltage_low, 0);
+                    //uint8_t err = emit_now(EV_voltage_low, 0);
+                    emit(EV_voltage_low, 0);
+                    //if (!err) {
+                        // on successful warning, reset counters
+                        lvp_timer = LVP_TIMER_START;
+                        lvp_lowpass = 0;
+                    //}
+                }
+            } else {
+                // voltage not low?  reset count
+                lvp_lowpass = 0;
+            }
+        }
+    }
+    #endif  // ifdef USE_LVP
 
     // TODO: temperature
 
@@ -475,7 +598,7 @@ void sleep_until_eswitch_pressed()
     WDT_off();
     ADC_off();
 
-    // TODO: make sure switch isn't currently pressed
+    // make sure switch isn't currently pressed
     while (button_is_pressed()) {}
 
     PCINT_on();  // wake on e-switch event
@@ -486,7 +609,7 @@ void sleep_until_eswitch_pressed()
 
     // something happened; wake up
     sleep_disable();
-    //PCINT_off();  // we use this for more than just waking up
+    PCINT_on();
     ADC_on();
     WDT_on();
 }
@@ -579,8 +702,12 @@ int main() {
     // main loop
     while (1) {
         // TODO: update e-switch press state?
-        // TODO: if wait queue not empty, process and pop first item in queue?
         // TODO: check voltage?
         // TODO: check temperature?
+        // if event queue not empty, process and pop first item in queue?
+        if (emissions[0].event != NULL) {
+            emit_now(emissions[0].event, emissions[0].arg);
+            delete_first_emission();
+        }
     }
 }

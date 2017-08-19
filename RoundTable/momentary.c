@@ -22,53 +22,44 @@
 #define RT_EMISAR_D4_LAYOUT
 #define USE_LVP
 #define USE_DEBUG_BLINK
-#define OWN_DELAY
-#define USE_DELAY_MS
 #include "round-table.c"
-#include "tk-delay.h"
 
 volatile uint8_t brightness;
+volatile uint8_t on_now;
 
 void light_on() {
+    on_now = 1;
     PWM1_LVL = brightness;
     PWM2_LVL = 0;
 }
 
 void light_off() {
+    on_now = 0;
     PWM1_LVL = 0;
     PWM2_LVL = 0;
 }
 
-//State momentary_state {
 uint8_t momentary_state(EventPtr event, uint16_t arg) {
 
     if (event == EV_click1_press) {
         brightness = 255;
         light_on();
-        // reset current event queue
+        // don't attempt to parse multiple clicks
         empty_event_sequence();
         return 0;
     }
 
     else if (event == EV_release) {
         light_off();
-        // reset current event queue
+        // don't attempt to parse multiple clicks
         empty_event_sequence();
         return 0;
     }
 
-    /*
-    // LVP / low-voltage protection
-    //else if ((event == EV_voltage_low)  ||  (event == EV_voltage_critical)) {
-    else if (event == EV_voltage_low) {
-        if (brightness > 0) brightness >>= 1;
-        else {
-            light_off();
-            standby_mode();
-        }
-        return 0;
+    else if (event == EV_debug) {
+        //PWM1_LVL = arg&0xff;
+        DEBUG_FLASH;
     }
-    */
 
     // event not handled
     return 1;
@@ -76,21 +67,18 @@ uint8_t momentary_state(EventPtr event, uint16_t arg) {
 
 // LVP / low-voltage protection
 void low_voltage() {
-    if (brightness > 0) brightness >>= 1;
-    else {
+    debug_blink(3);
+    if (brightness > 0) {
+        brightness >>= 1;
+        if (on_now) light_on();
+    } else {
         light_off();
         standby_mode();
     }
 }
 
 void setup() {
-    //debug_blink(1);
-    /*
-    brightness = 255;
-    light_on();
-    delay_ms(10);
-    light_off();
-    */
+    debug_blink(2);
 
     push_state(momentary_state);
 }
