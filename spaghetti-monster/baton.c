@@ -34,7 +34,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg);
 uint8_t party_strobe_state(EventPtr event, uint16_t arg);
 
 // brightness control
-uint8_t memorized_level = 0;
+uint8_t memorized_level = 1;
 uint8_t actual_level = 0;
 
 void set_mode(uint8_t lvl) {
@@ -56,10 +56,12 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     // hold (initially): go to lowest level, but allow abort for regular click
     else if (event == EV_click1_press) {
         set_mode(0);
+        return 0;
     }
     // 1 click (before timeout): go to memorized level, but allow abort for double click
     else if (event == EV_click1_release) {
         set_mode(memorized_level);
+        return 0;
     }
     // 1 click: regular mode
     else if (event == EV_1click) {
@@ -73,12 +75,13 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     }
     // 3 clicks: strobe mode
     else if (event == EV_3clicks) {
-        set_state(party_strobe_state, 0);
+        set_state(party_strobe_state, 255);
         return 0;
     }
     // hold: go to lowest level
     else if (event == EV_click1_hold) {
         set_state(steady_state, 0);
+        return 0;
     }
     return 1;
 }
