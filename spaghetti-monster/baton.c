@@ -27,6 +27,7 @@
 // moon + ../../bin/level_calc.py 2 6 7135 18 10 150 FET 1 10 1500
 uint8_t pwm1_modes[] = { 3, 18, 110, 255, 255, 255,   0, };
 uint8_t pwm2_modes[] = { 0,  0,   0,   9,  58, 138, 255, };
+#define MAX_LEVEL (sizeof(pwm1_modes)-1)
 
 // FSM states
 uint8_t off_state(EventPtr event, uint16_t arg);
@@ -37,7 +38,7 @@ uint8_t party_strobe_state(EventPtr event, uint16_t arg);
 uint8_t memorized_level = 1;
 uint8_t actual_level = 0;
 
-void set_mode(uint8_t lvl) {
+void set_level(uint8_t lvl) {
     actual_level = lvl;
     PWM1_LVL = pwm1_modes[lvl];
     PWM2_LVL = pwm2_modes[lvl];
@@ -55,12 +56,12 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     }
     // hold (initially): go to lowest level, but allow abort for regular click
     else if (event == EV_click1_press) {
-        set_mode(0);
+        set_level(0);
         return 0;
     }
     // 1 click (before timeout): go to memorized level, but allow abort for double click
     else if (event == EV_click1_release) {
-        set_mode(memorized_level);
+        set_level(memorized_level);
         return 0;
     }
     // 1 click: regular mode
@@ -70,7 +71,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     }
     // 2 clicks: highest mode
     else if (event == EV_2clicks) {
-        set_state(steady_state, sizeof(pwm1_modes)-1);
+        set_state(steady_state, MAX_LEVEL);
         return 0;
     }
     // 3 clicks: strobe mode
@@ -90,10 +91,10 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     // turn LED on when we first enter the mode
     if (event == EV_enter_state) {
         // remember this level, unless it's moon or turbo
-        if ((arg > 0) && (arg < sizeof(pwm1_modes)-1))
+        if ((arg > 0) && (arg < MAX_LEVEL))
             memorized_level = arg;
         // use the requested level even if not memorized
-        set_mode(arg);
+        set_level(arg);
         return 0;
     }
     // 1 click: off
@@ -103,12 +104,12 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     }
     // 2 clicks: go to/from highest level
     else if (event == EV_2clicks) {
-        if (actual_level < sizeof(pwm1_modes)-1) {
+        if (actual_level < MAX_LEVEL) {
             memorized_level = actual_level;  // in case we're on moon
-            set_mode(sizeof(pwm1_modes)-1);
+            set_level(MAX_LEVEL);
         }
         else
-            set_mode(memorized_level);
+            set_level(memorized_level);
         return 0;
     }
     // 3 clicks: go to strobe modes
@@ -119,8 +120,8 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     // hold: change brightness
     else if (event == EV_click1_hold) {
         if ((arg % HOLD_TIMEOUT) == 0) {
-            memorized_level = (actual_level+1) % sizeof(pwm1_modes);
-            set_mode(memorized_level);
+            memorized_level = (actual_level+1) % (MAX_LEVEL+1);
+            set_level(memorized_level);
         }
         return 0;
     }
@@ -178,7 +179,7 @@ void low_voltage() {
     // in normal mode, step down by one level or turn off
     else if (current_state == steady_state) {
         if (actual_level > 0) {
-            set_mode(actual_level - 1);
+            set_level(actual_level - 1);
         }
         else {
             set_state(off_state, 0);
