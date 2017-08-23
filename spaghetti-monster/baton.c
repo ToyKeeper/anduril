@@ -171,7 +171,19 @@ uint8_t party_strobe_state(EventPtr event, uint16_t arg) {
 }
 
 void low_voltage() {
-    // FIXME: do something
+    // "step down" from strobe to level 2
+    if (current_state == party_strobe_state) {
+        set_state(steady_state, 1);
+    }
+    // in normal mode, step down by one level or turn off
+    else if (current_state == steady_state) {
+        if (actual_level > 0) {
+            set_mode(actual_level - 1);
+        }
+        else {
+            set_state(off_state, 0);
+        }
+    }
 }
 
 void setup() {
