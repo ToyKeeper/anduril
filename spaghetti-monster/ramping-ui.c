@@ -31,7 +31,7 @@
 // FSM states
 uint8_t off_state(EventPtr event, uint16_t arg);
 uint8_t steady_state(EventPtr event, uint16_t arg);
-uint8_t party_strobe_state(EventPtr event, uint16_t arg);
+uint8_t strobe_state(EventPtr event, uint16_t arg);
 
 // brightness control
 uint8_t memorized_level = MAX_1x7135;
@@ -42,6 +42,11 @@ uint8_t ramp_step_size = 1;
 // brightness before thermal step-down
 uint8_t target_level = 0;
 #endif
+
+// strobe timing
+volatile uint8_t strobe_delay = 67;
+volatile uint8_t strobe_type = 0;  // 0 == party strobe, 1 == tactical strobe
+
 
 uint8_t off_state(EventPtr event, uint16_t arg) {
     // turn emitter off when entering state
@@ -74,7 +79,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     }
     // 3 clicks: strobe mode
     else if (event == EV_3clicks) {
-        set_state(party_strobe_state, 255);
+        set_state(strobe_state, 0);
         return 0;
     }
     // hold: go to lowest level
@@ -90,13 +95,14 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         set_state(steady_state, 1);
         return 0;
     }
-    // click-release-hold: go to highest level (for ramping down)
+    // click, hold: go to highest level (for ramping down)
     else if (event == EV_click2_hold) {
         set_state(steady_state, MAX_LEVEL);
         return 0;
     }
     return 1;
 }
+
 
 uint8_t steady_state(EventPtr event, uint16_t arg) {
     // turn LED on when we first enter the mode
@@ -135,7 +141,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     }
     // 3 clicks: go to strobe modes
     else if (event == EV_3clicks) {
-        set_state(party_strobe_state, 0xff);
+        set_state(strobe_state, 0);
         return 0;
     }
     // 4 clicks: toggle smooth vs discrete ramping
@@ -170,7 +176,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         set_level(memorized_level);
         return 0;
     }
-    // click-release-hold: change brightness (dimmer)
+    // click, hold: change brightness (dimmer)
     else if (event == EV_click2_hold) {
         // ramp slower in discrete mode
         if (arg % ramp_step_size != 0) {
@@ -219,26 +225,9 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     return 1;
 }
 
-uint8_t party_strobe_state(EventPtr event, uint16_t arg) {
-    static volatile uint8_t frames = 0;
-    static volatile uint8_t between = 2;
+
+uint8_t strobe_state(EventPtr event, uint16_t arg) {
     if (event == EV_enter_state) {
-        if (arg < 64) between = arg;
-        frames = 0;
-        return 0;
-    }
-    // tick: strobe the emitter
-    else if (event == EV_tick) {
-        if (frames == 0) {
-            PWM1_LVL = 0;
-            PWM2_LVL = 255;
-            if (between < 3) delay_zero();
-            else delay_ms(1);
-            PWM2_LVL = 0;
-        }
-        //frames = (frames + 1) % between;
-        frames++;
-        if (frames > between) frames = 0;
         return 0;
     }
     // 1 click: off
@@ -246,25 +235,37 @@ uint8_t party_strobe_state(EventPtr event, uint16_t arg) {
         set_state(off_state, 0);
         return 0;
     }
-    // 2 clicks: go back to regular modes
+    // 2 clicks: toggle party strobe vs tactical strobe
     else if (event == EV_2clicks) {
+        strobe_type ^= 1;
+        return 0;
+    }
+    // 3 clicks: go back to regular modes
+    else if (event == EV_3clicks) {
         set_state(steady_state, memorized_level);
         return 0;
     }
-    // hold: change speed
+    // hold: change speed (go faster)
     else if (event == EV_click1_hold) {
-        if ((arg % HOLD_TIMEOUT) == 0) {
-            between = (between+1)%6;
-            frames = 0;
+        if ((arg & 1) == 0) {
+            if (strobe_delay > 8) strobe_delay --;
+        }
+        return 0;
+    }
+    // click, hold: change speed (go slower)
+    else if (event == EV_click2_hold) {
+        if ((arg & 1) == 0) {
+            if (strobe_delay < 255) strobe_delay ++;
         }
         return 0;
     }
     return 1;
 }
 
+
 void low_voltage() {
     // "step down" from strobe to something low
-    if (current_state == party_strobe_state) {
+    if (current_state == strobe_state) {
         set_state(steady_state, RAMP_SIZE/6);
     }
     // in normal mode, step down by half or turn off
@@ -278,10 +279,26 @@ void low_voltage() {
     }
 }
 
+
 void setup() {
     set_level(RAMP_SIZE/8);
     delay_4ms(3);
     set_level(0);
 
     push_state(off_state, 0);
+}
+
+
+void loop() {
+    if (current_state == strobe_state) {
+        set_level(MAX_LEVEL);
+        if (strobe_type == 0) {  // party strobe
+            if (strobe_delay < 30) delay_zero();
+            else delay_ms(1);
+        } else {  //tactical strobe
+            nice_delay_ms(strobe_delay >> 1);
+        }
+        set_level(0);
+        nice_delay_ms(strobe_delay);
+    }
 }

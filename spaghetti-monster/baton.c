@@ -226,3 +226,5 @@ void setup() {
 
     push_state(off_state, 0);
 }
+
+void loop() { }

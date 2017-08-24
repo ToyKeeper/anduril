@@ -75,3 +75,6 @@ void setup() {
     debug_blink(2);
     push_state(momentary_state, 0);
 }
+
+void loop() { }
+

@@ -54,9 +54,11 @@ void debug_blink(uint8_t num) {
 // TODO? new delay() functions which handle queue consumption?
 // TODO? new interruptible delay() functions?
 
+// Define these in your SpaghettiMonster recipe
 // boot-time tasks
-// Define this in your SpaghettiMonster recipe
 void setup();
+// single loop iteration, runs continuously
+void loop();
 
 // include executable functions too, for easier compiling
 #include "fsm-states.c"

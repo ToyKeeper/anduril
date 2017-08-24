@@ -97,10 +97,9 @@ int main() {
         // TODO: check voltage?
         // TODO: check temperature?
         // if event queue not empty, process and pop first item in queue?
-        if (emissions[0].event != NULL) {
-            emit_now(emissions[0].event, emissions[0].arg);
-            delete_first_emission();
-        }
+        process_emissions();
+
+        loop();
     }
 }
 

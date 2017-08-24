@@ -99,6 +99,29 @@ void delete_first_emission() {
     emissions[i].arg = 0;
 }
 
+void process_emissions() {
+    while (emissions[0].event != NULL) {
+        emit_now(emissions[0].event, emissions[0].arg);
+        delete_first_emission();
+    }
+}
+
+// like delay_ms, except it aborts on state change
+// return value:
+//   0: state changed
+//   1: normal completion
+uint8_t nice_delay_ms(uint16_t ms) {
+    StatePtr old_state = current_state;
+    while(ms-- > 0) {
+        _delay_loop_2(BOGOMIPS*98/100);
+        process_emissions();
+        if (old_state != current_state) {
+            return 0;  // state changed; abort
+        }
+    }
+    return 1;
+}
+
 // Call stacked callbacks for the given event until one handles it.
 uint8_t emit_now(EventPtr event, uint16_t arg) {
     for(int8_t i=state_stack_len-1; i>=0; i--) {

@@ -209,9 +209,12 @@ volatile Emission emissions[EMISSION_QUEUE_LEN];
 
 void append_emission(EventPtr event, uint16_t arg);
 void delete_first_emission();
+void process_emissions();
 //#define emit_now emit
 uint8_t emit_now(EventPtr event, uint16_t arg);
 void emit(EventPtr event, uint16_t arg);
 void emit_current_event(uint16_t arg);
+
+uint8_t nice_delay_ms(uint16_t ms);
 
 #endif
