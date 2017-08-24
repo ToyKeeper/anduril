@@ -33,6 +33,7 @@
 #include "fsm-wdt.h"
 #include "fsm-pcint.h"
 #include "fsm-standby.h"
+#include "fsm-ramping.h"
 #include "fsm-main.h"
 
 #ifdef USE_DEBUG_BLINK
@@ -64,4 +65,5 @@ void setup();
 #include "fsm-wdt.c"
 #include "fsm-pcint.c"
 #include "fsm-standby.c"
+#include "fsm-ramping.c"
 #include "fsm-main.c"

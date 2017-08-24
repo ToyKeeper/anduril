@@ -231,6 +231,8 @@ ISR(ADC_vect) {
                 if (underheat_lowpass < UNDERHEAT_LOWPASS_STRENGTH) {
                     underheat_lowpass ++;
                 } else {
+                    // FIXME: don't warn about underheating when voltage is low
+                    //        (LVP and underheat warnings fight each other)
                     // how far below the floor?
                     int16_t howmuch = (THERM_FLOOR - projected_temperature) >> THERM_DIFF_ATTENUATION;
                     if (howmuch < 1) howmuch = 1;

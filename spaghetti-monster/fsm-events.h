@@ -116,6 +116,12 @@ Event EV_click2_press[] = {
     A_RELEASE,
     A_PRESS,
     0 };
+Event EV_click2_hold[] = {
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_HOLD,
+    0 };
 Event EV_click2_release[] = {
     A_PRESS,
     A_RELEASE,
@@ -166,6 +172,7 @@ EventPtr event_sequences[] = {
     EV_click1_hold,
     EV_click1_hold_release,
     EV_click2_press,
+    EV_click2_hold,
     EV_click2_release,
     EV_click2_complete,
     EV_click3_press,
