@@ -149,6 +149,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     }
     // hold: change brightness (brighter)
     else if (event == EV_click1_hold) {
+        // ramp slower in discrete mode
         if (arg % ramp_step_size != 0) {
             return 0;
         }
@@ -159,8 +160,10 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #endif
-        // FIXME: only blink once
-        if ((memorized_level == MAX_1x7135) || (memorized_level == MAX_LEVEL)) {
+        // only blink once for each threshold
+        if ((memorized_level != actual_level)
+                && ((memorized_level == MAX_1x7135)
+                    || (memorized_level == MAX_LEVEL))) {
             set_level(0);
             delay_ms(7);
         }
@@ -169,6 +172,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     }
     // click-release-hold: change brightness (dimmer)
     else if (event == EV_click2_hold) {
+        // ramp slower in discrete mode
         if (arg % ramp_step_size != 0) {
             return 0;
         }
@@ -180,8 +184,10 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #endif
-        // FIXME: only blink once
-        if ((memorized_level == MAX_1x7135) || (memorized_level == 1)) {
+        // only blink once for each threshold
+        if ((memorized_level != actual_level)
+                && ((memorized_level == MAX_1x7135)
+                    || (memorized_level == 1))) {
             set_level(0);
             delay_ms(7);
         }
