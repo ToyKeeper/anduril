@@ -161,6 +161,18 @@ Event EV_click3_complete[] = {
     A_RELEASE,
     A_RELEASE_TIMEOUT,
     0 };
+#define EV_4clicks EV_click4_complete
+Event EV_click4_complete[] = {
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_RELEASE_TIMEOUT,
+    0 };
 // ... and so on
 
 // A list of button event types for easy iteration
@@ -178,6 +190,7 @@ EventPtr event_sequences[] = {
     EV_click3_press,
     EV_click3_release,
     EV_click3_complete,
+    EV_click4_complete,
     // ...
 };
 

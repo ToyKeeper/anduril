@@ -19,7 +19,7 @@
 
 #define FSM_EMISAR_D4_LAYOUT
 #define USE_LVP
-#define USE_THERMAL_REGULATION
+//#define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 32
 #define USE_DEBUG_BLINK
 #define USE_DELAY_MS
@@ -35,7 +35,11 @@ uint8_t party_strobe_state(EventPtr event, uint16_t arg);
 
 // brightness control
 uint8_t memorized_level = 1;
+// smooth vs discrete ramping
+uint8_t ramp_step_size = 1;
+
 #ifdef USE_THERMAL_REGULATION
+// brightness before thermal step-down
 uint8_t target_level = 0;
 #endif
 
@@ -134,11 +138,24 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         set_state(party_strobe_state, 0xff);
         return 0;
     }
+    // 4 clicks: toggle smooth vs discrete ramping
+    else if (event == EV_4clicks) {
+        if (ramp_step_size == 1) ramp_step_size = MAX_LEVEL/6;
+        else ramp_step_size = 1;
+        set_level(0);
+        delay_ms(20);
+        set_level(memorized_level);
+        return 0;
+    }
     // hold: change brightness (brighter)
     else if (event == EV_click1_hold) {
+        if (arg % ramp_step_size != 0) {
+            return 0;
+        }
         // FIXME: make it ramp down instead, if already at max
-        if (actual_level < MAX_LEVEL)
-            memorized_level = (actual_level+1);
+        if (actual_level + ramp_step_size < MAX_LEVEL)
+            memorized_level = actual_level + ramp_step_size;
+        else memorized_level = MAX_LEVEL;
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #endif
@@ -152,9 +169,14 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     }
     // click-release-hold: change brightness (dimmer)
     else if (event == EV_click2_hold) {
+        if (arg % ramp_step_size != 0) {
+            return 0;
+        }
         // FIXME: make it ramp up instead, if already at min
-        if (actual_level > 1)
-            memorized_level = (actual_level-1);
+        if (actual_level > ramp_step_size)
+            memorized_level = (actual_level-ramp_step_size);
+        else
+            memorized_level = 1;
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #endif
