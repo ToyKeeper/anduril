@@ -148,7 +148,7 @@ ISR(ADC_vect) {
             for(uint8_t i=0; i<NUM_THERMAL_VALUES; i++)
                 temperature_values[i] = temp;
             for(uint8_t i=0; i<NUM_THERMAL_VALUES_HISTORY; i++)
-                temperature_history[i] = temp;
+                temperature_history[i] = temp<<2;
             temperature = temp;
         } else {  // update our current temperature estimate
             uint8_t i;
@@ -231,13 +231,13 @@ ISR(ADC_vect) {
                 if (underheat_lowpass < UNDERHEAT_LOWPASS_STRENGTH) {
                     underheat_lowpass ++;
                 } else {
-                    // FIXME: don't warn about underheating when voltage is low
-                    //        (LVP and underheat warnings fight each other)
                     // how far below the floor?
                     int16_t howmuch = (THERM_FLOOR - projected_temperature) >> THERM_DIFF_ATTENUATION;
                     if (howmuch < 1) howmuch = 1;
-                    // try to send out a warning
-                    emit(EV_temperature_low, howmuch);
+                    // try to send out a warning (unless voltage is low)
+                    // (LVP and underheat warnings fight each other)
+                    if (voltage > VOLTAGE_LOW)
+                        emit(EV_temperature_low, howmuch);
                     // reset counters
                     temperature_timer = TEMPERATURE_TIMER_START;
                     underheat_lowpass = 0;
