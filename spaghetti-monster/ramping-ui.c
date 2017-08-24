@@ -19,7 +19,7 @@
 
 #define FSM_EMISAR_D4_LAYOUT
 #define USE_LVP
-//#define USE_THERMAL_REGULATION
+#define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 32
 #define USE_DEBUG_BLINK
 #define USE_DELAY_MS
@@ -34,7 +34,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg);
 uint8_t party_strobe_state(EventPtr event, uint16_t arg);
 
 // brightness control
-uint8_t memorized_level = 1;
+uint8_t memorized_level = MAX_1x7135;
 // smooth vs discrete ramping
 uint8_t ramp_step_size = 1;
 
@@ -189,18 +189,23 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         return 0;
     }
     #ifdef USE_THERMAL_REGULATION
-    // FIXME: make thermal regulation work with ramping
-    // overheating: drop by 1 level
+    // TODO: test this on a real light
+    // overheating: drop by an amount proportional to how far we are above the ceiling
     else if (event == EV_temperature_high) {
-        if (actual_level > 1) {
-            set_level(actual_level - 1);
+        if (actual_level > MAX_LEVEL/4) {
+            uint8_t stepdown = actual_level - arg;
+            if (stepdown < MAX_LEVEL/4) stepdown = MAX_LEVEL/4;
+            set_level(stepdown);
         }
         return 0;
     }
-    // underheating: increase by 1 level if we're lower than the target
+    // underheating: increase slowly if we're lower than the target
+    //               (proportional to how low we are)
     else if (event == EV_temperature_low) {
         if (actual_level < target_level) {
-            set_level(actual_level + 1);
+            uint8_t stepup = actual_level + (arg>>1);
+            if (stepup > target_level) stepup = target_level;
+            set_level(stepup);
         }
         return 0;
     }
@@ -268,7 +273,9 @@ void low_voltage() {
 }
 
 void setup() {
-    debug_blink(2);
+    set_level(RAMP_SIZE/8);
+    delay_4ms(3);
+    set_level(0);
 
     push_state(off_state, 0);
 }
