@@ -20,21 +20,54 @@
 #ifndef FSM_ADC_H
 #define FSM_ADC_H
 
+
 #ifdef USE_LVP
-// volts * 10
-#define VOLTAGE_LOW 30
+// default 5 seconds between low-voltage warning events
+#ifndef VOLTAGE_WARNING_SECONDS
+#define VOLTAGE_WARNING_SECONDS 5
+#endif
+// low-battery threshold in volts * 10
+#ifndef VOLTAGE_LOW
+#define VOLTAGE_LOW 29
+#endif
 // MCU sees voltage 0.X volts lower than actual, add X to readings
+#ifndef VOLTAGE_FUDGE_FACTOR
 #define VOLTAGE_FUDGE_FACTOR 2
+#endif
 volatile uint8_t voltage;
 void low_voltage();
 #endif
+
+
 #ifdef USE_THERMAL_REGULATION
-volatile int16_t temperature;
-void low_temperature();
-void high_temperature();
+// default 5 seconds between thermal regulation events
+#ifndef THERMAL_WARNING_SECONDS
+#define THERMAL_WARNING_SECONDS 5
 #endif
+// try to keep temperature below 45 C
+#ifndef DEFAULT_THERM_CEIL
+#define DEFAULT_THERM_CEIL 45
+#endif
+// don't allow user to set ceiling above 70 C
+#ifndef MAX_THERM_CEIL
+#define MAX_THERM_CEIL 70
+#endif
+// Local per-MCU calibration value
+#ifndef THERM_CAL_OFFSET
+#define THERM_CAL_OFFSET 0
+#endif
+// temperature now, in C (ish)
+volatile int16_t temperature;
+// temperature in a few seconds, in C (ish) * 4  (13.2 fixed-point)
+volatile int16_t projected_temperature;  // Fight the future!
+uint8_t therm_ceil = DEFAULT_THERM_CEIL;
+//void low_temperature();
+//void high_temperature();
+#endif
+
 
 inline void ADC_on();
 inline void ADC_off();
+
 
 #endif

@@ -19,6 +19,8 @@
 
 #define FSM_EMISAR_D4_LAYOUT
 #define USE_LVP
+#define USE_THERMAL_REGULATION
+#define DEFAULT_THERM_CEIL 45
 #define USE_DEBUG_BLINK
 #define USE_DELAY_MS
 #define USE_DELAY_ZERO
@@ -37,6 +39,9 @@ uint8_t party_strobe_state(EventPtr event, uint16_t arg);
 // brightness control
 uint8_t memorized_level = 1;
 uint8_t actual_level = 0;
+#ifdef USE_THERMAL_REGULATION
+uint8_t target_level = 0;
+#endif
 
 void set_level(uint8_t lvl) {
     actual_level = lvl;
@@ -94,6 +99,9 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         if ((arg > 0) && (arg < MAX_LEVEL))
             memorized_level = arg;
         // use the requested level even if not memorized
+        #ifdef USE_THERMAL_REGULATION
+        target_level = arg;
+        #endif
         set_level(arg);
         return 0;
     }
@@ -106,10 +114,17 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     else if (event == EV_2clicks) {
         if (actual_level < MAX_LEVEL) {
             memorized_level = actual_level;  // in case we're on moon
+            #ifdef USE_THERMAL_REGULATION
+            target_level = MAX_LEVEL;
+            #endif
             set_level(MAX_LEVEL);
         }
-        else
+        else {
+            #ifdef USE_THERMAL_REGULATION
+            target_level = memorized_level;
+            #endif
             set_level(memorized_level);
+        }
         return 0;
     }
     // 3 clicks: go to strobe modes
@@ -121,10 +136,29 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     else if (event == EV_click1_hold) {
         if ((arg % HOLD_TIMEOUT) == 0) {
             memorized_level = (actual_level+1) % (MAX_LEVEL+1);
+            #ifdef USE_THERMAL_REGULATION
+            target_level = memorized_level;
+            #endif
             set_level(memorized_level);
         }
         return 0;
     }
+    #ifdef USE_THERMAL_REGULATION
+    // overheating: drop by 1 level
+    else if (event == EV_temperature_high) {
+        if (actual_level > 1) {
+            set_level(actual_level - 1);
+        }
+        return 0;
+    }
+    // underheating: increase by 1 level if we're lower than the target
+    else if (event == EV_temperature_low) {
+        if (actual_level < target_level) {
+            set_level(actual_level + 1);
+        }
+        return 0;
+    }
+    #endif
     return 1;
 }
 
