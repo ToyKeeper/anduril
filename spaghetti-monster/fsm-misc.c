@@ -20,7 +20,7 @@
 #ifndef FSM_MISC_C
 #define FSM_MISC_C
 
-#ifdef USE_BLINK_NUM
+#if defined(USE_BLINK_NUM) || defined(USE_BLINK_DIGIT)
 uint8_t blink_digit(uint8_t num) {
     //StatePtr old_state = current_state;
 
@@ -38,7 +38,9 @@ uint8_t blink_digit(uint8_t num) {
     }
     return nice_delay_ms(600);
 }
+#endif
 
+#ifdef USE_BLINK_NUM
 uint8_t blink_num(uint8_t num) {
     //StatePtr old_state = current_state;
     #if 0

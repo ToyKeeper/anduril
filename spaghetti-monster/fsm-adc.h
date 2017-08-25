@@ -41,6 +41,9 @@ void battcheck();
 #ifdef BATTCHECK_VpT
 #define USE_BLINK_NUM
 #endif
+#if defined(BATTCHECK_8bars) || defined(BATTCHECK_4bars)
+#define USE_BLINK_DIGIT
+#endif
 #endif
 #endif
 

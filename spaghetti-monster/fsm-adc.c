@@ -271,7 +271,7 @@ PROGMEM const uint8_t voltage_blinks[] = {
 #endif
 #ifdef BATTCHECK_8bars
 PROGMEM const uint8_t voltage_blinks[] = {
-    30, 33, 35, 37, 38, 39 40, 41, 42, 99,
+    30, 33, 35, 37, 38, 39, 40, 41, 42, 99,
 };
 #endif
 void battcheck() {
@@ -282,7 +282,8 @@ void battcheck() {
     for(i=0;
         voltage >= pgm_read_byte(voltage_blinks + i);
         i++) {}
-    blink_num(i);
+    if (blink_digit(i))
+        nice_delay_ms(1000);
     #endif
 }
 #endif

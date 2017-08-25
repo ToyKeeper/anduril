@@ -20,16 +20,22 @@
 #ifndef FSM_MISC_H
 #define FSM_MISC_H
 
-#ifdef USE_BLINK_NUM
-#define USE_BLINK
+#if defined(USE_BLINK_NUM) || defined(USE_BLINK_DIGIT)
 #ifndef BLINK_BRIGHTNESS
 #define BLINK_BRIGHTNESS (MAX_LEVEL/6)
 #endif
+uint8_t blink_digit(uint8_t num);
+#endif
+
+#ifdef USE_BLINK_NUM
+//#define USE_BLINK
 uint8_t blink_num(uint8_t num);
 #endif
 
+/*
 #ifdef USE_BLINK
 uint8_t blink(uint8_t num, uint8_t speed);
 #endif
+*/
 
 #endif

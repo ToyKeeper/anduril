@@ -306,6 +306,10 @@ void low_voltage() {
             set_state(off_state, 0);
         }
     }
+    // all other modes, just turn off when voltage is low
+    else {
+        set_state(off_state, 0);
+    }
 }
 
 
