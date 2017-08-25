@@ -36,10 +36,12 @@
 #include "fsm-ramping.h"
 #include "fsm-main.h"
 
-#ifdef USE_DEBUG_BLINK
+#if defined(USE_DELAY_MS) || defined(USE_DELAY_4MS) || defined(USE_DELAY_ZERO) || defined(USE_DEBUG_BLINK)
 #define OWN_DELAY
-#define USE_DELAY_4MS
 #include "tk-delay.h"
+#endif
+
+#ifdef USE_DEBUG_BLINK
 #define DEBUG_FLASH PWM1_LVL = 64; delay_4ms(2); PWM1_LVL = 0;
 void debug_blink(uint8_t num) {
     for(; num>0; num--) {

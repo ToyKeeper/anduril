@@ -30,6 +30,11 @@ typedef struct Emission {
     uint16_t arg;
 } Emission;
 
+#define EVENT_HANDLED 0
+#define EVENT_NOT_HANDLED 1
+#define MISCHIEF_MANAGED EVENT_HANDLED
+#define MISCHIEF_NOT_MANAGED EVENT_NOT_HANDLED
+
 #define EV_MAX_LEN 16
 uint8_t current_event[EV_MAX_LEN];
 // at 0.016 ms per tick, 255 ticks = 4.08 s

@@ -21,8 +21,8 @@
 #define USE_LVP
 #define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 32
-#define USE_DEBUG_BLINK
 #define USE_DELAY_MS
+#define USE_DELAY_4MS
 #define USE_DELAY_ZERO
 #define USE_RAMPING
 #define RAMP_LENGTH 150
@@ -55,32 +55,32 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         // sleep while off  (lower power use)
         //empty_event_sequence();  // just in case (but shouldn't be needed)
         standby_mode();
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // hold (initially): go to lowest level, but allow abort for regular click
     else if (event == EV_click1_press) {
         set_level(1);
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // 1 click (before timeout): go to memorized level, but allow abort for double click
     else if (event == EV_click1_release) {
         set_level(memorized_level);
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // 1 click: regular mode
     else if (event == EV_1click) {
         set_state(steady_state, memorized_level);
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // 2 clicks: highest mode
     else if (event == EV_2clicks) {
         set_state(steady_state, MAX_LEVEL);
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // 3 clicks: strobe mode
     else if (event == EV_3clicks) {
         set_state(strobe_state, 0);
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // hold: go to lowest level
     else if (event == EV_click1_hold) {
@@ -88,19 +88,19 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         // give the user time to release at moon level
         if (arg >= HOLD_TIMEOUT)
             set_state(steady_state, 1);
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // hold, release quickly: go to lowest level
     else if (event == EV_click1_hold_release) {
         set_state(steady_state, 1);
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // click, hold: go to highest level (for ramping down)
     else if (event == EV_click2_hold) {
         set_state(steady_state, MAX_LEVEL);
-        return 0;
+        return MISCHIEF_MANAGED;
     }
-    return 1;
+    return EVENT_NOT_HANDLED;
 }
 
 
@@ -115,12 +115,12 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         target_level = arg;
         #endif
         set_level(arg);
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // 1 click: off
     else if (event == EV_1click) {
         set_state(off_state, 0);
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // 2 clicks: go to/from highest level
     else if (event == EV_2clicks) {
@@ -137,12 +137,12 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
             #endif
             set_level(memorized_level);
         }
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // 3 clicks: go to strobe modes
     else if (event == EV_3clicks) {
         set_state(strobe_state, 0);
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // 4 clicks: toggle smooth vs discrete ramping
     else if (event == EV_4clicks) {
@@ -151,13 +151,13 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         set_level(0);
         delay_ms(20);
         set_level(memorized_level);
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // hold: change brightness (brighter)
     else if (event == EV_click1_hold) {
         // ramp slower in discrete mode
         if (arg % ramp_step_size != 0) {
-            return 0;
+            return MISCHIEF_MANAGED;
         }
         // FIXME: make it ramp down instead, if already at max
         if (actual_level + ramp_step_size < MAX_LEVEL)
@@ -174,13 +174,13 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
             delay_ms(7);
         }
         set_level(memorized_level);
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // click, hold: change brightness (dimmer)
     else if (event == EV_click2_hold) {
         // ramp slower in discrete mode
         if (arg % ramp_step_size != 0) {
-            return 0;
+            return MISCHIEF_MANAGED;
         }
         // FIXME: make it ramp up instead, if already at min
         if (actual_level > ramp_step_size)
@@ -198,7 +198,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
             delay_ms(7);
         }
         set_level(memorized_level);
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     #ifdef USE_THERMAL_REGULATION
     // TODO: test this on a real light
@@ -209,7 +209,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
             if (stepdown < MAX_LEVEL/4) stepdown = MAX_LEVEL/4;
             set_level(stepdown);
         }
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // underheating: increase slowly if we're lower than the target
     //               (proportional to how low we are)
@@ -219,47 +219,47 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
             if (stepup > target_level) stepup = target_level;
             set_level(stepup);
         }
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     #endif
-    return 1;
+    return EVENT_NOT_HANDLED;
 }
 
 
 uint8_t strobe_state(EventPtr event, uint16_t arg) {
     if (event == EV_enter_state) {
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // 1 click: off
     else if (event == EV_1click) {
         set_state(off_state, 0);
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // 2 clicks: toggle party strobe vs tactical strobe
     else if (event == EV_2clicks) {
         strobe_type ^= 1;
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // 3 clicks: go back to regular modes
     else if (event == EV_3clicks) {
         set_state(steady_state, memorized_level);
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // hold: change speed (go faster)
     else if (event == EV_click1_hold) {
         if ((arg & 1) == 0) {
             if (strobe_delay > 8) strobe_delay --;
         }
-        return 0;
+        return MISCHIEF_MANAGED;
     }
     // click, hold: change speed (go slower)
     else if (event == EV_click2_hold) {
         if ((arg & 1) == 0) {
             if (strobe_delay < 255) strobe_delay ++;
         }
-        return 0;
+        return MISCHIEF_MANAGED;
     }
-    return 1;
+    return EVENT_NOT_HANDLED;
 }
 
 
