@@ -25,6 +25,8 @@
 #define USE_DELAY_4MS
 #define USE_DELAY_ZERO
 #define USE_RAMPING
+#define USE_BATTCHECK
+#define BATTCHECK_VpT
 #define RAMP_LENGTH 150
 #include "spaghetti-monster.h"
 
@@ -32,6 +34,9 @@
 uint8_t off_state(EventPtr event, uint16_t arg);
 uint8_t steady_state(EventPtr event, uint16_t arg);
 uint8_t strobe_state(EventPtr event, uint16_t arg);
+#ifdef USE_BATTCHECK
+uint8_t battcheck_state(EventPtr event, uint16_t arg);
+#endif
 
 // brightness control
 uint8_t memorized_level = MAX_1x7135;
@@ -72,6 +77,11 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         set_state(steady_state, memorized_level);
         return MISCHIEF_MANAGED;
     }
+    // 2 clicks (initial press): off, to prep for later events
+    else if (event == EV_click2_press) {
+        set_level(0);
+        return MISCHIEF_MANAGED;
+    }
     // 2 clicks: highest mode
     else if (event == EV_2clicks) {
         set_state(steady_state, MAX_LEVEL);
@@ -82,6 +92,13 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         set_state(strobe_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_BATTCHECK
+    // 4 clicks: battcheck mode
+    else if (event == EV_4clicks) {
+        set_state(battcheck_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    #endif
     // hold: go to lowest level
     else if (event == EV_click1_hold) {
         // don't start ramping immediately;
@@ -149,7 +166,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         if (ramp_step_size == 1) ramp_step_size = MAX_LEVEL/6;
         else ramp_step_size = 1;
         set_level(0);
-        delay_ms(20);
+        delay_4ms(20/4);
         set_level(memorized_level);
         return MISCHIEF_MANAGED;
     }
@@ -171,7 +188,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
                 && ((memorized_level == MAX_1x7135)
                     || (memorized_level == MAX_LEVEL))) {
             set_level(0);
-            delay_ms(7);
+            delay_4ms(8/4);
         }
         set_level(memorized_level);
         return MISCHIEF_MANAGED;
@@ -195,7 +212,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
                 && ((memorized_level == MAX_1x7135)
                     || (memorized_level == 1))) {
             set_level(0);
-            delay_ms(7);
+            delay_4ms(8/4);
         }
         set_level(memorized_level);
         return MISCHIEF_MANAGED;
@@ -263,6 +280,18 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
 }
 
 
+#ifdef USE_BATTCHECK
+uint8_t battcheck_state(EventPtr event, uint16_t arg) {
+    // 1 click: off
+    if (event == EV_1click) {
+        set_state(off_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    return EVENT_NOT_HANDLED;
+}
+#endif
+
+
 void low_voltage() {
     // "step down" from strobe to something low
     if (current_state == strobe_state) {
@@ -301,4 +330,9 @@ void loop() {
         set_level(0);
         nice_delay_ms(strobe_delay);
     }
+    #ifdef USE_BATTCHECK
+    else if (current_state == battcheck_state) {
+        battcheck();
+    }
+    #endif
 }

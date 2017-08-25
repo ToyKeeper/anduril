@@ -263,4 +263,28 @@ ISR(ADC_vect) {
     #endif
 }
 
+#ifdef USE_BATTCHECK
+#ifdef BATTCHECK_4bars
+PROGMEM const uint8_t voltage_blinks[] = {
+    30, 35, 38, 40, 42, 99,
+};
+#endif
+#ifdef BATTCHECK_8bars
+PROGMEM const uint8_t voltage_blinks[] = {
+    30, 33, 35, 37, 38, 39 40, 41, 42, 99,
+};
+#endif
+void battcheck() {
+    #ifdef BATTCHECK_VpT
+    blink_num(voltage);
+    #else
+    uint8_t i;
+    for(i=0;
+        voltage >= pgm_read_byte(voltage_blinks + i);
+        i++) {}
+    blink_num(i);
+    #endif
+}
+#endif
+
 #endif

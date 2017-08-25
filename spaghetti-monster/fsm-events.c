@@ -122,6 +122,18 @@ uint8_t nice_delay_ms(uint16_t ms) {
     return 1;
 }
 
+/*
+uint8_t nice_delay_4ms(uint8_t ms) {
+    return nice_delay_ms((uint16_t)ms << 2);
+}
+*/
+
+/*
+uint8_t nice_delay_s() {
+    return nice_delay_4ms(250);
+}
+*/
+
 // Call stacked callbacks for the given event until one handles it.
 uint8_t emit_now(EventPtr event, uint16_t arg) {
     for(int8_t i=state_stack_len-1; i>=0; i--) {

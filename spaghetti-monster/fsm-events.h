@@ -221,5 +221,7 @@ void emit(EventPtr event, uint16_t arg);
 void emit_current_event(uint16_t arg);
 
 uint8_t nice_delay_ms(uint16_t ms);
+//uint8_t nice_delay_4ms(uint8_t ms);
+//uint8_t nice_delay_s();
 
 #endif

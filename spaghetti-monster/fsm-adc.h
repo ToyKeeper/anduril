@@ -36,6 +36,12 @@
 #endif
 volatile uint8_t voltage;
 void low_voltage();
+#ifdef USE_BATTCHECK
+void battcheck();
+#ifdef BATTCHECK_VpT
+#define USE_BLINK_NUM
+#endif
+#endif
 #endif
 
 

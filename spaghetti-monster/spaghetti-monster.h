@@ -34,6 +34,7 @@
 #include "fsm-pcint.h"
 #include "fsm-standby.h"
 #include "fsm-ramping.h"
+#include "fsm-misc.h"
 #include "fsm-main.h"
 
 #if defined(USE_DELAY_MS) || defined(USE_DELAY_4MS) || defined(USE_DELAY_ZERO) || defined(USE_DEBUG_BLINK)
@@ -70,4 +71,5 @@ void loop();
 #include "fsm-pcint.c"
 #include "fsm-standby.c"
 #include "fsm-ramping.c"
+#include "fsm-misc.c"
 #include "fsm-main.c"
