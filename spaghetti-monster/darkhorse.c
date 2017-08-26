@@ -28,7 +28,7 @@
 #define BATTCHECK_4bars
 #define DONT_DELAY_AFTER_BATTCHECK
 #define USE_EEPROM
-#define EEPROM_WL_BYTES 5
+#define EEPROM_BYTES 5
 #include "spaghetti-monster.h"
 
 // FSM states
@@ -305,25 +305,25 @@ void strobe(uint8_t level, uint16_t ontime, uint16_t offtime) {
 }
 
 void load_config() {
-    if (load_wl_eeprom()) {
-        H1 = !(!(eeprom_wl[0] & 0b00000100));
-        M1 = !(!(eeprom_wl[0] & 0b00000010));
-        L1 = !(!(eeprom_wl[0] & 0b00000001));
-        H2 = eeprom_wl[1];
-        M2 = eeprom_wl[2];
-        L2 = eeprom_wl[3];
-        strobe_beacon_mode = eeprom_wl[4];
+    if (load_eeprom()) {
+        H1 = !(!(eeprom[0] & 0b00000100));
+        M1 = !(!(eeprom[0] & 0b00000010));
+        L1 = !(!(eeprom[0] & 0b00000001));
+        H2 = eeprom[1];
+        M2 = eeprom[2];
+        L2 = eeprom[3];
+        strobe_beacon_mode = eeprom[4];
     }
 }
 
 void save_config() {
-    eeprom_wl[0] = (H1<<2) | (M1<<1) | (L1);
-    eeprom_wl[1] = H2;
-    eeprom_wl[2] = M2;
-    eeprom_wl[3] = L2;
-    eeprom_wl[4] = strobe_beacon_mode;
+    eeprom[0] = (H1<<2) | (M1<<1) | (L1);
+    eeprom[1] = H2;
+    eeprom[2] = M2;
+    eeprom[3] = L2;
+    eeprom[4] = strobe_beacon_mode;
 
-    save_wl_eeprom();
+    save_eeprom();
 }
 
 void setup() {
