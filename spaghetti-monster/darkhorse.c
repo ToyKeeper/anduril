@@ -33,8 +33,7 @@ uint8_t off_state(EventPtr event, uint16_t arg);
 uint8_t low_mode_state(EventPtr event, uint16_t arg);
 uint8_t med_mode_state(EventPtr event, uint16_t arg);
 uint8_t hi_mode_state(EventPtr event, uint16_t arg);
-//uint8_t strobe_state(EventPtr event, uint16_t arg);
-//uint8_t beacon_state(EventPtr event, uint16_t arg);
+uint8_t strobe_beacon_state(EventPtr event, uint16_t arg);
 #ifdef USE_BATTCHECK
 uint8_t battcheck_state(EventPtr event, uint16_t arg);
 #endif
@@ -53,6 +52,12 @@ uint8_t H2 = 1;
 uint8_t low_modes[] = {12, 1, 4, 9};  // 3.3 lm, 2.0 lm, 0.8 lm, 0.3 lm
 uint8_t med_modes[] = {56, 21, 29, 37};  // 101 lm, 35 lm, 20 lm, 10 lm
 uint8_t hi_modes[] = {MAX_LEVEL, 81, 96, 113};  // 1500 lm, 678 lm, 430 lm, 270 lm
+// strobe/beacon modes:
+// 0: 0.2 Hz beacon at L1
+// 1: 0.2 Hz beacon at H1
+// 2: 4 Hz strobe at H1
+// 3: 19 Hz strobe at H1
+uint8_t strobe_beacon_mode = 0;
 
 #ifdef USE_THERMAL_REGULATION
 // brightness before thermal step-down
@@ -117,12 +122,10 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         return 0;
     }
     // 3 clicks: strobe mode
-    /* TODO: implement
     else if (event == EV_3clicks) {
-        set_state(party_strobe_state, 255);
+        set_state(strobe_beacon_state, 0);
         return 0;
     }
-    */
     #ifdef USE_BATTCHECK
     // 4 clicks: battcheck mode
     else if (event == EV_4clicks) {
@@ -252,6 +255,22 @@ uint8_t battcheck_state(EventPtr event, uint16_t arg) {
 #endif
 
 
+uint8_t strobe_beacon_state(EventPtr event, uint16_t arg) {
+    // 1 click: off
+    if (event == EV_1click) {
+        set_state(off_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    // 2 clicks: rotate through blinky modes
+    else if (event == EV_2clicks) {
+        strobe_beacon_mode = (strobe_beacon_mode + 1) & 3;
+        interrupt_nice_delays();
+        return MISCHIEF_MANAGED;
+    }
+    return EVENT_NOT_HANDLED;
+}
+
+
 void low_voltage() {
     // TODO: rewrite this
     /*
@@ -280,8 +299,40 @@ void setup() {
 }
 
 void loop() {
+    if (current_state == strobe_beacon_state) {
+        switch(strobe_beacon_mode) {
+            // 0.2 Hz beacon at L1
+            case 0:
+                set_level(low_modes[0]);
+                nice_delay_ms(500);
+                set_level(0);
+                nice_delay_ms(4500);
+                break;
+            // 0.2 Hz beacon at H1
+            case 1:
+                set_level(hi_modes[0]);
+                nice_delay_ms(500);
+                set_level(0);
+                nice_delay_ms(4500);
+                break;
+            // 4 Hz tactical strobe at H1
+            case 2:
+                set_level(hi_modes[0]);
+                nice_delay_ms(83);
+                set_level(0);
+                nice_delay_ms(167);
+                break;
+            // 19 Hz tactical strobe at H1
+            case 3:
+                set_level(hi_modes[0]);
+                nice_delay_ms(17);
+                set_level(0);
+                nice_delay_ms(35);
+                break;
+        }
+    }
     #ifdef USE_BATTCHECK
-    if (current_state == battcheck_state) {
+    else if (current_state == battcheck_state) {
         nice_delay_ms(500);  // wait a moment to measure voltage
         battcheck();
         set_state(off_state, 0);

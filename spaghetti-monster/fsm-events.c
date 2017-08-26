@@ -106,6 +106,10 @@ void process_emissions() {
     }
 }
 
+// explicitly interrupt these "nice" delays
+volatile uint8_t nice_delay_interrupt = 0;
+inline void interrupt_nice_delays() { nice_delay_interrupt = 1; }
+
 // like delay_ms, except it aborts on state change
 // return value:
 //   0: state changed
@@ -115,7 +119,8 @@ uint8_t nice_delay_ms(uint16_t ms) {
     while(ms-- > 0) {
         _delay_loop_2(BOGOMIPS*98/100);
         process_emissions();
-        if (old_state != current_state) {
+        if ((nice_delay_interrupt) || (old_state != current_state)) {
+            nice_delay_interrupt = 0;
             return 0;  // state changed; abort
         }
     }
