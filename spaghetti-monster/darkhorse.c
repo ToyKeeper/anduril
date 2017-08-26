@@ -68,7 +68,9 @@ void set_any_mode(uint8_t primary, uint8_t secondary, uint8_t *modes) {
     else {
         set_level(modes[secondary]);
     }
+    #ifdef USE_THERMAL_REGULATION
     target_level = actual_level;
+    #endif
 }
 
 inline void set_low_mode() { set_any_mode(L1, L2, low_modes); }
