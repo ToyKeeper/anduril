@@ -168,6 +168,22 @@ uint8_t any_mode_state(EventPtr event, uint16_t arg, uint8_t *primary, uint8_t *
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
+    // hold: change brightness (low, med, hi, always starting at low)
+    else if (event == EV_click1_hold) {
+        uint8_t which = arg % (HOLD_TIMEOUT * 3) / HOLD_TIMEOUT;
+        switch(which) {
+            case 0:
+                set_state(low_mode_state, 0);
+                break;
+            case 1:
+                set_state(med_mode_state, 0);
+                break;
+            case 2:
+                set_state(hi_mode_state, 0);
+                break;
+        }
+        return MISCHIEF_MANAGED;
+    }
     // 2 clicks: toggle primary/secondary level
     else if (event == EV_2clicks) {
         *primary ^= 1;
@@ -210,36 +226,15 @@ uint8_t any_mode_state(EventPtr event, uint16_t arg, uint8_t *primary, uint8_t *
 }
 
 uint8_t low_mode_state(EventPtr event, uint16_t arg) {
-    // hold: change brightness (brighter)
-    if (event == EV_click1_hold) {
-        if (arg % HOLD_TIMEOUT == 0) {
-            set_state(med_mode_state, 0);
-        }
-        return MISCHIEF_MANAGED;
-    }
-    else return any_mode_state(event, arg, &L1, &L2, low_modes);
+    return any_mode_state(event, arg, &L1, &L2, low_modes);
 }
 
 uint8_t med_mode_state(EventPtr event, uint16_t arg) {
-    // hold: change brightness (brighter)
-    if (event == EV_click1_hold) {
-        if (arg % HOLD_TIMEOUT == 0) {
-            set_state(hi_mode_state, 0);
-        }
-        return MISCHIEF_MANAGED;
-    }
-    else return any_mode_state(event, arg, &M1, &M2, med_modes);
+    return any_mode_state(event, arg, &M1, &M2, med_modes);
 }
 
 uint8_t hi_mode_state(EventPtr event, uint16_t arg) {
-    // hold: change brightness (brighter)
-    if (event == EV_click1_hold) {
-        if (arg % HOLD_TIMEOUT == 0) {
-            set_state(low_mode_state, 0);
-        }
-        return MISCHIEF_MANAGED;
-    }
-    else return any_mode_state(event, arg, &H1, &H2, hi_modes);
+    return any_mode_state(event, arg, &H1, &H2, hi_modes);
 }
 
 
