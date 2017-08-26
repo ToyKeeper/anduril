@@ -272,13 +272,6 @@ uint8_t strobe_beacon_state(EventPtr event, uint16_t arg) {
 
 
 void low_voltage() {
-    // TODO: rewrite this
-    /*
-    // "step down" from strobe to something low
-    if (current_state == party_strobe_state) {
-        set_state(steady_state, RAMP_SIZE/6);
-    }
-    */
     if (current_state == hi_mode_state) {
         set_state(med_mode_state, 0);
     }
@@ -287,6 +280,10 @@ void low_voltage() {
     }
     else if (current_state == low_mode_state) {
         set_state(off_state, 0);
+    }
+    // "step down" from blinkies to low
+    else if (current_state == strobe_beacon_state) {
+        set_state(low_mode_state, 0);
     }
 }
 
