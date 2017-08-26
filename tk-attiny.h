@@ -51,7 +51,7 @@
     // (1 << V_REF) | (0 << ADLAR) | (THERM_CHANNEL)
     #define ADMUX_THERM 0b10001111
 #else
-    Hey, you need to define ATTINY.
+    #error Hey, you need to define ATTINY.
 #endif
 
 
@@ -237,7 +237,7 @@
 
 
 #ifndef LAYOUT_DEFINED
-    Hey, you need to define an I/O pin layout.
+#error Hey, you need to define an I/O pin layout.
 #endif
 
 #endif  // TK_ATTINY_H
