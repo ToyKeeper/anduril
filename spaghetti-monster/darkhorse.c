@@ -87,50 +87,51 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     // turn emitter off when entering state
     if (event == EV_enter_state) {
         set_level(0);
+        empty_event_sequence();
         // sleep while off  (lower power use)
         standby_mode();
-        return 0;
+        return EVENT_HANDLED;
     }
     // hold (initially): go to lowest level, but allow abort for regular click
     else if (event == EV_click1_press) {
         set_low_mode();
-        return 0;
+        return EVENT_HANDLED;
     }
     // 1 click (before timeout): go to high level, but allow abort for double click
     else if (event == EV_click1_release) {
         set_hi_mode();
-        return 0;
+        return EVENT_HANDLED;
     }
     // 1 click: high mode
     else if (event == EV_1click) {
         set_state(hi_mode_state, 0);
-        return 0;
+        return EVENT_HANDLED;
     }
     // click, hold (initially): go to medium mode, but allow abort
     else if (event == EV_click2_press) {
         set_med_mode();
-        return 0;
+        return EVENT_HANDLED;
     }
     // 2 clicks: medium mode
     else if (event == EV_2clicks) {
         set_state(med_mode_state, 0);
-        return 0;
+        return EVENT_HANDLED;
     }
     // click, click, hold (initially): light off, prep for blinkies
     else if (event == EV_click3_press) {
         set_level(0);
-        return 0;
+        return EVENT_HANDLED;
     }
     // 3 clicks: strobe mode
     else if (event == EV_3clicks) {
         set_state(strobe_beacon_state, 0);
-        return 0;
+        return EVENT_HANDLED;
     }
     #ifdef USE_BATTCHECK
     // 4 clicks: battcheck mode
     else if (event == EV_4clicks) {
         set_state(battcheck_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
     // hold: go to low mode, but allow ramping up
@@ -139,21 +140,21 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         // give the user time to release at low mode
         if (arg >= HOLD_TIMEOUT)
             set_state(low_mode_state, 0);
-        return 0;
+        return EVENT_HANDLED;
     }
     // hold, release quickly: go to low mode
     else if (event == EV_click1_hold_release) {
         set_state(low_mode_state, 0);
-        return 0;
+        return EVENT_HANDLED;
     }
     /* TODO: implement
     // click-release-hold: discrete ramp through all levels
     else if (event == EV_click2_hold) {
         set_state(steady_state, MAX_LEVEL);
-        return 0;
+        return EVENT_HANDLED;
     }
     */
-    return 1;
+    return EVENT_NOT_HANDLED;
 }
 
 
@@ -209,7 +210,7 @@ uint8_t any_mode_state(EventPtr event, uint16_t arg, uint8_t *primary, uint8_t *
             if (stepdown < MAX_LEVEL/4) stepdown = MAX_LEVEL/4;
             set_level(stepdown);
         }
-        return 0;
+        return EVENT_HANDLED;
     }
     // underheating: increase slowly if we're lower than the target
     //               (proportional to how low we are)
@@ -219,7 +220,7 @@ uint8_t any_mode_state(EventPtr event, uint16_t arg, uint8_t *primary, uint8_t *
             if (stepup > target_level) stepup = target_level;
             set_level(stepup);
         }
-        return 0;
+        return EVENT_HANDLED;
     }
     #endif
     return EVENT_NOT_HANDLED;
@@ -240,11 +241,6 @@ uint8_t hi_mode_state(EventPtr event, uint16_t arg) {
 
 #ifdef USE_BATTCHECK
 uint8_t battcheck_state(EventPtr event, uint16_t arg) {
-    // 1 click: off
-    if (event == EV_1click) {
-        set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
-    }
     return EVENT_NOT_HANDLED;
 }
 #endif
@@ -253,7 +249,14 @@ uint8_t battcheck_state(EventPtr event, uint16_t arg) {
 uint8_t strobe_beacon_state(EventPtr event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
+        interrupt_nice_delays();
         set_state(off_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    // 1 click (initially): cancel current blink
+    if (event == EV_click1_release) {
+        // only cancel if the light is actually on
+        if (actual_level) interrupt_nice_delays();
         return MISCHIEF_MANAGED;
     }
     // 2 clicks: rotate through blinky modes
@@ -327,6 +330,7 @@ void loop() {
     else if (current_state == battcheck_state) {
         nice_delay_ms(500);  // wait a moment to measure voltage
         battcheck();
+        empty_event_sequence();
         set_state(off_state, 0);
     }
     #endif
