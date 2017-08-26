@@ -27,6 +27,8 @@
 #define USE_BATTCHECK
 #define BATTCHECK_4bars
 #define DONT_DELAY_AFTER_BATTCHECK
+#define USE_EEPROM
+#define EEPROM_BYTES 5
 #include "spaghetti-monster.h"
 
 // FSM states
@@ -40,6 +42,9 @@ uint8_t battcheck_state(EventPtr event, uint16_t arg);
 #endif
 // Not a FSM state, just handles stuff common to all low/med/hi states
 uint8_t any_mode_state(EventPtr event, uint16_t arg, uint8_t *primary, uint8_t *secondary, uint8_t *modes);
+
+void load_config();
+void save_config();
 
 // toggle between L1/L2, M1/M2, H1/H2
 uint8_t L1 = 1;
@@ -192,10 +197,11 @@ uint8_t any_mode_state(EventPtr event, uint16_t arg, uint8_t *primary, uint8_t *
     else if (event == EV_2clicks) {
         *primary ^= 1;
         set_any_mode(*primary, *secondary, modes);
+        save_config();
         return MISCHIEF_MANAGED;
     }
     // click-release-hold: change secondary level
-    if (event == EV_click2_hold) {
+    else if (event == EV_click2_hold) {
         if (arg % HOLD_TIMEOUT == 0) {
             *secondary = (*secondary + 1) & 3;
             if (! *secondary) *secondary = 1;
@@ -203,6 +209,10 @@ uint8_t any_mode_state(EventPtr event, uint16_t arg, uint8_t *primary, uint8_t *
             set_any_mode(*primary, *secondary, modes);
         }
         return MISCHIEF_MANAGED;
+    }
+    // click, hold, release: save secondary level
+    else if (event == EV_click2_hold_release) {
+        save_config();
     }
     #ifdef USE_THERMAL_REGULATION
     // TODO: test this on a real light
@@ -263,6 +273,7 @@ uint8_t strobe_beacon_state(EventPtr event, uint16_t arg) {
     // 2 clicks: rotate through blinky modes
     else if (event == EV_2clicks) {
         strobe_beacon_mode = (strobe_beacon_mode + 1) & 3;
+        save_config();
         interrupt_nice_delays();
         return MISCHIEF_MANAGED;
     }
@@ -293,10 +304,34 @@ void strobe(uint8_t level, uint16_t ontime, uint16_t offtime) {
     nice_delay_ms(offtime);
 }
 
+void load_config() {
+    if (load_eeprom()) {
+        H1 = !(!(eeprom[0] & 0b00000100));
+        M1 = !(!(eeprom[0] & 0b00000010));
+        L1 = !(!(eeprom[0] & 0b00000001));
+        H2 = eeprom[1];
+        M2 = eeprom[2];
+        L2 = eeprom[3];
+        strobe_beacon_mode = eeprom[4];
+    }
+}
+
+void save_config() {
+    eeprom[0] = (H1<<2) | (M1<<1) | (L1);
+    eeprom[1] = H2;
+    eeprom[2] = M2;
+    eeprom[3] = L2;
+    eeprom[4] = strobe_beacon_mode;
+
+    save_eeprom();
+}
+
 void setup() {
     set_level(RAMP_SIZE/8);
     delay_4ms(3);
     set_level(0);
+
+    load_config();
 
     push_state(off_state, 0);
 }
