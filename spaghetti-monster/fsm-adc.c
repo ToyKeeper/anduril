@@ -282,8 +282,12 @@ void battcheck() {
     for(i=0;
         voltage >= pgm_read_byte(voltage_blinks + i);
         i++) {}
+    #ifdef DONT_DELAY_AFTER_BATTCHECK
+    blink_digit(i);
+    #else
     if (blink_digit(i))
         nice_delay_ms(1000);
+    #endif
     #endif
 }
 #endif
