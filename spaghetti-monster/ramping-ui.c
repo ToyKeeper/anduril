@@ -36,6 +36,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg);
 uint8_t strobe_state(EventPtr event, uint16_t arg);
 #ifdef USE_BATTCHECK
 uint8_t battcheck_state(EventPtr event, uint16_t arg);
+uint8_t tempcheck_state(EventPtr event, uint16_t arg);
 #endif
 
 // brightness control
@@ -287,6 +288,20 @@ uint8_t battcheck_state(EventPtr event, uint16_t arg) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
+    // 2 clicks: tempcheck mode
+    else if (event == EV_2clicks) {
+        set_state(tempcheck_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    return EVENT_NOT_HANDLED;
+}
+
+uint8_t tempcheck_state(EventPtr event, uint16_t arg) {
+    // 1 click: off
+    if (event == EV_1click) {
+        set_state(off_state, 0);
+        return MISCHIEF_MANAGED;
+    }
     return EVENT_NOT_HANDLED;
 }
 #endif
@@ -337,6 +352,10 @@ void loop() {
     #ifdef USE_BATTCHECK
     else if (current_state == battcheck_state) {
         battcheck();
+    }
+    else if (current_state == tempcheck_state) {
+        blink_num(projected_temperature>>2);
+        nice_delay_ms(1000);
     }
     #endif
 }
