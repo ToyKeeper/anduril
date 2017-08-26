@@ -23,9 +23,6 @@
 #include "fsm-eeprom.h"
 
 #if EEPROM_BYTES > 0
-#if EEPROM_BYTES >= (EEPSIZE/2)
-#error Requested EEPROM_BYTES too big.
-#endif
 uint8_t eeprom[EEPROM_BYTES];
 
 uint8_t load_eeprom() {
@@ -55,15 +52,54 @@ void save_eeprom() {
 #endif
 
 #if EEPROM_WL_BYTES > 0
-#if EEPROM_WL_BYTES >= (EEPSIZE/4)
-#error Requested EEPROM_WL_BYTES too big.
-#endif
 uint8_t eeprom_wl[EEPROM_WL_BYTES];
+EEP_OFFSET_T eep_wl_prev_offset;
 
 uint8_t load_wl_eeprom() {
+    cli();
+    // check if eeprom has been initialized; abort if it hasn't
+    uint8_t found = 0;
+    EEP_OFFSET_T offset;
+    for(offset = 0;
+        offset < EEP_WL_SIZE - EEPROM_WL_BYTES - 1;
+        offset += (EEPROM_WL_BYTES + 1)) {
+        if (eeprom_read_byte((uint8_t *)offset) == EEP_MARKER) {
+            found = 1;
+            eep_wl_prev_offset = offset;
+            break;
+        }
+    }
+
+    if (found) {
+        // load the actual data
+        for(uint8_t i=0; i<EEPROM_WL_BYTES; i++) {
+            eeprom_wl[i] = eeprom_read_byte((uint8_t *)(offset+1+i));
+        }
+    }
+    sei();
+    return found;
 }
 
 void save_wl_eeprom() {
+    cli();
+    // erase old state
+    EEP_OFFSET_T offset = eep_wl_prev_offset;
+    for (uint8_t i = 0; i < EEPROM_WL_BYTES+1; i ++) {
+        eeprom_update_byte((uint8_t *)offset+i, 0xFF);
+    }
+
+    // save new state
+    offset += EEPROM_WL_BYTES+1;
+    if (offset > EEP_WL_SIZE-EEPROM_WL_BYTES-1) offset = 0;
+    eep_wl_prev_offset = offset;
+    // marker byte
+    eeprom_update_byte((uint8_t *)offset, EEP_MARKER);
+    offset ++;
+    // user data
+    for(uint8_t i=0; i<EEPROM_WL_BYTES; i++, offset++) {
+        eeprom_update_byte((uint8_t *)(offset), eeprom_wl[i]);
+    }
+    sei();
 }
 #endif
 

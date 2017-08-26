@@ -33,6 +33,9 @@
 #endif
 
 #if EEPROM_BYTES > 0
+#if EEPROM_BYTES >= (EEPSIZE/2)
+#error Requested EEPROM_BYTES too big.
+#endif
 uint8_t eeprom[EEPROM_BYTES];
 uint8_t load_eeprom();  // returns 1 for success, 0 for no data found
 void save_eeprom();
@@ -40,6 +43,9 @@ void save_eeprom();
 #endif
 
 #if EEPROM_WL_BYTES > 0
+#if EEPROM_WL_BYTES >= (EEPSIZE/4)
+#error Requested EEPROM_WL_BYTES too big.
+#endif
 uint8_t eeprom_wl[EEPROM_WL_BYTES];
 uint8_t load_wl_eeprom();  // returns 1 for success, 0 for no data found
 void save_wl_eeprom();
