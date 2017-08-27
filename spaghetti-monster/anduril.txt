@@ -1,0 +1,67 @@
+From off:
+  * 1 click: memorized level
+  * Hold: Lowest level then ramp up
+  * 2 clicks: turbo
+  * Click, hold: highest level then ramp down
+  * 3 clicks: strobe mode
+  * 4 clicks: battcheck mode
+  * 5 clicks: lock-out
+
+In steady mode:
+  * 1 click: off
+  * Hold: ramp up
+  * Click, hold: ramp down
+  * 2 clicks: to/from turbo
+  * 3 clicks: toggle smooth vs discrete ramping
+  - 4 clicks: configure current ramp
+
+Smooth ramp config mode:
+  - Setting 1: memory on/off
+  - Setting 2: low end
+  - Setting 3: high end
+
+Discrete ramp config mode:
+  - Setting 1: memory on/off
+  - Setting 2: low end
+  - Setting 3: high end
+  - Setting 4: number of levels
+
+Strobe mode:
+  * 1 click: off
+  * Hold: change speed (faster)
+  * Click, hold: change speed (slower)
+  + 2 clicks: next strobe mode
+    (party strobe, tactical strobe, random/police strobe?, bike flasher)
+
+Bike flasher:
+  - 1 click: off
+  - 2 clicks: party strobe
+  - Hold: brighter
+  - Click, hold: dimmer
+
+Battcheck mode:
+  * 1 click: off
+  * 2 clicks: tempcheck mode
+
+Tempcheck mode:
+  * 1 click: off
+  - 2 clicks: beacon mode
+  - Hold: thermal calibration
+
+Beacon mode:
+  - 1 click: off
+  - 2 clicks: battcheck mode
+  - Hold: brighter
+  - Click, hold: dimmer
+  - 3 clicks: configure time between pulses
+
+TODO:
+  - save settings in eeprom
+  - make memory toggle-able (discrete ramping)
+  - make lowest level configurable (smooth ramping)
+  - make highest level configurable (smooth ramping)
+  - make memory toggle-able (discrete ramping)
+  - make lowest level configurable (discrete ramping)
+  - make highest level configurable (discrete ramping)
+  - a way to blink out the firmware version?
+  - a way to configure indicator LED behavior?
