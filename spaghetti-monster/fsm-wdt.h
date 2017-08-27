@@ -20,6 +20,8 @@
 #ifndef FSM_WDT_H
 #define FSM_WDT_H
 
+#define TICKS_PER_SECOND 62
+
 void WDT_on();
 inline void WDT_off();
 
