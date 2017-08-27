@@ -29,7 +29,7 @@
 #define USE_BATTCHECK
 #define BATTCHECK_VpT
 #define RAMP_LENGTH 150
-#define MAX_CLICKS 5
+#define MAX_CLICKS 6
 #include "spaghetti-monster.h"
 
 // FSM states
@@ -41,6 +41,7 @@ uint8_t battcheck_state(EventPtr event, uint16_t arg);
 uint8_t tempcheck_state(EventPtr event, uint16_t arg);
 #endif
 uint8_t lockout_state(EventPtr event, uint16_t arg);
+uint8_t momentary_state(EventPtr event, uint16_t arg);
 
 void blink_confirm(uint8_t num);
 
@@ -51,9 +52,14 @@ uint8_t ramp_style = 0;  // 0 = smooth, 1 = discrete
 uint8_t ramp_smooth_floor = 1;
 uint8_t ramp_smooth_ceil = MAX_LEVEL;
 uint8_t ramp_discrete_floor = 20;
-uint8_t ramp_discrete_ceil = MAX_LEVEL-50;
+uint8_t ramp_discrete_ceil = MAX_LEVEL - 50;
 uint8_t ramp_discrete_steps = 7;
-uint8_t ramp_discrete_step_size;
+uint8_t ramp_discrete_step_size;  // don't set this
+
+// calculate the nearest ramp level which would be valid at the moment
+// (is a no-op for smooth ramp, but limits discrete ramp to only the
+// correct levels for the user's config)
+uint8_t nearest_level(uint8_t target);
 
 #ifdef USE_THERMAL_REGULATION
 // brightness before thermal step-down
@@ -109,22 +115,28 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         }
         return MISCHIEF_MANAGED;
     }
-    // 3 clicks: strobe mode
-    else if (event == EV_3clicks) {
-        set_state(strobe_state, 0);
-        return MISCHIEF_MANAGED;
-    }
     #ifdef USE_BATTCHECK
-    // 4 clicks: battcheck mode
-    else if (event == EV_4clicks) {
+    // 3 clicks: battcheck mode
+    else if (event == EV_3clicks) {
         set_state(battcheck_state, 0);
         return MISCHIEF_MANAGED;
     }
     #endif
-    // 5 clicks: soft lockout
-    else if (event == EV_5clicks) {
+    // 4 clicks: soft lockout
+    else if (event == EV_4clicks) {
         blink_confirm(5);
         set_state(lockout_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    // 5 clicks: strobe mode
+    else if (event == EV_5clicks) {
+        set_state(strobe_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    // 6 clicks: momentary mode
+    else if (event == EV_6clicks) {
+        blink_confirm(1);
+        set_state(momentary_state, 0);
         return MISCHIEF_MANAGED;
     }
     // hold: go to lowest level
@@ -169,9 +181,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     if (ramp_style) {
         mode_min = ramp_discrete_floor;
         mode_max = ramp_discrete_ceil;
-        // TODO: Fixed-point for better precision
-        //ramp_step_size = ((1 + mode_max - mode_min)<<4) / (ramp_discrete_steps-1);
-        ramp_step_size = (1 + mode_max - mode_min) / (ramp_discrete_steps-1);
+        ramp_step_size = ramp_discrete_step_size;
     }
 
     // turn LED on when we first enter the mode
@@ -183,7 +193,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         #ifdef USE_THERMAL_REGULATION
         target_level = arg;
         #endif
-        set_level(arg);
+        set_level(nearest_level(arg));
         return MISCHIEF_MANAGED;
     }
     // 1 click: off
@@ -224,7 +234,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         //save_config();
         set_level(0);
         delay_4ms(20/4);
-        set_level(memorized_level);
+        set_level(nearest_level(memorized_level));
         return MISCHIEF_MANAGED;
     }
     // 4 clicks: configure this ramp mode
@@ -242,6 +252,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         if (actual_level + ramp_step_size < mode_max)
             memorized_level = actual_level + ramp_step_size;
         else memorized_level = mode_max;
+        memorized_level = nearest_level(memorized_level);
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #endif
@@ -268,6 +279,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
             memorized_level = (actual_level-ramp_step_size);
         else
             memorized_level = mode_min;
+        memorized_level = nearest_level(memorized_level);
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #endif
@@ -383,13 +395,62 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
         }
         return MISCHIEF_MANAGED;
     }
-    // 5 clicks: exit
-    else if (event == EV_5clicks) {
+    // 4 clicks: exit
+    else if (event == EV_4clicks) {
         blink_confirm(2);
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
+}
+
+
+uint8_t momentary_state(EventPtr event, uint16_t arg) {
+    if (event == EV_click1_press) {
+        set_level(memorized_level);
+        empty_event_sequence();  // don't attempt to parse multiple clicks
+        return MISCHIEF_MANAGED;
+    }
+
+    else if (event == EV_release) {
+        set_level(0);
+        empty_event_sequence();  // don't attempt to parse multiple clicks
+        //go_to_standby = 1;  // sleep while light is off
+        return MISCHIEF_MANAGED;
+    }
+
+    // Sleep, dammit!  (but wait a few seconds first)
+    // (because standby mode uses such little power that it can interfere
+    //  with exiting via tailcap loosen+tighten unless you leave power
+    //  disconnected for several seconds, so we want to be awake when that
+    //  happens to speed up the process)
+    else if ((event == EV_tick)  &&  (actual_level == 0)) {
+        if (arg > TICKS_PER_SECOND*15) {  // sleep after 15 seconds
+            go_to_standby = 1;  // sleep while light is off
+        }
+        return MISCHIEF_MANAGED;
+    }
+
+    return EVENT_NOT_HANDLED;
+}
+
+
+uint8_t nearest_level(uint8_t target) {
+    if (! ramp_style) return target;
+    if (target < ramp_discrete_floor) return ramp_discrete_floor;
+
+    uint8_t ramp_range = ramp_discrete_ceil - ramp_discrete_floor;
+    ramp_discrete_step_size = ramp_range / (ramp_discrete_steps-1);
+    uint8_t this_level = ramp_discrete_floor;
+
+    for(uint8_t i=0; i<ramp_discrete_steps; i++) {
+        this_level = ramp_discrete_floor + (i * (uint16_t)ramp_range / (ramp_discrete_steps-1));
+        int8_t diff = target - this_level;
+        if (diff < 0) diff = -diff;
+        if (diff <= (ramp_discrete_step_size>>1))
+            return this_level;
+    }
+    return this_level;
 }
 
 

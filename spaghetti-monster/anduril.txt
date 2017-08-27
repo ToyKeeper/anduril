@@ -3,9 +3,10 @@ From off:
   * Hold: Lowest level then ramp up
   * 2 clicks: turbo
   * Click, hold: highest level then ramp down
-  * 3 clicks: strobe mode
-  * 4 clicks: battcheck mode
-  * 5 clicks: lock-out
+  * 3 clicks: battcheck mode
+  * 4 clicks: lock-out
+  * 5 clicks: strobe mode
+  + 6 clicks: momentary mode (disconnect power to exit)
 
 In steady mode:
   * 1 click: off
@@ -54,6 +55,11 @@ Beacon mode:
   - Hold: brighter
   - Click, hold: dimmer
   - 3 clicks: configure time between pulses
+
+Momentary mode:
+  * Press button: Light on (at memorized level).
+  * Release button: Light off.
+  * To exit, disconnect power.  (loosen/tighten the tailcap)
 
 TODO:
   - save settings in eeprom
