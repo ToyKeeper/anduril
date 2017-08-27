@@ -35,7 +35,11 @@ typedef struct Emission {
 #define MISCHIEF_MANAGED EVENT_HANDLED
 #define MISCHIEF_NOT_MANAGED EVENT_NOT_HANDLED
 
-#define EV_MAX_LEN 16
+#ifndef MAX_CLICKS
+#define MAX_CLICKS 4
+#endif
+
+#define EV_MAX_LEN ((MAX_CLICKS*2)+3)
 uint8_t current_event[EV_MAX_LEN];
 // at 0.016 ms per tick, 255 ticks = 4.08 s
 // TODO: 16 bits?
@@ -116,6 +120,7 @@ Event EV_click1_hold_release[] = {
     A_HOLD,
     A_RELEASE,
     0 };
+#if MAX_CLICKS >= 2
 Event EV_click2_press[] = {
     A_PRESS,
     A_RELEASE,
@@ -148,6 +153,8 @@ Event EV_click2_complete[] = {
     A_RELEASE,
     A_RELEASE_TIMEOUT,
     0 };
+#endif  // MAX_CLICKS >= 2
+#if MAX_CLICKS >= 3
 Event EV_click3_press[] = {
     A_PRESS,
     A_RELEASE,
@@ -173,6 +180,8 @@ Event EV_click3_complete[] = {
     A_RELEASE,
     A_RELEASE_TIMEOUT,
     0 };
+#endif  // MAX_CLICKS >= 3
+#if MAX_CLICKS >= 4
 #define EV_4clicks EV_click4_complete
 Event EV_click4_complete[] = {
     A_PRESS,
@@ -185,6 +194,41 @@ Event EV_click4_complete[] = {
     A_RELEASE,
     A_RELEASE_TIMEOUT,
     0 };
+#endif
+#if MAX_CLICKS >= 5
+#define EV_5clicks EV_click5_complete
+Event EV_click5_complete[] = {
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_RELEASE_TIMEOUT,
+    0 };
+#endif
+#if MAX_CLICKS >= 6
+#define EV_6clicks EV_click6_complete
+Event EV_click6_complete[] = {
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_RELEASE_TIMEOUT,
+    0 };
+#endif
 // ... and so on
 
 // A list of button event types for easy iteration
@@ -195,15 +239,27 @@ EventPtr event_sequences[] = {
     EV_click1_complete,
     EV_click1_hold,
     EV_click1_hold_release,
+    #if MAX_CLICKS >= 2
     EV_click2_press,
     EV_click2_hold,
     EV_click2_hold_release,
     EV_click2_release,
     EV_click2_complete,
+    #endif
+    #if MAX_CLICKS >= 3
     EV_click3_press,
     EV_click3_release,
     EV_click3_complete,
+    #endif
+    #if MAX_CLICKS >= 4
     EV_click4_complete,
+    #endif
+    #if MAX_CLICKS >= 5
+    EV_click5_complete,
+    #endif
+    #if MAX_CLICKS >= 6
+    EV_click6_complete,
+    #endif
     // ...
 };
 
