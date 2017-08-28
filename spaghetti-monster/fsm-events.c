@@ -47,7 +47,7 @@ uint8_t push_event(uint8_t ev_type) {
     uint8_t prev_event = 0;  // never push the same event twice in a row
     for(i=0; current_event[i] && (i<EV_MAX_LEN); i++)
         prev_event = current_event[i];
-    if ((i < EV_MAX_LEN)  &&  (prev_event != ev_type)) {
+    if ((i < EV_MAX_LEN-1)  &&  (prev_event != ev_type)) {
         current_event[i] = ev_type;
         return 1;  // event pushed
     } else {
