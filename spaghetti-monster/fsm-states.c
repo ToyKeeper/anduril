@@ -31,13 +31,14 @@
 //       255: error (not sure what this would even mean though, or what difference it would make)
 // TODO: function to call stacked callbacks until one returns "handled"
 
-void _set_state(StatePtr new_state, uint16_t arg) {
+void _set_state(StatePtr new_state, uint16_t arg,
+                EventPtr exit_event, EventPtr enter_event) {
     // call old state-exit hook (don't use stack)
-    if (current_state != NULL) current_state(EV_leave_state, arg);
+    if (current_state != NULL) current_state(exit_event, arg);
     // set new state
     current_state = new_state;
     // call new state-enter hook (don't use stack)
-    if (new_state != NULL) current_state(EV_enter_state, arg);
+    if (new_state != NULL) current_state(enter_event, arg);
 }
 
 int8_t push_state(StatePtr new_state, uint16_t arg) {
@@ -46,7 +47,8 @@ int8_t push_state(StatePtr new_state, uint16_t arg) {
         //       new hook for non-exit recursion into child?
         state_stack[state_stack_len] = new_state;
         state_stack_len ++;
-        _set_state(new_state, arg);
+        // FIXME: use EV_stacked_state?
+        _set_state(new_state, arg, EV_leave_state, EV_enter_state);
         return state_stack_len;
     } else {
         // TODO: um...  how is a flashlight supposed to handle a recursion depth error?
@@ -66,8 +68,7 @@ StatePtr pop_state() {
         new_state = state_stack[state_stack_len-1];
     }
     // FIXME: what should 'arg' be?
-    // FIXME: do we need a EV_reenter_state?
-    _set_state(new_state, 0);
+    _set_state(new_state, 0, EV_leave_state, EV_reenter_state);
     return old_state;
 }
 

@@ -35,7 +35,8 @@ volatile StatePtr current_state;
 StatePtr state_stack[STATE_STACK_SIZE];
 uint8_t state_stack_len = 0;
 
-void _set_state(StatePtr new_state, uint16_t arg);
+void _set_state(StatePtr new_state, uint16_t arg,
+                EventPtr exit_event, EventPtr enter_event);
 int8_t push_state(StatePtr new_state, uint16_t arg);
 StatePtr pop_state();
 uint8_t set_state(StatePtr new_state, uint16_t arg);

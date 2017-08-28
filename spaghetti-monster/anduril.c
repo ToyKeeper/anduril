@@ -42,18 +42,23 @@ uint8_t tempcheck_state(EventPtr event, uint16_t arg);
 #endif
 uint8_t lockout_state(EventPtr event, uint16_t arg);
 uint8_t momentary_state(EventPtr event, uint16_t arg);
+uint8_t ramp_config_mode(EventPtr event, uint16_t arg);
+uint8_t number_entry_state(EventPtr event, uint16_t arg);
+
+// return value from number_entry_state()
+volatile uint8_t number_entry_value;
 
 void blink_confirm(uint8_t num);
 
 // brightness control
 uint8_t memorized_level = MAX_1x7135;
 // smooth vs discrete ramping
-uint8_t ramp_style = 0;  // 0 = smooth, 1 = discrete
-uint8_t ramp_smooth_floor = 1;
-uint8_t ramp_smooth_ceil = MAX_LEVEL;
-uint8_t ramp_discrete_floor = 20;
-uint8_t ramp_discrete_ceil = MAX_LEVEL - 50;
-uint8_t ramp_discrete_steps = 3;
+volatile uint8_t ramp_style = 0;  // 0 = smooth, 1 = discrete
+volatile uint8_t ramp_smooth_floor = 1;
+volatile uint8_t ramp_smooth_ceil = MAX_LEVEL;
+volatile uint8_t ramp_discrete_floor = 20;
+volatile uint8_t ramp_discrete_ceil = MAX_LEVEL - 50;
+volatile uint8_t ramp_discrete_steps = 3;
 uint8_t ramp_discrete_step_size;  // don't set this
 
 // calculate the nearest ramp level which would be valid at the moment
@@ -211,7 +216,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     }
     // 4 clicks: configure this ramp mode
     else if (event == EV_4clicks) {
-        // TODO: implement this
+        set_state(ramp_config_mode, 0);
         return MISCHIEF_MANAGED;
     }
     // hold: change brightness (brighter)
@@ -394,6 +399,168 @@ uint8_t momentary_state(EventPtr event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
 
+    return EVENT_NOT_HANDLED;
+}
+
+
+uint8_t ramp_config_mode(EventPtr event, uint16_t arg) {
+    //static uint8_t new_floor;
+    //static uint8_t new_ceil;
+    //static uint8_t new_num_steps;
+    static uint8_t config_step;
+    static uint8_t num_config_steps;
+    if (event == EV_enter_state) {
+        config_step = 0;
+        if (ramp_style) {
+            //new_floor = ramp_discrete_floor;
+            //new_ceil = ramp_discrete_ceil;
+            //new_num_steps = ramp_discrete_steps;
+            num_config_steps = 3;
+        }
+        else {
+            //new_floor = ramp_smooth_floor;
+            //new_ceil = ramp_smooth_ceil;
+            num_config_steps = 2;
+        }
+        return MISCHIEF_MANAGED;
+    }
+    // advance forward through config steps
+    else if (event == EV_tick) {
+        if (config_step < num_config_steps) {
+            //config_step ++;
+            push_state(number_entry_state, config_step + 1);
+            /*
+            switch (config_step) {
+                // set the floor value
+                case 0:
+                    push_state(number_entry_state, 1);
+                    break;
+                // set the ceiling value
+                case 1:
+                    push_state(number_entry_state, 2);
+                    break;
+                // set the number of steps (discrete ramp only)
+                case 2:
+                    push_state(number_entry_state, 3);
+                    break;
+            }
+            */
+        }
+        else {
+            // TODO: save_config();
+            // TODO: blink out some sort of success pattern
+            // return to steady mode
+            set_state(steady_state, memorized_level);
+        }
+        return MISCHIEF_MANAGED;
+    }
+    // an option was set (return from number_entry_state)
+    else if (event == EV_reenter_state) {
+        #if 0
+        // FIXME? this is a kludge which relies on the vars being consecutive
+        // in RAM and in the same order as declared
+        // ... and it doesn't work; it seems they're not consecutive  :(
+        volatile uint8_t *dest;
+        if (ramp_style) dest = (&ramp_discrete_floor) + config_step;
+        else dest = (&ramp_smooth_floor) + config_step;
+        if (number_entry_value)
+            *dest = number_entry_value;
+        #else
+        switch (config_step) {
+            case 0:
+                if (number_entry_value) {
+                    if (ramp_style) ramp_discrete_floor = number_entry_value;
+                    else ramp_smooth_floor = number_entry_value;
+                }
+                break;
+            case 1:
+                if (number_entry_value) {
+                    if (ramp_style) ramp_discrete_ceil = MAX_LEVEL + 1 - number_entry_value;
+                    else ramp_smooth_ceil = MAX_LEVEL + 1 - number_entry_value;
+                }
+                break;
+            case 2:
+                if (number_entry_value)
+                    ramp_discrete_steps = number_entry_value;
+                break;
+        }
+        #endif
+        config_step ++;
+        /* handled at next EV_tick
+        if (config_step > num_config_steps) {
+            // TODO: save_config();
+            // exit config mode
+            set_state(steady_state, memorized_level);
+        }
+        */
+        return MISCHIEF_MANAGED;
+    }
+    return EVENT_NOT_HANDLED;
+}
+
+
+uint8_t number_entry_state(EventPtr event, uint16_t arg) {
+    static uint8_t value;
+    static uint8_t blinks_left;
+    static uint8_t init_completed;
+    static uint16_t wait_ticks;
+    if (event == EV_enter_state) {
+        value = 0;
+        blinks_left = arg;
+        init_completed = 0;
+        wait_ticks = 0;
+        // TODO: blink out the 'arg' to show which option this is
+        return MISCHIEF_MANAGED;
+    }
+    else if (event == EV_tick) {
+        // blink out the option number
+        if (! init_completed) {
+            if (blinks_left) {
+                if ((arg & 31) == 10) {
+                    set_level(RAMP_SIZE/4);
+                }
+                else if ((arg & 31) == 20) {
+                    set_level(0);
+                }
+                else if ((arg & 31) == 31) {
+                    blinks_left --;
+                }
+            }
+            else {
+                init_completed = 1;
+                wait_ticks = 0;
+            }
+        }
+        else {  // buzz while waiting for a number to be entered
+            wait_ticks ++;
+            // buzz for N seconds after last event
+            if ((arg & 3) == 0) {
+                set_level(RAMP_SIZE/6);
+            }
+            else if ((arg & 3) == 2) {
+                set_level(RAMP_SIZE/8);
+            }
+            // time out after 4 seconds
+            if (wait_ticks > TICKS_PER_SECOND*4) {
+                number_entry_value = value;
+                set_level(0);
+                pop_state();
+            }
+        }
+        return MISCHIEF_MANAGED;
+    }
+    // count clicks
+    else if (event == EV_click1_release) {
+        value ++;
+        //number_entry_value = value;
+        wait_ticks = 0;
+        empty_event_sequence();
+        // flash briefly
+        set_level(RAMP_SIZE/2);
+        delay_4ms(8/2);
+        set_level(0);
+        return MISCHIEF_MANAGED;
+    }
     return EVENT_NOT_HANDLED;
 }
 

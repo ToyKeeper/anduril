@@ -51,17 +51,18 @@ static volatile uint16_t ticks_since_last_event = 0;
 
 #define A_ENTER_STATE     1
 #define A_LEAVE_STATE     2
-#define A_TICK            3
-#define A_PRESS           4
-#define A_HOLD            5
-#define A_RELEASE         6
-#define A_RELEASE_TIMEOUT 7
+#define A_REENTER_STATE   3
+#define A_TICK            4
+#define A_PRESS           5
+#define A_HOLD            6
+#define A_RELEASE         7
+#define A_RELEASE_TIMEOUT 8
 // TODO: add events for over/under-heat conditions (with parameter for severity)
-#define A_OVERHEATING     8
-#define A_UNDERHEATING    9
+#define A_OVERHEATING     9
+#define A_UNDERHEATING    10
 // TODO: add events for low voltage conditions
-#define A_VOLTAGE_LOW     10
-//#define A_VOLTAGE_CRITICAL 11
+#define A_VOLTAGE_LOW     11
+//#define A_VOLTAGE_CRITICAL 12
 #define A_DEBUG           255  // test event for debugging
 
 // Event types
@@ -73,6 +74,9 @@ Event EV_enter_state[] = {
     0 } ;
 Event EV_leave_state[] = {
     A_LEAVE_STATE,
+    0 } ;
+Event EV_reenter_state[] = {
+    A_REENTER_STATE,
     0 } ;
 Event EV_tick[] = {
     A_TICK,
