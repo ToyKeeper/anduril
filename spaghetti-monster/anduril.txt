@@ -62,6 +62,6 @@ Momentary mode:
   * To exit, disconnect power.  (loosen/tighten the tailcap)
 
 TODO:
-  - save settings in eeprom
+  * save settings in eeprom
   - a way to blink out the firmware version?
   - a way to configure indicator LED behavior?

@@ -30,6 +30,8 @@
 #define BATTCHECK_VpT
 #define RAMP_LENGTH 150
 #define MAX_CLICKS 6
+#define USE_EEPROM
+#define EEPROM_BYTES 8
 #include "spaghetti-monster.h"
 
 // FSM states
@@ -50,15 +52,18 @@ volatile uint8_t number_entry_value;
 
 void blink_confirm(uint8_t num);
 
+void load_config();
+void save_config();
+
 // brightness control
 uint8_t memorized_level = MAX_1x7135;
 // smooth vs discrete ramping
 volatile uint8_t ramp_style = 0;  // 0 = smooth, 1 = discrete
 volatile uint8_t ramp_smooth_floor = 1;
-volatile uint8_t ramp_smooth_ceil = MAX_LEVEL;
-volatile uint8_t ramp_discrete_floor = 20;
-volatile uint8_t ramp_discrete_ceil = MAX_LEVEL - 50;
-volatile uint8_t ramp_discrete_steps = 3;
+volatile uint8_t ramp_smooth_ceil = MAX_LEVEL - 30;
+volatile uint8_t ramp_discrete_floor = 15;
+volatile uint8_t ramp_discrete_ceil = MAX_LEVEL - 30;
+volatile uint8_t ramp_discrete_steps = 5;
 uint8_t ramp_discrete_step_size;  // don't set this
 
 // calculate the nearest ramp level which would be valid at the moment
@@ -208,7 +213,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     else if (event == EV_3clicks) {
         ramp_style ^= 1;
         memorized_level = nearest_level(memorized_level);
-        //save_config();
+        save_config();
         set_level(0);
         delay_4ms(20/4);
         set_level(memorized_level);
@@ -299,11 +304,7 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
     // 2 clicks: toggle party strobe vs tactical strobe
     else if (event == EV_2clicks) {
         strobe_type ^= 1;
-        return MISCHIEF_MANAGED;
-    }
-    // 3 clicks: go back to regular modes
-    else if (event == EV_3clicks) {
-        set_state(steady_state, memorized_level);
+        save_config();
         return MISCHIEF_MANAGED;
     }
     // hold: change speed (go faster)
@@ -318,6 +319,12 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
         if ((arg & 1) == 0) {
             if (strobe_delay < 255) strobe_delay ++;
         }
+        return MISCHIEF_MANAGED;
+    }
+    // release hold: save new strobe speed
+    else if ((event == EV_click1_hold_release)
+          || (event == EV_click2_hold_release)) {
+        save_config();
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
@@ -423,7 +430,7 @@ uint8_t ramp_config_mode(EventPtr event, uint16_t arg) {
             push_state(number_entry_state, config_step + 1);
         }
         else {
-            // TODO: save_config();
+            save_config();
             // TODO: blink out some sort of success pattern
             // return to steady mode
             set_state(steady_state, memorized_level);
@@ -462,13 +469,6 @@ uint8_t ramp_config_mode(EventPtr event, uint16_t arg) {
         }
         #endif
         config_step ++;
-        /* handled at next EV_tick
-        if (config_step > num_config_steps) {
-            // TODO: save_config();
-            // exit config mode
-            set_state(steady_state, memorized_level);
-        }
-        */
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
@@ -602,6 +602,33 @@ void blink_confirm(uint8_t num) {
 }
 
 
+void load_config() {
+    if (load_eeprom()) {
+        ramp_style = eeprom[0];
+        ramp_smooth_floor = eeprom[1];
+        ramp_smooth_ceil = eeprom[2];
+        ramp_discrete_floor = eeprom[3];
+        ramp_discrete_ceil = eeprom[4];
+        ramp_discrete_steps = eeprom[5];
+        strobe_type = eeprom[6];
+        strobe_delay = eeprom[7];
+    }
+}
+
+void save_config() {
+    eeprom[0] = ramp_style;
+    eeprom[1] = ramp_smooth_floor;
+    eeprom[2] = ramp_smooth_ceil;
+    eeprom[3] = ramp_discrete_floor;
+    eeprom[4] = ramp_discrete_ceil;
+    eeprom[5] = ramp_discrete_steps;
+    eeprom[6] = strobe_type;
+    eeprom[7] = strobe_delay;
+
+    save_eeprom();
+}
+
+
 void low_voltage() {
     // "step down" from strobe to something low
     if (current_state == strobe_state) {
@@ -627,6 +654,8 @@ void setup() {
     set_level(RAMP_SIZE/8);
     delay_4ms(3);
     set_level(0);
+
+    load_config();
 
     push_state(off_state, 0);
 }
