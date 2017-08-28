@@ -404,47 +404,23 @@ uint8_t momentary_state(EventPtr event, uint16_t arg) {
 
 
 uint8_t ramp_config_mode(EventPtr event, uint16_t arg) {
-    //static uint8_t new_floor;
-    //static uint8_t new_ceil;
-    //static uint8_t new_num_steps;
     static uint8_t config_step;
     static uint8_t num_config_steps;
     if (event == EV_enter_state) {
         config_step = 0;
         if (ramp_style) {
-            //new_floor = ramp_discrete_floor;
-            //new_ceil = ramp_discrete_ceil;
-            //new_num_steps = ramp_discrete_steps;
             num_config_steps = 3;
         }
         else {
-            //new_floor = ramp_smooth_floor;
-            //new_ceil = ramp_smooth_ceil;
             num_config_steps = 2;
         }
+        set_level(0);
         return MISCHIEF_MANAGED;
     }
     // advance forward through config steps
     else if (event == EV_tick) {
         if (config_step < num_config_steps) {
-            //config_step ++;
             push_state(number_entry_state, config_step + 1);
-            /*
-            switch (config_step) {
-                // set the floor value
-                case 0:
-                    push_state(number_entry_state, 1);
-                    break;
-                // set the ceiling value
-                case 1:
-                    push_state(number_entry_state, 2);
-                    break;
-                // set the number of steps (discrete ramp only)
-                case 2:
-                    push_state(number_entry_state, 3);
-                    break;
-            }
-            */
         }
         else {
             // TODO: save_config();
@@ -502,63 +478,84 @@ uint8_t ramp_config_mode(EventPtr event, uint16_t arg) {
 uint8_t number_entry_state(EventPtr event, uint16_t arg) {
     static uint8_t value;
     static uint8_t blinks_left;
-    static uint8_t init_completed;
+    static uint8_t entry_step;
     static uint16_t wait_ticks;
     if (event == EV_enter_state) {
         value = 0;
         blinks_left = arg;
-        init_completed = 0;
+        entry_step = 0;
         wait_ticks = 0;
         // TODO: blink out the 'arg' to show which option this is
         return MISCHIEF_MANAGED;
     }
+    // advance through the process:
+    // 0: wait a moment
+    // 1: blink out the 'arg' value
+    // 2: wait a moment
+    // 3: "buzz" while counting clicks
+    // 4: save and exit
     else if (event == EV_tick) {
-        // blink out the option number
-        if (! init_completed) {
-            if (blinks_left) {
-                if ((arg & 31) == 10) {
-                    set_level(RAMP_SIZE/4);
-                }
-                else if ((arg & 31) == 20) {
-                    set_level(0);
-                }
-                else if ((arg & 31) == 31) {
-                    blinks_left --;
-                }
-            }
+        // wait a moment
+        if ((entry_step == 0) || (entry_step == 2)) {
+            if (wait_ticks < TICKS_PER_SECOND/2)
+                wait_ticks ++;
             else {
-                init_completed = 1;
+                entry_step ++;
                 wait_ticks = 0;
             }
         }
-        else {  // buzz while waiting for a number to be entered
+        // blink out the option number
+        else if (entry_step == 1) {
+            if (blinks_left) {
+                if ((wait_ticks & 31) == 10) {
+                    set_level(RAMP_SIZE/4);
+                }
+                else if ((wait_ticks & 31) == 20) {
+                    set_level(0);
+                }
+                else if ((wait_ticks & 31) == 31) {
+                    blinks_left --;
+                }
+                wait_ticks ++;
+            }
+            else {
+                entry_step ++;
+                wait_ticks = 0;
+            }
+        }
+        else if (entry_step == 3) {  // buzz while waiting for a number to be entered
             wait_ticks ++;
             // buzz for N seconds after last event
-            if ((arg & 3) == 0) {
+            if ((wait_ticks & 3) == 0) {
                 set_level(RAMP_SIZE/6);
             }
-            else if ((arg & 3) == 2) {
+            else if ((wait_ticks & 3) == 2) {
                 set_level(RAMP_SIZE/8);
             }
-            // time out after 4 seconds
-            if (wait_ticks > TICKS_PER_SECOND*4) {
-                number_entry_value = value;
+            // time out after 3 seconds
+            if (wait_ticks > TICKS_PER_SECOND*3) {
+                //number_entry_value = value;
                 set_level(0);
-                pop_state();
+                entry_step ++;
             }
+        }
+        else if (entry_step == 4) {
+            number_entry_value = value;
+            pop_state();
         }
         return MISCHIEF_MANAGED;
     }
     // count clicks
     else if (event == EV_click1_release) {
-        value ++;
-        //number_entry_value = value;
-        wait_ticks = 0;
         empty_event_sequence();
-        // flash briefly
-        set_level(RAMP_SIZE/2);
-        delay_4ms(8/2);
-        set_level(0);
+        if (entry_step == 3) {  // only count during the "buzz"
+            value ++;
+            wait_ticks = 0;
+            // flash briefly
+            set_level(RAMP_SIZE/2);
+            delay_4ms(8/2);
+            set_level(0);
+        }
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
