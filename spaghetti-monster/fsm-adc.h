@@ -69,7 +69,7 @@ void battcheck();
 volatile int16_t temperature;
 // temperature in a few seconds, in C (ish) * 4  (13.2 fixed-point)
 volatile int16_t projected_temperature;  // Fight the future!
-uint8_t therm_ceil = DEFAULT_THERM_CEIL;
+volatile uint8_t therm_ceil = DEFAULT_THERM_CEIL;
 //void low_temperature();
 //void high_temperature();
 #endif

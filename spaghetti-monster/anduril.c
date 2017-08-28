@@ -31,7 +31,7 @@
 #define RAMP_LENGTH 150
 #define MAX_CLICKS 6
 #define USE_EEPROM
-#define EEPROM_BYTES 11
+#define EEPROM_BYTES 12
 #include "spaghetti-monster.h"
 
 // FSM states
@@ -45,6 +45,7 @@ uint8_t strobe_state(EventPtr event, uint16_t arg);
 #ifdef USE_BATTCHECK
 uint8_t battcheck_state(EventPtr event, uint16_t arg);
 uint8_t tempcheck_state(EventPtr event, uint16_t arg);
+uint8_t thermal_config_state(EventPtr event, uint16_t arg);
 #endif
 // soft lockout
 uint8_t lockout_state(EventPtr event, uint16_t arg);
@@ -392,6 +393,11 @@ uint8_t tempcheck_state(EventPtr event, uint16_t arg) {
         set_state(beacon_state, 0);
         return MISCHIEF_MANAGED;
     }
+    // 3 clicks: thermal config mode
+    else if (event == EV_3clicks) {
+        set_state(thermal_config_state, 0);
+        return MISCHIEF_MANAGED;
+    }
     return EVENT_NOT_HANDLED;
 }
 #endif
@@ -530,6 +536,34 @@ uint8_t ramp_config_state(EventPtr event, uint16_t arg) {
         }
         #endif
         config_step ++;
+        return MISCHIEF_MANAGED;
+    }
+    return EVENT_NOT_HANDLED;
+}
+
+
+uint8_t thermal_config_state(EventPtr event, uint16_t arg) {
+    static uint8_t done = 0;
+    if (event == EV_enter_state) {
+        set_level(0);
+        done = 0;
+        return MISCHIEF_MANAGED;
+    }
+    // advance forward through config steps
+    else if (event == EV_tick) {
+        if (! done) push_state(number_entry_state, 1);
+        else {
+            save_config();
+            // return to beacon mode
+            set_state(tempcheck_state, 0);
+        }
+        return MISCHIEF_MANAGED;
+    }
+    // an option was set (return from number_entry_state)
+    else if (event == EV_reenter_state) {
+        if (number_entry_value) therm_ceil = 30 + number_entry_value;
+        if (therm_ceil > MAX_THERM_CEIL) therm_ceil = MAX_THERM_CEIL;
+        done = 1;
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
@@ -703,6 +737,7 @@ void load_config() {
         strobe_delays[1] = eeprom[8];
         bike_flasher_brightness = eeprom[9];
         beacon_seconds = eeprom[10];
+        therm_ceil = eeprom[11];
     }
 }
 
@@ -718,6 +753,7 @@ void save_config() {
     eeprom[8] = strobe_delays[1];
     eeprom[9] = bike_flasher_brightness;
     eeprom[10] = beacon_seconds;
+    eeprom[11] = therm_ceil;
 
     save_eeprom();
 }
@@ -794,9 +830,10 @@ void loop() {
         battcheck();
     }
     else if (current_state == tempcheck_state) {
-        blink_num(projected_temperature>>2);
+        blink_num(temperature>>2);
         nice_delay_ms(1000);
     }
+    // TODO: blink out therm_ceil during thermal_config_state
     #endif
     else if (current_state == beacon_state) {
         set_level(memorized_level);
