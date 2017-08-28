@@ -70,11 +70,11 @@ void save_config();
 uint8_t memorized_level = MAX_1x7135;
 // smooth vs discrete ramping
 volatile uint8_t ramp_style = 0;  // 0 = smooth, 1 = discrete
-volatile uint8_t ramp_smooth_floor = 1;
+volatile uint8_t ramp_smooth_floor = 5;
 volatile uint8_t ramp_smooth_ceil = MAX_LEVEL - 30;
-volatile uint8_t ramp_discrete_floor = 15;
+volatile uint8_t ramp_discrete_floor = 20;
 volatile uint8_t ramp_discrete_ceil = MAX_LEVEL - 30;
-volatile uint8_t ramp_discrete_steps = 5;
+volatile uint8_t ramp_discrete_steps = 7;
 uint8_t ramp_discrete_step_size;  // don't set this
 
 // calculate the nearest ramp level which would be valid at the moment
