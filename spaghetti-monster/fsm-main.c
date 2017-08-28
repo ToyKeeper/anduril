@@ -88,6 +88,10 @@ int main() {
     // fallback for handling a few things
     push_state(default_state, 0);
 
+    // in case any spurious button presses were detected at boot
+    delay_ms(1);
+    empty_event_sequence();
+
     // call recipe's setup
     setup();
 
