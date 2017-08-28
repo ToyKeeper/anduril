@@ -53,13 +53,13 @@ uint8_t ramp_smooth_floor = 1;
 uint8_t ramp_smooth_ceil = MAX_LEVEL;
 uint8_t ramp_discrete_floor = 20;
 uint8_t ramp_discrete_ceil = MAX_LEVEL - 50;
-uint8_t ramp_discrete_steps = 7;
+uint8_t ramp_discrete_steps = 3;
 uint8_t ramp_discrete_step_size;  // don't set this
 
 // calculate the nearest ramp level which would be valid at the moment
 // (is a no-op for smooth ramp, but limits discrete ramp to only the
 // correct levels for the user's config)
-uint8_t nearest_level(uint8_t target);
+uint8_t nearest_level(int16_t target);
 
 #ifdef USE_THERMAL_REGULATION
 // brightness before thermal step-down
@@ -84,16 +84,12 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     }
     // hold (initially): go to lowest level, but allow abort for regular click
     else if (event == EV_click1_press) {
-        if (ramp_style == 0) {
-            set_level(ramp_smooth_floor);
-        } else {
-            set_level(ramp_discrete_floor);
-        }
+        set_level(nearest_level(1));
         return MISCHIEF_MANAGED;
     }
     // 1 click (before timeout): go to memorized level, but allow abort for double click
     else if (event == EV_click1_release) {
-        set_level(memorized_level);
+        set_level(nearest_level(memorized_level));
         return MISCHIEF_MANAGED;
     }
     // 1 click: regular mode
@@ -108,11 +104,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     }
     // 2 clicks: highest mode
     else if (event == EV_2clicks) {
-        if (ramp_style == 0) {
-            set_state(steady_state, ramp_smooth_ceil);
-        } else {
-            set_state(steady_state, ramp_discrete_ceil);
-        }
+        set_level(nearest_level(MAX_LEVEL));
         return MISCHIEF_MANAGED;
     }
     #ifdef USE_BATTCHECK
@@ -144,30 +136,18 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         // don't start ramping immediately;
         // give the user time to release at moon level
         if (arg >= HOLD_TIMEOUT) {
-            if (ramp_style == 0) {
-                set_state(steady_state, ramp_smooth_floor);
-            } else {
-                set_state(steady_state, ramp_discrete_floor);
-            }
+            set_state(steady_state, 1);
         }
         return MISCHIEF_MANAGED;
     }
     // hold, release quickly: go to lowest level
     else if (event == EV_click1_hold_release) {
-        if (ramp_style == 0) {
-            set_state(steady_state, ramp_smooth_floor);
-        } else {
-            set_state(steady_state, ramp_discrete_floor);
-        }
+        set_state(steady_state, 1);
         return MISCHIEF_MANAGED;
     }
     // click, hold: go to highest level (for ramping down)
     else if (event == EV_click2_hold) {
-        if (ramp_style == 0) {
-            set_state(steady_state, ramp_smooth_ceil);
-        } else {
-            set_state(steady_state, ramp_discrete_ceil);
-        }
+        set_state(steady_state, MAX_LEVEL);
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
@@ -222,19 +202,11 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     // 3 clicks: toggle smooth vs discrete ramping
     else if (event == EV_3clicks) {
         ramp_style ^= 1;
-        if (ramp_style) {
-            mode_min = ramp_discrete_floor;
-            mode_max = ramp_discrete_ceil;
-        } else {
-            mode_min = ramp_smooth_floor;
-            mode_max = ramp_smooth_ceil;
-        }
-        if (memorized_level < mode_min) memorized_level = mode_min;
-        if (memorized_level > mode_max) memorized_level = mode_max;
+        memorized_level = nearest_level(memorized_level);
         //save_config();
         set_level(0);
         delay_4ms(20/4);
-        set_level(nearest_level(memorized_level));
+        set_level(memorized_level);
         return MISCHIEF_MANAGED;
     }
     // 4 clicks: configure this ramp mode
@@ -248,11 +220,8 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         if (ramp_style  &&  (arg % HOLD_TIMEOUT != 0)) {
             return MISCHIEF_MANAGED;
         }
-        // TODO: make it ramp down instead, if already at max?
-        if (actual_level + ramp_step_size < mode_max)
-            memorized_level = actual_level + ramp_step_size;
-        else memorized_level = mode_max;
-        memorized_level = nearest_level(memorized_level);
+        // TODO? make it ramp down instead, if already at max?
+        memorized_level = nearest_level((int16_t)actual_level + ramp_step_size);
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #endif
@@ -272,14 +241,8 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         if (ramp_style  &&  (arg % HOLD_TIMEOUT != 0)) {
             return MISCHIEF_MANAGED;
         }
-        // TODO: make it ramp up instead, if already at min?
-        // TODO: test what happens if I go to moon, switch to discrete mode
-        //       (with min configured for like 10), then try to ramp down
-        if (actual_level - mode_min > ramp_step_size)
-            memorized_level = (actual_level-ramp_step_size);
-        else
-            memorized_level = mode_min;
-        memorized_level = nearest_level(memorized_level);
+        // TODO? make it ramp up instead, if already at min?
+        memorized_level = nearest_level((int16_t)actual_level - ramp_step_size);
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #endif
@@ -435,9 +398,20 @@ uint8_t momentary_state(EventPtr event, uint16_t arg) {
 }
 
 
-uint8_t nearest_level(uint8_t target) {
+uint8_t nearest_level(int16_t target) {
+    // bounds check
+    // using int16_t here saves us a bunch of logic elsewhere,
+    // by allowing us to correct for numbers < 0 or > 255 in one central place
+    uint8_t mode_min = ramp_smooth_floor;
+    uint8_t mode_max = ramp_smooth_ceil;
+    if (ramp_style) {
+        mode_min = ramp_discrete_floor;
+        mode_max = ramp_discrete_ceil;
+    }
+    if (target < mode_min) return mode_min;
+    if (target > mode_max) return mode_max;
+    // the rest isn't relevant for smooth ramping
     if (! ramp_style) return target;
-    if (target < ramp_discrete_floor) return ramp_discrete_floor;
 
     uint8_t ramp_range = ramp_discrete_ceil - ramp_discrete_floor;
     ramp_discrete_step_size = ramp_range / (ramp_discrete_steps-1);
