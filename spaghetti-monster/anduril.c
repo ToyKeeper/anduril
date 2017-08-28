@@ -31,13 +31,14 @@
 #define RAMP_LENGTH 150
 #define MAX_CLICKS 6
 #define USE_EEPROM
-#define EEPROM_BYTES 8
+#define EEPROM_BYTES 9
 #include "spaghetti-monster.h"
 
 // FSM states
 uint8_t off_state(EventPtr event, uint16_t arg);
 uint8_t steady_state(EventPtr event, uint16_t arg);
 uint8_t strobe_state(EventPtr event, uint16_t arg);
+#define NUM_STROBES 3
 #ifdef USE_BATTCHECK
 uint8_t battcheck_state(EventPtr event, uint16_t arg);
 uint8_t tempcheck_state(EventPtr event, uint16_t arg);
@@ -78,7 +79,8 @@ uint8_t target_level = 0;
 
 // strobe timing
 volatile uint8_t strobe_delay = 67;
-volatile uint8_t strobe_type = 0;  // 0 == party strobe, 1 == tactical strobe
+volatile uint8_t strobe_type = 2;  // 0 == party strobe, 1 == tactical strobe, 2 == bike flasher
+volatile uint8_t bike_flasher_brightness = MAX_1x7135;
 
 // deferred "off" so we won't suspend in a weird state
 volatile uint8_t go_to_standby = 0;
@@ -301,27 +303,46 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
-    // 2 clicks: toggle party strobe vs tactical strobe
+    // 2 clicks: rotate through strobe/flasher modes
     else if (event == EV_2clicks) {
-        strobe_type ^= 1;
+        strobe_type = (strobe_type + 1) % NUM_STROBES;
+        interrupt_nice_delays();
         save_config();
         return MISCHIEF_MANAGED;
     }
     // hold: change speed (go faster)
+    //       or change brightness (brighter)
     else if (event == EV_click1_hold) {
-        if ((arg & 1) == 0) {
-            if (strobe_delay > 8) strobe_delay --;
+        if (strobe_type < 2) {
+            if ((arg & 1) == 0) {
+                if (strobe_delay > 8) strobe_delay --;
+            }
+        }
+        // biking mode brighter
+        else if (strobe_type == 2) {
+            if (bike_flasher_brightness < MAX_LEVEL/2)
+                bike_flasher_brightness ++;
+            set_level(bike_flasher_brightness);
         }
         return MISCHIEF_MANAGED;
     }
     // click, hold: change speed (go slower)
+    //       or change brightness (dimmer)
     else if (event == EV_click2_hold) {
-        if ((arg & 1) == 0) {
-            if (strobe_delay < 255) strobe_delay ++;
+        if (strobe_type < 2) {
+            if ((arg & 1) == 0) {
+                if (strobe_delay < 255) strobe_delay ++;
+            }
+        }
+        // biking mode dimmer
+        else if (strobe_type == 2) {
+            if (bike_flasher_brightness > 1)
+                bike_flasher_brightness --;
+            set_level(bike_flasher_brightness);
         }
         return MISCHIEF_MANAGED;
     }
-    // release hold: save new strobe speed
+    // release hold: save new strobe settings
     else if ((event == EV_click1_hold_release)
           || (event == EV_click2_hold_release)) {
         save_config();
@@ -612,6 +633,7 @@ void load_config() {
         ramp_discrete_steps = eeprom[5];
         strobe_type = eeprom[6];
         strobe_delay = eeprom[7];
+        bike_flasher_brightness = eeprom[8];
     }
 }
 
@@ -624,6 +646,7 @@ void save_config() {
     eeprom[5] = ramp_discrete_steps;
     eeprom[6] = strobe_type;
     eeprom[7] = strobe_delay;
+    eeprom[8] = bike_flasher_brightness;
 
     save_eeprom();
 }
@@ -671,15 +694,29 @@ void loop() {
     }
 
     if (current_state == strobe_state) {
-        set_level(MAX_LEVEL);
-        if (strobe_type == 0) {  // party strobe
-            if (strobe_delay < 30) delay_zero();
-            else delay_ms(1);
-        } else {  //tactical strobe
-            nice_delay_ms(strobe_delay >> 1);
+        // party / tactical strobe
+        if (strobe_type < 2) {
+            set_level(MAX_LEVEL);
+            if (strobe_type == 0) {  // party strobe
+                if (strobe_delay < 30) delay_zero();
+                else delay_ms(1);
+            } else {  //tactical strobe
+                nice_delay_ms(strobe_delay >> 1);
+            }
+            set_level(0);
+            nice_delay_ms(strobe_delay);
         }
-        set_level(0);
-        nice_delay_ms(strobe_delay);
+        // bike flasher
+        else if (strobe_type == 2) {
+            uint8_t burst = bike_flasher_brightness << 1;
+            for(uint8_t i=0; i<4; i++) {
+                set_level(burst);
+                if (! nice_delay_ms(5)) return;
+                set_level(bike_flasher_brightness);
+                if (! nice_delay_ms(65)) return;
+            }
+            if (! nice_delay_ms(720)) return;
+        }
     }
     #ifdef USE_BATTCHECK
     else if (current_state == battcheck_state) {

@@ -4,8 +4,10 @@ From off:
   * 2 clicks: turbo
   * Click, hold: highest level then ramp down
   * 3 clicks: battcheck mode
+    (battcheck, tempcheck, beacon)
   * 4 clicks: lock-out
-  * 5 clicks: strobe mode
+  * 5 clicks: strobe modes
+    (bike flasher, party strobe, tactical strobe, police strobe?)
   * 6 clicks: momentary mode (disconnect power to exit)
 
 In steady mode:
@@ -31,14 +33,14 @@ Strobe mode:
   * 1 click: off
   * Hold: change speed (faster)
   * Click, hold: change speed (slower)
-  + 2 clicks: next strobe mode
-    (party strobe, tactical strobe, random/police strobe?, bike flasher)
+  * 2 clicks: next strobe mode
+    (bike flasher, party strobe, tactical strobe, random/police strobe?)
 
 Bike flasher:
-  - 1 click: off
-  - 2 clicks: party strobe
-  - Hold: brighter
-  - Click, hold: dimmer
+  * 1 click: off
+  * 2 clicks: party strobe
+  * Hold: brighter
+  * Click, hold: dimmer
 
 Battcheck mode:
   * 1 click: off
