@@ -7,7 +7,7 @@ From off:
     (battcheck, tempcheck, then beacon?)
   * 4 clicks: lock-out
   * 5 clicks: strobe modes
-    (bike flasher, party strobe, tactical strobe, police strobe?)
+    (bike flasher, party strobe, tactical strobe, lightning storm mode)
     (remembers which you last used)
   * 6 clicks: momentary mode (disconnect power to exit)
 
@@ -47,7 +47,12 @@ Party / Tactical strobe modes:
   * Hold: change speed (faster)
   * Click, hold: change speed (slower)
   * 2 clicks: next strobe mode
-    (bike flasher, party strobe, tactical strobe, random/police strobe?)
+    (bike flasher, party strobe, tactical strobe, lightning storm mode)
+    (TODO: random/police strobe?)
+
+Lightning storm mode:
+  * 1 click: off
+  * 2 clicks: bike flasher
 
 Battcheck mode:
   * 1 click: off
