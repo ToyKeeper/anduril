@@ -1,46 +1,53 @@
 From off:
   * 1 click: memorized level
   * Hold: Lowest level then ramp up
-  * 2 clicks: turbo
+  * 2 clicks: highest ramp level
   * Click, hold: highest level then ramp down
   * 3 clicks: battcheck mode
-    (battcheck, tempcheck, beacon)
+    (battcheck, tempcheck, then beacon?)
   * 4 clicks: lock-out
   * 5 clicks: strobe modes
     (bike flasher, party strobe, tactical strobe, police strobe?)
+    (remembers which you last used)
   * 6 clicks: momentary mode (disconnect power to exit)
 
 In steady mode:
   * 1 click: off
   * Hold: ramp up
   * Click, hold: ramp down
-  * 2 clicks: to/from turbo
+  * 2 clicks: to/from turbo (actual turbo, not just highest ramp level)
   * 3 clicks: toggle smooth vs discrete ramping
   * 4 clicks: configure current ramp
 
 Smooth ramp config mode:
-  - Setting 1: memory on/off
+  - Setting 1: memory on/off  (not implemented yet)
   * Setting 2: low end
+    (click N times to set ramp floor to level N)
   * Setting 3: high end
+    (click N times to set ramp ceiling to level "151 - N")
 
 Discrete ramp config mode:
-  - Setting 1: memory on/off
+  - Setting 1: memory on/off  (not implemented yet)
   * Setting 2: low end
+    (click N times to set ramp floor to level N)
   * Setting 3: high end
-  * Setting 4: number of levels
-
-Strobe mode:
-  * 1 click: off
-  * Hold: change speed (faster)
-  * Click, hold: change speed (slower)
-  * 2 clicks: next strobe mode
-    (bike flasher, party strobe, tactical strobe, random/police strobe?)
+    (click N times to set ramp ceiling to level "151 - N")
+  * Setting 4: number of levels in discrete ramp
+    (click N times to make discrete mode have N stair-steps)
+    (minimum 2, maximum 150)
 
 Bike flasher:
   * 1 click: off
   * 2 clicks: party strobe
   * Hold: brighter
   * Click, hold: dimmer
+
+Party / Tactical strobe modes:
+  * 1 click: off
+  * Hold: change speed (faster)
+  * Click, hold: change speed (slower)
+  * 2 clicks: next strobe mode
+    (bike flasher, party strobe, tactical strobe, random/police strobe?)
 
 Battcheck mode:
   * 1 click: off
