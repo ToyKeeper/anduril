@@ -1,6 +1,6 @@
 From off:
   * 1 click: memorized level
-  * Hold: Lowest level then ramp up
+  * Hold: lowest level then ramp up
   * 2 clicks: highest ramp level
   * Click, hold: highest level then ramp down
   * 3 clicks: battcheck mode
@@ -60,7 +60,7 @@ Tempcheck mode:
   - Hold: thermal calibration mode
 
 Thermal config mode:
-  * Click N times to set thermal limit to roughly 30 C + N.
+  * At buzz, click N times to set thermal limit to roughly 30 C + N.
 
 Thermal calibration mode:
   - Hold until hot: set new ceiling value
@@ -71,6 +71,9 @@ Beacon mode:
   * 2 clicks: battcheck mode
   * 3 clicks: configure time between pulses
 
+Beacon config mode:
+  * At buzz, click N times to set beacon frequency to N seconds.
+
 Momentary mode:
   * Press button: Light on (at memorized level).
   * Release button: Light off.
@@ -79,6 +82,10 @@ Momentary mode:
 TODO:
   * save settings in eeprom
   - decide on "hold until hot" or "click N times" for thermal config mode
+  - test thermal regulation on an actual light
+  - improve thermal regulation
   - a way to blink out the firmware version?
   - indicator LED support
   - a way to configure indicator LED behavior?
+  - add goodnight mode?
+  - add lightning mode?

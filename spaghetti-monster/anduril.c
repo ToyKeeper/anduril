@@ -26,9 +26,9 @@
 #define USE_DELAY_4MS
 #define USE_DELAY_ZERO
 #define USE_RAMPING
+#define RAMP_LENGTH 150
 #define USE_BATTCHECK
 #define BATTCHECK_VpT
-#define RAMP_LENGTH 150
 #define MAX_CLICKS 6
 #define USE_EEPROM
 #define EEPROM_BYTES 12
@@ -684,6 +684,8 @@ uint8_t number_entry_state(EventPtr event, uint16_t arg) {
 }
 
 
+// find the ramp level closest to the target,
+// using only the levels which are allowed in the current state
 uint8_t nearest_level(int16_t target) {
     // bounds check
     // using int16_t here saves us a bunch of logic elsewhere,
@@ -781,6 +783,7 @@ void low_voltage() {
 
 
 void setup() {
+    // blink at power-on to let user know power is connected
     set_level(RAMP_SIZE/8);
     delay_4ms(3);
     set_level(0);
@@ -792,6 +795,7 @@ void setup() {
 
 
 void loop() {
+
     // deferred "off" so we won't suspend in a weird state
     // (like...  during the middle of a strobe pulse)
     if (go_to_standby) {
@@ -825,6 +829,7 @@ void loop() {
             if (! nice_delay_ms(720)) return;
         }
     }
+
     #ifdef USE_BATTCHECK
     else if (current_state == battcheck_state) {
         battcheck();
@@ -835,6 +840,7 @@ void loop() {
     }
     // TODO: blink out therm_ceil during thermal_config_state
     #endif
+
     else if (current_state == beacon_state) {
         set_level(memorized_level);
         if (! nice_delay_ms(500)) return;
