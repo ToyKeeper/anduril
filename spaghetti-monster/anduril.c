@@ -31,21 +31,29 @@
 #define RAMP_LENGTH 150
 #define MAX_CLICKS 6
 #define USE_EEPROM
-#define EEPROM_BYTES 10
+#define EEPROM_BYTES 11
 #include "spaghetti-monster.h"
 
 // FSM states
 uint8_t off_state(EventPtr event, uint16_t arg);
+// ramping mode and its related config mode
 uint8_t steady_state(EventPtr event, uint16_t arg);
+uint8_t ramp_config_state(EventPtr event, uint16_t arg);
+// party and tactical strobes
 uint8_t strobe_state(EventPtr event, uint16_t arg);
 #define NUM_STROBES 3
 #ifdef USE_BATTCHECK
 uint8_t battcheck_state(EventPtr event, uint16_t arg);
 uint8_t tempcheck_state(EventPtr event, uint16_t arg);
 #endif
+// soft lockout
 uint8_t lockout_state(EventPtr event, uint16_t arg);
+// momentary / signalling mode
 uint8_t momentary_state(EventPtr event, uint16_t arg);
-uint8_t ramp_config_mode(EventPtr event, uint16_t arg);
+// beacon mode and its related config mode
+uint8_t beacon_state(EventPtr event, uint16_t arg);
+uint8_t beacon_config_state(EventPtr event, uint16_t arg);
+// general helper function for config modes
 uint8_t number_entry_state(EventPtr event, uint16_t arg);
 
 // return value from number_entry_state()
@@ -53,6 +61,7 @@ volatile uint8_t number_entry_value;
 
 void blink_confirm(uint8_t num);
 
+// remember stuff even after battery was changed
 void load_config();
 void save_config();
 
@@ -80,7 +89,12 @@ uint8_t target_level = 0;
 // strobe timing
 volatile uint8_t strobe_delays[] = { 40, 67 };  // party strobe, tactical strobe
 volatile uint8_t strobe_type = 2;  // 0 == party strobe, 1 == tactical strobe, 2 == bike flasher
+
+// bike mode config options
 volatile uint8_t bike_flasher_brightness = MAX_1x7135;
+
+// beacon timing
+volatile uint8_t beacon_seconds = 2;
 
 // deferred "off" so we won't suspend in a weird state
 volatile uint8_t go_to_standby = 0;
@@ -223,7 +237,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     }
     // 4 clicks: configure this ramp mode
     else if (event == EV_4clicks) {
-        set_state(ramp_config_mode, 0);
+        set_state(ramp_config_state, 0);
         return MISCHIEF_MANAGED;
     }
     // hold: change brightness (brighter)
@@ -373,9 +387,35 @@ uint8_t tempcheck_state(EventPtr event, uint16_t arg) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
+    // 2 clicks: beacon mode
+    else if (event == EV_2clicks) {
+        set_state(beacon_state, 0);
+        return MISCHIEF_MANAGED;
+    }
     return EVENT_NOT_HANDLED;
 }
 #endif
+
+
+uint8_t beacon_state(EventPtr event, uint16_t arg) {
+    // 1 click: off
+    if (event == EV_1click) {
+        set_state(off_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    // 2 clicks: battcheck mode
+    else if (event == EV_2clicks) {
+        set_state(battcheck_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    // 3 clicks: beacon config mode
+    else if (event == EV_3clicks) {
+        set_state(beacon_config_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    return EVENT_NOT_HANDLED;
+}
+
 
 uint8_t lockout_state(EventPtr event, uint16_t arg) {
     // conserve power while locked out
@@ -431,7 +471,7 @@ uint8_t momentary_state(EventPtr event, uint16_t arg) {
 }
 
 
-uint8_t ramp_config_mode(EventPtr event, uint16_t arg) {
+uint8_t ramp_config_state(EventPtr event, uint16_t arg) {
     static uint8_t config_step;
     static uint8_t num_config_steps;
     if (event == EV_enter_state) {
@@ -490,6 +530,33 @@ uint8_t ramp_config_mode(EventPtr event, uint16_t arg) {
         }
         #endif
         config_step ++;
+        return MISCHIEF_MANAGED;
+    }
+    return EVENT_NOT_HANDLED;
+}
+
+
+uint8_t beacon_config_state(EventPtr event, uint16_t arg) {
+    static uint8_t done = 0;
+    if (event == EV_enter_state) {
+        set_level(0);
+        done = 0;
+        return MISCHIEF_MANAGED;
+    }
+    // advance forward through config steps
+    else if (event == EV_tick) {
+        if (! done) push_state(number_entry_state, 1);
+        else {
+            save_config();
+            // return to beacon mode
+            set_state(beacon_state, 0);
+        }
+        return MISCHIEF_MANAGED;
+    }
+    // an option was set (return from number_entry_state)
+    else if (event == EV_reenter_state) {
+        if (number_entry_value) beacon_seconds = number_entry_value;
+        done = 1;
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
@@ -635,6 +702,7 @@ void load_config() {
         strobe_delays[0] = eeprom[7];
         strobe_delays[1] = eeprom[8];
         bike_flasher_brightness = eeprom[9];
+        beacon_seconds = eeprom[10];
     }
 }
 
@@ -649,6 +717,7 @@ void save_config() {
     eeprom[7] = strobe_delays[0];
     eeprom[8] = strobe_delays[1];
     eeprom[9] = bike_flasher_brightness;
+    eeprom[10] = beacon_seconds;
 
     save_eeprom();
 }
@@ -729,4 +798,10 @@ void loop() {
         nice_delay_ms(1000);
     }
     #endif
+    else if (current_state == beacon_state) {
+        set_level(memorized_level);
+        if (! nice_delay_ms(500)) return;
+        set_level(0);
+        nice_delay_ms(((beacon_seconds) * 1000) - 500);
+    }
 }

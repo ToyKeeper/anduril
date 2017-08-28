@@ -55,7 +55,7 @@ Battcheck mode:
 
 Tempcheck mode:
   * 1 click: off
-  - 2 clicks: beacon mode
+  * 2 clicks: beacon mode
   - Hold: thermal calibration mode
 
 Thermal calibration mode:
@@ -63,11 +63,9 @@ Thermal calibration mode:
   - ... don't hold: blink out current ceiling value and exit
 
 Beacon mode:
-  - 1 click: off
-  - 2 clicks: battcheck mode
-  - Hold: brighter
-  - Click, hold: dimmer
-  - 3 clicks: configure time between pulses
+  * 1 click: off
+  * 2 clicks: battcheck mode
+  * 3 clicks: configure time between pulses
 
 Momentary mode:
   * Press button: Light on (at memorized level).
