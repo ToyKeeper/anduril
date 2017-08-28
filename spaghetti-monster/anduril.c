@@ -116,7 +116,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     }
     // 2 clicks: highest mode
     else if (event == EV_2clicks) {
-        set_level(nearest_level(MAX_LEVEL));
+        set_state(steady_state, nearest_level(MAX_LEVEL));
         return MISCHIEF_MANAGED;
     }
     #ifdef USE_BATTCHECK
