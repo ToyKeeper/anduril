@@ -32,6 +32,7 @@
 #define MAX_CLICKS 6
 #define USE_EEPROM
 #define EEPROM_BYTES 12
+#define USE_LIGHTNING_MODE
 #include "spaghetti-monster.h"
 
 // FSM states
@@ -41,7 +42,11 @@ uint8_t steady_state(EventPtr event, uint16_t arg);
 uint8_t ramp_config_state(EventPtr event, uint16_t arg);
 // party and tactical strobes
 uint8_t strobe_state(EventPtr event, uint16_t arg);
+#ifdef USE_LIGHTNING_MODE
+#define NUM_STROBES 4
+#else
 #define NUM_STROBES 3
+#endif
 #ifdef USE_BATTCHECK
 uint8_t battcheck_state(EventPtr event, uint16_t arg);
 uint8_t tempcheck_state(EventPtr event, uint16_t arg);
@@ -89,10 +94,15 @@ uint8_t target_level = 0;
 
 // strobe timing
 volatile uint8_t strobe_delays[] = { 40, 67 };  // party strobe, tactical strobe
-volatile uint8_t strobe_type = 2;  // 0 == party strobe, 1 == tactical strobe, 2 == bike flasher
+volatile uint8_t strobe_type = 3;  // 0 == party strobe, 1 == tactical strobe, 2 == lightning storm, 3 == bike flasher
 
 // bike mode config options
 volatile uint8_t bike_flasher_brightness = MAX_1x7135;
+
+#ifdef USE_LIGHTNING_MODE
+volatile uint8_t pseudo_rand_seed = 0;
+uint8_t pseudo_rand();
+#endif
 
 // beacon timing
 volatile uint8_t beacon_seconds = 2;
@@ -334,7 +344,7 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
             }
         }
         // biking mode brighter
-        else if (strobe_type == 2) {
+        else if (strobe_type == 3) {
             if (bike_flasher_brightness < MAX_LEVEL/2)
                 bike_flasher_brightness ++;
             set_level(bike_flasher_brightness);
@@ -350,7 +360,7 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
             }
         }
         // biking mode dimmer
-        else if (strobe_type == 2) {
+        else if (strobe_type == 3) {
             if (bike_flasher_brightness > 1)
                 bike_flasher_brightness --;
             set_level(bike_flasher_brightness);
@@ -363,6 +373,13 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
         save_config();
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_LIGHTNING_MODE
+    // clock tick: bump the random seed
+    else if (event == EV_tick) {
+        pseudo_rand_seed += arg;
+        return MISCHIEF_MANAGED;
+    }
+    #endif
     return EVENT_NOT_HANDLED;
 }
 
@@ -726,6 +743,17 @@ void blink_confirm(uint8_t num) {
 }
 
 
+#ifdef USE_LIGHTNING_MODE
+uint8_t pseudo_rand() {
+    static uint16_t offset = 1024;
+    // loop from 1024 to 4095
+    offset = ((offset + 1) & 0x0fff) | 0x0400;
+    pseudo_rand_seed += 0b01010101;  // 85
+    return pgm_read_byte(offset) + pseudo_rand_seed;
+}
+#endif
+
+
 void load_config() {
     if (load_eeprom()) {
         ramp_style = eeprom[0];
@@ -734,7 +762,7 @@ void load_config() {
         ramp_discrete_floor = eeprom[3];
         ramp_discrete_ceil = eeprom[4];
         ramp_discrete_steps = eeprom[5];
-        strobe_type = eeprom[6];
+        strobe_type = eeprom[6];  // TODO: move this to eeprom_wl?
         strobe_delays[0] = eeprom[7];
         strobe_delays[1] = eeprom[8];
         bike_flasher_brightness = eeprom[9];
@@ -750,7 +778,7 @@ void save_config() {
     eeprom[3] = ramp_discrete_floor;
     eeprom[4] = ramp_discrete_ceil;
     eeprom[5] = ramp_discrete_steps;
-    eeprom[6] = strobe_type;
+    eeprom[6] = strobe_type;  // TODO: move this to eeprom_wl?
     eeprom[7] = strobe_delays[0];
     eeprom[8] = strobe_delays[1];
     eeprom[9] = bike_flasher_brightness;
@@ -817,8 +845,44 @@ void loop() {
             set_level(0);
             nice_delay_ms(strobe_delays[strobe_type]);
         }
-        // bike flasher
+        #ifdef USE_LIGHTNING_MODE
+        // lightning storm
         else if (strobe_type == 2) {
+            int16_t brightness;
+            uint16_t rand_time;
+
+            // turn the emitter on at a random level,
+            // for a random amount of time between 1ms and 32ms
+            rand_time = 1 << (pseudo_rand() % 6);
+            brightness = 1 << (pseudo_rand() % 7);  // 1, 2, 4, 8, 16, 32, 64
+            brightness += 1 << (pseudo_rand()&0x03);  // 2 to 80 now
+            brightness += pseudo_rand() % brightness;  // 2 to 159 now (w/ low bias)
+            if (brightness > MAX_LEVEL) brightness = MAX_LEVEL;
+            set_level(brightness);
+            if (! nice_delay_ms(rand_time)) return;
+
+            // decrease the brightness somewhat more gradually, like lightning
+            uint8_t stepdown = brightness >> 3;
+            if (stepdown < 1) stepdown = 1;
+            while(brightness > 1) {
+                if (! nice_delay_ms(rand_time)) return;
+                brightness -= stepdown;
+                if (brightness < 0) brightness = 0;
+                set_level(brightness);
+            }
+
+            // turn the emitter off,
+            // for a random amount of time between 1ms and 8192ms
+            // (with a low bias)
+            rand_time = 1<<(pseudo_rand()%13);
+            rand_time += pseudo_rand()%rand_time;
+            set_level(0);
+            nice_delay_ms(rand_time);
+
+        }
+        #endif
+        // bike flasher
+        else if (strobe_type == 3) {
             uint8_t burst = bike_flasher_brightness << 1;
             for(uint8_t i=0; i<4; i++) {
                 set_level(burst);
