@@ -32,8 +32,13 @@
 #define MAX_CLICKS 6
 #define USE_EEPROM
 #define EEPROM_BYTES 12
-#define USE_LIGHTNING_MODE
 #include "spaghetti-monster.h"
+
+// Options specific to this UI (not inherited from SpaghettiMonster)
+#define USE_LIGHTNING_MODE
+// set this a bit high, since the bottom 2 ramp levels might not emit any light at all
+#define GOODNIGHT_TIME  65  // minutes (approximately)
+#define GOODNIGHT_LEVEL 24  // ~11 lm
 
 // FSM states
 uint8_t off_state(EventPtr event, uint16_t arg);
@@ -52,16 +57,18 @@ uint8_t battcheck_state(EventPtr event, uint16_t arg);
 uint8_t tempcheck_state(EventPtr event, uint16_t arg);
 uint8_t thermal_config_state(EventPtr event, uint16_t arg);
 #endif
+// 1-hour ramp down from low, then automatic off
+uint8_t goodnight_state(EventPtr event, uint16_t arg);
+// beacon mode and its related config mode
+uint8_t beacon_state(EventPtr event, uint16_t arg);
+uint8_t beacon_config_state(EventPtr event, uint16_t arg);
 // soft lockout
 uint8_t lockout_state(EventPtr event, uint16_t arg);
 // momentary / signalling mode
 uint8_t momentary_state(EventPtr event, uint16_t arg);
-// beacon mode and its related config mode
-uint8_t beacon_state(EventPtr event, uint16_t arg);
-uint8_t beacon_config_state(EventPtr event, uint16_t arg);
+
 // general helper function for config modes
 uint8_t number_entry_state(EventPtr event, uint16_t arg);
-
 // return value from number_entry_state()
 volatile uint8_t number_entry_value;
 
@@ -391,9 +398,9 @@ uint8_t battcheck_state(EventPtr event, uint16_t arg) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
-    // 2 clicks: tempcheck mode
+    // 2 clicks: goodnight mode
     else if (event == EV_2clicks) {
-        set_state(tempcheck_state, 0);
+        set_state(goodnight_state, 0);
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
@@ -405,9 +412,9 @@ uint8_t tempcheck_state(EventPtr event, uint16_t arg) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
-    // 2 clicks: beacon mode
+    // 2 clicks: battcheck mode
     else if (event == EV_2clicks) {
-        set_state(beacon_state, 0);
+        set_state(battcheck_state, 0);
         return MISCHIEF_MANAGED;
     }
     // 3 clicks: thermal config mode
@@ -426,14 +433,54 @@ uint8_t beacon_state(EventPtr event, uint16_t arg) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
-    // 2 clicks: battcheck mode
+    // 2 clicks: tempcheck mode
     else if (event == EV_2clicks) {
-        set_state(battcheck_state, 0);
+        set_state(tempcheck_state, 0);
         return MISCHIEF_MANAGED;
     }
     // 3 clicks: beacon config mode
     else if (event == EV_3clicks) {
         set_state(beacon_config_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    return EVENT_NOT_HANDLED;
+}
+
+
+#define GOODNIGHT_TICKS_PER_STEPDOWN (GOODNIGHT_TIME*TICKS_PER_SECOND*60L/GOODNIGHT_LEVEL)
+uint8_t goodnight_state(EventPtr event, uint16_t arg) {
+    static uint16_t ticks_since_stepdown = 0;
+    // blink on start
+    if (event == EV_enter_state) {
+        blink_confirm(4);
+        ticks_since_stepdown = 0;
+        set_level(GOODNIGHT_LEVEL);
+        return MISCHIEF_MANAGED;
+    }
+    // 1 click: off
+    else if (event == EV_1click) {
+        set_state(off_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    // 2 clicks: beacon mode
+    else if (event == EV_2clicks) {
+        set_state(beacon_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    // tick: step down (maybe) or off (maybe)
+    else if (event == EV_tick) {
+        if (++ticks_since_stepdown > GOODNIGHT_TICKS_PER_STEPDOWN) {
+            ticks_since_stepdown = 0;
+            set_level(actual_level-1);
+            if (! actual_level) {
+                #if 0  // test blink, to help measure timing
+                set_level(MAX_LEVEL>>2);
+                delay_4ms(8/2);
+                set_level(0);
+                #endif
+                set_state(off_state, 0);
+            }
+        }
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
