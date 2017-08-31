@@ -89,7 +89,11 @@ int main() {
     push_state(default_state, 0);
 
     // in case any spurious button presses were detected at boot
+    #ifdef USE_DELAY_MS
     delay_ms(1);
+    #else
+    delay_4ms(1);
+    #endif
     empty_event_sequence();
 
     // call recipe's setup

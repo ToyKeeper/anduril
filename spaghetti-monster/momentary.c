@@ -19,9 +19,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define FSM_EMISAR_D4_LAYOUT
+#define FSM_EMISAR_D4_DRIVER
 #define USE_LVP
 #define USE_DEBUG_BLINK
+#define USE_DELAY_4MS
 #include "spaghetti-monster.h"
 
 volatile uint8_t brightness;

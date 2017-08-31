@@ -59,7 +59,7 @@
 
 /******************** I/O pin and register layout ************************/
 #ifdef FET_7135_LAYOUT
-#define LAYOUT_DEFINED
+#define DRIVER_TYPE_DEFINED
 /*
  *           ----
  *   Reset -|1  8|- VCC
@@ -95,7 +95,7 @@
 #endif  // FET_7135_LAYOUT
 
 #ifdef TRIPLEDOWN_LAYOUT
-#define LAYOUT_DEFINED
+#define DRIVER_TYPE_DEFINED
 /*
  *             ----
  *     Reset -|1  8|- VCC
@@ -132,7 +132,7 @@
 #endif  // TRIPLEDOWN_LAYOUT
 
 #ifdef FERRERO_ROCHER_LAYOUT
-#define LAYOUT_DEFINED
+#define DRIVER_TYPE_DEFINED
 /*
  *            ----
  *    Reset -|1  8|- VCC
@@ -147,7 +147,7 @@
 #endif  // FERRERO_ROCHER_LAYOUT
 
 #ifdef NANJG_LAYOUT
-#define LAYOUT_DEFINED
+#define DRIVER_TYPE_DEFINED
 #define STAR2_PIN   PB0
 #define STAR3_PIN   PB4
 #define STAR4_PIN   PB3
@@ -165,8 +165,8 @@
 #endif  // NANJG_LAYOUT
 
 
-#ifdef FSM_EMISAR_D4_LAYOUT
-#define LAYOUT_DEFINED
+#ifdef FSM_EMISAR_D4_DRIVER
+#define DRIVER_TYPE_DEFINED
 /*
  *           ----
  *   Reset -|1  8|- VCC
@@ -199,11 +199,11 @@
 #define FAST 0xA3           // fast PWM both channels
 #define PHASE 0xA1          // phase-correct PWM both channels
 
-#endif
+#endif  // ifdef FSM_EMISAR_D4_DRIVER
 
 
-#ifdef FSM_TKSABER_LAYOUT
-#define LAYOUT_DEFINED
+#ifdef FSM_TKSABER_DRIVER
+#define DRIVER_TYPE_DEFINED
 /*
  *             ----
  *     Reset -|1  8|- VCC
@@ -233,10 +233,10 @@
 #define FAST 0xA3           // fast PWM both channels
 #define PHASE 0xA1          // phase-correct PWM both channels
 
-#endif  // TKSABER_LAYOUT
+#endif  // TKSABER_DRIVER
 
 
-#ifndef LAYOUT_DEFINED
+#ifndef DRIVER_TYPE_DEFINED
 #error Hey, you need to define an I/O pin layout.
 #endif
 
