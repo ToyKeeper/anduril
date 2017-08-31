@@ -4,7 +4,7 @@ From off:
   * 2 clicks: highest ramp level
   * Click, hold: highest level then ramp down
   * 3 clicks: battcheck mode
-    (battcheck, tempcheck, then beacon?)
+    (battcheck, goodnight, beacon, tempcheck)
   * 4 clicks: lock-out
   * 5 clicks: strobe modes
     (bike flasher, party strobe, tactical strobe, lightning storm mode)
@@ -56,11 +56,23 @@ Lightning storm mode:
 
 Battcheck mode:
   * 1 click: off
+  * 2 clicks: goodnight mode
+
+Goodnight mode:
+  * 1 click: off
+  * 2 clicks: beacon mode
+
+Beacon mode:
+  * 1 click: off
   * 2 clicks: tempcheck mode
+  * 3 clicks: configure time between pulses
+
+Beacon config mode:
+  * At buzz, click N times to set beacon frequency to N seconds.
 
 Tempcheck mode:
   * 1 click: off
-  * 2 clicks: beacon mode
+  * 2 clicks: battcheck mode
   * 3 clicks: thermal config mode
   - Hold: thermal calibration mode
 
@@ -70,14 +82,6 @@ Thermal config mode:
 Thermal calibration mode:
   - Hold until hot: set new ceiling value
   - ... don't hold: blink out current ceiling value and exit
-
-Beacon mode:
-  * 1 click: off
-  * 2 clicks: battcheck mode
-  * 3 clicks: configure time between pulses
-
-Beacon config mode:
-  * At buzz, click N times to set beacon frequency to N seconds.
 
 Momentary mode:
   * Press button: Light on (at memorized level).
@@ -92,5 +96,5 @@ TODO:
   - a way to blink out the firmware version?
   - indicator LED support
   - a way to configure indicator LED behavior?
-  - add goodnight mode?
-  - add lightning mode?
+  * add goodnight mode?
+  * add lightning mode?
