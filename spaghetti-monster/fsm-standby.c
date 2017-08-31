@@ -36,6 +36,7 @@ void sleep_until_eswitch_pressed()
 
     // make sure switch isn't currently pressed
     while (button_is_pressed()) {}
+    empty_event_sequence();  // cancel pending input on suspend
 
     PCINT_on();  // wake on e-switch event
 
@@ -45,7 +46,8 @@ void sleep_until_eswitch_pressed()
 
     // something happened; wake up
     sleep_disable();
-    PCINT_on();
+    //PCINT_on();  // should be on already
+    // FIXME? if button is down, make sure a button press event is added to the current sequence
     ADC_on();
     WDT_on();
 }
