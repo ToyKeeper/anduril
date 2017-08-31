@@ -23,6 +23,7 @@
 #define DEFAULT_THERM_CEIL 45
 #define USE_DEBUG_BLINK
 #define USE_DELAY_MS
+#define USE_DELAY_4MS
 #define USE_DELAY_ZERO
 #include "spaghetti-monster.h"
 
