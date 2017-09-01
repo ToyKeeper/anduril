@@ -269,6 +269,11 @@ PROGMEM const uint8_t voltage_blinks[] = {
     30, 35, 38, 40, 42, 99,
 };
 #endif
+#ifdef BATTCHECK_6bars
+PROGMEM const uint8_t voltage_blinks[] = {
+    30, 34, 36, 38, 40, 41, 43, 99,
+};
+#endif
 #ifdef BATTCHECK_8bars
 PROGMEM const uint8_t voltage_blinks[] = {
     30, 33, 35, 37, 38, 39, 40, 41, 42, 99,

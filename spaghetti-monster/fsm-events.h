@@ -233,6 +233,156 @@ Event EV_click6_complete[] = {
     A_RELEASE_TIMEOUT,
     0 };
 #endif
+#if MAX_CLICKS >= 7
+#define EV_7clicks EV_click7_complete
+Event EV_click7_complete[] = {
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_RELEASE_TIMEOUT,
+    0 };
+#endif
+#if MAX_CLICKS >= 8
+#define EV_8clicks EV_click8_complete
+Event EV_click8_complete[] = {
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_RELEASE_TIMEOUT,
+    0 };
+#endif
+#if MAX_CLICKS >= 9
+#define EV_9clicks EV_click9_complete
+Event EV_click9_complete[] = {
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_RELEASE_TIMEOUT,
+    0 };
+#endif
+#if MAX_CLICKS >= 10
+#define EV_10clicks EV_click10_complete
+Event EV_click10_complete[] = {
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_RELEASE_TIMEOUT,
+    0 };
+#endif
+#if MAX_CLICKS >= 11
+#define EV_11clicks EV_click11_complete
+Event EV_click11_complete[] = {
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_RELEASE_TIMEOUT,
+    0 };
+#endif
+#if MAX_CLICKS >= 12
+#define EV_12clicks EV_click12_complete
+Event EV_click12_complete[] = {
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_RELEASE_TIMEOUT,
+    0 };
+#endif
 // ... and so on
 
 // A list of button event types for easy iteration
@@ -263,6 +413,24 @@ EventPtr event_sequences[] = {
     #endif
     #if MAX_CLICKS >= 6
     EV_click6_complete,
+    #endif
+    #if MAX_CLICKS >= 7
+    EV_click7_complete,
+    #endif
+    #if MAX_CLICKS >= 8
+    EV_click8_complete,
+    #endif
+    #if MAX_CLICKS >= 9
+    EV_click9_complete,
+    #endif
+    #if MAX_CLICKS >= 10
+    EV_click10_complete,
+    #endif
+    #if MAX_CLICKS >= 11
+    EV_click11_complete,
+    #endif
+    #if MAX_CLICKS >= 12
+    EV_click12_complete,
     #endif
     // ...
 };
