@@ -70,9 +70,11 @@ uint8_t UI2_mode  = 0;
 uint8_t UI2_mode1 = 1;
 uint8_t UI2_mode2 = 0;
 uint8_t UI2_mode3 = 0;
-uint8_t UI2_group1[] = {0,  2};
-uint8_t UI2_group2[] = {4,  6};
-uint8_t UI2_group3[] = {8, 10};
+uint8_t UI2_mode4 = 0;  // doesn't matter, makes other code easier
+uint8_t UI2_group1[] = { 0,  2};  // moon, low
+uint8_t UI2_group2[] = { 4,  6};  // mid1, mid2
+uint8_t UI2_group3[] = { 8, 10};  // high1, high2
+uint8_t UI2_group4[] = {11, 11};  // turbo only
 // UI3 can access all levels, with 3 different mode memory slots
 uint8_t UI3_mode  = 0;
 uint8_t UI3_mode1 = 2;
@@ -92,6 +94,12 @@ void set_any_mode(uint8_t mode, uint8_t *group) {
     #ifdef USE_THERMAL_REGULATION
     target_level = actual_level;
     #endif
+}
+
+void blink_fast() {
+    set_level(MAX_LEVEL/2);
+    delay_4ms(8/4);
+    set_level(0);
 }
 
 uint8_t base_off_state(EventPtr event, uint16_t arg) {
@@ -130,16 +138,19 @@ uint8_t base_off_state(EventPtr event, uint16_t arg) {
     }
     // 9 clicks: activate UI1
     else if (event == EV_9clicks) {
+        blink_fast();
         set_state(ui1_off_state, 0);
         return EVENT_HANDLED;
     }
     // 10 clicks: activate UI2
     else if (event == EV_10clicks) {
+        blink_fast();
         set_state(ui2_off_state, 0);
         return EVENT_HANDLED;
     }
     // 11 clicks: activate UI3
     else if (event == EV_11clicks) {
+        blink_fast();
         set_state(ui3_off_state, 0);
         return EVENT_HANDLED;
     }
@@ -182,6 +193,31 @@ uint8_t ui1_off_state(EventPtr event, uint16_t arg) {
 uint8_t ui2_off_state(EventPtr event, uint16_t arg) {
     UI = 2;
     if (event == EV_enter_state) {
+        return EVENT_HANDLED;
+    }
+    // 1 click: low modes
+    if (event == EV_1click) {
+        set_any_mode(UI2_mode1, UI2_group1);
+        set_state(ui2_on_state, 0);
+        return EVENT_HANDLED;
+    }
+    // 2 clicks: high modes
+    else if (event == EV_2clicks) {
+        set_any_mode(UI2_mode3, UI2_group3);
+        set_state(ui2_on_state, 2);
+        return EVENT_HANDLED;
+    }
+    // hold: turbo
+    else if (event == EV_hold) {
+        if (arg == 0) {
+            set_level(MAX_LEVEL);
+        }
+        //set_state(ui1_on_state, 3);
+        return EVENT_HANDLED;
+    }
+    // release hold: off
+    else if (event == EV_click1_hold_release) {
+        set_state(base_off_state, 0);
         return EVENT_HANDLED;
     }
     return base_off_state(event, arg);
@@ -261,11 +297,56 @@ uint8_t ui1_on_state(EventPtr event, uint16_t arg) {
         set_any_mode(*mode, group);
         return MISCHIEF_MANAGED;
     }
-    return base_on_state(event, arg, &UI1_mode1, UI1_group1);
+    return base_on_state(event, arg, mode, group);
 }
 
 uint8_t ui2_on_state(EventPtr event, uint16_t arg) {
-    return base_on_state(event, arg, &UI2_mode1, UI2_group1);
+    // turn on LED when entering the mode
+    static uint8_t *mode = &UI2_mode1;
+    static uint8_t *group = UI2_group1;
+    if (event == EV_enter_state) {
+        UI2_mode = arg;
+    }
+    switch (UI2_mode) {
+        case 0:
+            mode = &UI2_mode1;
+            group = UI2_group1;
+            break;
+        case 1:
+            mode = &UI2_mode2;
+            group = UI2_group2;
+            break;
+        case 2:
+            mode = &UI2_mode3;
+            group = UI2_group3;
+            break;
+        default:  // turbo only
+            mode = &UI2_mode4;
+            group = UI2_group4;
+            break;
+    }
+
+    if (event == EV_enter_state) {
+        set_any_mode(*mode, group);
+        return EVENT_HANDLED;
+    }
+    // 2 clicks: toggle moon/low, mid1/mid2, or high1/high2
+    else if (event == EV_2clicks) {
+        *mode ^= 1;
+        set_any_mode(*mode, group);
+        return MISCHIEF_MANAGED;
+    }
+    // hold: rotate through low/mid/high/turbo
+    else if (event == EV_hold) {
+        if (arg % HOLD_TIMEOUT == 0) {
+            UI2_mode = (UI2_mode + 1) & 3;
+        }
+        else if (arg % HOLD_TIMEOUT == 1) {
+            set_any_mode(*mode, group);
+        }
+        return MISCHIEF_MANAGED;
+    }
+    return base_on_state(event, arg, mode, group);
 }
 
 uint8_t ui3_on_state(EventPtr event, uint16_t arg) {
