@@ -22,6 +22,20 @@
 
 #include "fsm-main.h"
 
+#if PWM_CHANNELS == 4
+// 4th PWM channel requires manually turning the pin on/off via interrupt :(
+ISR(TIMER1_OVF_vect) {
+    //bitClear(PORTB, 3);
+    PORTB &= 0b11110111;
+    //PORTB |= 0b00001000;
+}
+ISR(TIMER1_COMPA_vect) {
+    //if (!bitRead(TIFR,TOV1)) bitSet(PORTB, 3);
+    if (! (TIFR & (1<<TOV1))) PORTB |= 0b00001000;
+    //if (! (TIFR & (1<<TOV1))) PORTB &= 0b11110111;
+}
+#endif
+
 int main() {
     // Don't allow interrupts while booting
     cli();
@@ -29,49 +43,39 @@ int main() {
     //PCINT_off();
 
     // configure PWM channels
-    #if PWM_CHANNELS == 1
+    #if PWM_CHANNELS >= 1
     DDRB |= (1 << PWM1_PIN);
     TCCR0B = 0x01; // pre-scaler for timer (1 => 1, 2 => 8, 3 => 64...)
     TCCR0A = PHASE;
-    #elif PWM_CHANNELS == 2
-    DDRB |= (1 << PWM1_PIN);
+    #endif
+    #if PWM_CHANNELS >= 2
     DDRB |= (1 << PWM2_PIN);
-    TCCR0B = 0x01; // pre-scaler for timer (1 => 1, 2 => 8, 3 => 64...)
-    TCCR0A = PHASE;
-    #elif PWM_CHANNELS == 3
-    DDRB |= (1 << PWM1_PIN);
-    DDRB |= (1 << PWM2_PIN);
-    TCCR0B = 0x01; // pre-scaler for timer (1 => 1, 2 => 8, 3 => 64...)
-    TCCR0A = PHASE;
+    #endif
+    #if PWM_CHANNELS >= 3
     // Second PWM counter is ... weird
     DDRB |= (1 << PWM3_PIN);
     TCCR1 = _BV (CS10);
     GTCCR = _BV (COM1B1) | _BV (PWM1B);
     OCR1C = 255;  // Set ceiling value to maximum
-    #elif PWM_CHANNELS == 4
-    DDRB |= (1 << PWM1_PIN);
-    DDRB |= (1 << PWM2_PIN);
-    TCCR0B = 0x01; // pre-scaler for timer (1 => 1, 2 => 8, 3 => 64...)
-    TCCR0A = PHASE;
-    // Second PWM counter is ... weird
-    DDRB |= (1 << PWM3_PIN);
-    // FIXME: How exactly do we do PWM on channel 4?
-    TCCR1 = _BV (CS10);
-    GTCCR = _BV (COM1B1) | _BV (PWM1B);
-    OCR1C = 255;  // Set ceiling value to maximum
+    #endif
+    #if PWM_CHANNELS >= 4
+    // 4th PWM channel is ... not actually supported in hardware  :(
     DDRB |= (1 << PWM4_PIN);
+    //OCR1C = 255;  // Set ceiling value to maximum
+    TCCR1 = 1<<CTC1 | 1<<PWM1A | 3<<COM1A0 | 2<<CS10;
+    GTCCR = (2<<COM1B0) | (1<<PWM1B);
+    // set up an interrupt to control PWM4 pin
+    TIMSK |= (1<<OCIE1A) | (1<<TOIE1);
     #endif
 
-    // TODO: turn on ADC?
     // configure e-switch
     PORTB = (1 << SWITCH_PIN);  // e-switch is the only input
     PCMSK = (1 << SWITCH_PIN);  // pin change interrupt uses this pin
 
-    // TODO: configure sleep mode
+    // configure sleep mode
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 
     // Read config values and saved state
-    // restore_state();  // TODO
 
     // TODO: handle long press vs short press (or even medium press)?
 
@@ -85,9 +89,6 @@ int main() {
     ADC_on();
     sei();
 
-    // fallback for handling a few things
-    push_state(default_state, 0);
-
     // in case any spurious button presses were detected at boot
     #ifdef USE_DELAY_MS
     delay_ms(1);
@@ -96,17 +97,43 @@ int main() {
     #endif
     empty_event_sequence();
 
+    // fallback for handling a few things
+    #ifndef DONT_USE_DEFAULT_STATE
+    push_state(default_state, 0);
+    #endif
+
     // call recipe's setup
     setup();
 
     // main loop
     while (1) {
-        // TODO: update e-switch press state?
-        // TODO: check voltage?
-        // TODO: check temperature?
-        // if event queue not empty, process and pop first item in queue?
+        // if event queue not empty, empty it
         process_emissions();
 
+        // enter standby mode if requested
+        // (works better if deferred like this)
+        if (go_to_standby) {
+            go_to_standby = 0;
+            #ifdef USE_RAMPING
+            set_level(0);
+            #else
+            #if PWM_CHANNELS >= 1
+            PWM1_LVL = 0;
+            #endif
+            #if PWM_CHANNELS >= 2
+            PWM2_LVL = 0;
+            #endif
+            #if PWM_CHANNELS >= 3
+            PWM3_LVL = 0;
+            #endif
+            #if PWM_CHANNELS >= 4
+            PWM4_LVL = 255;  // inverted  :(
+            #endif
+            #endif
+            standby_mode();
+        }
+
+        // give the recipe some time slices
         loop();
     }
 }

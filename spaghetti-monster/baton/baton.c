@@ -56,8 +56,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         PWM1_LVL = 0;
         PWM2_LVL = 0;
         // sleep while off  (lower power use)
-        //empty_event_sequence();  // just in case (but shouldn't be needed)
-        standby_mode();
+        go_to_standby = 1;
         return 0;
     }
     // hold (initially): go to lowest level, but allow abort for regular click

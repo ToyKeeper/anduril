@@ -188,6 +188,7 @@
 #define PWM2_PIN PB1        // pin 6, FET PWM
 #define PWM2_LVL OCR0B      // OCR0B is the output compare register for PB1
 
+// (FIXME: remove?  not used?)
 #define VOLTAGE_PIN PB2     // pin 7, voltage ADC
 #define ADC_CHANNEL 0x01    // MUX 01 corresponds with PB2
 #define ADC_DIDR    ADC1D   // Digital input disable bit corresponding with PB2
@@ -208,7 +209,7 @@
  *             ----
  *     Reset -|1  8|- VCC
  * PWM 4 (A) -|2  7|- e-switch
- * PWM 3 (B) -|3  6|- PWM 2 (G)
+ * PWM 3 (G) -|3  6|- PWM 2 (B)
  *       GND -|4  5|- PWM 1 (R)
  *             ----
  */
@@ -221,17 +222,18 @@
 #define PWM3_PIN PB4        // pin 3
 #define PWM3_LVL OCR1B
 #define PWM4_PIN PB3        // pin 2
-#define PWM4_LVL OCR1A      // FIXME: does this work?
+#define PWM4_LVL OCR1A
 
-#define SWITCH_PIN PB2      // pin 7
+#define SWITCH_PIN   PB2    // pin 7
 #define SWITCH_PCINT PCINT2 // pin 7 pin change interrupt
 
-#define ADC_PRSCL   0x07    // clk/128 (no need to be super fast)
-// FIXME: What is the DIDR for pin 8?
-//#define ADC_DIDR    ADC1D   // Digital input disable bit corresponding with PB2
+#define ADC_PRSCL   0x06    // clk/64 (no need to be super fast)
 
-#define FAST 0xA3           // fast PWM both channels
-#define PHASE 0xA1          // phase-correct PWM both channels
+//#define TEMP_DIDR   ADC4D
+#define TEMP_CHANNEL 0b00001111
+
+#define FAST        0xA3    // fast PWM both channels
+#define PHASE       0xA1    // phase-correct PWM both channels
 
 #endif  // TKSABER_DRIVER
 

@@ -59,8 +59,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     if (event == EV_enter_state) {
         set_level(0);
         // sleep while off  (lower power use)
-        //empty_event_sequence();  // just in case (but shouldn't be needed)
-        standby_mode();
+        go_to_standby = 1;
         return MISCHIEF_MANAGED;
     }
     // hold (initially): go to lowest level, but allow abort for regular click

@@ -20,7 +20,14 @@
 #ifndef FSM_STANDBY_H
 #define FSM_STANDBY_H
 
+// deferred "off" so we won't suspend in a weird state
+// (like...  during the middle of a strobe pulse)
+// set this to nonzero to enter standby mode next time the system is idle
+volatile uint8_t go_to_standby = 0;
+
 #define standby_mode sleep_until_eswitch_pressed
 void sleep_until_eswitch_pressed();
+
+// TODO: half-sleep "twilight" mode with WDT on but running slowly
 
 #endif

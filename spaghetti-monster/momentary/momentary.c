@@ -52,7 +52,7 @@ uint8_t momentary_state(EventPtr event, uint16_t arg) {
     else if (event == EV_release) {
         light_off();
         empty_event_sequence();  // don't attempt to parse multiple clicks
-        standby_mode();  // sleep while light is off
+        go_to_standby = 1;  // sleep while light is off
         return 0;
     }
 
@@ -68,7 +68,7 @@ void low_voltage() {
     } else {
         debug_blink(8);
         light_off();
-        standby_mode();
+        go_to_standby = 1;
     }
 }
 

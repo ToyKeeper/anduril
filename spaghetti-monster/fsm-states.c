@@ -67,26 +67,28 @@ StatePtr pop_state() {
     if (state_stack_len > 0) {
         new_state = state_stack[state_stack_len-1];
     }
-    // FIXME: what should 'arg' be?
+    // FIXME: what should 'arg' be?  (maybe re-entry should be entry with arg+1?)
     _set_state(new_state, 0, EV_leave_state, EV_reenter_state);
     return old_state;
 }
 
 uint8_t set_state(StatePtr new_state, uint16_t arg) {
     // FIXME: this calls exit/enter hooks it shouldn't
+    //        (for the layer underneath the top)
     pop_state();
     return push_state(new_state, arg);
 }
 
+#ifndef DONT_USE_DEFAULT_STATE
 // bottom state on stack
 // handles default actions for LVP, thermal regulation, etc
 uint8_t default_state(EventPtr event, uint16_t arg) {
-    if (0) {}
+    if (0) {}  // this should get compiled out
 
     #ifdef USE_LVP
     else if (event == EV_voltage_low) {
         low_voltage();
-        return 0;
+        return EVENT_HANDLED;
     }
     #endif
 
@@ -105,7 +107,8 @@ uint8_t default_state(EventPtr event, uint16_t arg) {
     #endif
 
     // event not handled
-    return 1;
+    return EVENT_NOT_HANDLED;
 }
+#endif
 
 #endif

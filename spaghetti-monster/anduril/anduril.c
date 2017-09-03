@@ -114,9 +114,6 @@ uint8_t pseudo_rand();
 // beacon timing
 volatile uint8_t beacon_seconds = 2;
 
-// deferred "off" so we won't suspend in a weird state
-volatile uint8_t go_to_standby = 0;
-
 
 uint8_t off_state(EventPtr event, uint16_t arg) {
     // turn emitter off when entering state
@@ -452,8 +449,8 @@ uint8_t goodnight_state(EventPtr event, uint16_t arg) {
     static uint16_t ticks_since_stepdown = 0;
     // blink on start
     if (event == EV_enter_state) {
-        blink_confirm(4);
         ticks_since_stepdown = 0;
+        blink_confirm(2);
         set_level(GOODNIGHT_LEVEL);
         return MISCHIEF_MANAGED;
     }
@@ -870,14 +867,6 @@ void setup() {
 
 
 void loop() {
-
-    // deferred "off" so we won't suspend in a weird state
-    // (like...  during the middle of a strobe pulse)
-    if (go_to_standby) {
-        go_to_standby = 0;
-        set_level(0);
-        standby_mode();
-    }
 
     if (current_state == strobe_state) {
         // party / tactical strobe

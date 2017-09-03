@@ -36,9 +36,6 @@ uint8_t actual_level = 0;
 uint8_t target_level = 0;
 #endif
 
-// deferred "off" so we won't suspend in a weird state
-volatile uint8_t go_to_standby = 0;
-
 // moon + ../../bin/level_calc.py 2 6 7135 18 10 150 FET 1 10 1500
 uint8_t pwm1_levels[] = { 3, 18, 110, 255, 255, 255,   0, };
 uint8_t pwm2_levels[] = { 0,  0,   0,   9,  58, 138, 255, };
@@ -194,9 +191,4 @@ void setup() {
 }
 
 void loop() {
-    if (go_to_standby) {
-        go_to_standby = 0;
-        PWM1_LVL = 0;  PWM2_LVL = 0;
-        standby_mode();
-    }
 }

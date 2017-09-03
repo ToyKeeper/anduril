@@ -30,7 +30,7 @@ uint8_t blink_digit(uint8_t num) {
 
     for (; num>0; num--) {
         set_level(BLINK_BRIGHTNESS);
-        if (! nice_delay_ms(ontime)) { set_level(0); return 0; }
+        if (! nice_delay_ms(ontime)) { return 0; }
         set_level(0);
         //if (current_state != old_state) return 0;
         if (! nice_delay_ms(400)) return 0;

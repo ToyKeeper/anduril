@@ -55,7 +55,7 @@ uint8_t L2 = 1;
 uint8_t M2 = 1;
 uint8_t H2 = 1;
 // mode groups, ish
-uint8_t low_modes[] = {12, 1, 4, 9};  // 3.3 lm, 2.0 lm, 0.8 lm, 0.3 lm
+uint8_t low_modes[] = {12, 3, 5, 9};  // 3.3 lm, 2.0 lm, 0.8 lm, 0.3 lm
 uint8_t med_modes[] = {56, 21, 29, 37};  // 101 lm, 35 lm, 20 lm, 10 lm
 uint8_t hi_modes[] = {MAX_LEVEL, 81, 96, 113};  // 1500 lm, 678 lm, 430 lm, 270 lm
 // strobe/beacon modes:
@@ -64,9 +64,6 @@ uint8_t hi_modes[] = {MAX_LEVEL, 81, 96, 113};  // 1500 lm, 678 lm, 430 lm, 270 
 // 2: 4 Hz strobe at H1
 // 3: 19 Hz strobe at H1
 uint8_t strobe_beacon_mode = 0;
-
-// deferred "off" so we won't suspend in a weird state
-volatile uint8_t go_to_standby = 0;
 
 #ifdef USE_THERMAL_REGULATION
 // brightness before thermal step-down
@@ -337,14 +334,6 @@ void setup() {
 }
 
 void loop() {
-    // deferred "off" so we won't suspend in a weird state
-    // (like...  during the middle of a strobe pulse)
-    if (go_to_standby) {
-        go_to_standby = 0;
-        set_level(0);
-        standby_mode();
-    }
-
     if (current_state == strobe_beacon_state) {
         switch(strobe_beacon_mode) {
             // 0.2 Hz beacon at L1

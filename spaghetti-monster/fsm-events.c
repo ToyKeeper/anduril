@@ -170,8 +170,4 @@ void emit_current_event(uint16_t arg) {
     //return err;
 }
 
-// TODO? add events to a queue when inside an interrupt
-//       instead of calling the event functions directly?
-//       (then empty the queue in main loop?)
-
 #endif
