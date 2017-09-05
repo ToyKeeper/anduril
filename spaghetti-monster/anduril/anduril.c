@@ -157,7 +157,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     #endif
     // 4 clicks: soft lockout
     else if (event == EV_4clicks) {
-        blink_confirm(5);
+        blink_confirm(2);
         set_state(lockout_state, 0);
         return MISCHIEF_MANAGED;
     }
@@ -485,12 +485,31 @@ uint8_t goodnight_state(EventPtr event, uint16_t arg) {
 
 
 uint8_t lockout_state(EventPtr event, uint16_t arg) {
+    static uint8_t ticks_spent_awake = 0;
+
+    // momentary(ish) moon mode during lockout
+    // not all presses will be counted;
+    // it depends on what is in the master event_sequences table
+    uint8_t last = 0;
+    for(uint8_t i=0; pgm_read_byte(event + i) && (i<EV_MAX_LEN); i++)
+        last = pgm_read_byte(event + i);
+    if ((last == A_PRESS) || (last == A_HOLD)) {
+        // detect moon level and activate it
+        uint8_t lvl = ramp_smooth_floor;
+        if (ramp_discrete_floor < lvl) lvl = ramp_discrete_floor;
+        set_level(lvl);
+        ticks_spent_awake = 0;
+    }
+    else if ((last == A_RELEASE) || (last == A_RELEASE_TIMEOUT)) {
+        set_level(0);
+    }
+
+    // regular event handling
     // conserve power while locked out
     // (allow staying awake long enough to exit, but otherwise
     //  be persistent about going back to sleep every few seconds
     //  even if the user keeps pressing the button)
     if (event == EV_tick) {
-        static uint8_t ticks_spent_awake = 0;
         ticks_spent_awake ++;
         if (ticks_spent_awake > 180) {
             ticks_spent_awake = 0;
@@ -500,10 +519,11 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
     }
     // 4 clicks: exit
     else if (event == EV_4clicks) {
-        blink_confirm(2);
+        blink_confirm(1);
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
+
     return EVENT_NOT_HANDLED;
 }
 
@@ -841,7 +861,7 @@ void low_voltage() {
     // in normal mode, step down by half or turn off
     else if (current_state == steady_state) {
         if (actual_level > 1) {
-            set_level(actual_level >> 1);
+            set_level((actual_level >> 1) + (actual_level >> 2));
         }
         else {
             set_state(off_state, 0);
