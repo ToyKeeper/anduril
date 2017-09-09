@@ -63,6 +63,7 @@ uint8_t goodnight_state(EventPtr event, uint16_t arg);
 uint8_t beacon_state(EventPtr event, uint16_t arg);
 uint8_t beacon_config_state(EventPtr event, uint16_t arg);
 // soft lockout
+#define MOON_DURING_LOCKOUT_MODE
 uint8_t lockout_state(EventPtr event, uint16_t arg);
 // momentary / signalling mode
 uint8_t momentary_state(EventPtr event, uint16_t arg);
@@ -116,11 +117,22 @@ volatile uint8_t beacon_seconds = 2;
 
 
 uint8_t off_state(EventPtr event, uint16_t arg) {
+    static uint8_t ticks_spent_awake = 0;
     // turn emitter off when entering state
     if (event == EV_enter_state) {
         set_level(0);
         // sleep while off  (lower power use)
         go_to_standby = 1;
+        ticks_spent_awake = 0;
+        return MISCHIEF_MANAGED;
+    }
+    // go back to sleep eventually if we got bumped but didn't leave "off" state
+    else if (event == EV_tick) {
+        ticks_spent_awake ++;
+        if (ticks_spent_awake > 240) {
+            ticks_spent_awake = 0;
+            go_to_standby = 1;
+        }
         return MISCHIEF_MANAGED;
     }
     // hold (initially): go to lowest level, but allow abort for regular click
@@ -149,7 +161,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #ifdef USE_BATTCHECK
-    // 3 clicks: battcheck mode
+    // 3 clicks: battcheck mode / blinky mode group 1
     else if (event == EV_3clicks) {
         set_state(battcheck_state, 0);
         return MISCHIEF_MANAGED;
@@ -162,6 +174,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     // 5 clicks: strobe mode
+    // TODO: remap this to click, click, long-click?
     else if (event == EV_5clicks) {
         set_state(strobe_state, 0);
         return MISCHIEF_MANAGED;
@@ -487,6 +500,7 @@ uint8_t goodnight_state(EventPtr event, uint16_t arg) {
 uint8_t lockout_state(EventPtr event, uint16_t arg) {
     static uint8_t ticks_spent_awake = 0;
 
+    #ifdef MOON_DURING_LOCKOUT_MODE
     // momentary(ish) moon mode during lockout
     // not all presses will be counted;
     // it depends on what is in the master event_sequences table
@@ -503,6 +517,7 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
     else if ((last == A_RELEASE) || (last == A_RELEASE_TIMEOUT)) {
         set_level(0);
     }
+    #endif
 
     // regular event handling
     // conserve power while locked out
