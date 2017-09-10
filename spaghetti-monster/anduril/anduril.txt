@@ -1,15 +1,20 @@
 From off:
+
+  Ramp shortcuts:
   * 1 click: memorized level
   * Hold: lowest level then ramp up
   * 2 clicks: highest ramp level
   * Click, hold: highest level then ramp down
-  * 3 clicks: battcheck mode
-    (battcheck, goodnight, beacon, tempcheck)
-  * 4 clicks: lock-out
-  * 5 clicks: strobe modes
+
+  Blinkies:
+  * 3 clicks: specials (battcheck, goodnight, beacon, tempcheck)
+  * Click, click, hold: strobes
     (bike flasher, party strobe, tactical strobe, lightning storm mode)
     (remembers which you last used)
-  * 6 clicks: momentary mode (disconnect power to exit)
+
+  Other:
+  * 4 clicks: lock-out
+  * 5 clicks: momentary mode (disconnect power to exit)
 
 In steady mode:
   * 1 click: off
@@ -83,6 +88,10 @@ Thermal calibration mode:
   - Hold until hot: set new ceiling value
   - ... don't hold: blink out current ceiling value and exit
 
+Lockout mode:
+  * Hold: momentary moon
+  * 4 clicks: exit lockout (return to regular "off" mode)
+
 Momentary mode:
   * Press button: Light on (at memorized level).
   * Release button: Light off.
@@ -91,8 +100,8 @@ Momentary mode:
 TODO:
   * save settings in eeprom
   - decide on "hold until hot" or "click N times" for thermal config mode
-  - test thermal regulation on an actual light
-  - improve thermal regulation
+  * test thermal regulation on an actual light
+  * improve thermal regulation
   - a way to blink out the firmware version?
   - indicator LED support
   - a way to configure indicator LED behavior?
