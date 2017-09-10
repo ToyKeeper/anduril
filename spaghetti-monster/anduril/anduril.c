@@ -30,7 +30,7 @@
 #define RAMP_LENGTH 150
 #define USE_BATTCHECK
 #define BATTCHECK_VpT
-#define MAX_CLICKS 6
+#define MAX_CLICKS 5
 #define USE_EEPROM
 #define EEPROM_BYTES 12
 #include "spaghetti-monster.h"
@@ -169,20 +169,19 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif
+    // click, click, long-click: strobe mode
+    else if (event == EV_click3_hold) {
+        set_state(strobe_state, 0);
+        return MISCHIEF_MANAGED;
+    }
     // 4 clicks: soft lockout
     else if (event == EV_4clicks) {
         blink_confirm(2);
         set_state(lockout_state, 0);
         return MISCHIEF_MANAGED;
     }
-    // 5 clicks: strobe mode
-    // TODO: remap this to click, click, long-click?
+    // 5 clicks: momentary mode
     else if (event == EV_5clicks) {
-        set_state(strobe_state, 0);
-        return MISCHIEF_MANAGED;
-    }
-    // 6 clicks: momentary mode
-    else if (event == EV_6clicks) {
         blink_confirm(1);
         set_state(momentary_state, 0);
         return MISCHIEF_MANAGED;

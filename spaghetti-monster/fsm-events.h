@@ -166,6 +166,25 @@ Event EV_click3_press[] = {
     A_RELEASE,
     A_PRESS,
     0 };
+Event EV_click3_hold[] = {
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_HOLD,
+    0 };
+/*
+Event EV_click3_hold_release[] = {
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_HOLD,
+    A_RELEASE,
+    0 };
+    */
 Event EV_click3_release[] = {
     A_PRESS,
     A_RELEASE,
@@ -402,6 +421,8 @@ EventPtr event_sequences[] = {
     #endif
     #if MAX_CLICKS >= 3
     EV_click3_press,
+    EV_click3_hold,
+    //EV_click3_hold_release,
     EV_click3_release,
     EV_click3_complete,
     #endif
