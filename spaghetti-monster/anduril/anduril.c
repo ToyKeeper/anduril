@@ -26,6 +26,7 @@
 #define USE_DELAY_4MS
 #define USE_DELAY_ZERO
 #define USE_RAMPING
+#define USE_SET_LEVEL_GRADUALLY
 #define RAMP_LENGTH 150
 #define USE_BATTCHECK
 #define BATTCHECK_VpT
@@ -127,6 +128,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     // go back to sleep eventually if we got bumped but didn't leave "off" state
+    // FIXME: can I just use arg instead of ticks_spent_awake?
     else if (event == EV_tick) {
         ticks_spent_awake ++;
         if (ticks_spent_awake > 240) {
@@ -310,24 +312,55 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         set_level(memorized_level);
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_SET_LEVEL_GRADUALLY
+    else if (event == EV_tick) {
+        //if (!(arg & 7)) gradual_tick();
+        if (!(arg & 3)) gradual_tick();
+        //gradual_tick();
+        return MISCHIEF_MANAGED;
+    }
+    #endif
     #ifdef USE_THERMAL_REGULATION
     // TODO: test this on a real light
     // overheating: drop by an amount proportional to how far we are above the ceiling
     else if (event == EV_temperature_high) {
-        if (actual_level > MAX_LEVEL/4) {
-            uint8_t stepdown = actual_level - arg;
-            if (stepdown < MAX_LEVEL/4) stepdown = MAX_LEVEL/4;
+        /*
+        uint8_t foo = actual_level;
+        set_level(0);
+        delay_4ms(2);
+        set_level(foo);
+        */
+        if (actual_level > MAX_LEVEL/3) {
+            int16_t stepdown = actual_level - arg;
+            if (stepdown < MAX_LEVEL/3) stepdown = MAX_LEVEL/3;
+            else if (stepdown > MAX_LEVEL) stepdown = MAX_LEVEL;
+            #ifdef USE_SET_LEVEL_GRADUALLY
+            set_level_gradually(stepdown);
+            #else
             set_level(stepdown);
+            #endif
         }
         return MISCHIEF_MANAGED;
     }
     // underheating: increase slowly if we're lower than the target
     //               (proportional to how low we are)
     else if (event == EV_temperature_low) {
+        /*
+        uint8_t foo = actual_level;
+        set_level(0);
+        delay_4ms(2);
+        set_level(foo);
+        */
         if (actual_level < target_level) {
-            uint8_t stepup = actual_level + (arg>>1);
+            //int16_t stepup = actual_level + (arg>>1);
+            int16_t stepup = actual_level + arg;
             if (stepup > target_level) stepup = target_level;
+            else if (stepup < MAX_LEVEL/3) stepup = MAX_LEVEL/3;
+            #ifdef USE_SET_LEVEL_GRADUALLY
+            set_level_gradually(stepup);
+            #else
             set_level(stepup);
+            #endif
         }
         return MISCHIEF_MANAGED;
     }

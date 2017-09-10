@@ -26,6 +26,13 @@
 // actual_level: last ramp level set by set_level()
 volatile uint8_t actual_level = 0;
 
+#ifdef USE_SET_LEVEL_GRADUALLY
+// adjust brightness very smoothly
+volatile uint8_t gradual_target;
+inline void set_level_gradually(uint8_t lvl);
+void gradual_tick();
+#endif
+
 // ramp tables
 #if PWM_CHANNELS == 1
   #if RAMP_LENGTH == 50
