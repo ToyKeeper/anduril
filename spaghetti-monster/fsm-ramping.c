@@ -64,145 +64,57 @@ inline void set_level_gradually(uint8_t lvl) {
     gradual_target = lvl;
 }
 
-// FIXME: This sucks
-// FIXME: I think this can behave badly in some circumstances:
-//        - large smooth adjustment in progress
-//        - from something like (255,10) to (200, 0)
-//        - ... and a new target gets set while actual_level is ... not quite right
-//        - ... and it then ends up massively overshooting or even turning off
-//        (still haven't figured out the exact circumstances to cause it)
-//        (at the very least, actual_level can suddenly jump when multiple PWM levels are being adjusted)
-//        (so it's bad to rely on actual_level in the middle of a smooth adjustment)
+// call this every frame or every few frames to change brightness very smoothly
 void gradual_tick() {
-    int8_t changed = 0;
-    uint8_t target;
+    // go by only one ramp level at a time instead of directly to the target
     uint8_t gt = gradual_target - 1;
-    // FIXME: rewrite this completely, probably
-    //        (perhaps go by only one ramp level at a time instead of directly to the target?)
+    if (gt < actual_level) gt = actual_level - 1;
+    else if (gt > actual_level) gt = actual_level + 1;
+
+    uint8_t target;
+
     #if PWM_CHANNELS >= 1
     target = pgm_read_byte(pwm1_levels + gt);
-    if (PWM1_LVL < target) { PWM1_LVL ++; changed = 1; }
-    else if (PWM1_LVL > target) { PWM1_LVL --; changed = -1; }
+    if ((gt < actual_level)     // special case for FET-only turbo
+            && (PWM1_LVL == 0)  // (bypass adjustment period for first step)
+            && (target == 255)) PWM1_LVL = 255;
+    else if (PWM1_LVL < target) PWM1_LVL ++;
+    else if (PWM1_LVL > target) PWM1_LVL --;
     #endif
     #if PWM_CHANNELS >= 2
     target = pgm_read_byte(pwm2_levels + gt);
-    if (PWM2_LVL < target) { PWM2_LVL ++; changed = 1; }
-    else if (PWM2_LVL > target) { PWM2_LVL --; changed = -1; }
+    if (PWM2_LVL < target) PWM2_LVL ++;
+    else if (PWM2_LVL > target) PWM2_LVL --;
     #endif
     #if PWM_CHANNELS >= 3
     target = pgm_read_byte(pwm3_levels + gt);
-    if (PWM3_LVL < target) { PWM3_LVL ++; changed = 1; }
-    else if (PWM3_LVL > target) { PWM3_LVL --; changed = -1; }
+    if (PWM3_LVL < target) PWM3_LVL ++;
+    else if (PWM3_LVL > target) PWM3_LVL --;
     #endif
     #if PWM_CHANNELS >= 4
     target = pgm_read_byte(pwm4_levels + gt);
-    if (PWM4_LVL < target) { PWM4_LVL ++; changed = 1; }
-    else if (PWM4_LVL > target) { PWM4_LVL --; changed = -1; }
+    if (PWM4_LVL < target) PWM4_LVL ++;
+    else if (PWM4_LVL > target) PWM4_LVL --;
     #endif
-    // figure out what actual level is
-    /*
-    if (changed < 0) {
-        #if PWM_CHANNELS >= 4
-        if (PWM4_LVL < pgm_read_byte(pwm4_levels + actual_level - 1))
-            actual_level --;
-        else
+
+    // did we go far enough to hit the next defined ramp level?
+    // if so, update the main ramp level tracking var
+    if ((PWM1_LVL == pgm_read_byte(pwm1_levels + gt))
+        #if PWM_CHANNELS >= 2
+            && (PWM2_LVL == pgm_read_byte(pwm2_levels + gt))
         #endif
         #if PWM_CHANNELS >= 3
-        if (PWM3_LVL < pgm_read_byte(pwm3_levels + actual_level - 1))
-            actual_level --;
-        else
+            && (PWM3_LVL == pgm_read_byte(pwm3_levels + gt))
         #endif
-        #if PWM_CHANNELS >= 2
-        if (PWM2_LVL < pgm_read_byte(pwm2_levels + actual_level - 1))
-            actual_level --;
-        else
-        #endif
-            if (PWM1_LVL < pgm_read_byte(pwm1_levels + actual_level - 1))
-                actual_level --;
-    }
-    else if (changed > 0) {
         #if PWM_CHANNELS >= 4
-        if (PWM4_LVL > pgm_read_byte(pwm4_levels + actual_level - 1))
-            actual_level ++;
-        else
+            && (PWM4_LVL == pgm_read_byte(pwm4_levels + gt))
         #endif
-        #if PWM_CHANNELS >= 3
-        if (PWM3_LVL > pgm_read_byte(pwm3_levels + actual_level - 1))
-            actual_level ++;
-        else
-        #endif
-        #if PWM_CHANNELS >= 2
-        if (PWM2_LVL > pgm_read_byte(pwm2_levels + actual_level - 1))
-            actual_level ++;
-        else
-        #endif
-            if (PWM1_LVL > pgm_read_byte(pwm1_levels + actual_level - 1))
-                actual_level ++;
-    }
-    else {
-        actual_level = gradual_target;
-    }
-    */
-    /*
-    if (changed) {
-        #if PWM_CHANNELS >= 4
-        if (PWM4_LVL != pgm_read_byte(pwm4_levels + actual_level - 1))
-            actual_level += changed;
-        else
-        #endif
-        #if PWM_CHANNELS >= 3
-        if (PWM3_LVL != pgm_read_byte(pwm3_levels + actual_level - 1))
-            actual_level += changed;
-        else
-        #endif
-        #if PWM_CHANNELS >= 2
-        if (PWM2_LVL != pgm_read_byte(pwm2_levels + actual_level - 1))
-            actual_level += changed;
-        else
-        #endif
-            if (PWM1_LVL != pgm_read_byte(pwm1_levels + actual_level - 1))
-                actual_level += changed;
-    } else {
-        actual_level = gradual_target;
-    }
-    */
-    //if (! changed) { actual_level = gradual_target; }
-    if (changed) {
-        #if PWM_CHANNELS >= 4
-        if (PWM4_LVL > 0) {
-            for (actual_level = 0;
-                 (actual_level < MAX_LEVEL) &&
-                 (PWM4_LVL <= pgm_read_byte(pwm4_levels + actual_level - 1));
-                 actual_level ++) {}
-        } else
-        #endif
-        #if PWM_CHANNELS >= 3
-        if (PWM3_LVL > 0) {
-            for (actual_level = 0;
-                 (actual_level < MAX_LEVEL) &&
-                 (PWM3_LVL <= pgm_read_byte(pwm3_levels + actual_level - 1));
-                 actual_level ++) {}
-        } else
-        #endif
-        #if PWM_CHANNELS >= 2
-        if (PWM2_LVL > 0) {
-            for (actual_level = 0;
-                 (actual_level < MAX_LEVEL) &&
-                 (PWM2_LVL <= pgm_read_byte(pwm2_levels + actual_level - 1));
-                 actual_level ++) {}
-        } else
-        #endif
-        for (actual_level = 0;
-             (actual_level < MAX_LEVEL) &&
-             (PWM1_LVL <= pgm_read_byte(pwm1_levels + actual_level - 1));
-             actual_level ++) {}
-    } else {
-        actual_level = gradual_target;
+        )
+    {
+        actual_level = gt;
     }
 }
 #endif
-
-// TODO: set_lvl_smooth?
 
 #endif  // ifdef USE_RAMPING
 #endif

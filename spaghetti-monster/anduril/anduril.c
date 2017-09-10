@@ -314,8 +314,8 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     }
     #ifdef USE_SET_LEVEL_GRADUALLY
     else if (event == EV_tick) {
-        //if (!(arg & 7)) gradual_tick();
-        if (!(arg & 3)) gradual_tick();
+        if (!(arg & 7)) gradual_tick();
+        //if (!(arg & 3)) gradual_tick();
         //gradual_tick();
         return MISCHIEF_MANAGED;
     }
