@@ -187,9 +187,9 @@ ISR(ADC_vect) {
             // how far ahead should we predict?
             #define THERM_PREDICTION_STRENGTH 4
             // how proportional should the adjustments be?
-            #define THERM_DIFF_ATTENUATION 2
+            #define THERM_DIFF_ATTENUATION 3
             // acceptable temperature window size in C
-            #define THERM_WINDOW_SIZE 8
+            #define THERM_WINDOW_SIZE 10
             // highest temperature allowed
             // (convert configured value to 14.1 fixed-point)
             #define THERM_CEIL (((int16_t)therm_ceil)<<1)
