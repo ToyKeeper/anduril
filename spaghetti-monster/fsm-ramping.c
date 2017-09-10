@@ -67,9 +67,11 @@ inline void set_level_gradually(uint8_t lvl) {
 // call this every frame or every few frames to change brightness very smoothly
 void gradual_tick() {
     // go by only one ramp level at a time instead of directly to the target
-    uint8_t gt = gradual_target - 1;
+    uint8_t gt = gradual_target;
     if (gt < actual_level) gt = actual_level - 1;
     else if (gt > actual_level) gt = actual_level + 1;
+
+    gt --;  // convert 1-based number to 0-based
 
     uint8_t target;
 
@@ -111,7 +113,7 @@ void gradual_tick() {
         #endif
         )
     {
-        actual_level = gt;
+        actual_level = gt + 1;
     }
 }
 #endif

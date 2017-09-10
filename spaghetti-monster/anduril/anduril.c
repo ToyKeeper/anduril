@@ -320,7 +320,6 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     }
     #endif
     #ifdef USE_THERMAL_REGULATION
-    // TODO: test this on a real light
     // overheating: drop by an amount proportional to how far we are above the ceiling
     else if (event == EV_temperature_high) {
         /*
