@@ -46,6 +46,11 @@ void sleep_until_eswitch_pressed()
 
     // something happened; wake up
     sleep_disable();
+
+    // forget what the temperature was last time we were on
+    reset_thermal_history = 1;
+
+    // go back to normal running mode
     //PCINT_on();  // should be on already
     // FIXME? if button is down, make sure a button press event is added to the current sequence
     ADC_on();

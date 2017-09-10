@@ -60,12 +60,14 @@ ISR(ADC_vect) {
 
     // thermal declarations
     #ifdef USE_THERMAL_REGULATION
-    #define NUM_THERMAL_VALUES 4
+    #define NUM_THERMAL_VALUES 8
     #define NUM_THERMAL_VALUES_HISTORY 16
+    #define NUM_THERMAL_PROJECTED_HISTORY 8
     #define ADC_STEPS 4
-    static uint8_t first_temp_reading = 1;
     static int16_t temperature_values[NUM_THERMAL_VALUES];  // last few readings in C
-    static int16_t temperature_history[NUM_THERMAL_VALUES_HISTORY];  // 13.2 fixed-point
+    static int16_t temperature_history[NUM_THERMAL_VALUES_HISTORY];  // 14.1 fixed-point
+    static int16_t projected_temperature_history[NUM_THERMAL_PROJECTED_HISTORY];  // 14.1 fixed-point
+    static uint8_t projected_temperature_history_counter = 0;
     static uint8_t temperature_timer = 0;
     static uint8_t overheat_lowpass = 0;
     static uint8_t underheat_lowpass = 0;
@@ -143,18 +145,21 @@ ISR(ADC_vect) {
         int16_t temp = measurement - 275 + THERM_CAL_OFFSET;
 
         // prime on first execution
-        if (first_temp_reading) {
-            first_temp_reading = 0;
+        if (reset_thermal_history) {
+            reset_thermal_history = 0;
             for(uint8_t i=0; i<NUM_THERMAL_VALUES; i++)
                 temperature_values[i] = temp;
             for(uint8_t i=0; i<NUM_THERMAL_VALUES_HISTORY; i++)
                 temperature_history[i] = temp<<2;
-            temperature = temp;
+            for(uint8_t i=0; i<NUM_THERMAL_PROJECTED_HISTORY; i++)
+                projected_temperature_history[i] = temp<<2;
+            temperature = temp<<2;
         } else {  // update our current temperature estimate
             uint8_t i;
             int16_t total=0;
 
             // rotate array
+            // FIXME: just move the index, don't move the values?
             for(i=0; i<NUM_THERMAL_VALUES-1; i++) {
                 temperature_values[i] = temperature_values[i+1];
                 total += temperature_values[i];
@@ -166,43 +171,59 @@ ISR(ADC_vect) {
             //temperature = total >> 2;
             // More precise method: use noise as extra precision
             // (values are now basically fixed-point, signed 13.2)
-            temperature = total;
+            //temperature = total;
+            // 14.1 is less prone to overflows
+            temperature = total >> 2;
         }
 
         // guess what the temperature will be in a few seconds
         {
             uint8_t i;
             int16_t diff;
+            int16_t t = temperature;
 
             // algorithm tweaking; not really intended to be modified
             // how far ahead should we predict?
-            #define THERM_PREDICTION_STRENGTH 4
+            #define THERM_PREDICTION_STRENGTH 3
             // how proportional should the adjustments be?
-            #define THERM_DIFF_ATTENUATION 4
+            #define THERM_DIFF_ATTENUATION 2
             // acceptable temperature window size in C
             #define THERM_WINDOW_SIZE 8
             // highest temperature allowed
-            // (convert configured value to 13.2 fixed-point)
-            #define THERM_CEIL (therm_ceil<<2)
-            // bottom of target temperature window (13.2 fixed-point)
-            #define THERM_FLOOR (THERM_CEIL - (THERM_WINDOW_SIZE<<2))
+            // (convert configured value to 14.1 fixed-point)
+            #define THERM_CEIL (((int16_t)therm_ceil)<<1)
+            // bottom of target temperature window (14.1 fixed-point)
+            #define THERM_FLOOR (THERM_CEIL - (THERM_WINDOW_SIZE<<1))
 
             // rotate measurements and add a new one
             for (i=0; i<NUM_THERMAL_VALUES_HISTORY-1; i++) {
                 temperature_history[i] = temperature_history[i+1];
             }
-            temperature_history[NUM_THERMAL_VALUES_HISTORY-1] = temperature;
+            temperature_history[NUM_THERMAL_VALUES_HISTORY-1] = t;
 
             // guess what the temp will be several seconds in the future
-            diff = temperature_history[NUM_THERMAL_VALUES_HISTORY-1] - temperature_history[0];
-            projected_temperature = temperature_history[NUM_THERMAL_VALUES_HISTORY-1] + (diff<<THERM_PREDICTION_STRENGTH);
+            // diff = rate of temperature change
+            //diff = temperature_history[NUM_THERMAL_VALUES_HISTORY-1] - temperature_history[0];
+            diff = t - temperature_history[0];
+            // projected_temperature = current temp extended forward by amplified rate of change
+            //projected_temperature = temperature_history[NUM_THERMAL_VALUES_HISTORY-1] + (diff<<THERM_PREDICTION_STRENGTH);
+            projected_temperature = t + (diff<<THERM_PREDICTION_STRENGTH);
 
+            // store prediction for later averaging
+            projected_temperature_history[projected_temperature_history_counter] = projected_temperature;
+            projected_temperature_history_counter = (projected_temperature_history_counter + 1) & (NUM_THERMAL_PROJECTED_HISTORY-1);
         }
 
-        // cancel counters if necessary
-        if (projected_temperature > THERM_FLOOR) {
+        // average prediction to reduce noise
+        int16_t avg_projected_temperature = 0;
+        for (uint8_t i = 0; i < NUM_THERMAL_PROJECTED_HISTORY; i++)
+            avg_projected_temperature += projected_temperature_history[i];
+        avg_projected_temperature /= NUM_THERMAL_PROJECTED_HISTORY;
+
+        // cancel counters if appropriate
+        if (avg_projected_temperature > THERM_FLOOR) {
             underheat_lowpass = 0;  // we're definitely not too cold
-        } else if (projected_temperature < THERM_CEIL) {
+        } else if (avg_projected_temperature < THERM_CEIL) {
             overheat_lowpass = 0;  // we're definitely not too hot
         }
 
@@ -211,15 +232,16 @@ ISR(ADC_vect) {
         } else {  // it has been long enough since the last warning
 
             // Too hot?
-            if (projected_temperature > THERM_CEIL) {
+            if (avg_projected_temperature > THERM_CEIL) {
                 if (overheat_lowpass < OVERHEAT_LOWPASS_STRENGTH) {
                     overheat_lowpass ++;
                 } else {
                     // how far above the ceiling?
-                    int16_t howmuch = (projected_temperature - THERM_CEIL) >> THERM_DIFF_ATTENUATION;
-                    if (howmuch < 1) howmuch = 1;
-                    // try to send out a warning
-                    emit(EV_temperature_high, howmuch);
+                    int16_t howmuch = (avg_projected_temperature - THERM_CEIL) >> THERM_DIFF_ATTENUATION;
+                    if (howmuch > 0) {
+                        // try to send out a warning
+                        emit(EV_temperature_high, howmuch);
+                    }
                     // reset counters
                     temperature_timer = TEMPERATURE_TIMER_START;
                     overheat_lowpass = 0;
@@ -227,17 +249,18 @@ ISR(ADC_vect) {
             }
 
             // Too cold?
-            else if (projected_temperature < THERM_FLOOR) {
+            else if (avg_projected_temperature < THERM_FLOOR) {
                 if (underheat_lowpass < UNDERHEAT_LOWPASS_STRENGTH) {
                     underheat_lowpass ++;
                 } else {
                     // how far below the floor?
-                    int16_t howmuch = (THERM_FLOOR - projected_temperature) >> THERM_DIFF_ATTENUATION;
-                    if (howmuch < 1) howmuch = 1;
-                    // try to send out a warning (unless voltage is low)
-                    // (LVP and underheat warnings fight each other)
-                    if (voltage > VOLTAGE_LOW)
-                        emit(EV_temperature_low, howmuch);
+                    int16_t howmuch = (THERM_FLOOR - avg_projected_temperature) >> THERM_DIFF_ATTENUATION;
+                    if (howmuch > 0) {
+                        // try to send out a warning (unless voltage is low)
+                        // (LVP and underheat warnings fight each other)
+                        if (voltage > VOLTAGE_LOW)
+                            emit(EV_temperature_low, howmuch);
+                    }
                     // reset counters
                     temperature_timer = TEMPERATURE_TIMER_START;
                     underheat_lowpass = 0;

@@ -72,6 +72,7 @@ volatile int16_t projected_temperature;  // Fight the future!
 volatile uint8_t therm_ceil = DEFAULT_THERM_CEIL;
 //void low_temperature();
 //void high_temperature();
+volatile uint8_t reset_thermal_history = 1;
 #endif
 
 
