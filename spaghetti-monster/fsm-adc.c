@@ -177,6 +177,7 @@ ISR(ADC_vect) {
         }
 
         // guess what the temperature will be in a few seconds
+        int16_t pt;
         {
             uint8_t i;
             int16_t diff;
@@ -184,7 +185,7 @@ ISR(ADC_vect) {
 
             // algorithm tweaking; not really intended to be modified
             // how far ahead should we predict?
-            #define THERM_PREDICTION_STRENGTH 3
+            #define THERM_PREDICTION_STRENGTH 4
             // how proportional should the adjustments be?
             #define THERM_DIFF_ATTENUATION 2
             // acceptable temperature window size in C
@@ -207,24 +208,26 @@ ISR(ADC_vect) {
             diff = t - temperature_history[0];
             // projected_temperature = current temp extended forward by amplified rate of change
             //projected_temperature = temperature_history[NUM_THERMAL_VALUES_HISTORY-1] + (diff<<THERM_PREDICTION_STRENGTH);
-            projected_temperature = t + (diff<<THERM_PREDICTION_STRENGTH);
+            pt = projected_temperature = t + (diff<<THERM_PREDICTION_STRENGTH);
 
             // store prediction for later averaging
-            projected_temperature_history[projected_temperature_history_counter] = projected_temperature;
+            projected_temperature_history[projected_temperature_history_counter] = pt;
             projected_temperature_history_counter = (projected_temperature_history_counter + 1) & (NUM_THERMAL_PROJECTED_HISTORY-1);
         }
 
         // average prediction to reduce noise
         int16_t avg_projected_temperature = 0;
-        for (uint8_t i = 0; i < NUM_THERMAL_PROJECTED_HISTORY; i++)
+        for (uint8_t i = 0;
+             (i < NUM_THERMAL_PROJECTED_HISTORY) && (avg_projected_temperature < 16000);
+             i++)
             avg_projected_temperature += projected_temperature_history[i];
         avg_projected_temperature /= NUM_THERMAL_PROJECTED_HISTORY;
 
         // cancel counters if appropriate
-        if (avg_projected_temperature > THERM_FLOOR) {
-            underheat_lowpass = 0;  // we're definitely not too cold
-        } else if (avg_projected_temperature < THERM_CEIL) {
-            overheat_lowpass = 0;  // we're definitely not too hot
+        if (pt > THERM_FLOOR) {
+            underheat_lowpass = 0;  // we're probably not too cold
+        } else if (pt < THERM_CEIL) {
+            overheat_lowpass = 0;  // we're probably not too hot
         }
 
         if (temperature_timer) {
