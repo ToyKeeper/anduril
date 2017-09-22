@@ -81,9 +81,6 @@ uint8_t UI3_mode1 = 2;
 uint8_t UI3_mode2 = 5;
 uint8_t UI3_mode3 = 8;
 
-// deferred "off" so we won't suspend in a weird state
-volatile uint8_t go_to_standby = 0;
-
 #ifdef USE_THERMAL_REGULATION
 // brightness before thermal step-down
 uint8_t target_level = 0;
@@ -228,6 +225,37 @@ uint8_t ui3_off_state(EventPtr event, uint16_t arg) {
     if (event == EV_enter_state) {
         return EVENT_HANDLED;
     }
+    // 1 click: memory slot 1
+    if (event == EV_1click) {
+        set_level(levels[UI3_mode1]);
+        set_state(ui3_on_state, 0);
+        return EVENT_HANDLED;
+    }
+    // 2 clicks: memory slot 2
+    else if (event == EV_2clicks) {
+        set_level(levels[UI3_mode2]);
+        set_state(ui3_on_state, 1);
+        return EVENT_HANDLED;
+    }
+    // Click, hold: memory slot 3
+    else if (event == EV_click2_hold) {
+        set_level(levels[UI3_mode3]);
+        set_state(ui3_on_state, 2);
+        return EVENT_HANDLED;
+    }
+    // hold: turbo
+    else if (event == EV_hold) {
+        if (arg == 0) {
+            set_level(MAX_LEVEL);
+        }
+        //set_state(ui1_on_state, 3);
+        return EVENT_HANDLED;
+    }
+    // release hold: off
+    else if (event == EV_click1_hold_release) {
+        set_state(base_off_state, 0);
+        return EVENT_HANDLED;
+    }
     return base_off_state(event, arg);
 }
 
@@ -350,7 +378,49 @@ uint8_t ui2_on_state(EventPtr event, uint16_t arg) {
 }
 
 uint8_t ui3_on_state(EventPtr event, uint16_t arg) {
-    return base_on_state(event, arg, &UI3_mode1, levels);
+    // turn on LED when entering the mode
+    static uint8_t *mode = &UI3_mode1;
+    if (event == EV_enter_state) {
+        UI3_mode = arg;
+    }
+    // 2 clicks: rotate through mode1/mode2/mode3
+    else if (event == EV_2clicks) {
+        UI3_mode = (UI3_mode + 1) % 3;
+    }
+    // short click, long click: rotate through mode3/mode2/mode1
+    /*
+    else if (event == EV_click1_hold) {
+        if (arg % HOLD_TIMEOUT == 0)
+            UI3_mode = (UI3_mode + 4) % 3;
+    }
+    */
+    switch (UI3_mode) {
+        case 0:
+            mode = &UI3_mode1;
+            break;
+        case 1:
+            mode = &UI3_mode2;
+            break;
+        default:
+            mode = &UI3_mode3;
+            break;
+    }
+
+    if ((event == EV_enter_state)  ||  (event == EV_2clicks)) {
+        set_level(levels[*mode]);
+        return EVENT_HANDLED;
+    }
+    // short click, long click: rotate through mode3/mode2/mode1
+    /*
+    else if (event == EV_click1_hold) {
+        set_level(levels[*mode]);
+        return MISCHIEF_MANAGED;
+    }
+    */
+    // hold: turbo
+    // Click, hold: ramp up
+    // release hold, hold again: ramp in opposite direction
+    return base_on_state(event, arg, mode, levels);
 }
 
 
@@ -451,14 +521,6 @@ void setup() {
 }
 
 void loop() {
-    // deferred "off" so we won't suspend in a weird state
-    // (like...  during the middle of a strobe pulse)
-    if (go_to_standby) {
-        go_to_standby = 0;
-        set_level(0);
-        standby_mode();
-    }
-
     /*
     if (current_state == strobe_beacon_state) {
         switch(strobe_beacon_mode) {
