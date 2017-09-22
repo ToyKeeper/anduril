@@ -30,9 +30,9 @@
 #ifndef VOLTAGE_LOW
 #define VOLTAGE_LOW 29
 #endif
-// MCU sees voltage 0.X volts lower than actual, add X to readings
+// MCU sees voltage 0.X volts lower than actual, add X/2 to readings
 #ifndef VOLTAGE_FUDGE_FACTOR
-#define VOLTAGE_FUDGE_FACTOR 2
+#define VOLTAGE_FUDGE_FACTOR 5
 #endif
 volatile uint8_t voltage;
 void low_voltage();

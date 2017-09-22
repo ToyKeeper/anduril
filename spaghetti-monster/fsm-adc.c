@@ -108,7 +108,8 @@ ISR(ADC_vect) {
         // calculate actual voltage: volts * 10
         // ADC = 1.1 * 1024 / volts
         // volts = 1.1 * 1024 / ADC
-        voltage = (uint16_t)(1.1*1024*10)/measurement + VOLTAGE_FUDGE_FACTOR;
+        //voltage = (uint16_t)(1.1*1024*10)/measurement + VOLTAGE_FUDGE_FACTOR;
+        voltage = ((uint16_t)(2*1.1*1024*10)/measurement + VOLTAGE_FUDGE_FACTOR) >> 1;
         #endif
         // if low, callback EV_voltage_low / EV_voltage_critical
         //         (but only if it has been more than N ticks since last call)
