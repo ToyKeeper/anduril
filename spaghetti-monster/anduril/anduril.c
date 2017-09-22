@@ -19,9 +19,10 @@
  */
 
 #define FSM_EMISAR_D4_DRIVER
+//#define FSM_FW3A_DRIVER
 #define USE_LVP
 #define USE_THERMAL_REGULATION
-#define DEFAULT_THERM_CEIL 45
+#define DEFAULT_THERM_CEIL 50
 #define USE_DELAY_MS
 #define USE_DELAY_4MS
 #define USE_DELAY_ZERO
@@ -283,6 +284,9 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         // only blink once for each threshold
         if ((memorized_level != actual_level)
                 && ((memorized_level == MAX_1x7135)
+                    #if PWM_CHANNELS >= 3
+                    || (memorized_level == MAX_Nx7135)
+                    #endif
                     || (memorized_level == mode_max))) {
             set_level(0);
             delay_4ms(8/4);
@@ -304,6 +308,9 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         // only blink once for each threshold
         if ((memorized_level != actual_level)
                 && ((memorized_level == MAX_1x7135)
+                    #if PWM_CHANNELS >= 3
+                    || (memorized_level == MAX_Nx7135)
+                    #endif
                     || (memorized_level == mode_min))) {
             set_level(0);
             delay_4ms(8/4);
@@ -678,18 +685,17 @@ uint8_t thermal_config_state(EventPtr event, uint16_t arg) {
     }
     // advance forward through config steps
     else if (event == EV_tick) {
-        if (! done) push_state(number_entry_state, 1);
-        else {
-            save_config();
-            // return to beacon mode
-            set_state(tempcheck_state, 0);
-        }
+        // ask the user for a number
+        if (! done) push_state(number_entry_state, 0);
+        // return to original mode
+        else set_state(tempcheck_state, 0);
         return MISCHIEF_MANAGED;
     }
     // an option was set (return from number_entry_state)
     else if (event == EV_reenter_state) {
         if (number_entry_value) therm_ceil = 30 + number_entry_value;
         if (therm_ceil > MAX_THERM_CEIL) therm_ceil = MAX_THERM_CEIL;
+        save_config();
         done = 1;
         return MISCHIEF_MANAGED;
     }
@@ -706,17 +712,16 @@ uint8_t beacon_config_state(EventPtr event, uint16_t arg) {
     }
     // advance forward through config steps
     else if (event == EV_tick) {
-        if (! done) push_state(number_entry_state, 1);
-        else {
-            save_config();
-            // return to beacon mode
-            set_state(beacon_state, 0);
-        }
+        // ask the user for a number
+        if (! done) push_state(number_entry_state, 0);
+        // return to original mode
+        else set_state(beacon_state, 0);
         return MISCHIEF_MANAGED;
     }
     // an option was set (return from number_entry_state)
     else if (event == EV_reenter_state) {
         if (number_entry_value) beacon_seconds = number_entry_value;
+        save_config();
         done = 1;
         return MISCHIEF_MANAGED;
     }
@@ -955,7 +960,8 @@ void loop() {
 
             // turn the emitter on at a random level,
             // for a random amount of time between 1ms and 32ms
-            rand_time = 1 << (pseudo_rand() % 6);
+            //rand_time = 1 << (pseudo_rand() % 7);
+            rand_time = pseudo_rand() & 63;
             brightness = 1 << (pseudo_rand() % 7);  // 1, 2, 4, 8, 16, 32, 64
             brightness += 1 << (pseudo_rand()&0x03);  // 2 to 80 now
             brightness += pseudo_rand() % brightness;  // 2 to 159 now (w/ low bias)
@@ -971,6 +977,16 @@ void loop() {
                 brightness -= stepdown;
                 if (brightness < 0) brightness = 0;
                 set_level(brightness);
+                /*
+                if ((brightness < MAX_LEVEL/2) && (! (pseudo_rand() & 15))) {
+                    brightness <<= 1;
+                    set_level(brightness);
+                }
+                */
+                if (! (pseudo_rand() & 3)) {
+                    if (! nice_delay_ms(rand_time)) return;
+                    set_level(brightness>>1);
+                }
             }
 
             // turn the emitter off,
