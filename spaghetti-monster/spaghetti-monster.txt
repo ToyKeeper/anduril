@@ -70,6 +70,10 @@ Finite State Machine:
   function instead.  Preferably with precautions taken to allow for 
   cooperative multitasking.
 
+  If your State function takes longer than one WDT tick (16ms) once in a 
+  while, the system won't break.  Several events can be queued.  But be 
+  sure not to do it very often.
+
   Several state management functions are provided:
 
     - set_state(new_state, arg): Replace the current state on the stack.  
@@ -81,6 +85,7 @@ Finite State Machine:
 
     - pop_state(): Get rid of (and return) the top-most state.  Re-enter 
       the state below.
+
 
 Event types:
 
@@ -94,6 +99,11 @@ Event types:
 
       - EV_leave_state: Sent to a state immediately before it is removed 
         from the stack.
+
+      - EV_reenter_state: If a State gets pushed on top of this one, and 
+        then it pops off, a re-enter Event happens.  This should handle 
+        things like consuming the return value of a nested input handler 
+        State.
 
     Time passing:
 
@@ -165,6 +175,12 @@ Event types:
   emit() them as necessary, and handle them in State functions the same 
   as any other event.
 
+  One thing to note if you create your own Event types:  The copy which 
+  gets sent to States must be in the 'event_sequences' array, meaning 
+  the State gets a const PROGMEM version of the Event.  It cannot simply 
+  send the dynamic 'current_event' object, because it has probably 
+  already changed by the time the callback happens.
+
 
 Cooperative multitasking:
 
@@ -195,6 +211,36 @@ Cooperative multitasking:
       control to other parts of the program.  Keep doing small amounts 
       and yielding until a task is done, instead of trying to do it all 
       at once.
+
+
+Persistent data in EEPROM:
+
+  To save data which lasts after a battery change, use the eeprom 
+  functions.  Define an eeprom style (or two) at the top, define how 
+  many bytes to allocate, and then use the relevant functions as 
+  appropriate.
+
+    - USE_EEPROM / USE_EEPROM_WL: Enable the eeprom-related functions.  
+      With "WL", it uses wear-levelling.  Without, it does not.  Note:  
+      Wear levelling is not necessarily better -- it uses more ROM, and 
+      it writes more bytes per save().  So, use it only for a few bytes 
+      which change frequently -- not for many bytes or infrequent 
+      changes.
+
+    - EEPROM_BYTES N / EEPROM_WL_BYTES N: Allocate N bytes for the 
+      eeprom data.
+
+    - load_eeprom() / load_eeprom_wl(): Load the stored data into the 
+      eeprom[] or eeprom_wl[] arrays.
+      Returns 1 if data was found, 0 otherwise.
+
+    - save_eeprom() / save_eeprom_wl(): Save the eeprom[] or eeprom_wl[] 
+      array data to persistent storage.  The WL version erases all old 
+      values and writes new ones in a different part of the eeprom 
+      space.  The non-WL version updates values in place, and does not 
+      overwrite values which didn't change.
+
+  Note that all interrupts will be disabled during eeprom operations.
 
 
 Useful #defines:
@@ -240,6 +286,18 @@ Useful #defines:
     - RELEASE_TIMEOUT: How many clock ticks before a "release" event 
       becomes a "click" event?  Basically, the maximum time between 
       clicks in a double-click or triple-click.
+
+    - MAX_CLICKS N: Convenience define to limit the size of the 
+      recognized Event arrays.  Click sequences longer than N won't be 
+      recognized or sent to State functions.
+
+    - USE_BATTCHECK: Enable the battcheck function.  Also define one of 
+      the following to select a display style:
+
+        - BATTCHECK_VpT: Volts, pause, tenths.
+        - BATTCHECK_4bars: Blink up to 4 times.
+        - BATTCHECK_6bars: Blink up to 6 times.
+        - BATTCHECK_8bars: Blink up to 8 times.
 
     - ... and many others.  Will try to document them over time, but 
       they can be found by searching for pretty much anything in 
