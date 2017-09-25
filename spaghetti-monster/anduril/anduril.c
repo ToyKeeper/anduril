@@ -230,16 +230,6 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         ramp_step_size = ramp_discrete_step_size;
     }
 
-    if (actual_level < HALFSPEED_LEVEL) {
-        // run at half speed
-        CLKPR = 1<<CLKPCE;
-        CLKPR = 1;
-    } else {
-        // run at full speed
-        CLKPR = 1<<CLKPCE;
-        CLKPR = 0;
-    }
-
     // turn LED on when we first enter the mode
     if (event == EV_enter_state) {
         // remember this level, unless it's moon or turbo
@@ -973,6 +963,15 @@ void loop() {
     #ifdef USE_IDLE_MODE
     else if ((state == steady_state)
             || (state == goodnight_state)) {
+        if (actual_level < HALFSPEED_LEVEL) {
+            // run at half speed
+            CLKPR = 1<<CLKPCE;
+            CLKPR = 1;
+        } else {
+            // run at full speed
+            CLKPR = 1<<CLKPCE;
+            CLKPR = 0;
+        }
         // doze until next clock tick
         idle_mode();
     }
