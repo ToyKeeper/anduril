@@ -40,6 +40,12 @@ int main() {
     // Don't allow interrupts while booting
     cli();
 
+    #ifdef HALFSPEED
+    // run at half speed
+    CLKPR = 1<<CLKPCE;
+    CLKPR = 1;
+    #endif
+
     // configure PWM channels
     #if PWM_CHANNELS >= 1
     DDRB |= (1 << PWM1_PIN);

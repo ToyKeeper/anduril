@@ -29,12 +29,16 @@
 #define USE_RAMPING
 #define USE_SET_LEVEL_GRADUALLY
 #define RAMP_LENGTH 150
+#define BLINK_AT_RAMP_BOUNDARIES
+//#define BLINK_AT_RAMP_FLOOR
 #define USE_BATTCHECK
 #define BATTCHECK_VpT
 #define MAX_CLICKS 5
 #define USE_EEPROM
 #define EEPROM_BYTES 12
 #define USE_IDLE_MODE
+//#define HALFSPEED_LEVEL 30  // looks good, but sounds bad
+#define HALFSPEED_LEVEL 14
 #include "spaghetti-monster.h"
 
 // Options specific to this UI (not inherited from SpaghettiMonster)
@@ -86,7 +90,7 @@ void save_config();
 uint8_t memorized_level = MAX_1x7135;
 // smooth vs discrete ramping
 volatile uint8_t ramp_style = 0;  // 0 = smooth, 1 = discrete
-volatile uint8_t ramp_smooth_floor = 5;
+volatile uint8_t ramp_smooth_floor = 1;
 #if PWM_CHANNELS == 3
 volatile uint8_t ramp_smooth_ceil = MAX_Nx7135;
 volatile uint8_t ramp_discrete_ceil = MAX_Nx7135;
@@ -226,6 +230,16 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         ramp_step_size = ramp_discrete_step_size;
     }
 
+    if (actual_level < HALFSPEED_LEVEL) {
+        // run at half speed
+        CLKPR = 1<<CLKPCE;
+        CLKPR = 1;
+    } else {
+        // run at full speed
+        CLKPR = 1<<CLKPCE;
+        CLKPR = 0;
+    }
+
     // turn LED on when we first enter the mode
     if (event == EV_enter_state) {
         // remember this level, unless it's moon or turbo
@@ -287,6 +301,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #endif
+        #ifdef BLINK_AT_RAMP_BOUNDARIES
         // only blink once for each threshold
         if ((memorized_level != actual_level)
                 && ((memorized_level == MAX_1x7135)
@@ -297,6 +312,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
             set_level(0);
             delay_4ms(8/4);
         }
+        #endif
         set_level(memorized_level);
         return MISCHIEF_MANAGED;
     }
@@ -311,16 +327,21 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #endif
+        #ifdef BLINK_AT_RAMP_BOUNDARIES
         // only blink once for each threshold
         if ((memorized_level != actual_level)
                 && ((memorized_level == MAX_1x7135)
                     #if PWM_CHANNELS >= 3
                     || (memorized_level == MAX_Nx7135)
                     #endif
-                    || (memorized_level == mode_min))) {
+                    #ifdef BLINK_AT_RAMP_FLOOR
+                    || (memorized_level == mode_min)
+                    #endif
+                    )) {
             set_level(0);
             delay_4ms(8/4);
         }
+        #endif
         set_level(memorized_level);
         return MISCHIEF_MANAGED;
     }
@@ -952,11 +973,17 @@ void loop() {
     #ifdef USE_IDLE_MODE
     else if ((state == steady_state)
             || (state == goodnight_state)) {
+        // doze until next clock tick
         idle_mode();
+    }
+    else {
+        // run at full speed
+        CLKPR = 1<<CLKPCE;
+        CLKPR = 0;
     }
     #endif
 
-    else if (state == strobe_state) {
+    if (state == strobe_state) {
         // party / tactical strobe
         if (strobe_type < 2) {
             set_level(MAX_LEVEL);
