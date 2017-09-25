@@ -37,6 +37,7 @@
 #define USE_EEPROM
 #define EEPROM_BYTES 12
 #define USE_IDLE_MODE
+#define MOON_POWERSAVE  // cut clock speed at very low modes for better efficiency
 //#define HALFSPEED_LEVEL 30  // looks good, but sounds bad
 #define HALFSPEED_LEVEL 14
 #include "spaghetti-monster.h"
@@ -962,16 +963,21 @@ void loop() {
 
     #ifdef USE_IDLE_MODE
     else if ((state == steady_state)
+            || (state == off_state)
             || (state == goodnight_state)) {
-        if (actual_level < HALFSPEED_LEVEL) {
+        #ifdef MOON_POWERSAVE
+        if (actual_level < 5) {
+            // run at quarter speed
+            CLKPR = 1<<CLKPCE; CLKPR = 2;
+        }
+        else if (actual_level < HALFSPEED_LEVEL) {
             // run at half speed
-            CLKPR = 1<<CLKPCE;
-            CLKPR = 1;
+            CLKPR = 1<<CLKPCE; CLKPR = 1;
         } else {
             // run at full speed
-            CLKPR = 1<<CLKPCE;
-            CLKPR = 0;
+            CLKPR = 1<<CLKPCE; CLKPR = 0;
         }
+        #endif
         // doze until next clock tick
         idle_mode();
     }
