@@ -329,9 +329,6 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         if (!(arg & 7)) gradual_tick();
         //if (!(arg & 3)) gradual_tick();
         //gradual_tick();
-        #ifdef USE_IDLE_MODE
-        // go_to_idle = 1;  // use less power when nothing is happening
-        #endif
         return MISCHIEF_MANAGED;
     }
     #endif

@@ -29,9 +29,8 @@ volatile uint8_t go_to_standby = 0;
 void sleep_until_eswitch_pressed();
 
 #ifdef USE_IDLE_MODE
-// deferred "idle" state trigger
 // stops processing until next click or timer tick
-//volatile uint8_t go_to_idle = 0;
+// (I think)
 void idle_mode();
 #endif
 
