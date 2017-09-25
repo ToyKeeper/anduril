@@ -945,13 +945,18 @@ void setup() {
 
 void loop() {
 
+    StatePtr state = current_state;
+
+    if (0) {}
+
     #ifdef USE_IDLE_MODE
-    if (current_state == steady_state) {
+    else if ((state == steady_state)
+            || (state == goodnight_state)) {
         idle_mode();
-    } else
+    }
     #endif
 
-    if (current_state == strobe_state) {
+    else if (state == strobe_state) {
         // party / tactical strobe
         if (strobe_type < 2) {
             set_level(MAX_LEVEL);
@@ -1025,17 +1030,17 @@ void loop() {
     }
 
     #ifdef USE_BATTCHECK
-    else if (current_state == battcheck_state) {
+    else if (state == battcheck_state) {
         battcheck();
     }
-    else if (current_state == tempcheck_state) {
+    else if (state == tempcheck_state) {
         blink_num(temperature>>2);
         nice_delay_ms(1000);
     }
     // TODO: blink out therm_ceil during thermal_config_state
     #endif
 
-    else if (current_state == beacon_state) {
+    else if (state == beacon_state) {
         set_level(memorized_level);
         if (! nice_delay_ms(500)) return;
         set_level(0);
