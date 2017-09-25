@@ -34,6 +34,7 @@
 #define MAX_CLICKS 5
 #define USE_EEPROM
 #define EEPROM_BYTES 12
+#define USE_IDLE_MODE
 #include "spaghetti-monster.h"
 
 // Options specific to this UI (not inherited from SpaghettiMonster)
@@ -86,9 +87,14 @@ uint8_t memorized_level = MAX_1x7135;
 // smooth vs discrete ramping
 volatile uint8_t ramp_style = 0;  // 0 = smooth, 1 = discrete
 volatile uint8_t ramp_smooth_floor = 5;
+#if PWM_CHANNELS == 3
+volatile uint8_t ramp_smooth_ceil = MAX_Nx7135;
+volatile uint8_t ramp_discrete_ceil = MAX_Nx7135;
+#else
 volatile uint8_t ramp_smooth_ceil = MAX_LEVEL - 30;
-volatile uint8_t ramp_discrete_floor = 20;
 volatile uint8_t ramp_discrete_ceil = MAX_LEVEL - 30;
+#endif
+volatile uint8_t ramp_discrete_floor = 20;
 volatile uint8_t ramp_discrete_steps = 7;
 uint8_t ramp_discrete_step_size;  // don't set this
 
@@ -323,6 +329,9 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         if (!(arg & 7)) gradual_tick();
         //if (!(arg & 3)) gradual_tick();
         //gradual_tick();
+        #ifdef USE_IDLE_MODE
+        // go_to_idle = 1;  // use less power when nothing is happening
+        #endif
         return MISCHIEF_MANAGED;
     }
     #endif
@@ -938,6 +947,12 @@ void setup() {
 
 
 void loop() {
+
+    #ifdef USE_IDLE_MODE
+    if (current_state == steady_state) {
+        idle_mode();
+    } else
+    #endif
 
     if (current_state == strobe_state) {
         // party / tactical strobe

@@ -72,8 +72,8 @@ int main() {
     PORTB = (1 << SWITCH_PIN);  // e-switch is the only input
     PCMSK = (1 << SWITCH_PIN);  // pin change interrupt uses this pin
 
-    // configure sleep mode
-    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+    //// configure sleep mode
+    //set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 
     // Read config values and saved state
 
@@ -133,8 +133,20 @@ int main() {
             standby_mode();
         }
 
+        #ifdef USE_IDLE_MODE
+        /*
+        // enter idle mode if requested
+        // (works better if deferred like this)
+        if (go_to_idle) {
+            go_to_idle = 0;
+            idle_mode();
+        }
+        */
+        #endif
+
         // give the recipe some time slices
         loop();
+
     }
 }
 

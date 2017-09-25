@@ -40,6 +40,9 @@ void sleep_until_eswitch_pressed()
 
     PCINT_on();  // wake on e-switch event
 
+    // configure sleep mode
+    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+
     sleep_enable();
     sleep_bod_disable();
     sleep_cpu();  // wait here
@@ -56,5 +59,19 @@ void sleep_until_eswitch_pressed()
     ADC_on();
     WDT_on();
 }
+
+#ifdef USE_IDLE_MODE
+void idle_mode()
+{
+    // configure sleep mode
+    set_sleep_mode(SLEEP_MODE_IDLE);
+
+    sleep_enable();
+    sleep_cpu();  // wait here
+
+    // something happened; wake up
+    sleep_disable();
+}
+#endif
 
 #endif

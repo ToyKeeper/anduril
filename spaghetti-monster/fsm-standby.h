@@ -28,6 +28,13 @@ volatile uint8_t go_to_standby = 0;
 #define standby_mode sleep_until_eswitch_pressed
 void sleep_until_eswitch_pressed();
 
+#ifdef USE_IDLE_MODE
+// deferred "idle" state trigger
+// stops processing until next click or timer tick
+//volatile uint8_t go_to_idle = 0;
+void idle_mode();
+#endif
+
 // TODO: half-sleep "twilight" mode with WDT on but running slowly
 
 #endif
