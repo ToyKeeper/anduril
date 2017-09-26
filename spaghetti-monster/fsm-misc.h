@@ -20,6 +20,10 @@
 #ifndef FSM_MISC_H
 #define FSM_MISC_H
 
+#ifdef USE_DYNAMIC_UNDERCLOCKING
+void auto_clock_speed();
+#endif
+
 #if defined(USE_BLINK_NUM) || defined(USE_BLINK_DIGIT)
 #ifndef BLINK_BRIGHTNESS
 #define BLINK_BRIGHTNESS (MAX_LEVEL/6)

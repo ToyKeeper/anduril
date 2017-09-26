@@ -57,6 +57,9 @@ void set_level(uint8_t level) {
         PWM4_LVL = pgm_read_byte(pwm4_levels + level);
         #endif
     }
+    #ifdef USE_DYNAMIC_UNDERCLOCKING
+    auto_clock_speed();
+    #endif
 }
 
 #ifdef USE_SET_LEVEL_GRADUALLY

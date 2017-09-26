@@ -20,6 +20,25 @@
 #ifndef FSM_MISC_C
 #define FSM_MISC_C
 
+#ifdef USE_DYNAMIC_UNDERCLOCKING
+void auto_clock_speed() {
+    uint8_t level = actual_level;  // volatile, avoid repeat access
+    if (level < QUARTERSPEED_LEVEL) {
+        // run at quarter speed
+        // note: this only works when executed as two consecutive instructions
+        // (don't try to combine them or put other stuff between)
+        CLKPR = 1<<CLKPCE; CLKPR = 2;
+    }
+    else if (level < HALFSPEED_LEVEL) {
+        // run at half speed
+        CLKPR = 1<<CLKPCE; CLKPR = 1;
+    } else {
+        // run at full speed
+        CLKPR = 1<<CLKPCE; CLKPR = 0;
+    }
+}
+#endif
+
 #if defined(USE_BLINK_NUM) || defined(USE_BLINK_DIGIT)
 uint8_t blink_digit(uint8_t num) {
     //StatePtr old_state = current_state;

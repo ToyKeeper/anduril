@@ -23,8 +23,6 @@
 #define USE_LVP
 #define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 50
-#define USE_DELAY_MS
-#define USE_DELAY_4MS
 #define USE_DELAY_ZERO
 #define USE_RAMPING
 #define USE_SET_LEVEL_GRADUALLY
@@ -37,9 +35,7 @@
 #define USE_EEPROM
 #define EEPROM_BYTES 12
 #define USE_IDLE_MODE
-#define MOON_POWERSAVE  // cut clock speed at very low modes for better efficiency
-//#define HALFSPEED_LEVEL 30  // looks good, but sounds bad
-#define HALFSPEED_LEVEL 14
+#define USE_DYNAMIC_UNDERCLOCKING  // cut clock speed at very low modes for better efficiency
 #include "spaghetti-monster.h"
 
 // Options specific to this UI (not inherited from SpaghettiMonster)
@@ -966,27 +962,12 @@ void loop() {
             || (state == off_state)
             || (state == lockout_state)
             || (state == goodnight_state)  ) {
-        #ifdef MOON_POWERSAVE
-        if (actual_level < 5) {
-            // run at quarter speed
-            CLKPR = 1<<CLKPCE; CLKPR = 2;
-        }
-        else if (actual_level < HALFSPEED_LEVEL) {
-            // run at half speed
-            CLKPR = 1<<CLKPCE; CLKPR = 1;
-        } else {
-            // run at full speed
-            CLKPR = 1<<CLKPCE; CLKPR = 0;
-        }
-        #endif
         // doze until next clock tick
         idle_mode();
     }
-    else {
-        // run at full speed
-        CLKPR = 1<<CLKPCE;
-        CLKPR = 0;
-    }
+    #endif
+    #ifdef USE_DYNAMIC_UNDERCLOCKING
+    auto_clock_speed();
     #endif
 
     if (state == strobe_state) {
@@ -995,7 +976,7 @@ void loop() {
             set_level(MAX_LEVEL);
             if (strobe_type == 0) {  // party strobe
                 if (strobe_delays[strobe_type] < 42) delay_zero();
-                else delay_ms(1);
+                else nice_delay_ms(1);
             } else {  //tactical strobe
                 nice_delay_ms(strobe_delays[strobe_type] >> 1);
             }

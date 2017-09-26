@@ -116,8 +116,26 @@ inline void interrupt_nice_delays() { nice_delay_interrupt = 1; }
 //   1: normal completion
 uint8_t nice_delay_ms(uint16_t ms) {
     StatePtr old_state = current_state;
+    /*  // delay_zero() implementation
+    if (ms == 0) {
+        CLKPR = 1<<CLKPCE; CLKPR = 0;  // full speed
+        _delay_loop_2(BOGOMIPS*98/100/3);
+        return 1;
+    }
+    */
     while(ms-- > 0) {
+        #ifdef USE_DYNAMIC_UNDERCLOCKING
+        // underclock MCU to save power
+        CLKPR = 1<<CLKPCE; CLKPR = 2;
+        // wait
+        _delay_loop_2(BOGOMIPS*98/100/4);
+        // restore regular clock speed
+        CLKPR = 1<<CLKPCE; CLKPR = 0;
+        #else
+        // wait
         _delay_loop_2(BOGOMIPS*98/100);
+        #endif
+
         process_emissions();
         if ((nice_delay_interrupt) || (old_state != current_state)) {
             nice_delay_interrupt = 0;
@@ -127,6 +145,18 @@ uint8_t nice_delay_ms(uint16_t ms) {
     return 1;
 }
 
+#ifdef USE_DYNAMIC_UNDERCLOCKING
+void delay_4ms(uint8_t ms) {
+    while(ms-- > 0) {
+        // underclock MCU to save power
+        CLKPR = 1<<CLKPCE; CLKPR = 2;
+        // wait
+        _delay_loop_2(BOGOMIPS*98/100);
+        // restore regular clock speed
+        CLKPR = 1<<CLKPCE; CLKPR = 0;
+    }
+}
+#endif
 /*
 uint8_t nice_delay_4ms(uint8_t ms) {
     return nice_delay_ms((uint16_t)ms << 2);
