@@ -962,9 +962,10 @@ void loop() {
     if (0) {}
 
     #ifdef USE_IDLE_MODE
-    else if ((state == steady_state)
+    else if (  (state == steady_state)
             || (state == off_state)
-            || (state == goodnight_state)) {
+            || (state == lockout_state)
+            || (state == goodnight_state)  ) {
         #ifdef MOON_POWERSAVE
         if (actual_level < 5) {
             // run at quarter speed
