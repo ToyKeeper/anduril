@@ -955,6 +955,10 @@ void loop() {
 
     StatePtr state = current_state;
 
+    #ifdef USE_DYNAMIC_UNDERCLOCKING
+    auto_clock_speed();
+    #endif
+
     if (0) {}
 
     #ifdef USE_IDLE_MODE
@@ -965,9 +969,6 @@ void loop() {
         // doze until next clock tick
         idle_mode();
     }
-    #endif
-    #ifdef USE_DYNAMIC_UNDERCLOCKING
-    auto_clock_speed();
     #endif
 
     if (state == strobe_state) {
