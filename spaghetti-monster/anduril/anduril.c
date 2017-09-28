@@ -249,7 +249,6 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     // 2 clicks: go to/from highest level
     else if (event == EV_2clicks) {
         if (actual_level < MAX_LEVEL) {
-            memorized_level = actual_level;  // in case we're on moon
             #ifdef USE_THERMAL_REGULATION
             target_level = MAX_LEVEL;
             #endif
