@@ -50,8 +50,10 @@ void sleep_until_eswitch_pressed()
     // something happened; wake up
     sleep_disable();
 
+    #ifdef USE_THERMAL_REGULATION
     // forget what the temperature was last time we were on
     reset_thermal_history = 1;
+    #endif
 
     // go back to normal running mode
     //PCINT_on();  // should be on already

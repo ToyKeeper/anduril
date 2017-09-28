@@ -18,21 +18,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/********* User-configurable options *********/
+// Physical driver type
 #define FSM_EMISAR_D4_DRIVER
 //#define FSM_FW3A_DRIVER
+
 #define USE_LVP
 #define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 50
-#define USE_DELAY_ZERO
-#define USE_RAMPING
 #define USE_SET_LEVEL_GRADUALLY
-#define RAMP_LENGTH 150
-#define MAX_BIKING_LEVEL 120  // should be 127 or less
 #define BLINK_AT_CHANNEL_BOUNDARIES
 //#define BLINK_AT_RAMP_FLOOR
 #define BLINK_AT_RAMP_CEILING
-#define USE_BATTCHECK
 #define BATTCHECK_VpT
+#define USE_LIGHTNING_MODE
+#define GOODNIGHT_TIME  60  // minutes (approximately)
+#define GOODNIGHT_LEVEL 24  // ~11 lm
+
+/********* Configure SpaghettiMonster *********/
+#define USE_DELAY_ZERO
+#define USE_RAMPING
+#define RAMP_LENGTH 150
+#define MAX_BIKING_LEVEL 120  // should be 127 or less
+#define USE_BATTCHECK
 #define MAX_CLICKS 5
 #define USE_EEPROM
 #define EEPROM_BYTES 12
@@ -40,11 +48,6 @@
 #define USE_DYNAMIC_UNDERCLOCKING  // cut clock speed at very low modes for better efficiency
 #include "spaghetti-monster.h"
 
-// Options specific to this UI (not inherited from SpaghettiMonster)
-#define USE_LIGHTNING_MODE
-// set this a bit high, since the bottom 2 ramp levels might not emit any light at all
-#define GOODNIGHT_TIME  65  // minutes (approximately)
-#define GOODNIGHT_LEVEL 24  // ~11 lm
 
 // FSM states
 uint8_t off_state(EventPtr event, uint16_t arg);
@@ -60,6 +63,8 @@ uint8_t strobe_state(EventPtr event, uint16_t arg);
 #endif
 #ifdef USE_BATTCHECK
 uint8_t battcheck_state(EventPtr event, uint16_t arg);
+#endif
+#ifdef USE_THERMAL_REGULATION
 uint8_t tempcheck_state(EventPtr event, uint16_t arg);
 uint8_t thermal_config_state(EventPtr event, uint16_t arg);
 #endif
@@ -481,7 +486,9 @@ uint8_t battcheck_state(EventPtr event, uint16_t arg) {
     }
     return EVENT_NOT_HANDLED;
 }
+#endif
 
+#ifdef USE_THERMAL_REGULATION
 uint8_t tempcheck_state(EventPtr event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
@@ -511,7 +518,11 @@ uint8_t beacon_state(EventPtr event, uint16_t arg) {
     }
     // 2 clicks: tempcheck mode
     else if (event == EV_2clicks) {
+        #ifdef USE_THERMAL_REGULATION
         set_state(tempcheck_state, 0);
+        #else
+        set_state(battcheck_state, 0);
+        #endif
         return MISCHIEF_MANAGED;
     }
     // 3 clicks: beacon config mode
@@ -704,6 +715,7 @@ uint8_t ramp_config_state(EventPtr event, uint16_t arg) {
 }
 
 
+#ifdef USE_THERMAL_REGULATION
 uint8_t thermal_config_state(EventPtr event, uint16_t arg) {
     static uint8_t done = 0;
     if (event == EV_enter_state) {
@@ -729,6 +741,7 @@ uint8_t thermal_config_state(EventPtr event, uint16_t arg) {
     }
     return EVENT_NOT_HANDLED;
 }
+#endif
 
 
 uint8_t beacon_config_state(EventPtr event, uint16_t arg) {
@@ -910,7 +923,9 @@ void load_config() {
         strobe_delays[1] = eeprom[8];
         bike_flasher_brightness = eeprom[9];
         beacon_seconds = eeprom[10];
+        #ifdef USE_THERMAL_REGULATION
         therm_ceil = eeprom[11];
+        #endif
     }
 }
 
@@ -926,7 +941,9 @@ void save_config() {
     eeprom[8] = strobe_delays[1];
     eeprom[9] = bike_flasher_brightness;
     eeprom[10] = beacon_seconds;
+    #ifdef USE_THERMAL_REGULATION
     eeprom[11] = therm_ceil;
+    #endif
 
     save_eeprom();
 }
@@ -1062,11 +1079,13 @@ void loop() {
     else if (state == battcheck_state) {
         battcheck();
     }
+    #endif
+    #ifdef USE_THERMAL_REGULATION
+    // TODO: blink out therm_ceil during thermal_config_state
     else if (state == tempcheck_state) {
         blink_num(temperature>>2);
         nice_delay_ms(1000);
     }
-    // TODO: blink out therm_ceil during thermal_config_state
     #endif
 
     else if (state == beacon_state) {
