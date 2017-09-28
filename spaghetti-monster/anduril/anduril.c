@@ -34,6 +34,7 @@
 #define USE_LIGHTNING_MODE
 #define GOODNIGHT_TIME  60  // minutes (approximately)
 #define GOODNIGHT_LEVEL 24  // ~11 lm
+#define USE_REVERSING
 
 /********* Configure SpaghettiMonster *********/
 #define USE_DELAY_ZERO
@@ -228,6 +229,9 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     uint8_t mode_min = ramp_smooth_floor;
     uint8_t mode_max = ramp_smooth_ceil;
     uint8_t ramp_step_size = 1;
+    #ifdef USE_REVERSING
+    static int8_t ramp_direction = 1;
+    #endif
     if (ramp_style) {
         mode_min = ramp_discrete_floor;
         mode_max = ramp_discrete_ceil;
@@ -289,8 +293,16 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         if (ramp_style  &&  (arg % HOLD_TIMEOUT != 0)) {
             return MISCHIEF_MANAGED;
         }
-        // TODO? make it ramp down instead, if already at max?
+        #ifdef USE_REVERSING
+        // make it ramp down instead, if already at max
+        if ((arg <= 1) && (actual_level >= mode_max)) {
+            ramp_direction = -1;
+        }
+        memorized_level = nearest_level((int16_t)actual_level \
+                          + (ramp_step_size * ramp_direction));
+        #else
         memorized_level = nearest_level((int16_t)actual_level + ramp_step_size);
+        #endif
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #endif
@@ -309,6 +321,9 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
                 #ifdef BLINK_AT_RAMP_CEILING
                 (memorized_level == mode_max)
                 #endif
+                #if defined(USE_REVERSING) && defined(BLINK_AT_RAMP_FLOOR)
+                || (memorized_level == mode_min)
+                #endif
                 )) {
             set_level(0);
             delay_4ms(8/4);
@@ -317,8 +332,17 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         set_level(memorized_level);
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_REVERSING
+    // reverse ramp direction on hold release
+    else if (event == EV_click1_hold_release) {
+        ramp_direction = -ramp_direction;
+    }
+    #endif
     // click, hold: change brightness (dimmer)
     else if (event == EV_click2_hold) {
+        #ifdef USE_REVERSING
+        ramp_direction = 1;
+        #endif
         // ramp slower in discrete mode
         if (ramp_style  &&  (arg % HOLD_TIMEOUT != 0)) {
             return MISCHIEF_MANAGED;
@@ -351,11 +375,17 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         set_level(memorized_level);
         return MISCHIEF_MANAGED;
     }
-    #ifdef USE_SET_LEVEL_GRADUALLY
+    #if defined(USE_SET_LEVEL_GRADUALLY) || defined(USE_REVERSING)
     else if (event == EV_tick) {
+        #ifdef USE_SET_LEVEL_GRADUALLY
         if (!(arg & 7)) gradual_tick();
         //if (!(arg & 3)) gradual_tick();
         //gradual_tick();
+        #endif
+        #ifdef USE_REVERSING
+        // un-reverse after 1 second
+        if (arg == TICKS_PER_SECOND) ramp_direction = 1;
+        #endif
         return MISCHIEF_MANAGED;
     }
     #endif

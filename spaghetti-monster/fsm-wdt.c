@@ -50,9 +50,6 @@ ISR(WDT_vect) {
     ticks_since_last_event = (ticks_since_last_event + 1) \
                              | (ticks_since_last_event & 0x8000);
 
-    // callback on each timer tick
-    emit(EV_tick, ticks_since_last_event);
-
     // if time since last event exceeds timeout,
     // append timeout to current event sequence, then
     // send event to current state callback
@@ -63,6 +60,14 @@ ISR(WDT_vect) {
     uint8_t prev_event = 0;
     if (le_num >= 1) last_event = current_event[le_num-1];
     if (le_num >= 2) prev_event = current_event[le_num-2];
+
+    // callback on each timer tick
+    if (last_event == A_HOLD) {
+        emit(EV_tick, 0);  // override tick counter while holding button
+    }
+    else {
+        emit(EV_tick, ticks_since_last_event);
+    }
 
     // user held button long enough to count as a long click?
     if (last_event == A_PRESS) {
