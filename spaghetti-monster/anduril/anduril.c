@@ -27,6 +27,7 @@
 #define USE_RAMPING
 #define USE_SET_LEVEL_GRADUALLY
 #define RAMP_LENGTH 150
+#define MAX_BIKING_LEVEL 120  // should be 127 or less
 #define BLINK_AT_RAMP_BOUNDARIES
 //#define BLINK_AT_RAMP_FLOOR
 #define USE_BATTCHECK
@@ -414,7 +415,7 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
         }
         // biking mode brighter
         else if (strobe_type == 3) {
-            if (bike_flasher_brightness < MAX_LEVEL/2)
+            if (bike_flasher_brightness < MAX_BIKING_LEVEL)
                 bike_flasher_brightness ++;
             set_level(bike_flasher_brightness);
         }
@@ -430,7 +431,7 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
         }
         // biking mode dimmer
         else if (strobe_type == 3) {
-            if (bike_flasher_brightness > 1)
+            if (bike_flasher_brightness > 2)
                 bike_flasher_brightness --;
             set_level(bike_flasher_brightness);
         }
@@ -958,7 +959,6 @@ void loop() {
     #ifdef USE_DYNAMIC_UNDERCLOCKING
     auto_clock_speed();
     #endif
-
     if (0) {}
 
     #ifdef USE_IDLE_MODE
@@ -1034,6 +1034,7 @@ void loop() {
         // bike flasher
         else if (strobe_type == 3) {
             uint8_t burst = bike_flasher_brightness << 1;
+            if (burst > MAX_LEVEL) burst = MAX_LEVEL;
             for(uint8_t i=0; i<4; i++) {
                 set_level(burst);
                 if (! nice_delay_ms(5)) return;
