@@ -28,8 +28,9 @@
 #define USE_SET_LEVEL_GRADUALLY
 #define RAMP_LENGTH 150
 #define MAX_BIKING_LEVEL 120  // should be 127 or less
-#define BLINK_AT_RAMP_BOUNDARIES
+#define BLINK_AT_CHANNEL_BOUNDARIES
 //#define BLINK_AT_RAMP_FLOOR
+#define BLINK_AT_RAMP_CEILING
 #define USE_BATTCHECK
 #define BATTCHECK_VpT
 #define MAX_CLICKS 5
@@ -289,14 +290,22 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #endif
-        #ifdef BLINK_AT_RAMP_BOUNDARIES
+        #if defined(BLINK_AT_RAMP_CEILING) || defined(BLINK_AT_CHANNEL_BOUNDARIES)
         // only blink once for each threshold
-        if ((memorized_level != actual_level)
-                && ((memorized_level == MAX_1x7135)
-                    #if PWM_CHANNELS >= 3
-                    || (memorized_level == MAX_Nx7135)
-                    #endif
-                    || (memorized_level == mode_max))) {
+        if ((memorized_level != actual_level) && (
+                #ifdef BLINK_AT_CHANNEL_BOUNDARIES
+                (memorized_level == MAX_1x7135)
+                #if PWM_CHANNELS >= 3
+                || (memorized_level == MAX_Nx7135)
+                #endif
+                #ifdef BLINK_AT_RAMP_CEILING
+                ||
+                #endif
+                #endif
+                #ifdef BLINK_AT_RAMP_CEILING
+                (memorized_level == mode_max)
+                #endif
+                )) {
             set_level(0);
             delay_4ms(8/4);
         }
@@ -315,17 +324,22 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #endif
-        #ifdef BLINK_AT_RAMP_BOUNDARIES
+        #if defined(BLINK_AT_RAMP_FLOOR) || defined(BLINK_AT_CHANNEL_BOUNDARIES)
         // only blink once for each threshold
-        if ((memorized_level != actual_level)
-                && ((memorized_level == MAX_1x7135)
-                    #if PWM_CHANNELS >= 3
-                    || (memorized_level == MAX_Nx7135)
-                    #endif
-                    #ifdef BLINK_AT_RAMP_FLOOR
-                    || (memorized_level == mode_min)
-                    #endif
-                    )) {
+        if ((memorized_level != actual_level) && (
+                #ifdef BLINK_AT_CHANNEL_BOUNDARIES
+                (memorized_level == MAX_1x7135)
+                #if PWM_CHANNELS >= 3
+                || (memorized_level == MAX_Nx7135)
+                #endif
+                #ifdef BLINK_AT_RAMP_FLOOR
+                ||
+                #endif
+                #endif
+                #ifdef BLINK_AT_RAMP_FLOOR
+                (memorized_level == mode_min)
+                #endif
+                )) {
             set_level(0);
             delay_4ms(8/4);
         }
