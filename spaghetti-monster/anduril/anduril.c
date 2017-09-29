@@ -1043,7 +1043,12 @@ void setup() {
     // dual switch: e-switch + power clicky
     // power clicky acts as a momentary mode
     load_config();
-    push_state(steady_state, memorized_level);
+    if (button_is_pressed())
+        // hold button to go to moon
+        push_state(steady_state, 1);
+    else
+        // otherwise use memory
+        push_state(steady_state, memorized_level);
 
     #else
 
