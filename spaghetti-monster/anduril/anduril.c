@@ -248,6 +248,9 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         target_level = arg;
         #endif
         set_level(nearest_level(arg));
+        #ifdef USE_REVERSING
+        ramp_direction = 1;
+        #endif
         return MISCHIEF_MANAGED;
     }
     // 1 click: off
