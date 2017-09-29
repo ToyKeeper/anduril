@@ -35,6 +35,7 @@
 #define GOODNIGHT_TIME  60  // minutes (approximately)
 #define GOODNIGHT_LEVEL 24  // ~11 lm
 #define USE_REVERSING
+//#define START_AT_MEMORIZED_LEVEL
 
 /********* Configure SpaghettiMonster *********/
 #define USE_DELAY_ZERO
@@ -45,6 +46,10 @@
 #define MAX_CLICKS 5
 #define USE_EEPROM
 #define EEPROM_BYTES 12
+#ifdef START_AT_MEMORIZED_LEVEL
+#define USE_EEPROM_WL
+#define EEPROM_WL_BYTES 1
+#endif
 #define USE_IDLE_MODE
 #define USE_DYNAMIC_UNDERCLOCKING  // cut clock speed at very low modes for better efficiency
 #include "spaghetti-monster.h"
@@ -90,6 +95,9 @@ void blink_confirm(uint8_t num);
 // remember stuff even after battery was changed
 void load_config();
 void save_config();
+#ifdef START_AT_MEMORIZED_LEVEL
+void save_config_wl();
+#endif
 
 // brightness control
 uint8_t memorized_level = MAX_1x7135;
@@ -280,6 +288,9 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         ramp_style ^= 1;
         memorized_level = nearest_level(memorized_level);
         save_config();
+        #ifdef START_AT_MEMORIZED_LEVEL
+        save_config_wl();
+        #endif
         set_level(0);
         delay_4ms(20/4);
         set_level(memorized_level);
@@ -335,10 +346,16 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         set_level(memorized_level);
         return MISCHIEF_MANAGED;
     }
-    #ifdef USE_REVERSING
+    #if defined(USE_REVERSING) || defined(START_AT_MEMORIZED_LEVEL)
     // reverse ramp direction on hold release
     else if (event == EV_click1_hold_release) {
+        #ifdef USE_REVERSING
         ramp_direction = -ramp_direction;
+        #endif
+        #ifdef START_AT_MEMORIZED_LEVEL
+        save_config_wl();
+        #endif
+        return MISCHIEF_MANAGED;
     }
     #endif
     // click, hold: change brightness (dimmer)
@@ -378,6 +395,13 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         set_level(memorized_level);
         return MISCHIEF_MANAGED;
     }
+    #ifdef START_AT_MEMORIZED_LEVEL
+    // click, release, hold, release: save new ramp level (if necessary)
+    else if (event == EV_click2_hold_release) {
+        save_config_wl();
+        return MISCHIEF_MANAGED;
+    }
+    #endif
     #if defined(USE_SET_LEVEL_GRADUALLY) || defined(USE_REVERSING)
     else if (event == EV_tick) {
         #ifdef USE_SET_LEVEL_GRADUALLY
@@ -960,6 +984,11 @@ void load_config() {
         therm_ceil = eeprom[11];
         #endif
     }
+    #ifdef START_AT_MEMORIZED_LEVEL
+    if (load_eeprom_wl()) {
+        memorized_level = eeprom_wl[0];
+    }
+    #endif
 }
 
 void save_config() {
@@ -981,6 +1010,12 @@ void save_config() {
     save_eeprom();
 }
 
+#ifdef START_AT_MEMORIZED_LEVEL
+void save_config_wl() {
+    eeprom_wl[0] = memorized_level;
+    save_eeprom_wl();
+}
+#endif
 
 void low_voltage() {
     // "step down" from strobe to something low
@@ -1004,6 +1039,14 @@ void low_voltage() {
 
 
 void setup() {
+    #ifdef START_AT_MEMORIZED_LEVEL
+    // dual switch: e-switch + power clicky
+    // power clicky acts as a momentary mode
+    load_config();
+    push_state(steady_state, memorized_level);
+
+    #else
+
     // blink at power-on to let user know power is connected
     set_level(RAMP_SIZE/8);
     delay_4ms(3);
@@ -1012,6 +1055,7 @@ void setup() {
     load_config();
 
     push_state(off_state, 0);
+    #endif
 }
 
 

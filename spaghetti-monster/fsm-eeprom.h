@@ -47,8 +47,8 @@ void save_eeprom();
 #error Requested EEPROM_WL_BYTES too big.
 #endif
 uint8_t eeprom_wl[EEPROM_WL_BYTES];
-uint8_t load_wl_eeprom();  // returns 1 for success, 0 for no data found
-void save_wl_eeprom();
+uint8_t load_eeprom_wl();  // returns 1 for success, 0 for no data found
+void save_eeprom_wl();
 #define EEP_WL_SIZE (EEPSIZE/2)
 #endif
 

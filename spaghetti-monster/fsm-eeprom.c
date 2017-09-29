@@ -55,7 +55,7 @@ void save_eeprom() {
 uint8_t eeprom_wl[EEPROM_WL_BYTES];
 EEP_OFFSET_T eep_wl_prev_offset;
 
-uint8_t load_wl_eeprom() {
+uint8_t load_eeprom_wl() {
     cli();
     // check if eeprom has been initialized; abort if it hasn't
     uint8_t found = 0;
@@ -80,7 +80,7 @@ uint8_t load_wl_eeprom() {
     return found;
 }
 
-void save_wl_eeprom() {
+void save_eeprom_wl() {
     cli();
     // erase old state
     EEP_OFFSET_T offset = eep_wl_prev_offset;
