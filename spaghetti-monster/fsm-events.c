@@ -125,16 +125,34 @@ uint8_t nice_delay_ms(uint16_t ms) {
     */
     while(ms-- > 0) {
         #ifdef USE_DYNAMIC_UNDERCLOCKING
+        #ifdef USE_RAMPING
+        uint8_t level = actual_level;  // volatile, avoid repeat access
+        if (level < QUARTERSPEED_LEVEL) {
+            CLKPR = 1<<CLKPCE; CLKPR = 2;
+            _delay_loop_2(BOGOMIPS*98/100/4);
+        }
+        //else if (level < HALFSPEED_LEVEL) {
+        //    CLKPR = 1<<CLKPCE; CLKPR = 1;
+        //    _delay_loop_2(BOGOMIPS*98/100/2);
+        //}
+        else {
+            CLKPR = 1<<CLKPCE; CLKPR = 0;
+            _delay_loop_2(BOGOMIPS*98/100);
+        }
+        // restore regular clock speed
+        CLKPR = 1<<CLKPCE; CLKPR = 0;
+        #else
         // underclock MCU to save power
         CLKPR = 1<<CLKPCE; CLKPR = 2;
         // wait
         _delay_loop_2(BOGOMIPS*98/100/4);
         // restore regular clock speed
         CLKPR = 1<<CLKPCE; CLKPR = 0;
+        #endif  // ifdef USE_RAMPING
         #else
         // wait
         _delay_loop_2(BOGOMIPS*98/100);
-        #endif
+        #endif  // ifdef USE_DYNAMIC_UNDERCLOCKING
 
         process_emissions();
         if ((nice_delay_interrupt) || (old_state != current_state)) {
