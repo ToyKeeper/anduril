@@ -46,8 +46,12 @@ uint8_t current_event[EV_MAX_LEN];
 static volatile uint16_t ticks_since_last_event = 0;
 
 // timeout durations in ticks (each tick 1/60th s)
+#ifndef HOLD_TIMEOUT
 #define HOLD_TIMEOUT 24
+#endif
+#ifndef RELEASE_TIMEOUT
 #define RELEASE_TIMEOUT 24
+#endif
 
 #define A_ENTER_STATE     1
 #define A_LEAVE_STATE     2
