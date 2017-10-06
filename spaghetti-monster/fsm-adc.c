@@ -151,10 +151,10 @@ ISR(ADC_vect) {
             for(uint8_t i=0; i<NUM_THERMAL_VALUES; i++)
                 temperature_values[i] = temp;
             for(uint8_t i=0; i<NUM_THERMAL_VALUES_HISTORY; i++)
-                temperature_history[i] = temp<<2;
+                temperature_history[i] = temp<<1;
             for(uint8_t i=0; i<NUM_THERMAL_PROJECTED_HISTORY; i++)
-                projected_temperature_history[i] = temp<<2;
-            temperature = temp<<2;
+                projected_temperature_history[i] = temp<<1;
+            temperature = temp<<1;
         } else {  // update our current temperature estimate
             uint8_t i;
             int16_t total=0;
