@@ -1165,7 +1165,7 @@ void loop() {
     #ifdef USE_THERMAL_REGULATION
     // TODO: blink out therm_ceil during thermal_config_state
     else if (state == tempcheck_state) {
-        blink_num(temperature>>2);
+        blink_num(temperature>>1);
         nice_delay_ms(1000);
     }
     #endif
