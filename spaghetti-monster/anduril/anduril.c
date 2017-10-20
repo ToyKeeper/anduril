@@ -706,11 +706,16 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
         save_config();
         return MISCHIEF_MANAGED;
     }
-    // 3 clicks: rotate through indicator LED modes (off mode)
+    // click, click, hold: rotate through indicator LED modes (off mode)
     else if (event == EV_click3_hold) {
         uint8_t mode = (arg >> 5) % 3;
         indicator_led_mode = (indicator_led_mode & 0b11111100) | mode;
         indicator_led(mode);
+        //save_config();
+        return MISCHIEF_MANAGED;
+    }
+    // click, click, hold, release: save indicator LED mode (off mode)
+    else if (event == EV_click3_hold_release) {
         save_config();
         return MISCHIEF_MANAGED;
     }
