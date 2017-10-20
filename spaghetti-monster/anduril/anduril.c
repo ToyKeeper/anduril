@@ -36,6 +36,7 @@
 #define GOODNIGHT_LEVEL 24  // ~11 lm
 #define USE_REVERSING
 //#define START_AT_MEMORIZED_LEVEL
+#define USE_INDICATOR_LED
 
 /********* Configure SpaghettiMonster *********/
 #define USE_DELAY_ZERO
@@ -45,7 +46,13 @@
 #define USE_BATTCHECK
 #define MAX_CLICKS 5
 #define USE_EEPROM
+#ifdef USE_INDICATOR_LED
+#define EEPROM_BYTES 13
+#elif defined(USE_THERMAL_REGULATION)
 #define EEPROM_BYTES 12
+#else
+#define EEPROM_BYTES 11
+#endif
 #ifdef START_AT_MEMORIZED_LEVEL
 #define USE_EEPROM_WL
 #define EEPROM_WL_BYTES 1
@@ -92,6 +99,10 @@ volatile uint8_t number_entry_value;
 
 void blink_confirm(uint8_t num);
 
+#ifdef USE_INDICATOR_LED
+void indicator_led(uint8_t lvl);
+#endif
+
 // remember stuff even after battery was changed
 void load_config();
 void save_config();
@@ -114,6 +125,14 @@ volatile uint8_t ramp_discrete_ceil = MAX_LEVEL - 30;
 volatile uint8_t ramp_discrete_floor = 20;
 volatile uint8_t ramp_discrete_steps = 7;
 uint8_t ramp_discrete_step_size;  // don't set this
+
+#ifdef USE_INDICATOR_LED
+// bits 2-3 control lockout mode
+// bits 0-1 control "off" mode
+// modes are: 0=off, 1=low, 2=high
+// (TODO: 3=blinking)
+uint8_t indicator_led_mode = (1<<2) + 2;
+#endif
 
 // calculate the nearest ramp level which would be valid at the moment
 // (is a no-op for smooth ramp, but limits discrete ramp to only the
@@ -146,6 +165,9 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     // turn emitter off when entering state
     if (event == EV_enter_state) {
         set_level(0);
+        #ifdef USE_INDICATOR_LED
+        indicator_led(indicator_led_mode & 0x03);
+        #endif
         // sleep while off  (lower power use)
         go_to_standby = 1;
         ticks_spent_awake = 0;
@@ -658,14 +680,41 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
     // (allow staying awake long enough to exit, but otherwise
     //  be persistent about going back to sleep every few seconds
     //  even if the user keeps pressing the button)
+    #ifdef USE_INDICATOR_LED
+    if (event == EV_enter_state) {
+        indicator_led(indicator_led_mode >> 2);
+    } else
+    #endif
     if (event == EV_tick) {
         ticks_spent_awake ++;
         if (ticks_spent_awake > 180) {
             ticks_spent_awake = 0;
             go_to_standby = 1;
+            #ifdef USE_INDICATOR_LED
+            indicator_led(indicator_led_mode >> 2);
+            #endif
         }
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_INDICATOR_LED
+    // 3 clicks: rotate through indicator LED modes (lockout mode)
+    else if (event == EV_3clicks) {
+        uint8_t mode = indicator_led_mode >> 2;
+        mode = (mode + 1) % 3;
+        indicator_led_mode = (mode << 2) + (indicator_led_mode & 0x03);
+        indicator_led(mode);
+        save_config();
+        return MISCHIEF_MANAGED;
+    }
+    // 3 clicks: rotate through indicator LED modes (off mode)
+    else if (event == EV_click3_hold) {
+        uint8_t mode = (arg >> 5) % 3;
+        indicator_led_mode = (indicator_led_mode & 0b11111100) | mode;
+        indicator_led(mode);
+        save_config();
+        return MISCHIEF_MANAGED;
+    }
+    #endif
     // 4 clicks: exit
     else if (event == EV_4clicks) {
         blink_confirm(1);
@@ -967,6 +1016,26 @@ uint8_t pseudo_rand() {
 #endif
 
 
+#ifdef USE_INDICATOR_LED
+void indicator_led(uint8_t lvl) {
+    switch (lvl) {
+        case 0:  // indicator off
+            DDRB &= 0xff ^ (1 << AUXLED_PIN);
+            PORTB &= 0xff ^ (1 << AUXLED_PIN);
+            break;
+        case 1:  // indicator low
+            DDRB &= 0xff ^ (1 << AUXLED_PIN);
+            PORTB |= (1 << AUXLED_PIN);
+            break;
+        default:  // indicator high
+            DDRB |= (1 << AUXLED_PIN);
+            PORTB |= (1 << AUXLED_PIN);
+            break;
+    }
+}
+#endif  // USE_INDICATOR_LED
+
+
 void load_config() {
     if (load_eeprom()) {
         ramp_style = eeprom[0];
@@ -982,6 +1051,9 @@ void load_config() {
         beacon_seconds = eeprom[10];
         #ifdef USE_THERMAL_REGULATION
         therm_ceil = eeprom[11];
+        #endif
+        #ifdef USE_INDICATOR_LED
+        indicator_led_mode = eeprom[12];
         #endif
     }
     #ifdef START_AT_MEMORIZED_LEVEL
@@ -1005,6 +1077,9 @@ void save_config() {
     eeprom[10] = beacon_seconds;
     #ifdef USE_THERMAL_REGULATION
     eeprom[11] = therm_ceil;
+    #endif
+    #ifdef USE_INDICATOR_LED
+    eeprom[12] = indicator_led_mode;
     #endif
 
     save_eeprom();
@@ -1061,6 +1136,7 @@ void setup() {
 
     push_state(off_state, 0);
     #endif
+
 }
 
 
@@ -1087,6 +1163,7 @@ void loop() {
         // party / tactical strobe
         if (strobe_type < 2) {
             set_level(MAX_LEVEL);
+            CLKPR = 1<<CLKPCE; CLKPR = 0;  // run at full speed
             if (strobe_type == 0) {  // party strobe
                 if (strobe_delays[strobe_type] < 42) delay_zero();
                 else nice_delay_ms(1);
