@@ -1038,6 +1038,12 @@ void indicator_led(uint8_t lvl) {
             break;
     }
 }
+
+void indicator_led_auto() {
+    if (actual_level > MAX_1x7135) indicator_led(2);
+    else if (actual_level > 0) indicator_led(1);
+    else indicator_led(0);
+}
 #endif  // USE_INDICATOR_LED
 
 
@@ -1193,6 +1199,9 @@ void loop() {
             brightness += pseudo_rand() % brightness;  // 2 to 159 now (w/ low bias)
             if (brightness > MAX_LEVEL) brightness = MAX_LEVEL;
             set_level(brightness);
+            #ifdef USE_INDICATOR_LED
+            indicator_led_auto();
+            #endif
             if (! nice_delay_ms(rand_time)) return;
 
             // decrease the brightness somewhat more gradually, like lightning
@@ -1203,6 +1212,9 @@ void loop() {
                 brightness -= stepdown;
                 if (brightness < 0) brightness = 0;
                 set_level(brightness);
+                #ifdef USE_INDICATOR_LED
+                indicator_led_auto();
+                #endif
                 /*
                 if ((brightness < MAX_LEVEL/2) && (! (pseudo_rand() & 15))) {
                     brightness <<= 1;
@@ -1221,6 +1233,9 @@ void loop() {
             rand_time = 1<<(pseudo_rand()%13);
             rand_time += pseudo_rand()%rand_time;
             set_level(0);
+            #ifdef USE_INDICATOR_LED
+            indicator_led_auto();
+            #endif
             nice_delay_ms(rand_time);
 
         }
