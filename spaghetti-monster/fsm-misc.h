@@ -42,4 +42,9 @@ uint8_t blink(uint8_t num, uint8_t speed);
 #endif
 */
 
+#ifdef USE_INDICATOR_LED
+void indicator_led(uint8_t lvl);
+#endif
+
+
 #endif

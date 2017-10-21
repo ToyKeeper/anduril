@@ -109,4 +109,32 @@ uint8_t blink_num(uint8_t num) {
 }
 #endif
 
+#ifdef USE_INDICATOR_LED
+void indicator_led(uint8_t lvl) {
+    switch (lvl) {
+        case 0:  // indicator off
+            DDRB &= 0xff ^ (1 << AUXLED_PIN);
+            PORTB &= 0xff ^ (1 << AUXLED_PIN);
+            break;
+        case 1:  // indicator low
+            DDRB &= 0xff ^ (1 << AUXLED_PIN);
+            PORTB |= (1 << AUXLED_PIN);
+            break;
+        default:  // indicator high
+            DDRB |= (1 << AUXLED_PIN);
+            PORTB |= (1 << AUXLED_PIN);
+            break;
+    }
+}
+
+/*
+void indicator_led_auto() {
+    if (actual_level > MAX_1x7135) indicator_led(2);
+    else if (actual_level > 0) indicator_led(1);
+    else indicator_led(0);
+}
+*/
+#endif  // USE_INDICATOR_LED
+
+
 #endif

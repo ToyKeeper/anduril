@@ -20,14 +20,15 @@
 
 /********* User-configurable options *********/
 // Physical driver type
-#define FSM_EMISAR_D4_DRIVER
+//#define FSM_EMISAR_D4_DRIVER
+#define FSM_BLF_Q8_DRIVER
 //#define FSM_FW3A_DRIVER
 
 #define USE_LVP
 #define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 50
 #define USE_SET_LEVEL_GRADUALLY
-#define BLINK_AT_CHANNEL_BOUNDARIES
+//#define BLINK_AT_CHANNEL_BOUNDARIES
 //#define BLINK_AT_RAMP_FLOOR
 #define BLINK_AT_RAMP_CEILING
 #define BATTCHECK_VpT
@@ -36,7 +37,6 @@
 #define GOODNIGHT_LEVEL 24  // ~11 lm
 #define USE_REVERSING
 //#define START_AT_MEMORIZED_LEVEL
-#define USE_INDICATOR_LED
 
 /********* Configure SpaghettiMonster *********/
 #define USE_DELAY_ZERO
@@ -45,6 +45,18 @@
 #define MAX_BIKING_LEVEL 120  // should be 127 or less
 #define USE_BATTCHECK
 #define MAX_CLICKS 5
+#define USE_IDLE_MODE
+#define USE_DYNAMIC_UNDERCLOCKING  // cut clock speed at very low modes for better efficiency
+
+// specific settings for known driver types
+#ifdef FSM_BLF_Q8_DRIVER
+#define USE_INDICATOR_LED
+#define VOLTAGE_FUDGE_FACTOR 7  // add 0.35V
+#elif defined(FSM_EMISAR_D4_DRIVER)
+#define VOLTAGE_FUDGE_FACTOR 5  // add 0.25V
+#endif
+
+// try to auto-detect how many eeprom bytes
 #define USE_EEPROM
 #ifdef USE_INDICATOR_LED
 #define EEPROM_BYTES 13
@@ -57,8 +69,6 @@
 #define USE_EEPROM_WL
 #define EEPROM_WL_BYTES 1
 #endif
-#define USE_IDLE_MODE
-#define USE_DYNAMIC_UNDERCLOCKING  // cut clock speed at very low modes for better efficiency
 #include "spaghetti-monster.h"
 
 
@@ -98,10 +108,6 @@ uint8_t number_entry_state(EventPtr event, uint16_t arg);
 volatile uint8_t number_entry_value;
 
 void blink_confirm(uint8_t num);
-
-#ifdef USE_INDICATOR_LED
-void indicator_led(uint8_t lvl);
-#endif
 
 // remember stuff even after battery was changed
 void load_config();
@@ -161,7 +167,6 @@ volatile uint8_t beacon_seconds = 2;
 
 
 uint8_t off_state(EventPtr event, uint16_t arg) {
-    static uint8_t ticks_spent_awake = 0;
     // turn emitter off when entering state
     if (event == EV_enter_state) {
         set_level(0);
@@ -170,22 +175,35 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         #endif
         // sleep while off  (lower power use)
         go_to_standby = 1;
-        ticks_spent_awake = 0;
         return MISCHIEF_MANAGED;
     }
     // go back to sleep eventually if we got bumped but didn't leave "off" state
-    // FIXME: can I just use arg instead of ticks_spent_awake?
     else if (event == EV_tick) {
-        ticks_spent_awake ++;
-        if (ticks_spent_awake > 240) {
-            ticks_spent_awake = 0;
+        if (arg > TICKS_PER_SECOND*2) {
             go_to_standby = 1;
+            #ifdef USE_INDICATOR_LED
+            indicator_led(indicator_led_mode & 0x03);
+            #endif
         }
         return MISCHIEF_MANAGED;
     }
     // hold (initially): go to lowest level, but allow abort for regular click
     else if (event == EV_click1_press) {
         set_level(nearest_level(1));
+        return MISCHIEF_MANAGED;
+    }
+    // hold: go to lowest level
+    else if (event == EV_click1_hold) {
+        // don't start ramping immediately;
+        // give the user time to release at moon level
+        if (arg >= HOLD_TIMEOUT) {
+            set_state(steady_state, 1);
+        }
+        return MISCHIEF_MANAGED;
+    }
+    // hold, release quickly: go to lowest level
+    else if (event == EV_click1_hold_release) {
+        set_state(steady_state, 1);
         return MISCHIEF_MANAGED;
     }
     // 1 click (before timeout): go to memorized level, but allow abort for double click
@@ -201,6 +219,11 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     // 2 clicks (initial press): off, to prep for later events
     else if (event == EV_click2_press) {
         set_level(0);
+        return MISCHIEF_MANAGED;
+    }
+    // click, hold: go to highest level (for ramping down)
+    else if (event == EV_click2_hold) {
+        set_state(steady_state, MAX_LEVEL);
         return MISCHIEF_MANAGED;
     }
     // 2 clicks: highest mode
@@ -230,25 +253,6 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     else if (event == EV_5clicks) {
         blink_confirm(1);
         set_state(momentary_state, 0);
-        return MISCHIEF_MANAGED;
-    }
-    // hold: go to lowest level
-    else if (event == EV_click1_hold) {
-        // don't start ramping immediately;
-        // give the user time to release at moon level
-        if (arg >= HOLD_TIMEOUT) {
-            set_state(steady_state, 1);
-        }
-        return MISCHIEF_MANAGED;
-    }
-    // hold, release quickly: go to lowest level
-    else if (event == EV_click1_hold_release) {
-        set_state(steady_state, 1);
-        return MISCHIEF_MANAGED;
-    }
-    // click, hold: go to highest level (for ramping down)
-    else if (event == EV_click2_hold) {
-        set_state(steady_state, MAX_LEVEL);
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
@@ -654,8 +658,6 @@ uint8_t goodnight_state(EventPtr event, uint16_t arg) {
 
 
 uint8_t lockout_state(EventPtr event, uint16_t arg) {
-    static uint8_t ticks_spent_awake = 0;
-
     #ifdef MOON_DURING_LOCKOUT_MODE
     // momentary(ish) moon mode during lockout
     // not all presses will be counted;
@@ -668,7 +670,6 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
         uint8_t lvl = ramp_smooth_floor;
         if (ramp_discrete_floor < lvl) lvl = ramp_discrete_floor;
         set_level(lvl);
-        ticks_spent_awake = 0;
     }
     else if ((last == A_RELEASE) || (last == A_RELEASE_TIMEOUT)) {
         set_level(0);
@@ -686,9 +687,7 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
     } else
     #endif
     if (event == EV_tick) {
-        ticks_spent_awake ++;
-        if (ticks_spent_awake > 180) {
-            ticks_spent_awake = 0;
+        if (arg > TICKS_PER_SECOND*2) {
             go_to_standby = 1;
             #ifdef USE_INDICATOR_LED
             indicator_led(indicator_led_mode >> 2);
@@ -1021,32 +1020,6 @@ uint8_t pseudo_rand() {
 #endif
 
 
-#ifdef USE_INDICATOR_LED
-void indicator_led(uint8_t lvl) {
-    switch (lvl) {
-        case 0:  // indicator off
-            DDRB &= 0xff ^ (1 << AUXLED_PIN);
-            PORTB &= 0xff ^ (1 << AUXLED_PIN);
-            break;
-        case 1:  // indicator low
-            DDRB &= 0xff ^ (1 << AUXLED_PIN);
-            PORTB |= (1 << AUXLED_PIN);
-            break;
-        default:  // indicator high
-            DDRB |= (1 << AUXLED_PIN);
-            PORTB |= (1 << AUXLED_PIN);
-            break;
-    }
-}
-
-void indicator_led_auto() {
-    if (actual_level > MAX_1x7135) indicator_led(2);
-    else if (actual_level > 0) indicator_led(1);
-    else indicator_led(0);
-}
-#endif  // USE_INDICATOR_LED
-
-
 void load_config() {
     if (load_eeprom()) {
         ramp_style = eeprom[0];
@@ -1199,9 +1172,6 @@ void loop() {
             brightness += pseudo_rand() % brightness;  // 2 to 159 now (w/ low bias)
             if (brightness > MAX_LEVEL) brightness = MAX_LEVEL;
             set_level(brightness);
-            #ifdef USE_INDICATOR_LED
-            indicator_led_auto();
-            #endif
             if (! nice_delay_ms(rand_time)) return;
 
             // decrease the brightness somewhat more gradually, like lightning
@@ -1212,9 +1182,6 @@ void loop() {
                 brightness -= stepdown;
                 if (brightness < 0) brightness = 0;
                 set_level(brightness);
-                #ifdef USE_INDICATOR_LED
-                indicator_led_auto();
-                #endif
                 /*
                 if ((brightness < MAX_LEVEL/2) && (! (pseudo_rand() & 15))) {
                     brightness <<= 1;
@@ -1233,9 +1200,6 @@ void loop() {
             rand_time = 1<<(pseudo_rand()%13);
             rand_time += pseudo_rand()%rand_time;
             set_level(0);
-            #ifdef USE_INDICATOR_LED
-            indicator_led_auto();
-            #endif
             nice_delay_ms(rand_time);
 
         }
