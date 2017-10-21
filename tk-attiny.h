@@ -32,6 +32,7 @@
     #define V_REF REFS0
     #define BOGOMIPS 950
     #define ADMUX_VCC 0b00001100
+    #define DELAY_ZERO_TIME 252
 #elif (ATTINY == 25)
     // TODO: Use 6.4 MHz instead of 8 MHz?
     #define F_CPU 8000000UL
@@ -40,6 +41,7 @@
     #define BOGOMIPS (F_CPU/4000)
     #define ADMUX_VCC 0b00001100
     #define ADMUX_THERM 0b10001111
+    #define DELAY_ZERO_TIME 1020
 #elif (ATTINY == 85)
     // TODO: Use 6.4 MHz instead of 8 MHz?
     #define F_CPU 8000000UL
@@ -50,6 +52,7 @@
     #define ADMUX_VCC 0b00001100
     // (1 << V_REF) | (0 << ADLAR) | (THERM_CHANNEL)
     #define ADMUX_THERM 0b10001111
+    #define DELAY_ZERO_TIME 1020
 #else
     #error Hey, you need to define ATTINY.
 #endif
@@ -163,6 +166,12 @@
 #define PHASE 0x21          // phase-correct PWM channel 1 only
 
 #endif  // NANJG_LAYOUT
+
+
+// Q8 driver is the same as a D4, basically
+#ifdef FSM_BLF_Q8_DRIVER
+#define FSM_EMISAR_D4_DRIVER
+#endif
 
 
 #ifdef FSM_EMISAR_D4_DRIVER

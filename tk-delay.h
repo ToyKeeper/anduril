@@ -43,7 +43,8 @@ void _delay_ms(uint16_t n)
 #if defined(USE_FINE_DELAY) || defined(USE_DELAY_ZERO)
 #define delay_zero _delay_zero
 void _delay_zero() {
-    _delay_loop_2(BOGOMIPS/3);
+    //_delay_loop_2((BOGOMIPS/3) & 0xff00);
+    _delay_loop_2(DELAY_ZERO_TIME);
 }
 #endif
 #ifdef USE_DELAY_4MS
