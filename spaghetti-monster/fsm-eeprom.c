@@ -41,12 +41,14 @@ uint8_t load_eeprom() {
 
 void save_eeprom() {
     cli();
-    eeprom_update_byte((uint8_t *)EEP_START, EEP_MARKER);
 
     // save the actual data
     for(uint8_t i=0; i<EEPROM_BYTES; i++) {
         eeprom_update_byte((uint8_t *)(EEP_START+1+i), eeprom[i]);
     }
+
+    // save the marker last, to indicate the transaction is complete
+    eeprom_update_byte((uint8_t *)EEP_START, EEP_MARKER);
     sei();
 }
 #endif
@@ -93,6 +95,7 @@ void save_eeprom_wl() {
     if (offset > EEP_WL_SIZE-EEPROM_WL_BYTES-1) offset = 0;
     eep_wl_prev_offset = offset;
     // marker byte
+    // FIXME: write the marker last, to signal completed transaction
     eeprom_update_byte((uint8_t *)offset, EEP_MARKER);
     offset ++;
     // user data
