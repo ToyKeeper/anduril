@@ -37,6 +37,7 @@
 #define GOODNIGHT_LEVEL 24  // ~11 lm
 #define USE_REVERSING
 //#define START_AT_MEMORIZED_LEVEL
+#define USE_MUGGLE_MODE
 
 /********* Configure SpaghettiMonster *********/
 #define USE_DELAY_ZERO
@@ -44,7 +45,11 @@
 #define RAMP_LENGTH 150
 #define MAX_BIKING_LEVEL 120  // should be 127 or less
 #define USE_BATTCHECK
+#ifdef USE_MUGGLE_MODE
+#define MAX_CLICKS 6
+#else
 #define MAX_CLICKS 5
+#endif
 #define USE_IDLE_MODE
 #define USE_DYNAMIC_UNDERCLOCKING  // cut clock speed at very low modes for better efficiency
 
@@ -101,6 +106,10 @@ uint8_t beacon_config_state(EventPtr event, uint16_t arg);
 uint8_t lockout_state(EventPtr event, uint16_t arg);
 // momentary / signalling mode
 uint8_t momentary_state(EventPtr event, uint16_t arg);
+#ifdef USE_MUGGLE_MODE
+// muggle mode, super-simple, hard to exit
+uint8_t muggle_state(EventPtr event, uint16_t arg);
+#endif
 
 // general helper function for config modes
 uint8_t number_entry_state(EventPtr event, uint16_t arg);
@@ -255,6 +264,14 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         set_state(momentary_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_MUGGLE_MODE
+    // 6 clicks: muggle mode
+    else if (event == EV_6clicks) {
+        blink_confirm(1);
+        set_state(muggle_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    #endif
     return EVENT_NOT_HANDLED;
 }
 
@@ -758,6 +775,48 @@ uint8_t momentary_state(EventPtr event, uint16_t arg) {
 
     return EVENT_NOT_HANDLED;
 }
+
+
+#ifdef USE_MUGGLE_MODE
+uint8_t muggle_state(EventPtr event, uint16_t arg) {
+    //static uint8_t lvl = 0;
+    //uint8_t lvls[] = {MAX_1x7135/2, MAX_1x7135, MAX_1x7135+10};
+
+    if (event == EV_click1_press) {
+        /*
+        if (actual_level == 0) {
+            set_level(lvls[lvl]);
+            lvl = (lvl + 1) % sizeof(lvls);
+        }
+        else {  // turn off
+        }
+        */
+        if (actual_level == 0) {
+            set_level(MAX_1x7135);
+        }
+        else {  // turn off
+            set_level(0);
+        }
+        empty_event_sequence();
+        return MISCHIEF_MANAGED;
+    }
+
+    else if (event == EV_release) {
+        empty_event_sequence();  // don't attempt to parse multiple clicks
+        return MISCHIEF_MANAGED;
+    }
+
+    // Sleep, dammit!
+    else if ((event == EV_tick)  &&  (actual_level == 0)) {
+        if (arg > TICKS_PER_SECOND*1) {  // sleep after 1 second
+            go_to_standby = 1;  // sleep while light is off
+        }
+        return MISCHIEF_MANAGED;
+    }
+
+    return EVENT_NOT_HANDLED;
+}
+#endif
 
 
 uint8_t ramp_config_state(EventPtr event, uint16_t arg) {
