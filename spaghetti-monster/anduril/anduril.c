@@ -33,6 +33,7 @@
 #define BLINK_AT_RAMP_CEILING
 #define BATTCHECK_VpT
 #define USE_LIGHTNING_MODE
+#define USE_CANDLE_MODE
 #define GOODNIGHT_TIME  60  // minutes (approximately)
 #define GOODNIGHT_LEVEL 24  // ~11 lm
 #define USE_REVERSING
@@ -74,6 +75,25 @@
 #define USE_EEPROM_WL
 #define EEPROM_WL_BYTES 1
 #endif
+
+// auto-configure other stuff...
+#if defined(USE_LIGHTNING_MODE) || defined(USE_CANDLE_MODE)
+#define USE_PSEUDO_RAND
+#endif
+// count the strobe modes (seems like there should be an easier way to do this)
+#define NUM_STROBES_BASE 3
+#ifdef USE_LIGHTNING_MODE
+#define ADD_LIGHTNING_STROBE 1
+#else
+#define ADD_LIGHTNING_STROBE 0
+#endif
+#ifdef USE_CANDLE_MODE
+#define ADD_CANDLE_MODE 1
+#else
+#define ADD_CANDLE_MODE 0
+#endif
+#define NUM_STROBES (NUM_STROBES_BASE+ADD_LIGHTNING_STROBE+ADD_CANDLE_MODE)
+
 #include "spaghetti-monster.h"
 
 
@@ -84,11 +104,6 @@ uint8_t steady_state(EventPtr event, uint16_t arg);
 uint8_t ramp_config_state(EventPtr event, uint16_t arg);
 // party and tactical strobes
 uint8_t strobe_state(EventPtr event, uint16_t arg);
-#ifdef USE_LIGHTNING_MODE
-#define NUM_STROBES 4
-#else
-#define NUM_STROBES 3
-#endif
 #ifdef USE_BATTCHECK
 uint8_t battcheck_state(EventPtr event, uint16_t arg);
 #endif
@@ -166,9 +181,13 @@ volatile uint8_t strobe_type = 3;  // 0 == party strobe, 1 == tactical strobe, 2
 // bike mode config options
 volatile uint8_t bike_flasher_brightness = MAX_1x7135;
 
-#ifdef USE_LIGHTNING_MODE
+#ifdef USE_PSEUDO_RAND
 volatile uint8_t pseudo_rand_seed = 0;
 uint8_t pseudo_rand();
+#endif
+
+#ifdef USE_CANDLE_MODE
+uint8_t triangle_wave(uint8_t phase);
 #endif
 
 // beacon timing
@@ -508,6 +527,16 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
 
 
 uint8_t strobe_state(EventPtr event, uint16_t arg) {
+    #ifdef USE_CANDLE_MODE
+    //#define MAX_CANDLE_LEVEL (RAMP_SIZE-8-6-4)
+    #define MAX_CANDLE_LEVEL (RAMP_SIZE/2)
+    static uint8_t candle_wave1 = 0;
+    static uint8_t candle_wave2 = 0;
+    static uint8_t candle_wave3 = 0;
+    static uint8_t candle_wave2_speed = 0;
+    static uint8_t candle_mode_brightness = 12;
+    #endif
+
     if (event == EV_enter_state) {
         return MISCHIEF_MANAGED;
     }
@@ -537,6 +566,13 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
                 bike_flasher_brightness ++;
             set_level(bike_flasher_brightness);
         }
+        #ifdef USE_CANDLE_MODE
+        // candle mode brighter
+        else if (strobe_type == 4) {
+            if (candle_mode_brightness < MAX_CANDLE_LEVEL)
+                candle_mode_brightness ++;
+        }
+        #endif
         return MISCHIEF_MANAGED;
     }
     // click, hold: change speed (go slower)
@@ -553,6 +589,13 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
                 bike_flasher_brightness --;
             set_level(bike_flasher_brightness);
         }
+        #ifdef USE_CANDLE_MODE
+        // candle mode dimmer
+        else if (strobe_type == 4) {
+            if (candle_mode_brightness > 1)
+                candle_mode_brightness --;
+        }
+        #endif
         return MISCHIEF_MANAGED;
     }
     // release hold: save new strobe settings
@@ -561,10 +604,32 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
         save_config();
         return MISCHIEF_MANAGED;
     }
-    #ifdef USE_LIGHTNING_MODE
+    #if defined(USE_LIGHTNING_MODE) || defined(USE_CANDLE_MODE)
     // clock tick: bump the random seed
     else if (event == EV_tick) {
+        #ifdef USE_LIGHTNING_MODE
         pseudo_rand_seed += arg;
+        #endif
+        #ifdef USE_CANDLE_MODE
+        if (strobe_type == 4) {
+            // 3-oscillator synth for a relatively organic pattern
+            uint8_t add;
+            add = ((triangle_wave(candle_wave1) * 8) >> 8)
+                + ((triangle_wave(candle_wave2) * 7) >> 8)
+                + ((triangle_wave(candle_wave3) * 4) >> 8);
+            set_level(candle_mode_brightness + add);
+            // slow LFO
+            if ((arg & 1) == 0) candle_wave1 += pseudo_rand()&1;
+            // faster LFO
+            //candle_wave2 += pseudo_rand()%13;
+            candle_wave2 += candle_wave2_speed;
+            // erratic fast wave
+            candle_wave3 += pseudo_rand()%37;
+            // S&H on wave2 frequency to make it more erratic
+            if ((pseudo_rand()>>3) == 0)
+                candle_wave2_speed = pseudo_rand()%13;
+        }
+        #endif
         return MISCHIEF_MANAGED;
     }
     #endif
@@ -1068,13 +1133,22 @@ void blink_confirm(uint8_t num) {
 }
 
 
-#ifdef USE_LIGHTNING_MODE
+#ifdef USE_PSEUDO_RAND
 uint8_t pseudo_rand() {
     static uint16_t offset = 1024;
     // loop from 1024 to 4095
     offset = ((offset + 1) & 0x0fff) | 0x0400;
     pseudo_rand_seed += 0b01010101;  // 85
     return pgm_read_byte(offset) + pseudo_rand_seed;
+}
+#endif
+
+
+#ifdef USE_CANDLE_MODE
+uint8_t triangle_wave(uint8_t phase) {
+    uint8_t result = phase << 1;
+    if (phase > 127) result = 255 - result;
+    return result;
 }
 #endif
 
@@ -1205,6 +1279,9 @@ void loop() {
     if (state == strobe_state) {
         // party / tactical strobe
         if (strobe_type < 2) {
+            // FIXME: for tactical strobe, use max Nx7135 level?
+            //        (perhaps a compile option)
+            //        (is relevant for FW3A)
             set_level(MAX_LEVEL);
             CLKPR = 1<<CLKPCE; CLKPR = 0;  // run at full speed
             if (strobe_type == 0) {  // party strobe
