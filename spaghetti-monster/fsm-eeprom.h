@@ -36,7 +36,11 @@
 #if EEPROM_BYTES >= (EEPSIZE/2)
 #error Requested EEPROM_BYTES too big.
 #endif
+#ifdef EEPROM_OVERRIDE
+uint8_t *eeprom;
+#else
 uint8_t eeprom[EEPROM_BYTES];
+#endif
 uint8_t load_eeprom();  // returns 1 for success, 0 for no data found
 void save_eeprom();
 #define EEP_START (EEPSIZE/2)

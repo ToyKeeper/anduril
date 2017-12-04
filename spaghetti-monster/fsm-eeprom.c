@@ -23,7 +23,11 @@
 #include "fsm-eeprom.h"
 
 #if EEPROM_BYTES > 0
+#ifdef EEPROM_OVERRIDE
+uint8_t *eeprom;
+#else
 uint8_t eeprom[EEPROM_BYTES];
+#endif
 
 uint8_t load_eeprom() {
     cli();
