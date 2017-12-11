@@ -21,14 +21,14 @@
 /********* User-configurable options *********/
 // Physical driver type
 //#define FSM_EMISAR_D4_DRIVER
-#define FSM_BLF_Q8_DRIVER
-//#define FSM_FW3A_DRIVER
+//#define FSM_BLF_Q8_DRIVER
+#define FSM_FW3A_DRIVER
 
 #define USE_LVP
 #define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 50
 #define USE_SET_LEVEL_GRADUALLY
-//#define BLINK_AT_CHANNEL_BOUNDARIES
+#define BLINK_AT_CHANNEL_BOUNDARIES
 //#define BLINK_AT_RAMP_FLOOR
 #define BLINK_AT_RAMP_CEILING
 #define BATTCHECK_VpT
@@ -59,6 +59,8 @@
 #define USE_INDICATOR_LED
 #define VOLTAGE_FUDGE_FACTOR 7  // add 0.35V
 #elif defined(FSM_EMISAR_D4_DRIVER)
+#define VOLTAGE_FUDGE_FACTOR 5  // add 0.25V
+#elif defined(FSM_FW3A_DRIVER)
 #define VOLTAGE_FUDGE_FACTOR 5  // add 0.25V
 #endif
 
@@ -93,6 +95,14 @@
 #define ADD_CANDLE_MODE 0
 #endif
 #define NUM_STROBES (NUM_STROBES_BASE+ADD_LIGHTNING_STROBE+ADD_CANDLE_MODE)
+
+// full FET strobe can be a bit much...  use max regulated level instead,
+// if there's a bright enough regulated level
+#ifdef MAX_Nx7135
+#define STROBE_BRIGHTNESS MAX_Nx7135
+#else
+#define STROBE_BRIGHTNESS MAX_LEVEL
+#endif
 
 #include "spaghetti-monster.h"
 
@@ -385,17 +395,15 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         #if defined(BLINK_AT_RAMP_CEILING) || defined(BLINK_AT_CHANNEL_BOUNDARIES)
         // only blink once for each threshold
         if ((memorized_level != actual_level) && (
+                0  // for easier syntax below
                 #ifdef BLINK_AT_CHANNEL_BOUNDARIES
-                (memorized_level == MAX_1x7135)
+                || (memorized_level == MAX_1x7135)
                 #if PWM_CHANNELS >= 3
                 || (memorized_level == MAX_Nx7135)
                 #endif
-                #ifdef BLINK_AT_RAMP_CEILING
-                ||
-                #endif
                 #endif
                 #ifdef BLINK_AT_RAMP_CEILING
-                (memorized_level == mode_max)
+                || (memorized_level == mode_max)
                 #endif
                 #if defined(USE_REVERSING) && defined(BLINK_AT_RAMP_FLOOR)
                 || (memorized_level == mode_min)
@@ -437,17 +445,15 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         #if defined(BLINK_AT_RAMP_FLOOR) || defined(BLINK_AT_CHANNEL_BOUNDARIES)
         // only blink once for each threshold
         if ((memorized_level != actual_level) && (
+                0  // for easier syntax below
                 #ifdef BLINK_AT_CHANNEL_BOUNDARIES
-                (memorized_level == MAX_1x7135)
+                || (memorized_level == MAX_1x7135)
                 #if PWM_CHANNELS >= 3
                 || (memorized_level == MAX_Nx7135)
                 #endif
-                #ifdef BLINK_AT_RAMP_FLOOR
-                ||
-                #endif
                 #endif
                 #ifdef BLINK_AT_RAMP_FLOOR
-                (memorized_level == mode_min)
+                || (memorized_level == mode_min)
                 #endif
                 )) {
             set_level(0);
@@ -467,6 +473,15 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     #if defined(USE_SET_LEVEL_GRADUALLY) || defined(USE_REVERSING)
     else if (event == EV_tick) {
         #ifdef USE_SET_LEVEL_GRADUALLY
+        /* TODO: make thermal adjustment speed scale with magnitude
+        if (ticks_since_adjust > ticks_per_adjust) {
+            gradual_tick();
+            ticks_since_adjust = 0;
+            ticks_per_adjust = (TICKS_PER_SECOND*2) \
+                             / (diff(actual_level, target_level)) \
+                             + 8 - log2(actual_level);
+        }
+        */
         if (!(arg & 7)) gradual_tick();
         //if (!(arg & 3)) gradual_tick();
         //gradual_tick();
@@ -527,6 +542,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
 
 
 uint8_t strobe_state(EventPtr event, uint16_t arg) {
+    // FIXME: re-order the strobes so candle and lightning are adjacent
     #ifdef USE_CANDLE_MODE
     //#define MAX_CANDLE_LEVEL (RAMP_SIZE-8-6-4)
     #define MAX_CANDLE_LEVEL (RAMP_SIZE/2)
@@ -534,7 +550,7 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
     static uint8_t candle_wave2 = 0;
     static uint8_t candle_wave3 = 0;
     static uint8_t candle_wave2_speed = 0;
-    static uint8_t candle_mode_brightness = 12;
+    static uint8_t candle_mode_brightness = 20;
     #endif
 
     if (event == EV_enter_state) {
@@ -813,6 +829,7 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
 
 
 uint8_t momentary_state(EventPtr event, uint16_t arg) {
+    // TODO: momentary strobe here?  (for light painting)
     if (event == EV_click1_press) {
         set_level(memorized_level);
         empty_event_sequence();  // don't attempt to parse multiple clicks
@@ -1014,7 +1031,6 @@ uint8_t number_entry_state(EventPtr event, uint16_t arg) {
         blinks_left = arg;
         entry_step = 0;
         wait_ticks = 0;
-        // TODO: blink out the 'arg' to show which option this is
         return MISCHIEF_MANAGED;
     }
     // advance through the process:
@@ -1279,10 +1295,8 @@ void loop() {
     if (state == strobe_state) {
         // party / tactical strobe
         if (strobe_type < 2) {
-            // FIXME: for tactical strobe, use max Nx7135 level?
-            //        (perhaps a compile option)
-            //        (is relevant for FW3A)
-            set_level(MAX_LEVEL);
+            // TODO: make tac strobe brightness configurable?
+            set_level(STROBE_BRIGHTNESS);
             CLKPR = 1<<CLKPCE; CLKPR = 0;  // run at full speed
             if (strobe_type == 0) {  // party strobe
                 if (strobe_delays[strobe_type] < 42) delay_zero();
