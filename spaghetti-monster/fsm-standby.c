@@ -37,7 +37,7 @@ void sleep_until_eswitch_pressed()
     // make sure switch isn't currently pressed
     while (button_is_pressed()) {}
     empty_event_sequence();  // cancel pending input on suspend
-    PCINT_since_WDT = 0;  // ensure PCINT won't ignore itself
+    //PCINT_since_WDT = 0;  // ensure PCINT won't ignore itself
 
     PCINT_on();  // wake on e-switch event
 

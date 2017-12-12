@@ -23,7 +23,6 @@
 //static volatile uint8_t button_was_pressed;
 #define BP_SAMPLES 32
 volatile uint8_t button_last_state;
-volatile uint8_t PCINT_since_WDT;
 uint8_t button_is_pressed();
 inline void PCINT_on();
 inline void PCINT_off();

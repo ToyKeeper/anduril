@@ -24,20 +24,19 @@
 #include <util/delay_basic.h>
 
 uint8_t button_is_pressed() {
-    // debounce a little
-    uint8_t highcount = 0;
-    // measure for 16/64ths of a ms
-    for(uint8_t i=0; i<BP_SAMPLES; i++) {
-        // check current value
-        uint8_t bit = ((PINB & (1<<SWITCH_PIN)) == 0);
-        highcount += bit;
+    // remember the past 32 measurements
+    static uint32_t readings = 0;
+    // take at least one new measurement,
+    // and wait for measurements to settle to all zeroes or all ones
+    do {
+        // shift past readings and add current value
+        readings = (readings << 1) | ((PINB & (1<<SWITCH_PIN)) == 0);
         // wait a moment
-        _delay_loop_2(BOGOMIPS/64);
+        _delay_loop_2(BOGOMIPS/16);  // up to 2ms to stabilize
     }
-    // use most common value
-    uint8_t result = (highcount > (BP_SAMPLES/2));
-    //button_was_pressed = result;
-    return result;
+    while ((readings != 0) && (readings != 0xFFFFFFFF));
+    button_last_state = readings;
+    return readings;
 }
 
 inline void PCINT_on() {
@@ -59,20 +58,15 @@ ISR(PCINT0_vect) {
 
     //DEBUG_FLASH;
 
-    /*
-    uint8_t pressed;
+    // as it turns out, it's more reliable to detect pin changes from WDT
+    // because PCINT itself tends to double-tap when connected to a
+    // noisy / bouncy switch (so the content of this function has been
+    // moved to a separate function, called from WDT only)
+    // PCINT_inner(button_is_pressed());
 
-    // add event to current sequence
-    pressed = button_is_pressed();
-    PCINT_inner(pressed);
-    */
-    if (! PCINT_since_WDT) {
-        PCINT_since_WDT = 1;
-        PCINT_inner(button_is_pressed());
-    }
 }
 
-// should only be called from PCINT and WDT
+// should only be called from PCINT and/or WDT
 // (is a separate function to reduce code duplication)
 void PCINT_inner(uint8_t pressed) {
     uint8_t pushed;
