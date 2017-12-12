@@ -21,9 +21,12 @@
 #define FSM_PCINT_H
 
 //static volatile uint8_t button_was_pressed;
-#define BP_SAMPLES 16
+#define BP_SAMPLES 32
+volatile uint8_t button_last_state;
+volatile uint8_t PCINT_since_WDT;
 uint8_t button_is_pressed();
 inline void PCINT_on();
 inline void PCINT_off();
+void PCINT_inner(uint8_t pressed);
 
 #endif

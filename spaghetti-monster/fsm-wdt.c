@@ -50,13 +50,42 @@ ISR(WDT_vect) {
     ticks_since_last_event = (ticks_since_last_event + 1) \
                              | (ticks_since_last_event & 0x8000);
 
+    // just in case the pin change interrupt missed something
+    uint8_t le_num = last_event_num();
+    uint8_t last_event = 0;
+    if (le_num >= 1) last_event = current_event[le_num-1];
+    uint8_t pressed = button_is_pressed();
+    uint8_t was_pressed_before = (last_event == A_PRESS) || (last_event == A_HOLD);
+    //if (pressed != button_last_state) {
+    if (pressed != was_pressed_before) {
+        PCINT_inner(pressed);
+        /*
+        uint8_t pushed;
+        if (pressed) {
+            pushed = push_event(A_PRESS);
+        } else {
+            pushed = push_event(A_RELEASE);
+        }
+
+        // check if sequence matches any defined sequences
+        // if so, send event to current state callback
+        if (pushed) {
+            button_last_state = pressed;
+            emit_current_event(0);
+        }
+        */
+    }
+    PCINT_since_WDT = 0;
+
     // if time since last event exceeds timeout,
     // append timeout to current event sequence, then
     // send event to current state callback
 
     // preload recent events
-    uint8_t le_num = last_event_num();
-    uint8_t last_event = 0;
+    //uint8_t le_num = last_event_num();
+    le_num = last_event_num();
+    //uint8_t last_event = 0;
+    last_event = 0;
     uint8_t prev_event = 0;
     if (le_num >= 1) last_event = current_event[le_num-1];
     if (le_num >= 2) prev_event = current_event[le_num-2];

@@ -59,10 +59,25 @@ ISR(PCINT0_vect) {
 
     //DEBUG_FLASH;
 
-    uint8_t pushed;
+    /*
+    uint8_t pressed;
 
     // add event to current sequence
-    if (button_is_pressed()) {
+    pressed = button_is_pressed();
+    PCINT_inner(pressed);
+    */
+    if (! PCINT_since_WDT) {
+        PCINT_since_WDT = 1;
+        PCINT_inner(button_is_pressed());
+    }
+}
+
+// should only be called from PCINT and WDT
+// (is a separate function to reduce code duplication)
+void PCINT_inner(uint8_t pressed) {
+    uint8_t pushed;
+
+    if (pressed) {
         pushed = push_event(A_PRESS);
     } else {
         pushed = push_event(A_RELEASE);
@@ -70,7 +85,9 @@ ISR(PCINT0_vect) {
 
     // check if sequence matches any defined sequences
     // if so, send event to current state callback
-    if (pushed) emit_current_event(0);
+    if (pushed) {
+        button_last_state = pressed;
+        emit_current_event(0);
+    }
 }
-
 #endif
