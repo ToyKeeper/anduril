@@ -359,6 +359,12 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     else if (event == EV_3clicks) {
         ramp_style ^= 1;
         memorized_level = nearest_level(memorized_level);
+        #ifdef USE_THERMAL_REGULATION
+        target_level = memorized_level;
+        #ifdef USE_SET_LEVEL_GRADUALLY
+        //set_level_gradually(lvl);
+        #endif
+        #endif
         save_config();
         #ifdef START_AT_MEMORIZED_LEVEL
         save_config_wl();
@@ -482,7 +488,15 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
                              + 8 - log2(actual_level);
         }
         */
-        if (!(arg & 7)) gradual_tick();
+        uint8_t diff;
+        if (target_level > actual_level) diff = target_level - actual_level;
+        else diff = actual_level - target_level;
+        if (! diff) diff = 1;
+        uint8_t ticks_per_adjust = (TICKS_PER_SECOND*2) / diff;
+        if (!(arg % ticks_per_adjust)) gradual_tick();
+
+        // adjust every N frames
+        //if (!(arg & 7)) gradual_tick();
         //if (!(arg & 3)) gradual_tick();
         //gradual_tick();
         #endif
@@ -766,7 +780,13 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
     if ((last == A_PRESS) || (last == A_HOLD)) {
         // detect moon level and activate it
         uint8_t lvl = ramp_smooth_floor;
+        #ifdef LOCKOUT_MOON_LOWEST
+        // Use lowest moon configured
         if (ramp_discrete_floor < lvl) lvl = ramp_discrete_floor;
+        #else
+        // Use moon from current ramp
+        if (ramp_style) lvl = ramp_discrete_floor;
+        #endif
         set_level(lvl);
     }
     else if ((last == A_RELEASE) || (last == A_RELEASE_TIMEOUT)) {
@@ -1226,14 +1246,24 @@ void save_config_wl() {
 #endif
 
 void low_voltage() {
+    StatePtr state = current_state;
+
     // "step down" from strobe to something low
-    if (current_state == strobe_state) {
+    if (state == strobe_state) {
         set_state(steady_state, RAMP_SIZE/6);
     }
-    // in normal mode, step down by half or turn off
-    else if (current_state == steady_state) {
+    // in normal or muggle mode, step down by half or turn off
+    else if ((state == steady_state) || (state == muggle_state)) {
         if (actual_level > 1) {
-            set_level((actual_level >> 1) + (actual_level >> 2));
+            uint8_t lvl = (actual_level >> 1) + (actual_level >> 2);
+            set_level(lvl);
+            #ifdef USE_THERMAL_REGULATION
+            target_level = lvl;
+            #ifdef USE_SET_LEVEL_GRADUALLY
+            // not needed?
+            //set_level_gradually(lvl);
+            #endif
+            #endif
         }
         else {
             set_state(off_state, 0);
