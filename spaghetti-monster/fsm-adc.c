@@ -44,6 +44,13 @@ inline void ADC_off() {
 #endif
 // TODO: is this better done in main() or WDT()?
 ISR(ADC_vect) {
+    // For some reason, the ADC interrupt is getting called a *lot*
+    // more often than it should be, like it's auto-triggering after each
+    // measurement, but I don't know why, or how to turn that off...
+    // So, skip every call except when explicitly requested.
+    if (! adcint_enable) return;
+    adcint_enable = 0;
+
     static uint8_t adc_step = 0;
 
     // LVP declarations
@@ -218,11 +225,13 @@ ISR(ADC_vect) {
 
         // average prediction to reduce noise
         int16_t avg_projected_temperature = 0;
-        for (uint8_t i = 0;
+        uint8_t i;
+        for (i = 0;
              (i < NUM_THERMAL_PROJECTED_HISTORY) && (avg_projected_temperature < 16000);
              i++)
             avg_projected_temperature += projected_temperature_history[i];
         avg_projected_temperature /= NUM_THERMAL_PROJECTED_HISTORY;
+        //avg_projected_temperature /= i;
 
         // cancel counters if appropriate
         if (pt > THERM_FLOOR) {
@@ -240,15 +249,15 @@ ISR(ADC_vect) {
                 if (overheat_lowpass < OVERHEAT_LOWPASS_STRENGTH) {
                     overheat_lowpass ++;
                 } else {
+                    // reset counters
+                    overheat_lowpass = 0;
+                    temperature_timer = TEMPERATURE_TIMER_START;
                     // how far above the ceiling?
                     int16_t howmuch = (avg_projected_temperature - THERM_CEIL) >> THERM_DIFF_ATTENUATION;
                     if (howmuch > 0) {
                         // try to send out a warning
                         emit(EV_temperature_high, howmuch);
                     }
-                    // reset counters
-                    temperature_timer = TEMPERATURE_TIMER_START;
-                    overheat_lowpass = 0;
                 }
             }
 
@@ -257,6 +266,9 @@ ISR(ADC_vect) {
                 if (underheat_lowpass < UNDERHEAT_LOWPASS_STRENGTH) {
                     underheat_lowpass ++;
                 } else {
+                    // reset counters
+                    underheat_lowpass = 0;
+                    temperature_timer = TEMPERATURE_TIMER_START;
                     // how far below the floor?
                     int16_t howmuch = (THERM_FLOOR - avg_projected_temperature) >> THERM_DIFF_ATTENUATION;
                     if (howmuch > 0) {
@@ -265,9 +277,6 @@ ISR(ADC_vect) {
                         if (voltage > VOLTAGE_LOW)
                             emit(EV_temperature_low, howmuch);
                     }
-                    // reset counters
-                    temperature_timer = TEMPERATURE_TIMER_START;
-                    underheat_lowpass = 0;
                 }
             }
         }
@@ -275,7 +284,7 @@ ISR(ADC_vect) {
     #endif  // ifdef USE_THERMAL_REGULATION
 
 
-    // start another measurement for next time
+    // set the correct type of measurement for next time
     #ifdef USE_THERMAL_REGULATION
         #ifdef USE_LVP
         if (adc_step < 2) ADMUX = ADMUX_VCC;

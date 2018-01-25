@@ -35,6 +35,7 @@
 #define VOLTAGE_FUDGE_FACTOR 5
 #endif
 volatile uint8_t voltage;
+volatile uint8_t adcint_enable;  // kludge, because adc auto-retrigger won't turn off
 void low_voltage();
 #ifdef USE_BATTCHECK
 void battcheck();

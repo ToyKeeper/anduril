@@ -107,9 +107,9 @@ ISR(WDT_vect) {
     // start a new ADC measurement every 4 ticks
     static uint8_t adc_trigger = 0;
     adc_trigger ++;
-    if (adc_trigger > 3) {
-        adc_trigger = 0;
+    if (0 == (adc_trigger & 3)) {
         ADCSRA |= (1 << ADSC) | (1 << ADIE);
+        adcint_enable = 1;
     }
     #endif
 }
