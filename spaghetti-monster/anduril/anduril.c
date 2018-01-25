@@ -573,6 +573,8 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
     static uint8_t candle_wave2 = 0;
     static uint8_t candle_wave3 = 0;
     static uint8_t candle_wave2_speed = 0;
+    static uint8_t candle_wave2_depth = 7;
+    static uint8_t candle_wave3_depth = 4;
     static uint8_t candle_mode_brightness = 20;
     #endif
 
@@ -660,19 +662,32 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
             // 3-oscillator synth for a relatively organic pattern
             uint8_t add;
             add = ((triangle_wave(candle_wave1) * 8) >> 8)
-                + ((triangle_wave(candle_wave2) * 7) >> 8)
-                + ((triangle_wave(candle_wave3) * 4) >> 8);
+                + ((triangle_wave(candle_wave2) * candle_wave2_depth) >> 8)
+                + ((triangle_wave(candle_wave3) * candle_wave3_depth) >> 8);
             set_level(candle_mode_brightness + add);
-            // slow LFO
+            // wave1: slow random LFO
             if ((arg & 1) == 0) candle_wave1 += pseudo_rand()&1;
-            // faster LFO
-            //candle_wave2 += pseudo_rand()%13;
+            // wave2: medium-speed erratic LFO
             candle_wave2 += candle_wave2_speed;
-            // erratic fast wave
+            // wave3: erratic fast wave
             candle_wave3 += pseudo_rand()%37;
             // S&H on wave2 frequency to make it more erratic
-            if ((pseudo_rand()>>3) == 0)
+            if ((pseudo_rand()>>2) == 0)
                 candle_wave2_speed = pseudo_rand()%13;
+            // downward sawtooth on wave2 depth to simulate stabilizing
+            if ((candle_wave2_depth > 0) && ((pseudo_rand()>>2) == 0))
+                candle_wave2_depth --;
+            // random sawtooth retrigger
+            if ((pseudo_rand()) == 0) {
+                candle_wave2_depth = 6;
+                //candle_wave3_depth = 5;
+                candle_wave2 = 0;
+            }
+            // downward sawtooth on wave3 depth to simulate stabilizing
+            if ((candle_wave3_depth > 2) && ((pseudo_rand()>>3) == 0))
+                candle_wave3_depth --;
+            if ((pseudo_rand()>>1) == 0)
+                candle_wave3_depth = 4;
         }
         #endif
         return MISCHIEF_MANAGED;
