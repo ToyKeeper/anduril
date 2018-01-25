@@ -150,7 +150,7 @@ ISR(ADC_vect) {
     // temperature
     else if (adc_step == 3) {
         // Convert ADC units to Celsius (ish)
-        int16_t temp = measurement - 275 + THERM_CAL_OFFSET;
+        int16_t temp = measurement - 275 + THERM_CAL_OFFSET + therm_cal_offset;
 
         // prime on first execution
         if (reset_thermal_history) {

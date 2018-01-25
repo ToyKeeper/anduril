@@ -66,11 +66,12 @@ void battcheck();
 #ifndef THERM_CAL_OFFSET
 #define THERM_CAL_OFFSET 0
 #endif
-// temperature now, in C (ish)
+// temperature now, in C (ish) * 2  (14.1 fixed-point)
 volatile int16_t temperature;
-// temperature in a few seconds, in C (ish) * 4  (13.2 fixed-point)
+// temperature in a few seconds, in C (ish) * 2  (14.1 fixed-point)
 volatile int16_t projected_temperature;  // Fight the future!
-volatile uint8_t therm_ceil = DEFAULT_THERM_CEIL;
+uint8_t therm_ceil = DEFAULT_THERM_CEIL;
+int8_t therm_cal_offset = 0;
 //void low_temperature();
 //void high_temperature();
 volatile uint8_t reset_thermal_history = 1;
