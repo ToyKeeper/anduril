@@ -575,7 +575,7 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
     static uint8_t candle_wave2_speed = 0;
     static uint8_t candle_wave2_depth = 7;
     static uint8_t candle_wave3_depth = 4;
-    static uint8_t candle_mode_brightness = 20;
+    static uint8_t candle_mode_brightness = 24;
     #endif
 
     if (event == EV_enter_state) {
@@ -679,7 +679,7 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
                 candle_wave2_depth --;
             // random sawtooth retrigger
             if ((pseudo_rand()) == 0) {
-                candle_wave2_depth = 6;
+                candle_wave2_depth = 7;
                 //candle_wave3_depth = 5;
                 candle_wave2 = 0;
             }
@@ -687,7 +687,7 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
             if ((candle_wave3_depth > 2) && ((pseudo_rand()>>3) == 0))
                 candle_wave3_depth --;
             if ((pseudo_rand()>>1) == 0)
-                candle_wave3_depth = 4;
+                candle_wave3_depth = 5;
         }
         #endif
         return MISCHIEF_MANAGED;
