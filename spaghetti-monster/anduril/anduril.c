@@ -20,13 +20,14 @@
 
 /********* User-configurable options *********/
 // Physical driver type
-//#define FSM_EMISAR_D4_DRIVER
+#define FSM_EMISAR_D4_DRIVER
 //#define FSM_BLF_Q8_DRIVER
-#define FSM_FW3A_DRIVER
+//#define FSM_FW3A_DRIVER
 
 #define USE_LVP
 #define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 50
+#define MIN_THERM_STEPDOWN MAX_1x7135  // lowest value it'll step down to
 #define USE_SET_LEVEL_GRADUALLY
 #define BLINK_AT_CHANNEL_BOUNDARIES
 //#define BLINK_AT_RAMP_FLOOR
@@ -488,11 +489,28 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
                              + 8 - log2(actual_level);
         }
         */
+        // [int(62*3 / (x**0.75)) for x in (1,2,4,8,16,32,64,128)]
+        //uint8_t intervals[] = {186, 110, 65, 39, 23, 13, 8, 4};
+        // [int(62*4 / (x**0.66666)) for x in (1,2,4,8,16,32,64,128)]
+        uint8_t intervals[] = {248, 156, 98, 62, 39, 24, 15, 9};
         uint8_t diff;
+        //static uint8_t ticks_since_adjust = 0;
+        //ticks_since_adjust ++;
         if (target_level > actual_level) diff = target_level - actual_level;
         else diff = actual_level - target_level;
-        if (! diff) diff = 1;
-        uint8_t ticks_per_adjust = (TICKS_PER_SECOND*2) / diff;
+        //if (! diff) diff = 1;
+        //uint8_t ticks_per_adjust = (TICKS_PER_SECOND*4) / diff;
+        uint8_t magnitude = 0;
+        while (diff) {
+            magnitude ++;
+            diff >>= 1;
+        }
+        uint8_t ticks_per_adjust = intervals[magnitude];
+        //if (ticks_since_adjust > ticks_per_adjust)
+        //{
+        //    gradual_tick();
+        //    ticks_since_adjust = 0;
+        //}
         if (!(arg % ticks_per_adjust)) gradual_tick();
 
         // adjust every N frames
@@ -510,15 +528,15 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     #ifdef USE_THERMAL_REGULATION
     // overheating: drop by an amount proportional to how far we are above the ceiling
     else if (event == EV_temperature_high) {
-        /*
+        #if 0
         uint8_t foo = actual_level;
         set_level(0);
         delay_4ms(2);
         set_level(foo);
-        */
-        if (actual_level > MAX_LEVEL/3) {
+        #endif
+        if (actual_level > MIN_THERM_STEPDOWN) {
             int16_t stepdown = actual_level - arg;
-            if (stepdown < MAX_LEVEL/3) stepdown = MAX_LEVEL/3;
+            if (stepdown < MIN_THERM_STEPDOWN) stepdown = MIN_THERM_STEPDOWN;
             else if (stepdown > MAX_LEVEL) stepdown = MAX_LEVEL;
             #ifdef USE_SET_LEVEL_GRADUALLY
             set_level_gradually(stepdown);
@@ -531,17 +549,17 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     // underheating: increase slowly if we're lower than the target
     //               (proportional to how low we are)
     else if (event == EV_temperature_low) {
-        /*
+        #if 0
         uint8_t foo = actual_level;
         set_level(0);
         delay_4ms(2);
         set_level(foo);
-        */
+        #endif
         if (actual_level < target_level) {
             //int16_t stepup = actual_level + (arg>>1);
             int16_t stepup = actual_level + arg;
             if (stepup > target_level) stepup = target_level;
-            else if (stepup < MAX_LEVEL/3) stepup = MAX_LEVEL/3;
+            else if (stepup < MIN_THERM_STEPDOWN) stepup = MIN_THERM_STEPDOWN;
             #ifdef USE_SET_LEVEL_GRADUALLY
             set_level_gradually(stepup);
             #else
