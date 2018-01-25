@@ -54,6 +54,8 @@ inline void PCINT_off() {
 }
 
 //void button_change_interrupt() {
+EMPTY_INTERRUPT(PCINT0_vect);
+/*
 ISR(PCINT0_vect) {
 
     //DEBUG_FLASH;
@@ -65,6 +67,7 @@ ISR(PCINT0_vect) {
     // PCINT_inner(button_is_pressed());
 
 }
+*/
 
 // should only be called from PCINT and/or WDT
 // (is a separate function to reduce code duplication)

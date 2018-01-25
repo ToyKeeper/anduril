@@ -61,10 +61,8 @@ static volatile uint16_t ticks_since_last_event = 0;
 #define A_HOLD            6
 #define A_RELEASE         7
 #define A_RELEASE_TIMEOUT 8
-// TODO: add events for over/under-heat conditions (with parameter for severity)
 #define A_OVERHEATING     9
 #define A_UNDERHEATING    10
-// TODO: add events for low voltage conditions
 #define A_VOLTAGE_LOW     11
 //#define A_VOLTAGE_CRITICAL 12
 #define A_DEBUG           255  // test event for debugging
