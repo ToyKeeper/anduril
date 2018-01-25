@@ -9,7 +9,8 @@ From off:
   Blinkies:
   * 3 clicks: specials (battcheck, goodnight, beacon, tempcheck)
   * Click, click, hold: strobes
-    (bike flasher, party strobe, tactical strobe, lightning storm mode)
+    (candle mode, bike flasher, party strobe, tactical strobe,
+     lightning storm mode)
     (remembers which you last used)
 
   Other:
@@ -82,7 +83,12 @@ Tempcheck mode:
   - Hold: thermal calibration mode
 
 Thermal config mode:
-  * At buzz, click N times to set thermal limit to roughly 30 C + N.
+  * Setting 1: calibrate sensor:
+    At buzz, click N times for N degrees C.  For example, if the light 
+    is current at "room temperature" of 22 C, click 22 times.  Is 
+    intended to only be done once upon initial setup, or not at all.
+  * Setting 2: temperature limit:
+    At buzz, click N times to set thermal limit to roughly 30 C + N.
 
 Thermal calibration mode:
   - Hold until hot: set new ceiling value
