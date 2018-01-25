@@ -66,11 +66,12 @@
 #endif
 
 // try to auto-detect how many eeprom bytes
+// FIXME: detect this better, and assign offsets better, for various configs
 #define USE_EEPROM
 #ifdef USE_INDICATOR_LED
-#define EEPROM_BYTES 13
+#define EEPROM_BYTES 14
 #elif defined(USE_THERMAL_REGULATION)
-#define EEPROM_BYTES 12
+#define EEPROM_BYTES 13
 #else
 #define EEPROM_BYTES 11
 #endif
@@ -479,48 +480,32 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     #endif
     #if defined(USE_SET_LEVEL_GRADUALLY) || defined(USE_REVERSING)
     else if (event == EV_tick) {
+        #ifdef USE_REVERSING
+        // un-reverse after 1 second
+        if (arg == TICKS_PER_SECOND) ramp_direction = 1;
+        #endif
         #ifdef USE_SET_LEVEL_GRADUALLY
-        /* TODO: make thermal adjustment speed scale with magnitude
-        if (ticks_since_adjust > ticks_per_adjust) {
-            gradual_tick();
-            ticks_since_adjust = 0;
-            ticks_per_adjust = (TICKS_PER_SECOND*2) \
-                             / (diff(actual_level, target_level)) \
-                             + 8 - log2(actual_level);
-        }
-        */
-        // [int(62*3 / (x**0.75)) for x in (1,2,4,8,16,32,64,128)]
-        //uint8_t intervals[] = {186, 110, 65, 39, 23, 13, 8, 4};
-        // [int(62*4 / (x**0.66666)) for x in (1,2,4,8,16,32,64,128)]
-        uint8_t intervals[] = {248, 156, 98, 62, 39, 24, 15, 9};
+        // make thermal adjustment speed scale with magnitude
+        if (arg & 1) return MISCHIEF_MANAGED;  // adjust slower
+        // [int(62*4 / (x**0.8)) for x in (1,2,4,8,16,32,64,128)]
+        uint8_t intervals[] = {248, 142, 81, 46, 26, 15, 8, 5};
         uint8_t diff;
-        //static uint8_t ticks_since_adjust = 0;
-        //ticks_since_adjust ++;
+        static uint8_t ticks_since_adjust = 0;
+        ticks_since_adjust ++;
         if (target_level > actual_level) diff = target_level - actual_level;
         else diff = actual_level - target_level;
-        //if (! diff) diff = 1;
-        //uint8_t ticks_per_adjust = (TICKS_PER_SECOND*4) / diff;
         uint8_t magnitude = 0;
         while (diff) {
             magnitude ++;
             diff >>= 1;
         }
         uint8_t ticks_per_adjust = intervals[magnitude];
-        //if (ticks_since_adjust > ticks_per_adjust)
-        //{
-        //    gradual_tick();
-        //    ticks_since_adjust = 0;
-        //}
-        if (!(arg % ticks_per_adjust)) gradual_tick();
-
-        // adjust every N frames
-        //if (!(arg & 7)) gradual_tick();
-        //if (!(arg & 3)) gradual_tick();
-        //gradual_tick();
-        #endif
-        #ifdef USE_REVERSING
-        // un-reverse after 1 second
-        if (arg == TICKS_PER_SECOND) ramp_direction = 1;
+        if (ticks_since_adjust > ticks_per_adjust)
+        {
+            gradual_tick();
+            ticks_since_adjust = 0;
+        }
+        //if (!(arg % ticks_per_adjust)) gradual_tick();
         #endif
         return MISCHIEF_MANAGED;
     }
@@ -1006,26 +991,40 @@ uint8_t ramp_config_state(EventPtr event, uint16_t arg) {
 
 #ifdef USE_THERMAL_REGULATION
 uint8_t thermal_config_state(EventPtr event, uint16_t arg) {
-    static uint8_t done = 0;
+    static uint8_t config_step;
     if (event == EV_enter_state) {
         set_level(0);
-        done = 0;
+        config_step = 0;
         return MISCHIEF_MANAGED;
     }
     // advance forward through config steps
     else if (event == EV_tick) {
         // ask the user for a number
-        if (! done) push_state(number_entry_state, 0);
+        if (config_step < 2) {
+            push_state(number_entry_state, config_step + 1);
+        }
         // return to original mode
-        else set_state(tempcheck_state, 0);
+        else {
+            save_config();
+            set_state(tempcheck_state, 0);
+        }
         return MISCHIEF_MANAGED;
     }
     // an option was set (return from number_entry_state)
     else if (event == EV_reenter_state) {
-        if (number_entry_value) therm_ceil = 30 + number_entry_value;
+        if (number_entry_value) {
+            // calibrate room temperature
+            if (config_step == 0) {
+                int8_t rawtemp = (temperature >> 1) - therm_cal_offset;
+                therm_cal_offset = number_entry_value - rawtemp;
+            }
+            // set maximum heat limit
+            else {
+                therm_ceil = 30 + number_entry_value;
+            }
+        }
         if (therm_ceil > MAX_THERM_CEIL) therm_ceil = MAX_THERM_CEIL;
-        save_config();
-        done = 1;
+        config_step ++;
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
@@ -1222,9 +1221,10 @@ void load_config() {
         beacon_seconds = eeprom[10];
         #ifdef USE_THERMAL_REGULATION
         therm_ceil = eeprom[11];
+        therm_cal_offset = eeprom[12];
         #endif
         #ifdef USE_INDICATOR_LED
-        indicator_led_mode = eeprom[12];
+        indicator_led_mode = eeprom[13];
         #endif
     }
     #ifdef START_AT_MEMORIZED_LEVEL
@@ -1248,9 +1248,10 @@ void save_config() {
     eeprom[10] = beacon_seconds;
     #ifdef USE_THERMAL_REGULATION
     eeprom[11] = therm_ceil;
+    eeprom[12] = therm_cal_offset;
     #endif
     #ifdef USE_INDICATOR_LED
-    eeprom[12] = indicator_led_mode;
+    eeprom[13] = indicator_led_mode;
     #endif
 
     save_eeprom();
