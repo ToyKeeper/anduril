@@ -114,7 +114,7 @@ TODO:
   * add goodnight mode?
   * add lightning mode?
   * muggle mode: smooth ramp
-  + refactor to make config modes smaller
+  * refactor to make config modes smaller
   - candle mode timer, with three clicks to add 30 minutes
   - candle mode: smoother adjustments?
   - make sunset mode timer and brightness configurable?
