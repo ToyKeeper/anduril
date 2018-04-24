@@ -50,6 +50,8 @@
 #define USE_BATTCHECK
 #ifdef USE_MUGGLE_MODE
 #define MAX_CLICKS 6
+#define MUGGLE_FLOOR 22
+#define MUGGLE_CEILING (MAX_1x7135+20)
 #else
 #define MAX_CLICKS 5
 #endif
@@ -70,11 +72,11 @@
 // FIXME: detect this better, and assign offsets better, for various configs
 #define USE_EEPROM
 #ifdef USE_INDICATOR_LED
-#define EEPROM_BYTES 14
+#define EEPROM_BYTES 15
 #elif defined(USE_THERMAL_REGULATION)
-#define EEPROM_BYTES 13
+#define EEPROM_BYTES 14
 #else
-#define EEPROM_BYTES 11
+#define EEPROM_BYTES 12
 #endif
 #ifdef START_AT_MEMORIZED_LEVEL
 #define USE_EEPROM_WL
@@ -137,6 +139,7 @@ uint8_t momentary_state(EventPtr event, uint16_t arg);
 #ifdef USE_MUGGLE_MODE
 // muggle mode, super-simple, hard to exit
 uint8_t muggle_state(EventPtr event, uint16_t arg);
+uint8_t muggle_mode_active = 0;
 #endif
 
 // general helper function for config modes
@@ -365,7 +368,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     }
     // 3 clicks: toggle smooth vs discrete ramping
     else if (event == EV_3clicks) {
-        ramp_style ^= 1;
+        ramp_style = !ramp_style;
         memorized_level = nearest_level(memorized_level);
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
@@ -944,37 +947,118 @@ uint8_t momentary_state(EventPtr event, uint16_t arg) {
 
 #ifdef USE_MUGGLE_MODE
 uint8_t muggle_state(EventPtr event, uint16_t arg) {
-    //static uint8_t lvl = 0;
-    //uint8_t lvls[] = {MAX_1x7135/2, MAX_1x7135, MAX_1x7135+10};
+    static int8_t ramp_direction;
+    static int8_t muggle_off_mode;
 
-    if (event == EV_click1_press) {
-        /*
-        if (actual_level == 0) {
-            set_level(lvls[lvl]);
-            lvl = (lvl + 1) % sizeof(lvls);
-        }
-        else {  // turn off
-        }
-        */
-        if (actual_level == 0) {
-            set_level(MAX_1x7135);
-        }
-        else {  // turn off
+    // turn LED off when we first enter the mode
+    if (event == EV_enter_state) {
+        muggle_mode_active = 1;
+        save_config();
+
+        muggle_off_mode = 1;
+        ramp_direction = 1;
+        //memorized_level = MAX_1x7135;
+        memorized_level = (MUGGLE_FLOOR + MUGGLE_CEILING) / 2;
+        return MISCHIEF_MANAGED;
+    }
+    // initial press: moon hint
+    else if (event == EV_click1_press) {
+        if (muggle_off_mode)
+            set_level(MUGGLE_FLOOR);
+    }
+    // initial release: direct to memorized level
+    else if (event == EV_click1_release) {
+        if (muggle_off_mode)
+            set_level(memorized_level);
+    }
+    // if the user keeps pressing, turn off
+    else if (event == EV_click2_press) {
+        muggle_off_mode = 1;
+        set_level(0);
+    }
+    // 1 click: on/off
+    else if (event == EV_1click) {
+        muggle_off_mode ^= 1;
+        if (muggle_off_mode) {
             set_level(0);
         }
-        empty_event_sequence();
+        /*
+        else {
+            set_level(memorized_level);
+        }
+        */
         return MISCHIEF_MANAGED;
     }
+    // hold: change brightness
+    else if (event == EV_click1_hold) {
+        // ramp at half speed
+        if (arg & 1) return MISCHIEF_MANAGED;
 
-    else if (event == EV_release) {
-        empty_event_sequence();  // don't attempt to parse multiple clicks
+        // if off, start at bottom
+        if (muggle_off_mode) {
+            muggle_off_mode = 0;
+            ramp_direction = 1;
+            set_level(MUGGLE_FLOOR);
+        }
+        else {
+            uint8_t m;
+            m = actual_level;
+            // ramp down if already at ceiling
+            if ((arg <= 1) && (m >= MUGGLE_CEILING)) ramp_direction = -1;
+            // ramp
+            m += ramp_direction;
+            if (m < MUGGLE_FLOOR)
+                m = MUGGLE_FLOOR;
+            if (m > MUGGLE_CEILING)
+                m = MUGGLE_CEILING;
+            memorized_level = m;
+            set_level(m);
+        }
         return MISCHIEF_MANAGED;
     }
+    // reverse ramp direction on hold release
+    else if (event == EV_click1_hold_release) {
+        ramp_direction = -ramp_direction;
+        return MISCHIEF_MANAGED;
+    }
+    /*
+    // click, hold: change brightness (dimmer)
+    else if (event == EV_click2_hold) {
+        ramp_direction = 1;
+        if (memorized_level > MUGGLE_FLOOR)
+            memorized_level = actual_level - 1;
+        set_level(memorized_level);
+        return MISCHIEF_MANAGED;
+    }
+    */
+    // 6 clicks: exit muggle mode
+    else if (event == EV_6clicks) {
+        blink_confirm(1);
+        muggle_mode_active = 0;
+        save_config();
+        set_state(off_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    // tick: housekeeping
+    else if (event == EV_tick) {
+        // un-reverse after 1 second
+        if (arg == TICKS_PER_SECOND) ramp_direction = 1;
 
-    // Sleep, dammit!
-    else if ((event == EV_tick)  &&  (actual_level == 0)) {
-        if (arg > TICKS_PER_SECOND*1) {  // sleep after 1 second
-            go_to_standby = 1;  // sleep while light is off
+        // turn off, but don't go to the main "off" state
+        if (muggle_off_mode) {
+            if (arg > TICKS_PER_SECOND*1) {  // sleep after 1 second
+                go_to_standby = 1;  // sleep while light is off
+            }
+        }
+        return MISCHIEF_MANAGED;
+    }
+    // low voltage is handled specially in muggle mode
+    else if(event == EV_voltage_low) {
+        uint8_t lvl = (actual_level >> 1) + (actual_level >> 2);
+        if (lvl >= MUGGLE_FLOOR) {
+            set_level(lvl);
+        } else {
+            muggle_off_mode = 1;
         }
         return MISCHIEF_MANAGED;
     }
@@ -1279,12 +1363,15 @@ void load_config() {
         strobe_delays[1] = eeprom[8];
         bike_flasher_brightness = eeprom[9];
         beacon_seconds = eeprom[10];
+        #ifdef USE_MUGGLE_MODE
+        muggle_mode_active = eeprom[11];
+        #endif
         #ifdef USE_THERMAL_REGULATION
-        therm_ceil = eeprom[11];
-        therm_cal_offset = eeprom[12];
+        therm_ceil = eeprom[12];
+        therm_cal_offset = eeprom[13];
         #endif
         #ifdef USE_INDICATOR_LED
-        indicator_led_mode = eeprom[13];
+        indicator_led_mode = eeprom[14];
         #endif
     }
     #ifdef START_AT_MEMORIZED_LEVEL
@@ -1306,12 +1393,15 @@ void save_config() {
     eeprom[8] = strobe_delays[1];
     eeprom[9] = bike_flasher_brightness;
     eeprom[10] = beacon_seconds;
+    #ifdef USE_MUGGLE_MODE
+    eeprom[11] = muggle_mode_active;
+    #endif
     #ifdef USE_THERMAL_REGULATION
-    eeprom[11] = therm_ceil;
-    eeprom[12] = therm_cal_offset;
+    eeprom[12] = therm_ceil;
+    eeprom[13] = therm_cal_offset;
     #endif
     #ifdef USE_INDICATOR_LED
-    eeprom[13] = indicator_led_mode;
+    eeprom[14] = indicator_led_mode;
     #endif
 
     save_eeprom();
@@ -1332,7 +1422,8 @@ void low_voltage() {
         set_state(steady_state, RAMP_SIZE/6);
     }
     // in normal or muggle mode, step down or turn off
-    else if ((state == steady_state) || (state == muggle_state)) {
+    //else if ((state == steady_state) || (state == muggle_state)) {
+    else if (state == steady_state) {
         if (actual_level > 1) {
             uint8_t lvl = (actual_level >> 1) + (actual_level >> 2);
             set_level(lvl);
@@ -1376,7 +1467,10 @@ void setup() {
 
     load_config();
 
-    push_state(off_state, 0);
+    if (muggle_mode_active)
+        push_state(muggle_state, 0);
+    else
+        push_state(off_state, 0);
     #endif
 
 }
