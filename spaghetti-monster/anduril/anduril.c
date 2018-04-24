@@ -32,6 +32,7 @@
 #define BLINK_AT_CHANNEL_BOUNDARIES
 //#define BLINK_AT_RAMP_FLOOR
 #define BLINK_AT_RAMP_CEILING
+//#define BLINK_AT_STEPS
 #define BATTCHECK_VpT
 #define USE_LIGHTNING_MODE
 #define USE_CANDLE_MODE
@@ -426,6 +427,21 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
             delay_4ms(8/4);
         }
         #endif
+        #if defined(BLINK_AT_STEPS)
+        uint8_t foo = ramp_style;
+        ramp_style = 1;
+        uint8_t nearest = nearest_level((int16_t)actual_level);
+        ramp_style = foo;
+        // only blink once for each threshold
+        if ((memorized_level != actual_level) &&
+                    (ramp_style == 0) &&
+                    (memorized_level == nearest)
+                    )
+        {
+            set_level(0);
+            delay_4ms(8/4);
+        }
+        #endif
         set_level(memorized_level);
         return MISCHIEF_MANAGED;
     }
@@ -469,6 +485,21 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
                 || (memorized_level == mode_min)
                 #endif
                 )) {
+            set_level(0);
+            delay_4ms(8/4);
+        }
+        #endif
+        #if defined(BLINK_AT_STEPS)
+        uint8_t foo = ramp_style;
+        ramp_style = 1;
+        uint8_t nearest = nearest_level((int16_t)actual_level);
+        ramp_style = foo;
+        // only blink once for each threshold
+        if ((memorized_level != actual_level) &&
+                    (ramp_style == 0) &&
+                    (memorized_level == nearest)
+                    )
+        {
             set_level(0);
             delay_4ms(8/4);
         }
@@ -564,7 +595,8 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
 
 
 uint8_t strobe_state(EventPtr event, uint16_t arg) {
-    // FIXME: re-order the strobes so candle and lightning are adjacent
+    // 'st' reduces ROM size by avoiding access to a volatile var
+    // (maybe I should just make it nonvolatile?)
     uint8_t st = strobe_type;
     #ifdef USE_CANDLE_MODE
     //#define MAX_CANDLE_LEVEL (RAMP_SIZE-8-6-4)
@@ -890,6 +922,7 @@ uint8_t momentary_state(EventPtr event, uint16_t arg) {
         set_level(0);
         empty_event_sequence();  // don't attempt to parse multiple clicks
         //go_to_standby = 1;  // sleep while light is off
+        // TODO: lighted button should use lockout config?
         return MISCHIEF_MANAGED;
     }
 
@@ -1298,7 +1331,7 @@ void low_voltage() {
     if (state == strobe_state) {
         set_state(steady_state, RAMP_SIZE/6);
     }
-    // in normal or muggle mode, step down by half or turn off
+    // in normal or muggle mode, step down or turn off
     else if ((state == steady_state) || (state == muggle_state)) {
         if (actual_level > 1) {
             uint8_t lvl = (actual_level >> 1) + (actual_level >> 2);
