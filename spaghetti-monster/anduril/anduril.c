@@ -114,6 +114,11 @@
 
 // FSM states
 uint8_t off_state(EventPtr event, uint16_t arg);
+// simple numeric entry config menu
+uint8_t config_state_base(EventPtr event, uint16_t arg);
+#define MAX_CONFIG_VALUES 3
+uint8_t config_state_values[MAX_CONFIG_VALUES];
+volatile uint8_t config_state_done = 0;
 // ramping mode and its related config mode
 uint8_t steady_state(EventPtr event, uint16_t arg);
 uint8_t ramp_config_state(EventPtr event, uint16_t arg);
@@ -760,8 +765,8 @@ uint8_t tempcheck_state(EventPtr event, uint16_t arg) {
         set_state(battcheck_state, 0);
         return MISCHIEF_MANAGED;
     }
-    // 3 clicks: thermal config mode
-    else if (event == EV_3clicks) {
+    // 4 clicks: thermal config mode
+    else if (event == EV_4clicks) {
         set_state(thermal_config_state, 0);
         return MISCHIEF_MANAGED;
     }
@@ -785,8 +790,8 @@ uint8_t beacon_state(EventPtr event, uint16_t arg) {
         #endif
         return MISCHIEF_MANAGED;
     }
-    // 3 clicks: beacon config mode
-    else if (event == EV_3clicks) {
+    // 4 clicks: beacon config mode
+    else if (event == EV_4clicks) {
         set_state(beacon_config_state, 0);
         return MISCHIEF_MANAGED;
     }
@@ -1068,17 +1073,13 @@ uint8_t muggle_state(EventPtr event, uint16_t arg) {
 #endif
 
 
-uint8_t ramp_config_state(EventPtr event, uint16_t arg) {
+uint8_t config_state_base(EventPtr event, uint16_t arg) {
     static uint8_t config_step;
     static uint8_t num_config_steps;
     if (event == EV_enter_state) {
+        config_state_done = 0;
         config_step = 0;
-        if (ramp_style) {
-            num_config_steps = 3;
-        }
-        else {
-            num_config_steps = 2;
-        }
+        num_config_steps = arg;
         set_level(0);
         return MISCHIEF_MANAGED;
     }
@@ -1088,45 +1089,59 @@ uint8_t ramp_config_state(EventPtr event, uint16_t arg) {
             push_state(number_entry_state, config_step + 1);
         }
         else {
-            save_config();
+            config_state_done = 1;
             // TODO: blink out some sort of success pattern
-            // return to steady mode
-            set_state(steady_state, memorized_level);
         }
         return MISCHIEF_MANAGED;
     }
     // an option was set (return from number_entry_state)
     else if (event == EV_reenter_state) {
-        #if 0
-        // FIXME? this is a kludge which relies on the vars being consecutive
-        // in RAM and in the same order as declared
-        // ... and it doesn't work; it seems they're not consecutive  :(
-        volatile uint8_t *dest;
-        if (ramp_style) dest = (&ramp_discrete_floor) + config_step;
-        else dest = (&ramp_smooth_floor) + config_step;
-        if (number_entry_value)
-            *dest = number_entry_value;
-        #else
-        switch (config_step) {
-            case 0:
-                if (number_entry_value) {
-                    if (ramp_style) ramp_discrete_floor = number_entry_value;
-                    else ramp_smooth_floor = number_entry_value;
-                }
-                break;
-            case 1:
-                if (number_entry_value) {
-                    if (ramp_style) ramp_discrete_ceil = MAX_LEVEL + 1 - number_entry_value;
-                    else ramp_smooth_ceil = MAX_LEVEL + 1 - number_entry_value;
-                }
-                break;
-            case 2:
-                if (number_entry_value)
-                    ramp_discrete_steps = number_entry_value;
-                break;
-        }
-        #endif
+        config_state_values[config_step] = number_entry_value;
         config_step ++;
+        return MISCHIEF_MANAGED;
+    }
+    //return EVENT_NOT_HANDLED;
+    // eat all other events; don't pass any through to parent
+    return EVENT_HANDLED;
+}
+
+uint8_t ramp_config_state(EventPtr event, uint16_t arg) {
+    if (event == EV_enter_state) {
+        uint8_t num_config_steps;
+        num_config_steps = 2 + ramp_style;
+        return config_state_base(event, num_config_steps);
+    }
+    // let generic function handle everything except completion
+    else if (!config_state_done) {
+        return config_state_base(event, arg);
+    }
+    else if (event == EV_tick) {
+        // parse values
+        uint8_t val;
+        if (ramp_style) {  // discrete / stepped ramp
+
+            val = config_state_values[0];
+            if (val) { ramp_discrete_floor = val; }
+
+            val = config_state_values[1];
+            if (val) { ramp_discrete_ceil = MAX_LEVEL + 1 - val; }
+
+            val = config_state_values[2];
+            if (val) ramp_discrete_steps = val;
+
+        } else {  // smooth ramp
+
+            val = config_state_values[0];
+            if (val) { ramp_smooth_floor = val; }
+
+            val = config_state_values[1];
+            if (val) { ramp_smooth_ceil = MAX_LEVEL + 1 - val; }
+
+        }
+
+        // save values and return
+        save_config();
+        set_state(steady_state, memorized_level);
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
@@ -1135,40 +1150,34 @@ uint8_t ramp_config_state(EventPtr event, uint16_t arg) {
 
 #ifdef USE_THERMAL_REGULATION
 uint8_t thermal_config_state(EventPtr event, uint16_t arg) {
-    static uint8_t config_step;
     if (event == EV_enter_state) {
-        set_level(0);
-        config_step = 0;
-        return MISCHIEF_MANAGED;
+        return config_state_base(event, 2);
     }
-    // advance forward through config steps
+    // let generic function handle everything except completion
+    else if (!config_state_done) {
+        return config_state_base(event, arg);
+    }
     else if (event == EV_tick) {
-        // ask the user for a number
-        if (config_step < 2) {
-            push_state(number_entry_state, config_step + 1);
+        // parse values
+        uint8_t val;
+
+        // calibrate room temperature
+        val = config_state_values[0];
+        if (val) {
+            int8_t rawtemp = (temperature >> 1) - therm_cal_offset;
+            therm_cal_offset = val - rawtemp;
         }
-        // return to original mode
-        else {
-            save_config();
-            set_state(tempcheck_state, 0);
-        }
-        return MISCHIEF_MANAGED;
-    }
-    // an option was set (return from number_entry_state)
-    else if (event == EV_reenter_state) {
-        if (number_entry_value) {
-            // calibrate room temperature
-            if (config_step == 0) {
-                int8_t rawtemp = (temperature >> 1) - therm_cal_offset;
-                therm_cal_offset = number_entry_value - rawtemp;
-            }
+
+        val = config_state_values[1];
+        if (val) {
             // set maximum heat limit
-            else {
-                therm_ceil = 30 + number_entry_value;
-            }
+            therm_ceil = 30 + val;
         }
         if (therm_ceil > MAX_THERM_CEIL) therm_ceil = MAX_THERM_CEIL;
-        config_step ++;
+
+        // save values and return
+        save_config();
+        set_state(tempcheck_state, 0);
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
@@ -1177,25 +1186,23 @@ uint8_t thermal_config_state(EventPtr event, uint16_t arg) {
 
 
 uint8_t beacon_config_state(EventPtr event, uint16_t arg) {
-    static uint8_t done = 0;
     if (event == EV_enter_state) {
-        set_level(0);
-        done = 0;
-        return MISCHIEF_MANAGED;
+        return config_state_base(event, 1);
     }
-    // advance forward through config steps
+    // let generic function handle everything except completion
+    else if (!config_state_done) {
+        return config_state_base(event, arg);
+    }
     else if (event == EV_tick) {
-        // ask the user for a number
-        if (! done) push_state(number_entry_state, 0);
-        // return to original mode
-        else set_state(beacon_state, 0);
-        return MISCHIEF_MANAGED;
-    }
-    // an option was set (return from number_entry_state)
-    else if (event == EV_reenter_state) {
-        if (number_entry_value) beacon_seconds = number_entry_value;
+        // parse values
+        uint8_t val = config_state_values[0];
+        if (val) {
+            beacon_seconds = val;
+        }
+
+        // save values and return
         save_config();
-        done = 1;
+        set_state(beacon_state, 0);
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
