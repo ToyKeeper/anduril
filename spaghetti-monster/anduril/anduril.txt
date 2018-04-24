@@ -105,11 +105,17 @@ Momentary mode:
 
 TODO:
   * save settings in eeprom
-  - decide on "hold until hot" or "click N times" for thermal config mode
+  * decide on "hold until hot" or "click N times" for thermal config mode
   * test thermal regulation on an actual light
   * improve thermal regulation
   - a way to blink out the firmware version?
-  - indicator LED support
-  - a way to configure indicator LED behavior?
+  * indicator LED support
+  * a way to configure indicator LED behavior?
   * add goodnight mode?
   * add lightning mode?
+  - muggle mode: smooth ramp
+  - candle mode timer, with three clicks to add 30 minutes
+  - candle mode: smoother adjustments?
+  - make sunset mode timer and brightness configurable?
+  - move all config menus to four clicks
+  - diagram updates for 3-click special actions
