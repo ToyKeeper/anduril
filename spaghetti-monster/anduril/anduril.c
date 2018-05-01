@@ -1451,9 +1451,11 @@ void setup() {
 
     load_config();
 
+    #ifdef USE_MUGGLE_MODE
     if (muggle_mode_active)
         push_state(muggle_state, 0);
     else
+    #endif
         push_state(off_state, 0);
     #endif
 
