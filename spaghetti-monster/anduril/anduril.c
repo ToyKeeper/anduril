@@ -23,6 +23,7 @@
 #define FSM_EMISAR_D4_DRIVER
 //#define FSM_BLF_Q8_DRIVER
 //#define FSM_FW3A_DRIVER
+//#define FSM_BLF_GT_DRIVER
 
 #define USE_LVP
 #define USE_THERMAL_REGULATION
@@ -62,10 +63,25 @@
 #ifdef FSM_BLF_Q8_DRIVER
 #define USE_INDICATOR_LED
 #define VOLTAGE_FUDGE_FACTOR 7  // add 0.35V
+
 #elif defined(FSM_EMISAR_D4_DRIVER)
 #define VOLTAGE_FUDGE_FACTOR 5  // add 0.25V
+
 #elif defined(FSM_FW3A_DRIVER)
 #define VOLTAGE_FUDGE_FACTOR 5  // add 0.25V
+
+#elif defined(FSM_BLF_GT_DRIVER)
+#define USE_INDICATOR_LED
+#undef BLINK_AT_CHANNEL_BOUNDARIES
+#undef BLINK_AT_RAMP_CEILING
+#undef BLINK_AT_RAMP_FLOOR
+//#undef USE_SET_LEVEL_GRADUALLY
+#define RAMP_SMOOTH_FLOOR 1
+#define RAMP_SMOOTH_CEIL POWER_80PX
+#define RAMP_DISCRETE_FLOOR 1
+#define RAMP_DISCRETE_CEIL POWER_80PX
+#define RAMP_DISCRETE_STEPS 7
+
 #endif
 
 // try to auto-detect how many eeprom bytes
@@ -162,20 +178,36 @@ void save_config();
 void save_config_wl();
 #endif
 
+// default ramp options if not overridden earlier per-driver
+#ifndef RAMP_SMOOTH_FLOOR
+  #define RAMP_SMOOTH_FLOOR 1
+#endif
+#ifndef RAMP_SMOOTH_CEIL
+  #if PWM_CHANNELS == 3
+    #define RAMP_SMOOTH_CEIL MAX_Nx7135
+  #else
+    #define RAMP_SMOOTH_CEIL MAX_LEVEL - 30
+  #endif
+#endif
+#ifndef RAMP_DISCRETE_FLOOR
+  #define RAMP_DISCRETE_FLOOR 20
+#endif
+#ifndef RAMP_DISCRETE_CEIL
+  #define RAMP_DISCRETE_CEIL RAMP_SMOOTH_CEIL
+#endif
+#ifndef RAMP_DISCRETE_STEPS
+  #define RAMP_DISCRETE_STEPS 7
+#endif
+
 // brightness control
 uint8_t memorized_level = MAX_1x7135;
 // smooth vs discrete ramping
 volatile uint8_t ramp_style = 0;  // 0 = smooth, 1 = discrete
-volatile uint8_t ramp_smooth_floor = 1;
-#if PWM_CHANNELS == 3
-volatile uint8_t ramp_smooth_ceil = MAX_Nx7135;
-volatile uint8_t ramp_discrete_ceil = MAX_Nx7135;
-#else
-volatile uint8_t ramp_smooth_ceil = MAX_LEVEL - 30;
-volatile uint8_t ramp_discrete_ceil = MAX_LEVEL - 30;
-#endif
-volatile uint8_t ramp_discrete_floor = 20;
-volatile uint8_t ramp_discrete_steps = 7;
+volatile uint8_t ramp_smooth_floor = RAMP_SMOOTH_FLOOR;
+volatile uint8_t ramp_smooth_ceil = RAMP_SMOOTH_CEIL;
+volatile uint8_t ramp_discrete_floor = RAMP_DISCRETE_FLOOR;
+volatile uint8_t ramp_discrete_ceil = RAMP_DISCRETE_CEIL;
+volatile uint8_t ramp_discrete_steps = RAMP_DISCRETE_STEPS;
 uint8_t ramp_discrete_step_size;  // don't set this
 
 #ifdef USE_INDICATOR_LED

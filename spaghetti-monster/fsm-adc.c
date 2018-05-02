@@ -20,13 +20,25 @@
 #ifndef FSM_ADC_C
 #define FSM_ADC_C
 
+#ifdef USE_VOLTAGE_DIVIDER
+// 1.1V / pin7
+#define ADMUX_VOLTAGE ADMUX_VOLTAGE_DIVIDER
+#else
+// VCC / 1.1V reference
+#define ADMUX_VOLTAGE ADMUX_VCC
+#endif
+
 inline void ADC_on()
 {
     // read voltage on VCC by default
+    ADMUX = ADMUX_VOLTAGE;
+    #ifdef USE_VOLTAGE_DIVIDER
+    // disable digital input on divider pin to reduce power consumption
+    DIDR0 |= (1 << VOLTAGE_ADC_DIDR);
+    #else
     // disable digital input on VCC pin to reduce power consumption
     //DIDR0 |= (1 << ADC_DIDR);  // FIXME: unsure how to handle for VCC pin
-    // VCC / 1.1V reference
-    ADMUX = ADMUX_VCC;
+    #endif
     // enable, start, prescale
     ADCSRA = (1 << ADEN) | (1 << ADSC) | ADC_PRSCL;
 }
@@ -34,6 +46,16 @@ inline void ADC_on()
 inline void ADC_off() {
     ADCSRA &= ~(1<<ADEN); //ADC off
 }
+
+#ifdef USE_VOLTAGE_DIVIDER
+static inline uint8_t calc_voltage_divider(uint16_t value) {
+    // use 9.7 fixed-point to get sufficient precision
+    uint16_t adc_per_volt = ((ADC_44<<7) - (ADC_22<<7)) / (44-22);
+    // incoming value is 14.2 fixed-point, so shift it 2 bits less
+    uint8_t result = ((value<<5) / adc_per_volt) + VOLTAGE_FUDGE_FACTOR;
+    return result;
+}
+#endif
 
 // Each full cycle runs 7.8X per second with just voltage enabled,
 // or 3.9X per second with voltage and temperature.
@@ -109,14 +131,22 @@ ISR(ADC_vect) {
             total += measurement;
             total = total >> 2;
 
+            #ifdef USE_VOLTAGE_DIVIDER
+            voltage = calc_voltage_divider(total);
+            #else
             voltage = (uint16_t)(1.1*1024*10)/total + VOLTAGE_FUDGE_FACTOR;
+            #endif
         }
         #else  // no USE_LVP_AVG
-        // calculate actual voltage: volts * 10
-        // ADC = 1.1 * 1024 / volts
-        // volts = 1.1 * 1024 / ADC
-        //voltage = (uint16_t)(1.1*1024*10)/measurement + VOLTAGE_FUDGE_FACTOR;
-        voltage = ((uint16_t)(2*1.1*1024*10)/measurement + VOLTAGE_FUDGE_FACTOR) >> 1;
+            #ifdef USE_VOLTAGE_DIVIDER
+            voltage = calc_voltage_divider(measurement);
+            #else
+            // calculate actual voltage: volts * 10
+            // ADC = 1.1 * 1024 / volts
+            // volts = 1.1 * 1024 / ADC
+            //voltage = (uint16_t)(1.1*1024*10)/measurement + VOLTAGE_FUDGE_FACTOR;
+            voltage = ((uint16_t)(2*1.1*1024*10)/measurement + VOLTAGE_FUDGE_FACTOR) >> 1;
+            #endif
         #endif
         // if low, callback EV_voltage_low / EV_voltage_critical
         //         (but only if it has been more than N ticks since last call)
@@ -287,14 +317,14 @@ ISR(ADC_vect) {
     // set the correct type of measurement for next time
     #ifdef USE_THERMAL_REGULATION
         #ifdef USE_LVP
-        if (adc_step < 2) ADMUX = ADMUX_VCC;
+        if (adc_step < 2) ADMUX = ADMUX_VOLTAGE;
         else ADMUX = ADMUX_THERM;
         #else
         ADMUX = ADMUX_THERM;
         #endif
     #else
         #ifdef USE_LVP
-        ADMUX = ADMUX_VCC;
+        ADMUX = ADMUX_VOLTAGE;
         #endif
     #endif
 }
