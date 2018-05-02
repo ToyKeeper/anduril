@@ -32,7 +32,11 @@
 #endif
 // MCU sees voltage 0.X volts lower than actual, add X/2 to readings
 #ifndef VOLTAGE_FUDGE_FACTOR
+#ifdef USE_VOLTAGE_DIVIDER
+#define VOLTAGE_FUDGE_FACTOR 0
+#else
 #define VOLTAGE_FUDGE_FACTOR 5
+#endif
 #endif
 volatile uint8_t voltage;
 volatile uint8_t adcint_enable;  // kludge, because adc auto-retrigger won't turn off
