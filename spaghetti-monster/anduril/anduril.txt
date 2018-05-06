@@ -16,6 +16,7 @@ From off:
   Other:
   * 4 clicks: lock-out
   * 5 clicks: momentary mode (disconnect power to exit)
+  * 6 clicks: muggle mode
 
 In steady mode:
   * 1 click: off
@@ -42,57 +43,69 @@ Discrete ramp config mode:
     (click N times to make discrete mode have N stair-steps)
     (minimum 2, maximum 150)
 
-Bike flasher:
-  * 1 click: off
-  * 2 clicks: party strobe
-  * Hold: brighter
-  * Click, hold: dimmer
+"Strobe" group modes:
 
-Party / Tactical strobe modes:
-  * 1 click: off
-  * Hold: change speed (faster)
-  * Click, hold: change speed (slower)
-  * 2 clicks: next strobe mode
-    (bike flasher, party strobe, tactical strobe, lightning storm mode)
-    (TODO: random/police strobe?)
+  Candle mode:
+    * 1 click: off
+    * 2 clicks: next "strobe" group mode
+    * 3 clicks: add 30 minutes to the timer
+                (light will shut off when timer expires)
+                (default is no timer)
+    * Hold: brighter
+    * Click, hold: dimmer
 
-Lightning storm mode:
-  * 1 click: off
-  * 2 clicks: bike flasher
+  Bike flasher:
+    * 1 click: off
+    * 2 clicks: next "strobe" group mode
+    * Hold: brighter
+    * Click, hold: dimmer
 
-Battcheck mode:
-  * 1 click: off
-  * 2 clicks: goodnight mode
+  Party / Tactical strobe modes:
+    * 1 click: off
+    * Hold: change speed (faster)
+    * Click, hold: change speed (slower)
+    * 2 clicks: next "strobe" group mode
+      (TODO: random/police strobe?)
 
-Goodnight mode:
-  * 1 click: off
-  * 2 clicks: beacon mode
+  Lightning storm mode:
+    * 1 click: off
+    * 2 clicks: next "strobe" group mode
 
-Beacon mode:
-  * 1 click: off
-  * 2 clicks: tempcheck mode
-  * 3 clicks: configure time between pulses
+"Blinky" group modes:
 
-Beacon config mode:
-  * At buzz, click N times to set beacon frequency to N seconds.
+  Battcheck mode:
+    * 1 click: off
+    * 2 clicks: goodnight mode
 
-Tempcheck mode:
-  * 1 click: off
-  * 2 clicks: battcheck mode
-  * 3 clicks: thermal config mode
-  - Hold: thermal calibration mode
+  Goodnight mode:
+    * 1 click: off
+    * 2 clicks: beacon mode
 
-Thermal config mode:
-  * Setting 1: calibrate sensor:
-    At buzz, click N times for N degrees C.  For example, if the light 
-    is current at "room temperature" of 22 C, click 22 times.  Is 
-    intended to only be done once upon initial setup, or not at all.
-  * Setting 2: temperature limit:
-    At buzz, click N times to set thermal limit to roughly 30 C + N.
+  Beacon mode:
+    * 1 click: off
+    * 2 clicks: tempcheck mode
+    * 3 clicks: configure time between pulses
 
-Thermal calibration mode:
-  - Hold until hot: set new ceiling value
-  - ... don't hold: blink out current ceiling value and exit
+    Beacon config mode:
+      * At buzz, click N times to set beacon frequency to N seconds.
+
+  Tempcheck mode:
+    * 1 click: off
+    * 2 clicks: battcheck mode
+    * 3 clicks: thermal config mode
+    - Hold: thermal calibration mode
+
+    Thermal config mode:
+      * Setting 1: calibrate sensor:
+        At buzz, click N times for N degrees C.  For example, if the light 
+        is current at "room temperature" of 22 C, click 22 times.  Is 
+        intended to only be done once upon initial setup, or not at all.
+      * Setting 2: temperature limit:
+        At buzz, click N times to set thermal limit to roughly 30 C + N.
+
+    Thermal calibration mode:
+      - Hold until hot: set new ceiling value
+      - ... don't hold: blink out current ceiling value and exit
 
 Lockout mode:
   * Hold: momentary moon
@@ -102,6 +115,11 @@ Momentary mode:
   * Press button: Light on (at memorized level).
   * Release button: Light off.
   * To exit, disconnect power.  (loosen/tighten the tailcap)
+
+Muggle mode:
+  * 1 click: On / off.
+  * Hold: Ramp up / down.
+  * 6 clicks: Exit muggle mode.
 
 TODO:
   * save settings in eeprom
@@ -115,8 +133,8 @@ TODO:
   * add lightning mode?
   * muggle mode: smooth ramp
   * refactor to make config modes smaller
-  - candle mode timer, with three clicks to add 30 minutes
+  * move all config menus to four clicks
+  * candle mode timer, with three clicks to add 30 minutes
+  - diagram updates for 3-click special actions
   - candle mode: smoother adjustments?
   - make sunset mode timer and brightness configurable?
-  * move all config menus to four clicks
-  - diagram updates for 3-click special actions

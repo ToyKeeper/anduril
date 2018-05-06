@@ -653,9 +653,15 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
     static uint8_t candle_wave2_depth = 7;
     static uint8_t candle_wave3_depth = 4;
     static uint8_t candle_mode_brightness = 24;
+    static uint8_t candle_mode_timer = 0;
+    #define TICKS_PER_CANDLE_MINUTE 4096 // about 65 seconds
+    #define MINUTES_PER_CANDLE_HALFHOUR 27 // ish
     #endif
 
     if (event == EV_enter_state) {
+        #ifdef USE_CANDLE_MODE
+        candle_mode_timer = 0;  // in case any time was left over from earlier
+        #endif
         return MISCHIEF_MANAGED;
     }
     // 1 click: off
@@ -666,6 +672,9 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
     // 2 clicks: rotate through strobe/flasher modes
     else if (event == EV_2clicks) {
         strobe_type = (st + 1) % NUM_STROBES;
+        #ifdef USE_CANDLE_MODE
+        candle_mode_timer = 0;  // in case any time was left over from earlier
+        #endif
         interrupt_nice_delays();
         save_config();
         return MISCHIEF_MANAGED;
@@ -728,6 +737,22 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
         save_config();
         return MISCHIEF_MANAGED;
     }
+    #if defined(USE_CANDLE_MODE)
+    // 3 clicks: add 30m to candle timer
+    else if (event == EV_3clicks) {
+        // candle mode only
+        if (st == 4) {
+            if (candle_mode_timer < (255 - MINUTES_PER_CANDLE_HALFHOUR)) {
+                // add 30m to the timer
+                candle_mode_timer += MINUTES_PER_CANDLE_HALFHOUR;
+                // blink to confirm
+                set_level(actual_level + 32);
+                delay_4ms(2);
+            }
+        }
+        return MISCHIEF_MANAGED;
+    }
+    #endif
     #if defined(USE_LIGHTNING_MODE) || defined(USE_CANDLE_MODE)
     // clock tick: bump the random seed
     else if (event == EV_tick) {
@@ -736,12 +761,33 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
         #endif
         #ifdef USE_CANDLE_MODE
         if (st == 4) {
+            // self-timer dims the light during the final minute
+            uint8_t subtract = 0;
+            if (candle_mode_timer == 1) {
+                subtract = ((candle_mode_brightness+20)
+                         * ((arg & (TICKS_PER_CANDLE_MINUTE-1)) >> 4))
+                         >> 8;
+            }
+            // we passed a minute mark, decrease timer if it's running
+            if ((arg & (TICKS_PER_CANDLE_MINUTE-1)) == (TICKS_PER_CANDLE_MINUTE - 1)) {
+                if (candle_mode_timer > 0) {
+                    candle_mode_timer --;
+                    //set_level(0);  delay_4ms(2);
+                    // if the timer ran out, shut off
+                    if (! candle_mode_timer) {
+                        set_state(off_state, 0);
+                    }
+                }
+            }
             // 3-oscillator synth for a relatively organic pattern
             uint8_t add;
             add = ((triangle_wave(candle_wave1) * 8) >> 8)
                 + ((triangle_wave(candle_wave2) * candle_wave2_depth) >> 8)
                 + ((triangle_wave(candle_wave3) * candle_wave3_depth) >> 8);
-            set_level(candle_mode_brightness + add);
+            int8_t brightness = candle_mode_brightness + add - subtract;
+            if (brightness < 0) { brightness = 0; }
+            set_level(brightness);
+
             // wave1: slow random LFO
             if ((arg & 1) == 0) candle_wave1 += pseudo_rand()&1;
             // wave2: medium-speed erratic LFO
