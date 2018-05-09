@@ -1,0 +1,140 @@
+From off:
+
+  Ramp shortcuts:
+  * 1 click: memorized level
+  * Hold: lowest level then ramp up
+  * 2 clicks: highest ramp level
+  * Click, hold: highest level then ramp down
+
+  Blinkies:
+  * 3 clicks: specials (battcheck, goodnight, beacon, tempcheck)
+  * Click, click, hold: strobes
+    (candle mode, bike flasher, party strobe, tactical strobe,
+     lightning storm mode)
+    (remembers which you last used)
+
+  Other:
+  * 4 clicks: lock-out
+  * 5 clicks: momentary mode (disconnect power to exit)
+  * 6 clicks: muggle mode
+
+In steady mode:
+  * 1 click: off
+  * Hold: ramp up
+  * Click, hold: ramp down
+  * 2 clicks: to/from turbo (actual turbo, not just highest ramp level)
+  * 3 clicks: toggle smooth vs discrete ramping
+  * 4 clicks: configure current ramp
+
+Smooth ramp config mode:
+  - Setting 1: memory on/off  (not implemented yet)
+  * Setting 2: low end
+    (click N times to set ramp floor to level N)
+  * Setting 3: high end
+    (click N times to set ramp ceiling to level "151 - N")
+
+Discrete ramp config mode:
+  - Setting 1: memory on/off  (not implemented yet)
+  * Setting 2: low end
+    (click N times to set ramp floor to level N)
+  * Setting 3: high end
+    (click N times to set ramp ceiling to level "151 - N")
+  * Setting 4: number of levels in discrete ramp
+    (click N times to make discrete mode have N stair-steps)
+    (minimum 2, maximum 150)
+
+"Strobe" group modes:
+
+  Candle mode:
+    * 1 click: off
+    * 2 clicks: next "strobe" group mode
+    * 3 clicks: add 30 minutes to the timer
+                (light will shut off when timer expires)
+                (default is no timer)
+    * Hold: brighter
+    * Click, hold: dimmer
+
+  Bike flasher:
+    * 1 click: off
+    * 2 clicks: next "strobe" group mode
+    * Hold: brighter
+    * Click, hold: dimmer
+
+  Party / Tactical strobe modes:
+    * 1 click: off
+    * Hold: change speed (faster)
+    * Click, hold: change speed (slower)
+    * 2 clicks: next "strobe" group mode
+      (TODO: random/police strobe?)
+
+  Lightning storm mode:
+    * 1 click: off
+    * 2 clicks: next "strobe" group mode
+
+"Blinky" group modes:
+
+  Battcheck mode:
+    * 1 click: off
+    * 2 clicks: goodnight mode
+
+  Goodnight mode:
+    * 1 click: off
+    * 2 clicks: beacon mode
+
+  Beacon mode:
+    * 1 click: off
+    * 2 clicks: tempcheck mode
+    * 3 clicks: configure time between pulses
+
+    Beacon config mode:
+      * At buzz, click N times to set beacon frequency to N seconds.
+
+  Tempcheck mode:
+    * 1 click: off
+    * 2 clicks: battcheck mode
+    * 3 clicks: thermal config mode
+    - Hold: thermal calibration mode
+
+    Thermal config mode:
+      * Setting 1: calibrate sensor:
+        At buzz, click N times for N degrees C.  For example, if the light 
+        is current at "room temperature" of 22 C, click 22 times.  Is 
+        intended to only be done once upon initial setup, or not at all.
+      * Setting 2: temperature limit:
+        At buzz, click N times to set thermal limit to roughly 30 C + N.
+
+    Thermal calibration mode:
+      - Hold until hot: set new ceiling value
+      - ... don't hold: blink out current ceiling value and exit
+
+Lockout mode:
+  * Hold: momentary moon
+  * 4 clicks: exit lockout (return to regular "off" mode)
+
+Momentary mode:
+  * Press button: Light on (at memorized level).
+  * Release button: Light off.
+  * To exit, disconnect power.  (loosen/tighten the tailcap)
+
+Muggle mode:
+  * 1 click: On / off.
+  * Hold: Ramp up / down.
+  * 6 clicks: Exit muggle mode.
+
+TODO:
+  * save settings in eeprom
+  * decide on "hold until hot" or "click N times" for thermal config mode
+  * test thermal regulation on an actual light
+  * improve thermal regulation
+  - a way to blink out the firmware version?
+  * indicator LED support
+  * a way to configure indicator LED behavior?
+  * add goodnight mode?
+  * add lightning mode?
+  * muggle mode: smooth ramp
+  * refactor to make config modes smaller
+  * move all config menus to four clicks
+  * candle mode timer, with three clicks to add 30 minutes
+  - diagram updates for 3-click special actions
+  - candle mode: smoother adjustments?
+  - make sunset mode timer and brightness configurable?

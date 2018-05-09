@@ -4,7 +4,7 @@
  * Attiny portability header.
  * This helps abstract away the differences between various attiny MCUs.
  *
- * Copyright (C) 2015 Selene ToyKeeper
+ * Copyright (C) 2017 Selene ToyKeeper
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,19 +31,38 @@
     #define EEPSIZE 64
     #define V_REF REFS0
     #define BOGOMIPS 950
+    #define ADMUX_VCC 0b00001100
+    #define DELAY_ZERO_TIME 252
 #elif (ATTINY == 25)
     // TODO: Use 6.4 MHz instead of 8 MHz?
     #define F_CPU 8000000UL
     #define EEPSIZE 128
     #define V_REF REFS1
     #define BOGOMIPS (F_CPU/4000)
+    #define ADMUX_VCC 0b00001100
+    #define ADMUX_THERM 0b10001111
+    #define DELAY_ZERO_TIME 1020
+#elif (ATTINY == 85)
+    // TODO: Use 6.4 MHz instead of 8 MHz?
+    #define F_CPU 8000000UL
+    #define EEPSIZE 512
+    #define V_REF REFS1
+    #define BOGOMIPS (F_CPU/4000)
+    // (1 << V_REF) | (0 << ADLAR) | (VCC_CHANNEL)
+    #define ADMUX_VCC 0b00001100
+    // (1 << V_REF) | (0 << ADLAR) | (THERM_CHANNEL)
+    #define ADMUX_THERM 0b10001111
+    #define DELAY_ZERO_TIME 1020
 #else
-    Hey, you need to define ATTINY.
+    #error Hey, you need to define ATTINY.
 #endif
 
 
+#include <avr/interrupt.h>
+
 /******************** I/O pin and register layout ************************/
 #ifdef FET_7135_LAYOUT
+#define DRIVER_TYPE_DEFINED
 /*
  *           ----
  *   Reset -|1  8|- VCC
@@ -79,6 +98,7 @@
 #endif  // FET_7135_LAYOUT
 
 #ifdef TRIPLEDOWN_LAYOUT
+#define DRIVER_TYPE_DEFINED
 /*
  *             ----
  *     Reset -|1  8|- VCC
@@ -115,6 +135,7 @@
 #endif  // TRIPLEDOWN_LAYOUT
 
 #ifdef FERRERO_ROCHER_LAYOUT
+#define DRIVER_TYPE_DEFINED
 /*
  *            ----
  *    Reset -|1  8|- VCC
@@ -129,6 +150,7 @@
 #endif  // FERRERO_ROCHER_LAYOUT
 
 #ifdef NANJG_LAYOUT
+#define DRIVER_TYPE_DEFINED
 #define STAR2_PIN   PB0
 #define STAR3_PIN   PB4
 #define STAR4_PIN   PB3
@@ -145,8 +167,170 @@
 
 #endif  // NANJG_LAYOUT
 
-#ifndef PWM_LVL
-    Hey, you need to define an I/O pin layout.
+
+// Q8 driver is the same as a D4, basically
+#ifdef FSM_BLF_Q8_DRIVER
+#define FSM_EMISAR_D4_DRIVER
+#endif
+
+
+#ifdef FSM_EMISAR_D4_DRIVER
+#define DRIVER_TYPE_DEFINED
+/*
+ *           ----
+ *   Reset -|1  8|- VCC
+ * eswitch -|2  7|-
+ * AUX LED -|3  6|- PWM (FET)
+ *     GND -|4  5|- PWM (1x7135)
+ *           ----
+ */
+
+#define PWM_CHANNELS 2
+
+#define AUXLED_PIN   PB4    // pin 3
+
+#define SWITCH_PIN   PB3    // pin 2
+#define SWITCH_PCINT PCINT3 // pin 2 pin change interrupt
+
+#define PWM1_PIN PB0        // pin 5, 1x7135 PWM
+#define PWM1_LVL OCR0A      // OCR0A is the output compare register for PB0
+#define PWM2_PIN PB1        // pin 6, FET PWM
+#define PWM2_LVL OCR0B      // OCR0B is the output compare register for PB1
+
+// (FIXME: remove?  not used?)
+#define VOLTAGE_PIN PB2     // pin 7, voltage ADC
+#define ADC_CHANNEL 0x01    // MUX 01 corresponds with PB2
+#define ADC_DIDR    ADC1D   // Digital input disable bit corresponding with PB2
+#define ADC_PRSCL   0x06    // clk/64
+
+//#define TEMP_DIDR   ADC4D
+#define TEMP_CHANNEL 0b00001111
+
+#define FAST 0xA3           // fast PWM both channels
+#define PHASE 0xA1          // phase-correct PWM both channels
+
+#endif  // ifdef FSM_EMISAR_D4_DRIVER
+
+
+#ifdef FSM_FW3A_DRIVER
+#define DRIVER_TYPE_DEFINED
+/*
+ *           ----
+ *   Reset -|1  8|- VCC
+ * eswitch -|2  7|- optic nerve
+ *     FET -|3  6|- 7x7135
+ *     GND -|4  5|- 1x7135
+ *           ----
+ */
+
+#define PWM_CHANNELS 3
+
+#define SWITCH_PIN   PB3    // pin 2
+#define SWITCH_PCINT PCINT3 // pin 2 pin change interrupt
+
+#define PWM1_PIN PB0        // pin 5, 1x7135 PWM
+#define PWM1_LVL OCR0A      // OCR0A is the output compare register for PB0
+#define PWM2_PIN PB1        // pin 6, FET PWM
+#define PWM2_LVL OCR0B      // OCR0B is the output compare register for PB1
+#define PWM3_PIN PB4        // pin 3
+#define PWM3_LVL OCR1B
+
+#define VISION_PIN PB2      // pin 7, optic nerve
+#define ADC_CHANNEL 0x01    // MUX 01 corresponds with PB2
+#define ADC_DIDR    ADC1D   // Digital input disable bit corresponding with PB2
+#define ADC_PRSCL   0x06    // clk/64
+
+//#define TEMP_DIDR   ADC4D
+#define TEMP_CHANNEL 0b00001111
+
+#define FAST 0xA3           // fast PWM both channels
+#define PHASE 0xA1          // phase-correct PWM both channels
+
+#endif  // ifdef FSM_FW3A_DRIVER
+
+
+#ifdef FSM_BLF_GT_DRIVER
+#define DRIVER_TYPE_DEFINED
+/*
+ *           ----
+ *   Reset -|1  8|- VCC (unused)
+ * eswitch -|2  7|- Voltage divider
+ * AUX LED -|3  6|- Current control (buck level)
+ *     GND -|4  5|- PWM (buck output on/off)
+ *           ----
+ */
+
+#define PWM_CHANNELS 2
+
+#define AUXLED_PIN   PB4    // pin 3
+
+#define SWITCH_PIN   PB3    // pin 2
+#define SWITCH_PCINT PCINT3 // pin 2 pin change interrupt
+
+#define PWM1_PIN PB0        // pin 5, 1x7135 PWM
+#define PWM1_LVL OCR0A      // OCR0A is the output compare register for PB0
+#define PWM2_PIN PB1        // pin 6, FET PWM
+#define PWM2_LVL OCR0B      // OCR0B is the output compare register for PB1
+
+#define USE_VOLTAGE_DIVIDER // use a voltage divider on pin 7, not VCC
+#define VOLTAGE_PIN PB2     // pin 7, voltage ADC
+#define VOLTAGE_CHANNEL 0x01 // MUX 01 corresponds with PB2
+// 1.1V reference, left-adjust, ADC1/PB2
+//#define ADMUX_VOLTAGE_DIVIDER ((1 << V_REF) | (1 << ADLAR) | VOLTAGE_CHANNEL)
+// 1.1V reference, no left-adjust, ADC1/PB2
+#define ADMUX_VOLTAGE_DIVIDER ((1 << V_REF) | VOLTAGE_CHANNEL)
+#define VOLTAGE_ADC_DIDR    ADC1D   // Digital input disable bit corresponding with PB2
+#define ADC_PRSCL   0x06    // clk/64
+
+// Raw ADC readings at 4.4V and 2.2V (in-between, we assume values form a straight line)
+#define ADC_44 184
+#define ADC_22 92
+
+#define TEMP_CHANNEL 0b00001111
+
+#define FAST 0xA3           // fast PWM both channels
+#define PHASE 0xA1          // phase-correct PWM both channels
+
+#endif  // ifdef FSM_BLF_GT_DRIVER
+
+
+#ifdef FSM_TKSABER_DRIVER
+#define DRIVER_TYPE_DEFINED
+/*
+ *             ----
+ *     Reset -|1  8|- VCC
+ * PWM 4 (A) -|2  7|- e-switch
+ * PWM 3 (G) -|3  6|- PWM 2 (B)
+ *       GND -|4  5|- PWM 1 (R)
+ *             ----
+ */
+
+#define PWM_CHANNELS 4
+#define PWM1_PIN PB0        // pin 5
+#define PWM1_LVL OCR0A
+#define PWM2_PIN PB1        // pin 6
+#define PWM2_LVL OCR0B
+#define PWM3_PIN PB4        // pin 3
+#define PWM3_LVL OCR1B
+#define PWM4_PIN PB3        // pin 2
+#define PWM4_LVL OCR1A
+
+#define SWITCH_PIN   PB2    // pin 7
+#define SWITCH_PCINT PCINT2 // pin 7 pin change interrupt
+
+#define ADC_PRSCL   0x06    // clk/64 (no need to be super fast)
+
+//#define TEMP_DIDR   ADC4D
+#define TEMP_CHANNEL 0b00001111
+
+#define FAST        0xA3    // fast PWM both channels
+#define PHASE       0xA1    // phase-correct PWM both channels
+
+#endif  // TKSABER_DRIVER
+
+
+#ifndef DRIVER_TYPE_DEFINED
+#error Hey, you need to define an I/O pin layout.
 #endif
 
 #endif  // TK_ATTINY_H

@@ -1,0 +1,304 @@
+Spaghetti Monster: A UI toolkit library for flashlights
+-------------------------------------------------------
+
+This toolkit takes care of most of the obnoxious parts of dealing with 
+tiny embedded chips and flashlight hardware, leaving you to focus on the 
+interface and user-visible features.
+
+For a quick start, look at the example UIs provided to see how things 
+are done.  They are probably the most useful reference.  However, other 
+details can be found here or in the FSM source code.
+
+
+Why is it called Spaghetti Monster?
+
+  This toolkit is a finite state machine, or FSM.  Another thing FSM 
+  stands for is Flying Spaghetti Monster.  Source code tends to weave 
+  into intricate knots like spaghetti, called spaghetti code, 
+  particularly when the code isn't using appropriate abstractions for 
+  the task it implements.
+
+  Prior e-switch light code had a tendency to get pretty spaghetti-like, 
+  and it made the code difficult to write, understand, and modify.  So I 
+  started from scratch and logically separated the hardware details from 
+  the UI.  This effectively put the spaghetti monster in a box, put it 
+  on a leash, to make it behave and stay out of the way while we focus 
+  on the user interface.
+
+  Also, it's just kind of a fun name.  :)
+
+
+General concept:
+
+  Spaghetti Monster (FSM) implements a stack-based finite state machine 
+  with an event-handling system.
+
+  Each FSM program should have a setup() function, a loop() function, 
+  and at least one State:
+
+    - The setup() function runs once each time power is connected.
+
+    - The loop() function is called repeatedly whenever the system is 
+      otherwise idle.  Put your long-running tasks here, preferably with 
+      consideration taken to allow for cooperative multitasking.
+
+    - The States on the stack will be called whenever an event happens.  
+      States are called in top-to-bottom order until a state returns an 
+      "EVENT_HANDLED" signal.  Only do quick tasks here.
+
+
+Finite State Machine:
+
+  Each "State" is simply a callback function which handles events.  It 
+  should return EVENT_HANDLED for each event type it does something 
+  with, or EVENT_NOT_HANDLED otherwise.
+
+  Transitions between states typically involve mapping an Event to a new 
+  State, such as this:
+
+    // 3 clicks: go to strobe modes
+    else if (event == EV_3clicks) {
+        set_state(strobe_state, 0);
+        return EVENT_HANDLED;
+    }
+
+  It is strongly recommended that your State functions never do anything 
+  which takes more than a few milliseconds...  and certainly not longer 
+  than 16ms.  If you do this, the pending events may pile up to the 
+  point where new events get thrown away.  So, do only quick tasks in 
+  the event handler, and do your longer-running tasks in the loop() 
+  function instead.  Preferably with precautions taken to allow for 
+  cooperative multitasking.
+
+  If your State function takes longer than one WDT tick (16ms) once in a 
+  while, the system won't break.  Several events can be queued.  But be 
+  sure not to do it very often.
+
+  Several state management functions are provided:
+
+    - set_state(new_state, arg): Replace the current state on the stack.  
+      Send 'arg' to the new state for its init event.
+
+    - push_state(new_state, arg): Add a new state to the stack, leaving 
+      the current state below it.  Send 'arg' to the new state for its 
+      init event.
+
+    - pop_state(): Get rid of (and return) the top-most state.  Re-enter 
+      the state below.
+
+
+Event types:
+
+  Event types are defined in fsm-events.h.  You may want to adjust these 
+  to fit your program, but the defaults are:
+
+    State transitions:
+
+      - EV_enter_state: Sent to each new State once when it goes onto 
+        the stack.  The 'arg' is whatever you define it to be.
+
+      - EV_leave_state: Sent to a state immediately before it is removed 
+        from the stack.
+
+      - EV_reenter_state: If a State gets pushed on top of this one, and 
+        then it pops off, a re-enter Event happens.  This should handle 
+        things like consuming the return value of a nested input handler 
+        State.
+
+    Time passing:
+
+      - EV_tick: This happens once per clock tick, which is 16ms or 
+        62.5Hz by default.  The 'arg' is the number of ticks since 
+        entering the state.  When 'arg' exceeds 65535, it wraps around 
+        to 32768.
+
+    LVP and thermal regulation:
+
+      - EV_voltage_low: Sent whenever the input power drops below the 
+        VOLTAGE_LOW threshold.  Minimum of VOLTAGE_WARNING_SECONDS 
+        between events.
+
+      - EV_temperature_high: Sent whenever the MCU's projected temperature 
+        is higher than therm_ceil.  Minimum of THERMAL_WARNING_SECONDS 
+        between events.  The 'arg' indicates how far the temperature 
+        exceeds the limit.
+
+      - EV_temperature_low: Sent whenever the MCU's projected temperature 
+        is lower than (therm_ceil - THERMAL_WINDOW_SIZE).  Minimum of 
+        THERMAL_WARNING_SECONDS between events.  The 'arg' indicates how 
+        far the temperature exceeds the limit.
+
+    Button presses:
+
+      - EV_1click: The user clicked the e-switch, released it, and 
+        enough time passed that no more clicks were detected.
+
+      - EV_2clicks: The user clicked and released the e-switch twice, then 
+        enough time passed that no more clicks were detected.
+
+      - EV_3clicks: The user clicked and released the e-switch three 
+        times, then enough time passed that no more clicks were detected.
+
+      - EV_4clicks: The user clicked and released the e-switch four times, 
+        then enough time passed that no more clicks were detected.
+
+      - EV_click1_hold: The user pressed the button and is still holding 
+        it.  The 'arg' indicates how many clock ticks since the "hold" 
+        state started.
+
+      - EV_click1_hold_release: The user pressed the button, held it for a 
+        while, and then released it.  No timeout is attempted after this.
+
+      - EV_click2_hold: The user clicked once, then pressed the button and 
+        is still holding it.  The 'arg' indicates how many clock ticks 
+        since the "hold" state started.
+
+      - EV_click2_hold_release: The user clicked once, then pressed the 
+        button, held it for a while, and released it.  No timeout is 
+        attempted after this.
+
+      - EV_click1_press: The user pressed the button and it's still down.  
+        No time has yet passed.
+
+      - EV_click1_release: The user quickly pressed and released the 
+        button.  The click timeout has not yet expired, so they might 
+        still click again.
+
+      - EV_click2_press: The user pressed the button, released it, pressed 
+        again, and it's still down.  No time has yet passed since then.
+
+      - EV_click2_release: The quickly pressed and released the button 
+        twice.  The click timeout has not yet expired, so they might still 
+        click again.
+
+  In theory, you could also define your own arbitrary event types, and 
+  emit() them as necessary, and handle them in State functions the same 
+  as any other event.
+
+  One thing to note if you create your own Event types:  The copy which 
+  gets sent to States must be in the 'event_sequences' array, meaning 
+  the State gets a const PROGMEM version of the Event.  It cannot simply 
+  send the dynamic 'current_event' object, because it has probably 
+  already changed by the time the callback happens.
+
+
+Cooperative multitasking:
+
+  Since we don't have true preemptive multitasking, the best we can do 
+  is cooperative multitasking.  In practice, this means:
+
+    - Declare global variables as volatile if they can be changed by an 
+      event handler.  This keeps the compiler from caching the value and 
+      causing incorrect behavior.
+
+    - Don't put long-running tasks into State functions.  Each State 
+      will get called at least once every 16ms for a clock tick, so they 
+      should not run for longer than 16ms.
+
+    - Put long-running tasks into loop() instead.
+
+    - For long delay() calls, use nice_delay_ms().  This allows the MCU 
+      to process events while we wait.  It also automatically aborts if 
+      it detects a state change, and returns a different value.
+
+      In many cases, it shouldn't be necessary to do anything more than 
+      this, but sometimes it will also be a good idea to check the 
+      return value and abort the current task:
+
+          if (! nice_delay_ms(mydelay)) break;
+
+    - In general, try to do small amounts of work and then return 
+      control to other parts of the program.  Keep doing small amounts 
+      and yielding until a task is done, instead of trying to do it all 
+      at once.
+
+
+Persistent data in EEPROM:
+
+  To save data which lasts after a battery change, use the eeprom 
+  functions.  Define an eeprom style (or two) at the top, define how 
+  many bytes to allocate, and then use the relevant functions as 
+  appropriate.
+
+    - USE_EEPROM / USE_EEPROM_WL: Enable the eeprom-related functions.  
+      With "WL", it uses wear-levelling.  Without, it does not.  Note:  
+      Wear levelling is not necessarily better -- it uses more ROM, and 
+      it writes more bytes per save().  So, use it only for a few bytes 
+      which change frequently -- not for many bytes or infrequent 
+      changes.
+
+    - EEPROM_BYTES N / EEPROM_WL_BYTES N: Allocate N bytes for the 
+      eeprom data.
+
+    - load_eeprom() / load_eeprom_wl(): Load the stored data into the 
+      eeprom[] or eeprom_wl[] arrays.
+      Returns 1 if data was found, 0 otherwise.
+
+    - save_eeprom() / save_eeprom_wl(): Save the eeprom[] or eeprom_wl[] 
+      array data to persistent storage.  The WL version erases all old 
+      values and writes new ones in a different part of the eeprom 
+      space.  The non-WL version updates values in place, and does not 
+      overwrite values which didn't change.
+
+  Note that all interrupts will be disabled during eeprom operations.
+
+
+Useful #defines:
+
+  A variety of things can be #defined before including 
+  spaghetti-monster.h in your program.  This allows you to tweak the 
+  behavior and set options to fit your needs:
+
+    - FSM_something_LAYOUT: Select a driver type from tk-attiny.h.  This 
+      controls how many power channels there are, which pins they're on, 
+      and what other driver features are available.
+
+    - USE_LVP: Enable low-voltage protection.
+
+      - VOLTAGE_LOW: What voltage should LVP trigger at?  Defaults to 29 (2.9V).
+
+      - VOLTAGE_FUDGE_FACTOR: Add this much to the voltage measurements, 
+        to compensate for voltage drop across the reverse-polarity 
+        diode.
+
+      - VOLTAGE_WARNING_SECONDS: How long to wait between LVP events.
+
+    - USE_THERMAL_REGULATION: Enable thermal regulation
+
+      - DEFAULT_THERM_CEIL: Set the temperature limit to use by default 
+        when the user hasn't configured anything.
+
+      - THERMAL_WARNING_SECONDS: How long to wait between temperature 
+        events.
+
+    - USE_RAMPING: Enable smooth ramping helpers.
+
+      - RAMP_LENGTH: Pick a pre-defined ramp by length.  Defined sizes 
+        are 50, 75, and 150 levels.
+
+    - USE_DELAY_4MS, USE_DELAY_MS, USE_DELAY_ZERO: Enable the delay_4ms, 
+      delay_ms(), and delay_zero() functions.  Useful for timing-related 
+      activities.
+
+    - HOLD_TIMEOUT: How many clock ticks before a "press" event becomes 
+      a "hold" event?
+
+    - RELEASE_TIMEOUT: How many clock ticks before a "release" event 
+      becomes a "click" event?  Basically, the maximum time between 
+      clicks in a double-click or triple-click.
+
+    - MAX_CLICKS N: Convenience define to limit the size of the 
+      recognized Event arrays.  Click sequences longer than N won't be 
+      recognized or sent to State functions.
+
+    - USE_BATTCHECK: Enable the battcheck function.  Also define one of 
+      the following to select a display style:
+
+        - BATTCHECK_VpT: Volts, pause, tenths.
+        - BATTCHECK_4bars: Blink up to 4 times.
+        - BATTCHECK_6bars: Blink up to 6 times.
+        - BATTCHECK_8bars: Blink up to 8 times.
+
+    - ... and many others.  Will try to document them over time, but 
+      they can be found by searching for pretty much anything in 
+      all-caps in the fsm-*.[ch] files.
