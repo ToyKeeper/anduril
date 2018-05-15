@@ -23,9 +23,23 @@ A general overview of what you need to get going is here:
 
 Some useful hardware for flashing firmware:
 
-  http://www.fasttech.com/product/1002900-atmega-attiny-51-avr-isp-usbasp-usb-programmer
-  http://www.fasttech.com/product/1011800-40-pin-splittable-ribbon-cable-20cm
-  http://www.digikey.com/product-detail/en/5250/501-1311-ND/745102
+  What TK uses:
+
+    http://www.fasttech.com/product/1002900-atmega-attiny-51-avr-isp-usbasp-usb-programmer
+    http://www.fasttech.com/product/1011800-40-pin-splittable-ribbon-cable-20cm
+    http://www.digikey.com/product-detail/en/5250/501-1311-ND/745102
+
+  Ratus' guide:  https://redd.it/8g5l5w  (prices checked 2018-05-01)
+
+    Store A: About $4.20 shipped
+      https://www.aliexpress.com/item/USB-ISP-Programmer-for-ATMEL-AVR-ATMega-ATTiny-51-AVR-Board-ISP-Downloader/32699341177.html
+      https://www.aliexpress.com/item/WAVGAT-Programmer-Testing-Clip-SOP8-SOP-SOIC-8-SOIC8-DIP8-DIP-8-Pin-IC-Test-Clamp/32827794024.html
+      https://www.aliexpress.com/item/40Pin-20CM-2-54MM-Row-Female-to-Female-F-F-Dupont-Cable-Breadboard-Jumper-Wire-for/32822958653.html
+
+    Store B: About $4.18 shipped:
+      https://www.aliexpress.com/store/product/1pcs-New-USBASP-USBISP-AVR-Programmer-USB-ISP-USB-ASP-ATMEGA8-ATMEGA128-Support-Win7-64K/1171090_32809542958.html
+      https://www.aliexpress.com/store/product/Free-shipping-Programmer-Testing-Clip-SOP8-SOP-SOIC-8-SOIC8-DIP8-DIP-8-Pin-IC-Test/1171090_32402561848.html
+      https://www.aliexpress.com/store/product/20pcs-20cm-2-54mm-1p-1p-Pin-Female-to-Female-Color-Breadboard-Cable-Jump-Wire-Jumper/1171090_32628811461.html
 
 For Windows users, these links may be useful:
 
