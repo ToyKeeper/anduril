@@ -1040,13 +1040,25 @@ uint8_t muggle_state(EventPtr event, uint16_t arg) {
 
     // turn LED off when we first enter the mode
     if (event == EV_enter_state) {
-        muggle_mode_active = 1;
-        save_config();
-
-        muggle_off_mode = 1;
         ramp_direction = 1;
-        //memorized_level = MAX_1x7135;
-        memorized_level = (MUGGLE_FLOOR + MUGGLE_CEILING) / 2;
+
+        #ifdef START_AT_MEMORIZED_LEVEL
+            memorized_level = arg;
+            muggle_off_mode = 0;
+            set_level(memorized_level);
+
+            if (! muggle_mode_active) {  // don't write eeprom at every boot
+                muggle_mode_active = 1;
+                save_config();
+            }
+        #else
+            muggle_mode_active = 1;
+            save_config();
+
+            muggle_off_mode = 1;
+            //memorized_level = MAX_1x7135;
+            memorized_level = (MUGGLE_FLOOR + MUGGLE_CEILING) / 2;
+        #endif
         return MISCHIEF_MANAGED;
     }
     // initial press: moon hint
@@ -1107,6 +1119,9 @@ uint8_t muggle_state(EventPtr event, uint16_t arg) {
     // reverse ramp direction on hold release
     else if (event == EV_click1_hold_release) {
         ramp_direction = -ramp_direction;
+        #ifdef START_AT_MEMORIZED_LEVEL
+        save_config_wl();  // momentary use should retain brightness level
+        #endif
         return MISCHIEF_MANAGED;
     }
     /*
@@ -1513,6 +1528,12 @@ void setup() {
     // dual switch: e-switch + power clicky
     // power clicky acts as a momentary mode
     load_config();
+
+    #ifdef USE_MUGGLE_MODE
+    if (muggle_mode_active)
+        push_state(muggle_state, memorized_level);
+    else
+    #endif
     if (button_is_pressed())
         // hold button to go to moon
         push_state(steady_state, 1);
@@ -1520,7 +1541,7 @@ void setup() {
         // otherwise use memory
         push_state(steady_state, memorized_level);
 
-    #else
+    #else  // if not START_AT_MEMORIZED_LEVEL
 
     // blink at power-on to let user know power is connected
     set_level(RAMP_SIZE/8);
@@ -1531,7 +1552,7 @@ void setup() {
 
     #ifdef USE_MUGGLE_MODE
     if (muggle_mode_active)
-        push_state(muggle_state, 0);
+        push_state(muggle_state, (MUGGLE_FLOOR+MUGGLE_CEILING)/2);
     else
     #endif
         push_state(off_state, 0);
