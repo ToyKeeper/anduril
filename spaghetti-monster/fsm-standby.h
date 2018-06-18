@@ -25,6 +25,11 @@
 // set this to nonzero to enter standby mode next time the system is idle
 volatile uint8_t go_to_standby = 0;
 
+#ifdef USE_HALFSLEEP_MODE
+// half-sleep "twilight" mode with WDT on but running slowly
+volatile uint8_t halfsleep_mode = 0;
+#endif
+
 #define standby_mode sleep_until_eswitch_pressed
 void sleep_until_eswitch_pressed();
 
@@ -33,7 +38,5 @@ void sleep_until_eswitch_pressed();
 // (I think)
 void idle_mode();
 #endif
-
-// TODO: half-sleep "twilight" mode with WDT on but running slowly
 
 #endif

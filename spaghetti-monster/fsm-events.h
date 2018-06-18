@@ -64,6 +64,7 @@ static volatile uint16_t ticks_since_last_event = 0;
 #define A_OVERHEATING     9
 #define A_UNDERHEATING    10
 #define A_VOLTAGE_LOW     11
+#define A_HALFSLEEP_TICK  12
 //#define A_VOLTAGE_CRITICAL 12
 #define A_DEBUG           255  // test event for debugging
 
@@ -83,6 +84,11 @@ Event EV_reenter_state[] = {
 Event EV_tick[] = {
     A_TICK,
     0 } ;
+#ifdef USE_HALFSLEEP_MODE
+Event EV_halfsleep_tick[] = {
+    A_HALFSLEEP_TICK,
+    0 } ;
+#endif
 #ifdef USE_LVP
 Event EV_voltage_low[] = {
     A_VOLTAGE_LOW,

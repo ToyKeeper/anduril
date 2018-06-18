@@ -31,7 +31,17 @@
 #define standby_mode sleep_until_eswitch_pressed
 void sleep_until_eswitch_pressed()
 {
+    #ifdef USE_HALFSLEEP_MODE
+    //uint16_t sleep_counter = 0;
+    if (halfsleep_mode) {
+        // set WDT to slow mode
+        wdt_reset();
+        WDTCR |= (1<<WDCE) | (1<<WDE);  // Start timed sequence
+        WDTCR = (1<<WDIE) | 5;          // Enable interrupt every 0.5s
+    } else
+    #endif
     WDT_off();
+
     ADC_off();
 
     // make sure switch isn't currently pressed
@@ -41,15 +51,29 @@ void sleep_until_eswitch_pressed()
 
     PCINT_on();  // wake on e-switch event
 
-    // configure sleep mode
-    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+    #ifdef USE_HALFSLEEP_MODE
+    while (halfsleep_mode) {
+        f_wdt = 0;  // detect if WDT was what caused a wake-up
+    #endif
+        // configure sleep mode
+        set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 
-    sleep_enable();
-    sleep_bod_disable();
-    sleep_cpu();  // wait here
+        sleep_enable();
+        sleep_bod_disable();
+        sleep_cpu();  // wait here
 
-    // something happened; wake up
-    sleep_disable();
+        // something happened; wake up
+        sleep_disable();
+
+        #ifdef USE_HALFSLEEP_MODE
+        // determine what woke us up... WDT or PCINT
+        if (! f_wdt) {  // PCINT went off
+            halfsleep_mode = 0;
+        }
+        #endif
+    #ifdef USE_HALFSLEEP_MODE
+    }
+    #endif
 
     #ifdef USE_THERMAL_REGULATION
     // forget what the temperature was last time we were on
