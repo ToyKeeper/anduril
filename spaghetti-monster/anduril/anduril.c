@@ -62,6 +62,7 @@
 // specific settings for known driver types
 #ifdef FSM_BLF_Q8_DRIVER
 #define USE_INDICATOR_LED
+#define USE_INDICATOR_LED_WHILE_RAMPING
 #define TICK_DURING_STANDBY
 #define VOLTAGE_FUDGE_FACTOR 7  // add 0.35V
 
@@ -73,6 +74,7 @@
 
 #elif defined(FSM_BLF_GT_DRIVER)
 #define USE_INDICATOR_LED
+#define USE_INDICATOR_LED_WHILE_RAMPING
 #define TICK_DURING_STANDBY
 #undef BLINK_AT_CHANNEL_BOUNDARIES
 #undef BLINK_AT_RAMP_CEILING
@@ -220,7 +222,8 @@ uint8_t ramp_discrete_step_size;  // don't set this
 // bits 0-1 control "off" mode
 // modes are: 0=off, 1=low, 2=high
 // (TODO: 3=blinking)
-uint8_t indicator_led_mode = (1<<2) + 2;
+//uint8_t indicator_led_mode = (1<<2) + 2;
+uint8_t indicator_led_mode = (2<<2) + 1;
 #endif
 
 // calculate the nearest ramp level which would be valid at the moment

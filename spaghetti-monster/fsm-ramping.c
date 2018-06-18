@@ -29,11 +29,15 @@ void set_level(uint8_t level) {
     gradual_target = level;
     #endif
     #ifdef USE_INDICATOR_LED
+    #ifdef USE_INDICATOR_LED_WHILE_RAMPING
     if (! go_to_standby)
         indicator_led((level > 0) + (level > MAX_1x7135));
     //if (level > MAX_1x7135) indicator_led(2);
     //else if (level > 0) indicator_led(1);
     //else if (! go_to_standby) indicator_led(0);
+    #else
+        indicator_led(0);
+    #endif
     #endif
     //TCCR0A = PHASE;
     if (level == 0) {
