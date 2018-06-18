@@ -84,7 +84,7 @@ Discrete ramp config mode:
   Beacon mode:
     * 1 click: off
     * 2 clicks: tempcheck mode
-    * 3 clicks: configure time between pulses
+    * 4 clicks: configure time between pulses
 
     Beacon config mode:
       * At buzz, click N times to set beacon frequency to N seconds.
@@ -92,7 +92,7 @@ Discrete ramp config mode:
   Tempcheck mode:
     * 1 click: off
     * 2 clicks: battcheck mode
-    * 3 clicks: thermal config mode
+    * 4 clicks: thermal config mode
     - Hold: thermal calibration mode
 
     Thermal config mode:

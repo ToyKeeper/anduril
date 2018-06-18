@@ -62,6 +62,7 @@
 // specific settings for known driver types
 #ifdef FSM_BLF_Q8_DRIVER
 #define USE_INDICATOR_LED
+#define TICK_DURING_STANDBY
 #define VOLTAGE_FUDGE_FACTOR 7  // add 0.35V
 
 #elif defined(FSM_EMISAR_D4_DRIVER)
@@ -72,6 +73,7 @@
 
 #elif defined(FSM_BLF_GT_DRIVER)
 #define USE_INDICATOR_LED
+#define TICK_DURING_STANDBY
 #undef BLINK_AT_CHANNEL_BOUNDARIES
 #undef BLINK_AT_RAMP_CEILING
 #undef BLINK_AT_RAMP_FLOOR
@@ -170,6 +172,9 @@ uint8_t number_entry_state(EventPtr event, uint16_t arg);
 volatile uint8_t number_entry_value;
 
 void blink_confirm(uint8_t num);
+#if defined(USE_INDICATOR_LED) && defined(TICK_DURING_STANDBY)
+void indicator_blink(uint8_t arg);
+#endif
 
 // remember stuff even after battery was changed
 void load_config();
@@ -274,6 +279,15 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         }
         return MISCHIEF_MANAGED;
     }
+    #if defined(TICK_DURING_STANDBY) && defined(USE_INDICATOR_LED)
+    // blink the indicator LED, maybe
+    else if (event == EV_sleep_tick) {
+        if ((indicator_led_mode & 0b00000011) == 0b00000011) {
+            indicator_blink(arg);
+        }
+        return MISCHIEF_MANAGED;
+    }
+    #endif
     // hold (initially): go to lowest level, but allow abort for regular click
     else if (event == EV_click1_press) {
         set_level(nearest_level(1));
@@ -966,11 +980,23 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
         }
         return MISCHIEF_MANAGED;
     }
+    #if defined(TICK_DURING_STANDBY) && defined(USE_INDICATOR_LED)
+    else if (event == EV_sleep_tick) {
+        if ((indicator_led_mode & 0b00001100) == 0b00001100) {
+            indicator_blink(arg);
+        }
+        return MISCHIEF_MANAGED;
+    }
+    #endif
     #ifdef USE_INDICATOR_LED
     // 3 clicks: rotate through indicator LED modes (lockout mode)
     else if (event == EV_3clicks) {
         uint8_t mode = indicator_led_mode >> 2;
+        #ifdef TICK_DURING_STANDBY
+        mode = (mode + 1) & 3;
+        #else
         mode = (mode + 1) % 3;
+        #endif
         indicator_led_mode = (mode << 2) + (indicator_led_mode & 0x03);
         indicator_led(mode);
         save_config();
@@ -978,9 +1004,20 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
     }
     // click, click, hold: rotate through indicator LED modes (off mode)
     else if (event == EV_click3_hold) {
+        #ifdef TICK_DURING_STANDBY
+        uint8_t mode = (arg >> 5) & 3;
+        #else
         uint8_t mode = (arg >> 5) % 3;
+        #endif
         indicator_led_mode = (indicator_led_mode & 0b11111100) | mode;
+        #ifdef TICK_DURING_STANDBY
+        if (mode == 3)
+            indicator_led(mode & (arg&3));
+        else
+            indicator_led(mode);
+        #else
         indicator_led(mode);
+        #endif
         //save_config();
         return MISCHIEF_MANAGED;
     }
@@ -1405,6 +1442,19 @@ void blink_confirm(uint8_t num) {
         delay_4ms(100/4);
     }
 }
+
+
+#if defined(USE_INDICATOR_LED) && defined(TICK_DURING_STANDBY)
+// beacon-like mode for the indicator LED
+void indicator_blink(uint8_t arg) {
+    if (! (arg & 7)) {
+        indicator_led(2);
+    }
+    else {
+        indicator_led(0);
+    }
+}
+#endif
 
 
 #ifdef USE_PSEUDO_RAND

@@ -33,6 +33,18 @@ void WDT_on()
     //sei();                          // Enable interrupts
 }
 
+#ifdef TICK_DURING_STANDBY
+inline void WDT_slow()
+{
+    // interrupt slower
+    //cli();                          // Disable interrupts
+    wdt_reset();                    // Reset the WDT
+    WDTCR |= (1<<WDCE) | (1<<WDE);  // Start timed sequence
+    WDTCR = (1<<WDIE) | STANDBY_TICK_SPEED; // Enable interrupt every so often
+    //sei();                          // Enable interrupts
+}
+#endif
+
 inline void WDT_off()
 {
     //cli();                          // Disable interrupts
@@ -45,18 +57,15 @@ inline void WDT_off()
 
 // clock tick -- this runs every 16ms (62.5 fps)
 ISR(WDT_vect) {
-    #ifdef USE_HALFSLEEP_MODE
+    #ifdef TICK_DURING_STANDBY
     f_wdt = 1;  // WDT event happened
 
     static uint16_t sleep_counter = 0;
-    // handle halfsleep mode specially
-    if (halfsleep_mode) {
+    // handle standby mode specially
+    if (go_to_standby) {
         // emit a halfsleep tick, and process it
-        emit(EV_halfsleep_tick, sleep_counter);
-        sleep_counter ++;
+        emit(EV_sleep_tick, sleep_counter++);
         process_emissions();
-        //if (! halfsleep_mode)
-        //    sleep_counter = 0;
         return;
     }
     sleep_counter = 0;

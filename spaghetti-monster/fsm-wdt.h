@@ -25,7 +25,7 @@
 void WDT_on();
 inline void WDT_off();
 
-#ifdef USE_HALFSLEEP_MODE
+#ifdef TICK_DURING_STANDBY
 volatile uint8_t f_wdt = 0;
 #endif
 
