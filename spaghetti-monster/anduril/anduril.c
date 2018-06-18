@@ -29,6 +29,11 @@
 #define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 50
 #define MIN_THERM_STEPDOWN MAX_1x7135  // lowest value it'll step down to
+#ifdef MAX_Nx7135
+#define THERM_DOUBLE_SPEED_LEVEL MAX_Nx7135  // throttle back faster when high
+#else
+#define THERM_DOUBLE_SPEED_LEVEL (RAMP_LENGTH*4/5)  // throttle back faster when high
+#endif
 #define USE_SET_LEVEL_GRADUALLY
 #define BLINK_AT_CHANNEL_BOUNDARIES
 //#define BLINK_AT_RAMP_FLOOR
@@ -586,12 +591,22 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         // make thermal adjustment speed scale with magnitude
         if (arg & 1) return MISCHIEF_MANAGED;  // adjust slower
         // [int(62*4 / (x**0.8)) for x in (1,2,4,8,16,32,64,128)]
-        uint8_t intervals[] = {248, 142, 81, 46, 26, 15, 8, 5};
+        //uint8_t intervals[] = {248, 142, 81, 46, 26, 15, 8, 5};
+        // [int(62*4 / (x**0.9)) for x in (1,2,4,8,16,32,64,128)]
+        //uint8_t intervals[] = {248, 132, 71, 38, 20, 10, 5, 3};
+        // [int(62*4 / (x**0.95)) for x in (1,2,4,8,16,32,64,128)]
+        uint8_t intervals[] = {248, 128, 66, 34, 17, 9, 4, 2};
         uint8_t diff;
         static uint8_t ticks_since_adjust = 0;
         ticks_since_adjust ++;
         if (target_level > actual_level) diff = target_level - actual_level;
-        else diff = actual_level - target_level;
+        else {
+            diff = actual_level - target_level;
+            // if we're on a really high mode, drop faster
+            if (actual_level >= THERM_DOUBLE_SPEED_LEVEL) {
+                diff <<= 1;
+            }
+        }
         uint8_t magnitude = 0;
         while (diff) {
             magnitude ++;
