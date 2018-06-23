@@ -36,6 +36,7 @@ void set_level(uint8_t level) {
     //else if (level > 0) indicator_led(1);
     //else if (! go_to_standby) indicator_led(0);
     #else
+    if (! go_to_standby)
         indicator_led(0);
     #endif
     #endif
