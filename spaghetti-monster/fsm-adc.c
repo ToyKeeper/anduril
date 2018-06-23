@@ -109,6 +109,11 @@ ISR(ADC_vect) {
 
     uint16_t measurement = ADC;  // latest 10-bit ADC reading
 
+    #ifdef USE_PSEUDO_RAND
+    // real-world entropy makes this a true random, not pseudo
+    pseudo_rand_seed += measurement;
+    #endif
+
     adc_step = (adc_step + 1) & (ADC_STEPS-1);
 
     #ifdef USE_LVP

@@ -161,6 +161,7 @@ TODO:
   * refactor to make config modes smaller
   * move all config menus to four clicks
   * candle mode timer, with three clicks to add 30 minutes
-  - diagram updates for 3-click special actions
+  * diagram updates for 3-click special actions
   - candle mode: smoother adjustments?
   - make sunset mode timer and brightness configurable?
+  - make beacon mode actually sleep between pulses

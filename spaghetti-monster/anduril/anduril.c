@@ -253,11 +253,6 @@ volatile uint8_t strobe_type = 4;
 // bike mode config options
 volatile uint8_t bike_flasher_brightness = MAX_1x7135;
 
-#ifdef USE_PSEUDO_RAND
-volatile uint8_t pseudo_rand_seed = 0;
-uint8_t pseudo_rand();
-#endif
-
 #ifdef USE_CANDLE_MODE
 uint8_t triangle_wave(uint8_t phase);
 #endif
@@ -821,16 +816,16 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
             set_level(brightness);
 
             // wave1: slow random LFO
-            if ((arg & 1) == 0) candle_wave1 += pseudo_rand()&1;
+            if ((arg & 1) == 0) candle_wave1 += pseudo_rand() & 1;
             // wave2: medium-speed erratic LFO
             candle_wave2 += candle_wave2_speed;
             // wave3: erratic fast wave
-            candle_wave3 += pseudo_rand()%37;
+            candle_wave3 += pseudo_rand() % 37;
             // S&H on wave2 frequency to make it more erratic
-            if ((pseudo_rand()>>2) == 0)
-                candle_wave2_speed = pseudo_rand()%13;
+            if ((pseudo_rand() & 0b00111111) == 0)
+                candle_wave2_speed = pseudo_rand() % 13;
             // downward sawtooth on wave2 depth to simulate stabilizing
-            if ((candle_wave2_depth > 0) && ((pseudo_rand()>>2) == 0))
+            if ((candle_wave2_depth > 0) && ((pseudo_rand() & 0b00111111) == 0))
                 candle_wave2_depth --;
             // random sawtooth retrigger
             if ((pseudo_rand()) == 0) {
@@ -839,9 +834,9 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
                 candle_wave2 = 0;
             }
             // downward sawtooth on wave3 depth to simulate stabilizing
-            if ((candle_wave3_depth > 2) && ((pseudo_rand()>>3) == 0))
+            if ((candle_wave3_depth > 2) && ((pseudo_rand() & 0b00011111) == 0))
                 candle_wave3_depth --;
-            if ((pseudo_rand()>>1) == 0)
+            if ((pseudo_rand() & 0b01111111) == 0)
                 candle_wave3_depth = 5;
         }
         #endif
@@ -1475,17 +1470,6 @@ void indicator_blink(uint8_t arg) {
 #endif
 
 
-#ifdef USE_PSEUDO_RAND
-uint8_t pseudo_rand() {
-    static uint16_t offset = 1024;
-    // loop from 1024 to 4095
-    offset = ((offset + 1) & 0x0fff) | 0x0400;
-    pseudo_rand_seed += 0b01010101;  // 85
-    return pgm_read_byte(offset) + pseudo_rand_seed;
-}
-#endif
-
-
 #ifdef USE_CANDLE_MODE
 uint8_t triangle_wave(uint8_t phase) {
     uint8_t result = phase << 1;
@@ -1688,7 +1672,7 @@ void loop() {
             //rand_time = 1 << (pseudo_rand() % 7);
             rand_time = pseudo_rand() & 63;
             brightness = 1 << (pseudo_rand() % 7);  // 1, 2, 4, 8, 16, 32, 64
-            brightness += 1 << (pseudo_rand()&0x03);  // 2 to 80 now
+            brightness += 1 << (pseudo_rand() & 0x03);  // 2 to 80 now
             brightness += pseudo_rand() % brightness;  // 2 to 159 now (w/ low bias)
             if (brightness > MAX_LEVEL) brightness = MAX_LEVEL;
             set_level(brightness);
@@ -1717,8 +1701,8 @@ void loop() {
             // turn the emitter off,
             // for a random amount of time between 1ms and 8192ms
             // (with a low bias)
-            rand_time = 1<<(pseudo_rand()%13);
-            rand_time += pseudo_rand()%rand_time;
+            rand_time = 1 << (pseudo_rand() % 13);
+            rand_time += pseudo_rand() % rand_time;
             set_level(0);
             nice_delay_ms(rand_time);
 
