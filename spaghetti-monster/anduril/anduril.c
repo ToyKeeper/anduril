@@ -100,6 +100,9 @@
 #elif defined(FSM_EMISAR_D4_DRIVER)
 #include "cfg-emisar-d4.h"
 
+#elif defined(FSM_EMISAR_D4S_DRIVER)
+#include "cfg-emisar-d4s.h"
+
 #elif defined(FSM_FW3A_DRIVER)
 #include "cfg-fw3a.h"
 
@@ -230,11 +233,11 @@ uint8_t ramp_discrete_step_size;  // don't set this
 // bits 2-3 control lockout mode
 // bits 0-1 control "off" mode
 // modes are: 0=off, 1=low, 2=high, 3=blinking (if TICK_DURING_STANDBY enabled)
-#ifdef FSM_EMISAR_D4S_DRIVER
-uint8_t indicator_led_mode = (3<<2) + 1;
-#else
+#ifdef USE_INDICATOR_LED_WHILE_RAMPING
 //uint8_t indicator_led_mode = (1<<2) + 2;
 uint8_t indicator_led_mode = (2<<2) + 1;
+#else
+uint8_t indicator_led_mode = (3<<2) + 1;
 #endif
 #endif
 
