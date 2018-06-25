@@ -26,7 +26,8 @@
 //#define FSM_FW3A_DRIVER
 //#define FSM_BLF_GT_DRIVER
 
-#define USE_LVP
+#define USE_LVP  // FIXME: won't build when this option is turned off
+
 #define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 50
 #define MIN_THERM_STEPDOWN MAX_1x7135  // lowest value it'll step down to
@@ -35,19 +36,35 @@
 #else
 #define THERM_DOUBLE_SPEED_LEVEL (RAMP_LENGTH*4/5)  // throttle back faster when high
 #endif
-#define USE_SET_LEVEL_GRADUALLY
+#ifdef USE_THERMAL_REGULATION
+#define USE_SET_LEVEL_GRADUALLY  // isn't used except for thermal adjustments
+#endif
+
+// short blips while ramping
 #define BLINK_AT_CHANNEL_BOUNDARIES
 //#define BLINK_AT_RAMP_FLOOR
 #define BLINK_AT_RAMP_CEILING
-//#define BLINK_AT_STEPS
+//#define BLINK_AT_STEPS  // whenever a discrete ramp mode is passed in smooth mode
+
+// ramp down via regular button hold if a ramp-up ended <1s ago
+// ("hold, release, hold" ramps down instead of up)
+#define USE_REVERSING
+
+// battery readout style (pick one)
 #define BATTCHECK_VpT
+//#define BATTCHECK_8bars  // FIXME: breaks build
+//#define BATTCHECK_4bars  // FIXME: breaks build
+
+// enable/disable various modes
 #define USE_LIGHTNING_MODE
 #define USE_CANDLE_MODE
+#define USE_MUGGLE_MODE
+
 #define GOODNIGHT_TIME  60  // minutes (approximately)
 #define GOODNIGHT_LEVEL 24  // ~11 lm
-#define USE_REVERSING
+
+// dual-switch support (second switch is a tail clicky)
 //#define START_AT_MEMORIZED_LEVEL
-#define USE_MUGGLE_MODE
 
 /********* Configure SpaghettiMonster *********/
 #define USE_DELAY_ZERO
@@ -62,45 +79,29 @@
 #else
 #define MAX_CLICKS 5
 #endif
-#define USE_IDLE_MODE
+#define USE_IDLE_MODE  // reduce power use while awake and no tasks are pending
 #define USE_DYNAMIC_UNDERCLOCKING  // cut clock speed at very low modes for better efficiency
 
-// specific settings for known driver types
-#ifdef FSM_BLF_Q8_DRIVER
-#define USE_INDICATOR_LED
-#define USE_INDICATOR_LED_WHILE_RAMPING
-#define TICK_DURING_STANDBY
-#define VOLTAGE_FUDGE_FACTOR 7  // add 0.35V
+// full FET strobe can be a bit much...  use max regulated level instead,
+// if there's a bright enough regulated level
+#ifdef MAX_Nx7135
+#define STROBE_BRIGHTNESS MAX_Nx7135
+#else
+#define STROBE_BRIGHTNESS MAX_LEVEL
+#endif
 
-#elif defined(FSM_EMISAR_D4S_DRIVER)
-#define USE_INDICATOR_LED
-#define TICK_DURING_STANDBY
-#define VOLTAGE_FUDGE_FACTOR 5  // add 0.25V
-#define RAMP_SMOOTH_CEIL (MAX_LEVEL*4/5)
-#undef MIN_THERM_STEPDOWN  // this should be lower, because 3x7135 instead of 1x7135
-#define MIN_THERM_STEPDOWN 60  // lowest value it'll step down to
-#undef THERM_DOUBLE_SPEED_LEVEL  // this should be lower too, because this light is a hot rod
-#define THERM_DOUBLE_SPEED_LEVEL (RAMP_LENGTH*2/3)  // throttle back faster when high
+// specific settings for known driver types
+#if defined(FSM_BLF_GT_DRIVER)
+#include "cfg-blf-gt.h"
+
+#elif FSM_BLF_Q8_DRIVER
+#include "cfg-blf-q8.h"
 
 #elif defined(FSM_EMISAR_D4_DRIVER)
-#define VOLTAGE_FUDGE_FACTOR 5  // add 0.25V
+#include "cfg-emisar-d4.h"
 
 #elif defined(FSM_FW3A_DRIVER)
-#define VOLTAGE_FUDGE_FACTOR 5  // add 0.25V
-
-#elif defined(FSM_BLF_GT_DRIVER)
-#define USE_INDICATOR_LED
-#define USE_INDICATOR_LED_WHILE_RAMPING
-#define TICK_DURING_STANDBY
-#undef BLINK_AT_CHANNEL_BOUNDARIES
-#undef BLINK_AT_RAMP_CEILING
-#undef BLINK_AT_RAMP_FLOOR
-//#undef USE_SET_LEVEL_GRADUALLY
-#define RAMP_SMOOTH_FLOOR 1
-#define RAMP_SMOOTH_CEIL POWER_80PX
-#define RAMP_DISCRETE_FLOOR 1
-#define RAMP_DISCRETE_CEIL POWER_80PX
-#define RAMP_DISCRETE_STEPS 7
+#include "cfg-fw3a.h"
 
 #endif
 
@@ -136,14 +137,6 @@
 #define ADD_CANDLE_MODE 0
 #endif
 #define NUM_STROBES (NUM_STROBES_BASE+ADD_LIGHTNING_STROBE+ADD_CANDLE_MODE)
-
-// full FET strobe can be a bit much...  use max regulated level instead,
-// if there's a bright enough regulated level
-#ifdef MAX_Nx7135
-#define STROBE_BRIGHTNESS MAX_Nx7135
-#else
-#define STROBE_BRIGHTNESS MAX_LEVEL
-#endif
 
 #include "spaghetti-monster.h"
 
@@ -236,13 +229,12 @@ uint8_t ramp_discrete_step_size;  // don't set this
 #ifdef USE_INDICATOR_LED
 // bits 2-3 control lockout mode
 // bits 0-1 control "off" mode
-// modes are: 0=off, 1=low, 2=high
-// (TODO: 3=blinking)
+// modes are: 0=off, 1=low, 2=high, 3=blinking (if TICK_DURING_STANDBY enabled)
 #ifdef FSM_EMISAR_D4S_DRIVER
 uint8_t indicator_led_mode = (3<<2) + 1;
 #else
-uint8_t indicator_led_mode = (1<<2) + 2;
-//uint8_t indicator_led_mode = (2<<2) + 1;
+//uint8_t indicator_led_mode = (1<<2) + 2;
+uint8_t indicator_led_mode = (2<<2) + 1;
 #endif
 #endif
 
@@ -686,6 +678,9 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
     // (maybe I should just make it nonvolatile?)
     uint8_t st = strobe_type;
     #ifdef USE_CANDLE_MODE
+    // FIXME: make candle variance magnitude a compile-time option,
+    //        since 20 is sometimes too much or too little,
+    //        depending on the driver type and ramp shape
     //#define MAX_CANDLE_LEVEL (RAMP_SIZE-8-6-4)
     #define MAX_CANDLE_LEVEL (RAMP_SIZE/2)
     static uint8_t candle_wave1 = 0;
@@ -969,6 +964,8 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
     // momentary(ish) moon mode during lockout
     // not all presses will be counted;
     // it depends on what is in the master event_sequences table
+    // FIXME: maybe do this only if arg == 0?
+    //        (so it'll only get turned on once, instead of every frame)
     uint8_t last = 0;
     for(uint8_t i=0; pgm_read_byte(event + i) && (i<EV_MAX_LEN); i++)
         last = pgm_read_byte(event + i);
@@ -1032,6 +1029,12 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
     }
     // click, click, hold: rotate through indicator LED modes (off mode)
     else if (event == EV_click3_hold) {
+        #ifndef USE_INDICATOR_LED_WHILE_RAMPING
+        // if main LED obscures aux LEDs, turn it off
+        // FIXME: might not work, since it was turned on just a few clock
+        //        cycles ago at beginning of this function
+        set_level(0);
+        #endif
         #ifdef TICK_DURING_STANDBY
         uint8_t mode = (arg >> 5) & 3;
         #else
