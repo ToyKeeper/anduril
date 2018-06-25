@@ -61,276 +61,38 @@
 #include <avr/interrupt.h>
 
 /******************** I/O pin and register layout ************************/
-#ifdef FET_7135_LAYOUT
-#define DRIVER_TYPE_DEFINED
-/*
- *           ----
- *   Reset -|1  8|- VCC
- *     OTC -|2  7|- Voltage ADC
- *  Star 3 -|3  6|- PWM (FET)
- *     GND -|4  5|- PWM (1x7135)
- *           ----
- */
+#if 0  // placeholder
 
-#define STAR2_PIN   PB0     // If this pin isn't used for ALT_PWM
-#define STAR3_PIN   PB4     // pin 3
+#elif defined(NANJG_LAYOUT)
+#include "hwdef-nanjg.h"
 
-#define CAP_PIN     PB3     // pin 2, OTC
-#define CAP_CHANNEL 0x03    // MUX 03 corresponds with PB3 (Star 4)
-#define CAP_DIDR    ADC3D   // Digital input disable bit corresponding with PB3
+#elif defined(FET_7135_LAYOUT)
+#include "hwdef-FET_7135.h"
 
-#define PWM_PIN     PB1     // pin 6, FET PWM
-#define PWM_LVL     OCR0B   // OCR0B is the output compare register for PB1
-#define ALT_PWM_PIN PB0     // pin 5, 1x7135 PWM
-#define ALT_PWM_LVL OCR0A   // OCR0A is the output compare register for PB0
+#elif defined(TRIPLEDOWN_LAYOUT)
+#include "hwdef-Tripledown.h"
 
-#define VOLTAGE_PIN PB2     // pin 7, voltage ADC
-#define ADC_CHANNEL 0x01    // MUX 01 corresponds with PB2
-#define ADC_DIDR    ADC1D   // Digital input disable bit corresponding with PB2
-#define ADC_PRSCL   0x06    // clk/64
+#elif defined(FERRERO_ROCHER_LAYOUT)
+#include "hwdef-Ferrero_Rocher.h"
 
-//#define TEMP_DIDR   ADC4D
-#define TEMP_CHANNEL 0b00001111
+#elif defined(FSM_BLF_GT_DRIVER)
+#include "hwdef-BLF_GT.h"
 
-#define FAST 0xA3           // fast PWM both channels
-#define PHASE 0xA1          // phase-correct PWM both channels
+#elif defined(FSM_BLF_Q8_DRIVER)
+#include "hwdef-BLF_Q8.h"
 
-#endif  // FET_7135_LAYOUT
+#elif defined(FSM_EMISAR_D4_DRIVER)
+#include "hwdef-Emisar_D4.h"
 
-#ifdef TRIPLEDOWN_LAYOUT
-#define DRIVER_TYPE_DEFINED
-/*
- *             ----
- *     Reset -|1  8|- VCC
- *       OTC -|2  7|- Voltage ADC
- * PWM (FET) -|3  6|- PWM (6x7135)
- *       GND -|4  5|- PWM (1x7135)
- *             ----
- */
+#elif defined(FSM_FW3A_DRIVER)
+#include "hwdef-FW3A.h"
 
-#define STAR2_PIN   PB0     // If this pin isn't used for ALT_PWM
+#elif defined(FSM_TKSABER_DRIVER)
+#include "hwdef-TK_Saber.h"
 
-#define CAP_PIN     PB3     // pin 2, OTC
-#define CAP_CHANNEL 0x03    // MUX 03 corresponds with PB3 (Star 4)
-#define CAP_DIDR    ADC3D   // Digital input disable bit corresponding with PB3
-
-#define PWM_PIN     PB1     // pin 6, 6x7135 PWM
-#define PWM_LVL     OCR0B   // OCR0B is the output compare register for PB1
-#define ALT_PWM_PIN PB0     // pin 5, 1x7135 PWM
-#define ALT_PWM_LVL OCR0A   // OCR0A is the output compare register for PB0
-#define FET_PWM_PIN PB4     // pin 3
-#define FET_PWM_LVL OCR1B   // output compare register for PB4
-
-#define VOLTAGE_PIN PB2     // pin 7, voltage ADC
-#define ADC_CHANNEL 0x01    // MUX 01 corresponds with PB2
-#define ADC_DIDR    ADC1D   // Digital input disable bit corresponding with PB2
-#define ADC_PRSCL   0x06    // clk/64
-
-//#define TEMP_DIDR   ADC4D
-#define TEMP_CHANNEL 0b00001111
-
-#define FAST 0xA3           // fast PWM both channels
-#define PHASE 0xA1          // phase-correct PWM both channels
-
-#endif  // TRIPLEDOWN_LAYOUT
-
-#ifdef FERRERO_ROCHER_LAYOUT
-#define DRIVER_TYPE_DEFINED
-/*
- *            ----
- *    Reset -|1  8|- VCC
- * E-switch -|2  7|- Voltage ADC
- *  Red LED -|3  6|- PWM
- *      GND -|4  5|- Green LED
- *            ----
- */
-// TODO: fill in this section, update Ferrero_Rocher code to use it.
-#define FAST 0x23           // fast PWM channel 1 only
-#define PHASE 0x21          // phase-correct PWM channel 1 only
-#endif  // FERRERO_ROCHER_LAYOUT
-
-#ifdef NANJG_LAYOUT
-#define DRIVER_TYPE_DEFINED
-#define STAR2_PIN   PB0
-#define STAR3_PIN   PB4
-#define STAR4_PIN   PB3
-#define PWM_PIN     PB1
-#define VOLTAGE_PIN PB2
-#define ADC_CHANNEL 0x01    // MUX 01 corresponds with PB2
-#define ADC_DIDR    ADC1D   // Digital input disable bit corresponding with PB2
-#define ADC_PRSCL   0x06    // clk/64
-
-#define PWM_LVL     OCR0B   // OCR0B is the output compare register for PB1
-
-#define FAST 0x23           // fast PWM channel 1 only
-#define PHASE 0x21          // phase-correct PWM channel 1 only
-
-#endif  // NANJG_LAYOUT
-
-
-// Q8 driver is the same as a D4, basically
-#ifdef FSM_BLF_Q8_DRIVER
-#define FSM_EMISAR_D4_DRIVER
-#endif
-
-
-#ifdef FSM_EMISAR_D4_DRIVER
-#define DRIVER_TYPE_DEFINED
-/*
- *           ----
- *   Reset -|1  8|- VCC
- * eswitch -|2  7|-
- * AUX LED -|3  6|- PWM (FET)
- *     GND -|4  5|- PWM (1x7135)
- *           ----
- */
-
-#define PWM_CHANNELS 2
-
-#define AUXLED_PIN   PB4    // pin 3
-
-#define SWITCH_PIN   PB3    // pin 2
-#define SWITCH_PCINT PCINT3 // pin 2 pin change interrupt
-
-#define PWM1_PIN PB0        // pin 5, 1x7135 PWM
-#define PWM1_LVL OCR0A      // OCR0A is the output compare register for PB0
-#define PWM2_PIN PB1        // pin 6, FET PWM
-#define PWM2_LVL OCR0B      // OCR0B is the output compare register for PB1
-
-// (FIXME: remove?  not used?)
-#define VOLTAGE_PIN PB2     // pin 7, voltage ADC
-#define ADC_CHANNEL 0x01    // MUX 01 corresponds with PB2
-#define ADC_DIDR    ADC1D   // Digital input disable bit corresponding with PB2
-#define ADC_PRSCL   0x06    // clk/64
-
-//#define TEMP_DIDR   ADC4D
-#define TEMP_CHANNEL 0b00001111
-
-#define FAST 0xA3           // fast PWM both channels
-#define PHASE 0xA1          // phase-correct PWM both channels
-
-#endif  // ifdef FSM_EMISAR_D4_DRIVER
-
-
-#ifdef FSM_FW3A_DRIVER
-#define DRIVER_TYPE_DEFINED
-/*
- *           ----
- *   Reset -|1  8|- VCC
- * eswitch -|2  7|- optic nerve
- *     FET -|3  6|- 7x7135
- *     GND -|4  5|- 1x7135
- *           ----
- */
-
-#define PWM_CHANNELS 3
-
-#define SWITCH_PIN   PB3    // pin 2
-#define SWITCH_PCINT PCINT3 // pin 2 pin change interrupt
-
-#define PWM1_PIN PB0        // pin 5, 1x7135 PWM
-#define PWM1_LVL OCR0A      // OCR0A is the output compare register for PB0
-#define PWM2_PIN PB1        // pin 6, FET PWM
-#define PWM2_LVL OCR0B      // OCR0B is the output compare register for PB1
-#define PWM3_PIN PB4        // pin 3
-#define PWM3_LVL OCR1B
-
-#define VISION_PIN PB2      // pin 7, optic nerve
-#define ADC_CHANNEL 0x01    // MUX 01 corresponds with PB2
-#define ADC_DIDR    ADC1D   // Digital input disable bit corresponding with PB2
-#define ADC_PRSCL   0x06    // clk/64
-
-//#define TEMP_DIDR   ADC4D
-#define TEMP_CHANNEL 0b00001111
-
-#define FAST 0xA3           // fast PWM both channels
-#define PHASE 0xA1          // phase-correct PWM both channels
-
-#endif  // ifdef FSM_FW3A_DRIVER
-
-
-#ifdef FSM_BLF_GT_DRIVER
-#define DRIVER_TYPE_DEFINED
-/*
- *           ----
- *   Reset -|1  8|- VCC (unused)
- * eswitch -|2  7|- Voltage divider
- * AUX LED -|3  6|- Current control (buck level)
- *     GND -|4  5|- PWM (buck output on/off)
- *           ----
- */
-
-#define PWM_CHANNELS 2
-
-#define AUXLED_PIN   PB4    // pin 3
-
-#define SWITCH_PIN   PB3    // pin 2
-#define SWITCH_PCINT PCINT3 // pin 2 pin change interrupt
-
-#define PWM1_PIN PB0        // pin 5, 1x7135 PWM
-#define PWM1_LVL OCR0A      // OCR0A is the output compare register for PB0
-#define PWM2_PIN PB1        // pin 6, FET PWM
-#define PWM2_LVL OCR0B      // OCR0B is the output compare register for PB1
-
-#define USE_VOLTAGE_DIVIDER // use a voltage divider on pin 7, not VCC
-#define VOLTAGE_PIN PB2     // pin 7, voltage ADC
-#define VOLTAGE_CHANNEL 0x01 // MUX 01 corresponds with PB2
-// 1.1V reference, left-adjust, ADC1/PB2
-//#define ADMUX_VOLTAGE_DIVIDER ((1 << V_REF) | (1 << ADLAR) | VOLTAGE_CHANNEL)
-// 1.1V reference, no left-adjust, ADC1/PB2
-#define ADMUX_VOLTAGE_DIVIDER ((1 << V_REF) | VOLTAGE_CHANNEL)
-#define VOLTAGE_ADC_DIDR    ADC1D   // Digital input disable bit corresponding with PB2
-#define ADC_PRSCL   0x06    // clk/64
-
-// Raw ADC readings at 4.4V and 2.2V (in-between, we assume values form a straight line)
-#define ADC_44 184
-#define ADC_22 92
-
-#define TEMP_CHANNEL 0b00001111
-
-#define FAST 0xA3           // fast PWM both channels
-#define PHASE 0xA1          // phase-correct PWM both channels
-
-#endif  // ifdef FSM_BLF_GT_DRIVER
-
-
-#ifdef FSM_TKSABER_DRIVER
-#define DRIVER_TYPE_DEFINED
-/*
- *             ----
- *     Reset -|1  8|- VCC
- * PWM 4 (A) -|2  7|- e-switch
- * PWM 3 (G) -|3  6|- PWM 2 (B)
- *       GND -|4  5|- PWM 1 (R)
- *             ----
- */
-
-#define PWM_CHANNELS 4
-#define PWM1_PIN PB0        // pin 5
-#define PWM1_LVL OCR0A
-#define PWM2_PIN PB1        // pin 6
-#define PWM2_LVL OCR0B
-#define PWM3_PIN PB4        // pin 3
-#define PWM3_LVL OCR1B
-#define PWM4_PIN PB3        // pin 2
-#define PWM4_LVL OCR1A
-
-#define SWITCH_PIN   PB2    // pin 7
-#define SWITCH_PCINT PCINT2 // pin 7 pin change interrupt
-
-#define ADC_PRSCL   0x06    // clk/64 (no need to be super fast)
-
-//#define TEMP_DIDR   ADC4D
-#define TEMP_CHANNEL 0b00001111
-
-#define FAST        0xA3    // fast PWM both channels
-#define PHASE       0xA1    // phase-correct PWM both channels
-
-#endif  // TKSABER_DRIVER
-
-
-#ifndef DRIVER_TYPE_DEFINED
+#else
 #error Hey, you need to define an I/O pin layout.
-#endif
+
+#endif  // no more recognized driver types
 
 #endif  // TK_ATTINY_H

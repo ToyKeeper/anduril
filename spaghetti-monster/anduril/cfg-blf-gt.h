@@ -1,12 +1,11 @@
+// BLF GT config options for Anduril
+
 // the button lights up
 #define USE_INDICATOR_LED
 // the button is visible while main LEDs are on
 #define USE_INDICATOR_LED_WHILE_RAMPING
 // enable blinking indicator LED while off
 #define TICK_DURING_STANDBY
-
-// not relevant for this driver type
-//#define VOLTAGE_FUDGE_FACTOR 7  // add 0.35V
 
 // don't blink during ramp, it's irrelevant and annoying on this light
 #undef BLINK_AT_CHANNEL_BOUNDARIES
