@@ -21,6 +21,7 @@
 /********* User-configurable options *********/
 // Physical driver type (uncomment one of the following or define it at the gcc command line)
 //#define FSM_EMISAR_D4_DRIVER
+//#define FSM_EMISAR_D4S_DRIVER
 //#define FSM_BLF_Q8_DRIVER
 //#define FSM_FW3A_DRIVER
 //#define FSM_BLF_GT_DRIVER
@@ -70,6 +71,16 @@
 #define USE_INDICATOR_LED_WHILE_RAMPING
 #define TICK_DURING_STANDBY
 #define VOLTAGE_FUDGE_FACTOR 7  // add 0.35V
+
+#elif defined(FSM_EMISAR_D4S_DRIVER)
+#define USE_INDICATOR_LED
+#define TICK_DURING_STANDBY
+#define VOLTAGE_FUDGE_FACTOR 5  // add 0.25V
+#define RAMP_SMOOTH_CEIL (MAX_LEVEL*4/5)
+#undef MIN_THERM_STEPDOWN  // this should be lower, because 3x7135 instead of 1x7135
+#define MIN_THERM_STEPDOWN 60  // lowest value it'll step down to
+#undef THERM_DOUBLE_SPEED_LEVEL  // this should be lower too, because this light is a hot rod
+#define THERM_DOUBLE_SPEED_LEVEL (RAMP_LENGTH*2/3)  // throttle back faster when high
 
 #elif defined(FSM_EMISAR_D4_DRIVER)
 #define VOLTAGE_FUDGE_FACTOR 5  // add 0.25V
@@ -227,8 +238,12 @@ uint8_t ramp_discrete_step_size;  // don't set this
 // bits 0-1 control "off" mode
 // modes are: 0=off, 1=low, 2=high
 // (TODO: 3=blinking)
-//uint8_t indicator_led_mode = (1<<2) + 2;
-uint8_t indicator_led_mode = (2<<2) + 1;
+#ifdef FSM_EMISAR_D4S_DRIVER
+uint8_t indicator_led_mode = (3<<2) + 1;
+#else
+uint8_t indicator_led_mode = (1<<2) + 2;
+//uint8_t indicator_led_mode = (2<<2) + 1;
+#endif
 #endif
 
 // calculate the nearest ramp level which would be valid at the moment

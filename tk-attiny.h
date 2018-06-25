@@ -174,6 +174,12 @@
 #endif
 
 
+// D4S driver is the same as a D4, basically
+#ifdef FSM_EMISAR_D4S_DRIVER
+#define FSM_EMISAR_D4_DRIVER
+#endif
+
+
 #ifdef FSM_EMISAR_D4_DRIVER
 #define DRIVER_TYPE_DEFINED
 /*
