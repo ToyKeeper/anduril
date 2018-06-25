@@ -19,8 +19,8 @@
  */
 
 /********* User-configurable options *********/
-// Physical driver type
-#define FSM_EMISAR_D4_DRIVER
+// Physical driver type (uncomment one of the following or define it at the gcc command line)
+//#define FSM_EMISAR_D4_DRIVER
 //#define FSM_BLF_Q8_DRIVER
 //#define FSM_FW3A_DRIVER
 //#define FSM_BLF_GT_DRIVER
@@ -1644,7 +1644,7 @@ void loop() {
                 set_level(bike_flasher_brightness);
                 if (! nice_delay_ms(65)) return;
             }
-            if (! nice_delay_ms(720)) return;
+            nice_delay_ms(720);  // no return check necessary on final delay
         }
         // party / tactical strobe
         else if (st < 3) {
@@ -1659,7 +1659,7 @@ void loop() {
                 nice_delay_ms(del >> 1);
             }
             set_level(0);
-            nice_delay_ms(del);
+            nice_delay_ms(del);  // no return check necessary on final delay
         }
         #ifdef USE_LIGHTNING_MODE
         // lightning storm
@@ -1704,7 +1704,7 @@ void loop() {
             rand_time = 1 << (pseudo_rand() % 13);
             rand_time += pseudo_rand() % rand_time;
             set_level(0);
-            nice_delay_ms(rand_time);
+            nice_delay_ms(rand_time);  // no return check necessary on final delay
 
         }
         #endif
