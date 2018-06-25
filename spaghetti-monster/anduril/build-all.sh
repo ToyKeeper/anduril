@@ -4,6 +4,7 @@ for TARGET in \
   BLF_GT \
   BLF_Q8 \
   EMISAR_D4 \
+  EMISAR_D4S \
   FW3A \
   ; do
   echo "===== $TARGET ====="
