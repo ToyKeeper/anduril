@@ -5,6 +5,8 @@ from __future__ import print_function
 import math
 
 interactive = False
+# supported shapes: ninth, fifth, cube, square, log_e, log_2
+ramp_shape = 'cube'
 
 
 def main(args):
@@ -160,20 +162,21 @@ def get_value(text, default, args):
     return result
 
 
+shapes = dict(
+        ninth  = (lambda x: x**9,      lambda x: math.pow(x, 1/9.0)),
+        fifth  = (lambda x: x**5,      lambda x: math.pow(x, 1/5.0)),
+        cube   = (lambda x: x**3,      lambda x: math.pow(x, 1/3.0)),
+        square = (lambda x: x**2,      lambda x: math.pow(x, 1/2.0)),
+        log_e  = (lambda x: math.e**x, lambda x: math.log(x, math.e)),
+        log_2  = (lambda x: 2.0**x,    lambda x: math.log(x, 2.0)),
+        )
+
 def power(x):
-    #return x**5
-    return x**3
-    #return x**2
-    #return math.e**x
-    #return 2.0**x
+    return shapes[ramp_shape][0](x)
 
 
 def invpower(x):
-    #return math.pow(x, 1/5.0)
-    return math.pow(x, 1/3.0)
-    #return math.pow(x, 1/2.0)
-    #return math.log(x, math.e)
-    #return math.log(x, 2.0)
+    return shapes[ramp_shape][1](x)
 
 
 def input_text():
