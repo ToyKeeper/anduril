@@ -54,16 +54,7 @@
 //#define BATTCHECK_8bars  // FIXME: breaks build
 //#define BATTCHECK_4bars  // FIXME: breaks build
 
-/********* Configure SpaghettiMonster *********/
-#define USE_DELAY_ZERO
-#define USE_RAMPING
-#define RAMP_LENGTH 150
-#define USE_BATTCHECK
-#define MAX_CLICKS 14
-#define USE_IDLE_MODE  // reduce power use while awake and no tasks are pending
-#define USE_DYNAMIC_UNDERCLOCKING  // cut clock speed at very low modes for better efficiency
-
-// specific settings for known driver types
+/***** specific settings for known driver types *****/
 #if defined(FSM_BLF_GT_DRIVER)
 #include "cfg-blf-gt.h"
 
@@ -81,16 +72,36 @@
 
 #endif
 
-// try to auto-detect how many eeprom bytes
-// FIXME: detect this better, and assign offsets better, for various configs
-#define USE_EEPROM
+/********* Configure SpaghettiMonster *********/
+#define USE_DELAY_ZERO
+#define USE_RAMPING
+#define RAMP_LENGTH 150
+#define USE_BATTCHECK
 #ifdef USE_INDICATOR_LED
-#define EEPROM_BYTES 15
-#elif defined(USE_THERMAL_REGULATION)
-#define EEPROM_BYTES 14
+#define MAX_CLICKS 14
 #else
-#define EEPROM_BYTES 12
+#define MAX_CLICKS 10
 #endif
+#define USE_IDLE_MODE  // reduce power use while awake and no tasks are pending
+#define USE_DYNAMIC_UNDERCLOCKING  // cut clock speed at very low modes for better efficiency
+
+// try to auto-detect how many eeprom bytes
+#define USE_EEPROM
+#define EEPROM_BYTES_BASE 7
+
+#ifdef USE_INDICATOR_LED
+#define EEPROM_INDICATOR_BYTES 1
+#else
+#define EEPROM_INDICATOR_BYTES 0
+#endif
+
+#ifdef USE_THERMAL_REGULATION
+#define EEPROM_THERMAL_BYTES 2
+#else
+#define EEPROM_THERMAL_BYTES 0
+#endif
+
+#define EEPROM_BYTES (EEPROM_BYTES_BASE+EEPROM_INDICATOR_BYTES+EEPROM_THERMAL_BYTES)
 
 
 #include "spaghetti-monster.h"
@@ -298,14 +309,16 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     }
     // 10 clicks: thermal config mode
     else if (event == EV_10clicks) {
-        set_state(thermal_config_state, 0);
+        push_state(thermal_config_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_INDICATOR_LED
     // 14 clicks: next aux LED mode
     else if (event == EV_14clicks) {
         set_state(auxled_next_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #endif
     return EVENT_NOT_HANDLED;
 }
 
@@ -1035,13 +1048,13 @@ void load_config() {
         ramp_discrete_floor = eeprom[3];
         ramp_discrete_ceil = eeprom[4];
         ramp_discrete_steps = eeprom[5];
-        beacon_seconds = eeprom[10];
+        beacon_seconds = eeprom[6];
         #ifdef USE_THERMAL_REGULATION
-        therm_ceil = eeprom[12];
-        therm_cal_offset = eeprom[13];
+        therm_ceil = eeprom[EEPROM_BYTES_BASE];
+        therm_cal_offset = eeprom[EEPROM_BYTES_BASE+1];
         #endif
         #ifdef USE_INDICATOR_LED
-        indicator_led_mode = eeprom[14];
+        indicator_led_mode = eeprom[EEPROM_BYTES_BASE+EEPROM_THERMAL_BYTES];
         #endif
     }
 }
@@ -1053,13 +1066,13 @@ void save_config() {
     eeprom[3] = ramp_discrete_floor;
     eeprom[4] = ramp_discrete_ceil;
     eeprom[5] = ramp_discrete_steps;
-    eeprom[10] = beacon_seconds;
+    eeprom[6] = beacon_seconds;
     #ifdef USE_THERMAL_REGULATION
-    eeprom[12] = therm_ceil;
-    eeprom[13] = therm_cal_offset;
+    eeprom[EEPROM_BYTES_BASE  ] = therm_ceil;
+    eeprom[EEPROM_BYTES_BASE+1] = therm_cal_offset;
     #endif
     #ifdef USE_INDICATOR_LED
-    eeprom[14] = indicator_led_mode;
+    eeprom[EEPROM_BYTES_BASE+EEPROM_THERMAL_BYTES] = indicator_led_mode;
     #endif
 
     save_eeprom();
