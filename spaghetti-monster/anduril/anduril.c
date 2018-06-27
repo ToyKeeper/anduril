@@ -33,7 +33,7 @@
 #ifdef MAX_Nx7135
 #define THERM_DOUBLE_SPEED_LEVEL MAX_Nx7135  // throttle back faster when high
 #else
-#define THERM_DOUBLE_SPEED_LEVEL (RAMP_LENGTH*4/5)  // throttle back faster when high
+#define THERM_DOUBLE_SPEED_LEVEL (RAMP_SIZE*4/5)  // throttle back faster when high
 #endif
 #ifdef USE_THERMAL_REGULATION
 #define USE_SET_LEVEL_GRADUALLY  // isn't used except for thermal adjustments
@@ -65,10 +65,26 @@
 // dual-switch support (second switch is a tail clicky)
 //#define START_AT_MEMORIZED_LEVEL
 
+/***** specific settings for known driver types *****/
+#if defined(FSM_BLF_GT_DRIVER)
+#include "cfg-blf-gt.h"
+
+#elif FSM_BLF_Q8_DRIVER
+#include "cfg-blf-q8.h"
+
+#elif defined(FSM_EMISAR_D4_DRIVER)
+#include "cfg-emisar-d4.h"
+
+#elif defined(FSM_FW3A_DRIVER)
+#include "cfg-fw3a.h"
+
+#endif
+
+
 /********* Configure SpaghettiMonster *********/
 #define USE_DELAY_ZERO
 #define USE_RAMPING
-#define RAMP_LENGTH 150
+#define RAMP_LENGTH 150  // default, if not overridden in a driver cfg file
 #define MAX_BIKING_LEVEL 120  // should be 127 or less
 #define USE_BATTCHECK
 #ifdef USE_MUGGLE_MODE
@@ -87,21 +103,6 @@
 #define STROBE_BRIGHTNESS MAX_Nx7135
 #else
 #define STROBE_BRIGHTNESS MAX_LEVEL
-#endif
-
-// specific settings for known driver types
-#if defined(FSM_BLF_GT_DRIVER)
-#include "cfg-blf-gt.h"
-
-#elif FSM_BLF_Q8_DRIVER
-#include "cfg-blf-q8.h"
-
-#elif defined(FSM_EMISAR_D4_DRIVER)
-#include "cfg-emisar-d4.h"
-
-#elif defined(FSM_FW3A_DRIVER)
-#include "cfg-fw3a.h"
-
 #endif
 
 // try to auto-detect how many eeprom bytes
