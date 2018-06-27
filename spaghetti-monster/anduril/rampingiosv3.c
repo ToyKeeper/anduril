@@ -710,39 +710,9 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
         save_config();
         return MISCHIEF_MANAGED;
     }
-    // click, click, hold: rotate through indicator LED modes (off mode)
-    else if (event == EV_click3_hold) {
-        #ifndef USE_INDICATOR_LED_WHILE_RAMPING
-        // if main LED obscures aux LEDs, turn it off
-        // FIXME: might not work, since it was turned on just a few clock
-        //        cycles ago at beginning of this function
-        set_level(0);
-        #endif
-        #ifdef TICK_DURING_STANDBY
-        uint8_t mode = (arg >> 5) & 3;
-        #else
-        uint8_t mode = (arg >> 5) % 3;
-        #endif
-        indicator_led_mode = (indicator_led_mode & 0b11111100) | mode;
-        #ifdef TICK_DURING_STANDBY
-        if (mode == 3)
-            indicator_led(mode & (arg&3));
-        else
-            indicator_led(mode);
-        #else
-        indicator_led(mode);
-        #endif
-        //save_config();
-        return MISCHIEF_MANAGED;
-    }
-    // click, click, hold, release: save indicator LED mode (off mode)
-    else if (event == EV_click3_hold_release) {
-        save_config();
-        return MISCHIEF_MANAGED;
-    }
     #endif
-    // 4 clicks: exit
-    else if (event == EV_4clicks) {
+    // 6 clicks: exit
+    else if (event == EV_6clicks) {
         blink_confirm(1);
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
