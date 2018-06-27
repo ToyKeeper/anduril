@@ -587,7 +587,9 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         #endif
         #ifdef USE_SET_LEVEL_GRADUALLY
         // make thermal adjustment speed scale with magnitude
-        if (arg & 1) return MISCHIEF_MANAGED;  // adjust slower
+        if ((arg & 1) && (actual_level < THERM_DOUBLE_SPEED_LEVEL)) {
+            return MISCHIEF_MANAGED;  // adjust slower when not a high mode
+        }
         // [int(62*4 / (x**0.8)) for x in (1,2,4,8,16,32,64,128)]
         //uint8_t intervals[] = {248, 142, 81, 46, 26, 15, 8, 5};
         // [int(62*4 / (x**0.9)) for x in (1,2,4,8,16,32,64,128)]
@@ -600,12 +602,10 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         if (target_level > actual_level) diff = target_level - actual_level;
         else {
             diff = actual_level - target_level;
-            // if we're on a really high mode, drop faster
-            if (actual_level >= THERM_DOUBLE_SPEED_LEVEL) {
-                diff <<= 1;
-            }
         }
         uint8_t magnitude = 0;
+        // if we're on a really high mode, drop faster
+        if (actual_level >= THERM_DOUBLE_SPEED_LEVEL) { magnitude ++; }
         while (diff) {
             magnitude ++;
             diff >>= 1;
@@ -1253,6 +1253,7 @@ uint8_t config_state_base(EventPtr event, uint16_t arg,
         else {
             // TODO: blink out some sort of success pattern
             savefunc();
+            save_config();
             //set_state(retstate, retval);
             pop_state();
         }
