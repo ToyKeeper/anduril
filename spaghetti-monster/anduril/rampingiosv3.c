@@ -33,7 +33,7 @@
 #ifdef MAX_Nx7135
 #define THERM_DOUBLE_SPEED_LEVEL MAX_Nx7135  // throttle back faster when high
 #else
-#define THERM_DOUBLE_SPEED_LEVEL (RAMP_LENGTH*4/5)  // throttle back faster when high
+#define THERM_DOUBLE_SPEED_LEVEL (RAMP_SIZE*4/5)  // throttle back faster when high
 #endif
 #ifdef USE_THERMAL_REGULATION
 #define USE_SET_LEVEL_GRADUALLY  // isn't used except for thermal adjustments
@@ -541,6 +541,8 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
             diff = actual_level - target_level;
         }
         uint8_t magnitude = 0;
+        // if we're on a really high mode, drop faster
+        if (actual_level >= THERM_DOUBLE_SPEED_LEVEL) { magnitude ++; }
         while (diff) {
             magnitude ++;
             diff >>= 1;
@@ -809,6 +811,7 @@ uint8_t config_state_base(EventPtr event, uint16_t arg,
         else {
             // TODO: blink out some sort of success pattern
             savefunc();
+            save_config();
             //set_state(retstate, retval);
             pop_state();
         }
