@@ -1,8 +1,7 @@
 /*
- * Anduril: Narsil-inspired UI for SpaghettiMonster.
- * (Anduril is Aragorn's sword, the blade Narsil reforged)
+ * RampingIOS V3: FSM-based version of RampingIOS V2 UI, with upgrades.
  *
- * Copyright (C) 2017 Selene ToyKeeper
+ * Copyright (C) 2018 Selene ToyKeeper
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +20,7 @@
 /********* User-configurable options *********/
 // Physical driver type (uncomment one of the following or define it at the gcc command line)
 //#define FSM_EMISAR_D4_DRIVER
-//#define FSM_EMISAR_D4S_DRIVER
+#define FSM_EMISAR_D4S_DRIVER
 //#define FSM_BLF_Q8_DRIVER
 //#define FSM_FW3A_DRIVER
 //#define FSM_BLF_GT_DRIVER
@@ -56,12 +55,15 @@
 //#define BATTCHECK_4bars  // FIXME: breaks build
 
 // enable/disable various modes
-#define USE_LIGHTNING_MODE
-#define USE_CANDLE_MODE
-#define USE_MUGGLE_MODE
+//#define USE_LIGHTNING_MODE
+//#define USE_CANDLE_MODE
+//#define USE_GOODNIGHT_MODE
+//#define USE_MUGGLE_MODE
 
+#ifdef USE_GOODNIGHT_MODE
 #define GOODNIGHT_TIME  60  // minutes (approximately)
 #define GOODNIGHT_LEVEL 24  // ~11 lm
+#endif
 
 // dual-switch support (second switch is a tail clicky)
 //#define START_AT_MEMORIZED_LEVEL
@@ -164,8 +166,10 @@ uint8_t battcheck_state(EventPtr event, uint16_t arg);
 uint8_t tempcheck_state(EventPtr event, uint16_t arg);
 uint8_t thermal_config_state(EventPtr event, uint16_t arg);
 #endif
+#ifdef USE_GOODNIGHT_MODE
 // 1-hour ramp down from low, then automatic off
 uint8_t goodnight_state(EventPtr event, uint16_t arg);
+#endif
 // beacon mode and its related config mode
 uint8_t beacon_state(EventPtr event, uint16_t arg);
 uint8_t beacon_config_state(EventPtr event, uint16_t arg);
@@ -867,9 +871,9 @@ uint8_t battcheck_state(EventPtr event, uint16_t arg) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
-    // 2 clicks: goodnight mode
+    // 2 clicks: tempcheck mode
     else if (event == EV_2clicks) {
-        set_state(goodnight_state, 0);
+        set_state(tempcheck_state, 0);
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
@@ -881,11 +885,6 @@ uint8_t tempcheck_state(EventPtr event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
-    }
-    // 2 clicks: battcheck mode
-    else if (event == EV_2clicks) {
-        set_state(battcheck_state, 0);
         return MISCHIEF_MANAGED;
     }
     // 4 clicks: thermal config mode
@@ -904,15 +903,6 @@ uint8_t beacon_state(EventPtr event, uint16_t arg) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
-    // 2 clicks: tempcheck mode
-    else if (event == EV_2clicks) {
-        #ifdef USE_THERMAL_REGULATION
-        set_state(tempcheck_state, 0);
-        #else
-        set_state(battcheck_state, 0);
-        #endif
-        return MISCHIEF_MANAGED;
-    }
     // 4 clicks: beacon config mode
     else if (event == EV_4clicks) {
         push_state(beacon_config_state, 0);
@@ -922,6 +912,7 @@ uint8_t beacon_state(EventPtr event, uint16_t arg) {
 }
 
 
+#ifdef USE_GOODNIGHT_MODE
 #define GOODNIGHT_TICKS_PER_STEPDOWN (GOODNIGHT_TIME*TICKS_PER_SECOND*60L/GOODNIGHT_LEVEL)
 uint8_t goodnight_state(EventPtr event, uint16_t arg) {
     static uint16_t ticks_since_stepdown = 0;
@@ -960,6 +951,7 @@ uint8_t goodnight_state(EventPtr event, uint16_t arg) {
     }
     return EVENT_NOT_HANDLED;
 }
+#endif
 
 
 uint8_t lockout_state(EventPtr event, uint16_t arg) {
@@ -1647,7 +1639,10 @@ void loop() {
     else if (  (state == steady_state)
             || (state == off_state)
             || (state == lockout_state)
-            || (state == goodnight_state)  ) {
+            #ifdef USE_GOODNIGHT_MODE
+            || (state == goodnight_state)
+            #endif
+            ) {
         // doze until next clock tick
         idle_mode();
     }
