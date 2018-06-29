@@ -69,7 +69,7 @@
 #if defined(FSM_BLF_GT_DRIVER)
 #include "cfg-blf-gt.h"
 
-#elif FSM_BLF_Q8_DRIVER
+#elif defined(FSM_BLF_Q8_DRIVER)
 #include "cfg-blf-q8.h"
 
 #elif defined(FSM_EMISAR_D4_DRIVER)
