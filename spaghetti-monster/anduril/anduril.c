@@ -1219,6 +1219,18 @@ uint8_t muggle_state(EventPtr event, uint16_t arg) {
         }
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_THERMAL_REGULATION
+    // overheating is handled specially in muggle mode
+    else if(event == EV_temperature_high) {
+        // don't even try...
+        // go immediately to the bottom, in case someone put the light on
+        // maximum while wrapped in dark-colored flammable insulation
+        // or something, because muggles are cool like that
+        // memorized_level = MUGGLE_FLOOR;  // override memory?  maybe not
+        set_level(MUGGLE_FLOOR);
+        return MISCHIEF_MANAGED;
+    }
+    #endif
     // low voltage is handled specially in muggle mode
     else if(event == EV_voltage_low) {
         uint8_t lvl = (actual_level >> 1) + (actual_level >> 2);
