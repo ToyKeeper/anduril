@@ -12,3 +12,7 @@
 #define MAX_1x7135 65
 #define HALFSPEED_LEVEL 14
 #define QUARTERSPEED_LEVEL 5
+
+// optional, makes initial turbo step-down faster so first peak isn't as hot
+//#define THERM_HARD_TURBO_DROP
+
