@@ -22,3 +22,6 @@
 #define HALFSPEED_LEVEL 14
 #define QUARTERSPEED_LEVEL 5
 
+// stop panicking at ~75% power or ~3000 lm, this light has high thermal mass
+#define THERM_FASTER_LEVEL (RAMP_SIZE*9/10)  // throttle back faster when high
+
