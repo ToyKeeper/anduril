@@ -1670,16 +1670,6 @@ void loop() {
     #endif
     if (0) {}
 
-    #ifdef USE_IDLE_MODE
-    else if (  (state == steady_state)
-            || (state == off_state)
-            || (state == lockout_state)
-            || (state == goodnight_state)  ) {
-        // doze until next clock tick
-        idle_mode();
-    }
-    #endif
-
     if (state == strobe_state) {
         uint8_t st = strobe_type;
         // bike flasher
@@ -1777,4 +1767,12 @@ void loop() {
         set_level(0);
         nice_delay_ms(((beacon_seconds) * 1000) - 500);
     }
+
+    #ifdef USE_IDLE_MODE
+    else {
+        // doze until next clock tick
+        idle_mode();
+    }
+    #endif
+
 }
