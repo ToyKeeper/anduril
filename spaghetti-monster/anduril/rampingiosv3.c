@@ -28,7 +28,7 @@
 #define USE_LVP  // FIXME: won't build when this option is turned off
 
 #define USE_THERMAL_REGULATION
-#define DEFAULT_THERM_CEIL 50
+#define DEFAULT_THERM_CEIL 45
 #define MIN_THERM_STEPDOWN MAX_1x7135  // lowest value it'll step down to
 #ifdef MAX_Nx7135
 #define THERM_DOUBLE_SPEED_LEVEL MAX_Nx7135  // throttle back faster when high
@@ -58,7 +58,7 @@
 #if defined(FSM_BLF_GT_DRIVER)
 #include "cfg-blf-gt.h"
 
-#elif FSM_BLF_Q8_DRIVER
+#elif defined(FSM_BLF_Q8_DRIVER)
 #include "cfg-blf-q8.h"
 
 #elif defined(FSM_EMISAR_D4_DRIVER)
@@ -536,9 +536,9 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         uint8_t diff;
         static uint8_t ticks_since_adjust = 0;
         ticks_since_adjust ++;
-        if (target_level > actual_level) diff = target_level - actual_level;
+        if (gradual_target > actual_level) diff = gradual_target - actual_level;
         else {
-            diff = actual_level - target_level;
+            diff = actual_level - gradual_target;
         }
         uint8_t magnitude = 0;
         // if we're on a really high mode, drop faster
@@ -1129,16 +1129,6 @@ void loop() {
     #endif
     if (0) {}
 
-    #ifdef USE_IDLE_MODE
-    else if (  (state == steady_state)
-            || (state == off_state)
-            || (state == lockout_state)
-            ) {
-        // doze until next clock tick
-        idle_mode();
-    }
-    #endif
-
     #ifdef USE_BATTCHECK
     else if (state == battcheck_state) {
         battcheck();
@@ -1158,4 +1148,12 @@ void loop() {
         set_level(0);
         nice_delay_ms(((beacon_seconds) * 1000) - 500);
     }
+
+    #ifdef USE_IDLE_MODE
+    else {
+        // doze until next clock tick
+        idle_mode();
+    }
+    #endif
+
 }

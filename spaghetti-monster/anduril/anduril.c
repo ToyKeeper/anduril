@@ -29,7 +29,7 @@
 #define USE_LVP  // FIXME: won't build when this option is turned off
 
 #define USE_THERMAL_REGULATION
-#define DEFAULT_THERM_CEIL 50
+#define DEFAULT_THERM_CEIL 45
 #define MIN_THERM_STEPDOWN MAX_1x7135  // lowest value it'll step down to
 #ifdef MAX_Nx7135
 #define THERM_DOUBLE_SPEED_LEVEL MAX_Nx7135  // throttle back faster when high
@@ -70,7 +70,7 @@
 #if defined(FSM_BLF_GT_DRIVER)
 #include "cfg-blf-gt.h"
 
-#elif FSM_BLF_Q8_DRIVER
+#elif defined(FSM_BLF_Q8_DRIVER)
 #include "cfg-blf-q8.h"
 
 #elif defined(FSM_EMISAR_D4_DRIVER)
@@ -595,7 +595,16 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         #endif
         #ifdef USE_SET_LEVEL_GRADUALLY
         // make thermal adjustment speed scale with magnitude
-        if (arg & 1) return MISCHIEF_MANAGED;  // adjust slower
+        if ((arg & 1) && (actual_level < THERM_DOUBLE_SPEED_LEVEL)) {
+            return MISCHIEF_MANAGED;  // adjust slower when not a high mode
+        }
+        #ifdef THERM_HARD_TURBO_DROP
+        else if ((! (actual_level < THERM_DOUBLE_SPEED_LEVEL))
+                && (actual_level > gradual_target)) {
+            gradual_tick();
+        }
+        else {
+        #endif
         // [int(62*4 / (x**0.8)) for x in (1,2,4,8,16,32,64,128)]
         //uint8_t intervals[] = {248, 142, 81, 46, 26, 15, 8, 5};
         // [int(62*4 / (x**0.9)) for x in (1,2,4,8,16,32,64,128)]
@@ -605,15 +614,15 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         uint8_t diff;
         static uint8_t ticks_since_adjust = 0;
         ticks_since_adjust ++;
-        if (target_level > actual_level) diff = target_level - actual_level;
+        if (gradual_target > actual_level) diff = gradual_target - actual_level;
         else {
-            diff = actual_level - target_level;
-            // if we're on a really high mode, drop faster
-            if (actual_level >= THERM_DOUBLE_SPEED_LEVEL) {
-                diff <<= 1;
-            }
+            diff = actual_level - gradual_target;
         }
         uint8_t magnitude = 0;
+        #ifndef THERM_HARD_TURBO_DROP
+        // if we're on a really high mode, drop faster
+        if (actual_level >= THERM_DOUBLE_SPEED_LEVEL) { magnitude ++; }
+        #endif
         while (diff) {
             magnitude ++;
             diff >>= 1;
@@ -625,6 +634,9 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
             ticks_since_adjust = 0;
         }
         //if (!(arg % ticks_per_adjust)) gradual_tick();
+        #ifdef THERM_HARD_TURBO_DROP
+        }
+        #endif
         #endif
         return MISCHIEF_MANAGED;
     }
@@ -637,6 +649,15 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         set_level(0);
         delay_4ms(2);
         set_level(foo);
+        #endif
+        #ifdef THERM_HARD_TURBO_DROP
+        if (actual_level > THERM_DOUBLE_SPEED_LEVEL) {
+            #ifdef USE_SET_LEVEL_GRADUALLY
+            set_level_gradually(THERM_DOUBLE_SPEED_LEVEL);
+            #else
+            set_level(THERM_DOUBLE_SPEED_LEVEL);
+            #endif
+        } else
         #endif
         if (actual_level > MIN_THERM_STEPDOWN) {
             int16_t stepdown = actual_level - arg;
@@ -1227,6 +1248,18 @@ uint8_t muggle_state(EventPtr event, uint16_t arg) {
         }
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_THERMAL_REGULATION
+    // overheating is handled specially in muggle mode
+    else if(event == EV_temperature_high) {
+        // don't even try...
+        // go immediately to the bottom, in case someone put the light on
+        // maximum while wrapped in dark-colored flammable insulation
+        // or something, because muggles are cool like that
+        // memorized_level = MUGGLE_FLOOR;  // override memory?  maybe not
+        set_level(MUGGLE_FLOOR);
+        return MISCHIEF_MANAGED;
+    }
+    #endif
     // low voltage is handled specially in muggle mode
     else if(event == EV_voltage_low) {
         uint8_t lvl = (actual_level >> 1) + (actual_level >> 2);
@@ -1261,6 +1294,7 @@ uint8_t config_state_base(EventPtr event, uint16_t arg,
         else {
             // TODO: blink out some sort of success pattern
             savefunc();
+            save_config();
             //set_state(retstate, retval);
             pop_state();
         }
@@ -1644,16 +1678,6 @@ void loop() {
     #endif
     if (0) {}
 
-    #ifdef USE_IDLE_MODE
-    else if (  (state == steady_state)
-            || (state == off_state)
-            || (state == lockout_state)
-            || (state == goodnight_state)  ) {
-        // doze until next clock tick
-        idle_mode();
-    }
-    #endif
-
     if (state == strobe_state) {
         uint8_t st = strobe_type;
         // bike flasher
@@ -1751,4 +1775,12 @@ void loop() {
         set_level(0);
         nice_delay_ms(((beacon_seconds) * 1000) - 500);
     }
+
+    #ifdef USE_IDLE_MODE
+    else {
+        // doze until next clock tick
+        idle_mode();
+    }
+    #endif
+
 }
