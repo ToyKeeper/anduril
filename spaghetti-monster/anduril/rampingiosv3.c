@@ -77,11 +77,7 @@
 #define USE_RAMPING
 #define RAMP_LENGTH 150
 #define USE_BATTCHECK
-#ifdef USE_INDICATOR_LED
-#define MAX_CLICKS 14
-#else
 #define MAX_CLICKS 10
-#endif
 #define USE_IDLE_MODE  // reduce power use while awake and no tasks are pending
 #define USE_DYNAMIC_UNDERCLOCKING  // cut clock speed at very low modes for better efficiency
 
@@ -302,6 +298,13 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         set_state(lockout_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_INDICATOR_LED
+    // 7 clicks: next aux LED mode
+    else if (event == EV_7clicks) {
+        set_state(auxled_next_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    #endif
     // 8 clicks: beacon mode
     else if (event == EV_8clicks) {
         set_state(beacon_state, 0);
@@ -312,13 +315,6 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         push_state(thermal_config_state, 0);
         return MISCHIEF_MANAGED;
     }
-    #ifdef USE_INDICATOR_LED
-    // 14 clicks: next aux LED mode
-    else if (event == EV_14clicks) {
-        set_state(auxled_next_state, 0);
-        return MISCHIEF_MANAGED;
-    }
-    #endif
     return EVENT_NOT_HANDLED;
 }
 
