@@ -41,6 +41,6 @@
 // thermal regulation parameters
 #undef MIN_THERM_STEPDOWN  // this should be lower, because 3x7135 instead of 1x7135
 #define MIN_THERM_STEPDOWN 60  // lowest value it'll step down to
-#undef THERM_DOUBLE_SPEED_LEVEL  // this should be lower too, because this light is a hot rod
-#define THERM_DOUBLE_SPEED_LEVEL (RAMP_SIZE*2/3)  // throttle back faster when high
+#undef THERM_DOUBLE_SPEED_LEVEL
+#define THERM_DOUBLE_SPEED_LEVEL (RAMP_SIZE*9/10)  // throttle back faster when high
 
