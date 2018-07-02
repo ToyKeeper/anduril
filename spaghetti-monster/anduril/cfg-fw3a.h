@@ -16,9 +16,7 @@
 #define HALFSPEED_LEVEL 14
 #define QUARTERSPEED_LEVEL 5
 
-#ifdef THERM_DOUBLE_SPEED_LEVEL
-#undef THERM_DOUBLE_SPEED_LEVEL
-#endif
-#define THERM_DOUBLE_SPEED_LEVEL MAX_Nx7135
+// stop panicking at about 3A or ~1100 lm, this light is a hotrod
+#define THERM_FASTER_LEVEL MAX_Nx7135
 // optional, makes initial turbo step-down faster so first peak isn't as hot
 //#define THERM_HARD_TURBO_DROP

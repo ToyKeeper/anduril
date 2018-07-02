@@ -41,6 +41,5 @@
 // thermal regulation parameters
 #undef MIN_THERM_STEPDOWN  // this should be lower, because 3x7135 instead of 1x7135
 #define MIN_THERM_STEPDOWN 60  // lowest value it'll step down to
-#undef THERM_DOUBLE_SPEED_LEVEL
-#define THERM_DOUBLE_SPEED_LEVEL (RAMP_SIZE*9/10)  // throttle back faster when high
+#define THERM_FASTER_LEVEL (RAMP_SIZE*9/10)  // throttle back faster when high
 
