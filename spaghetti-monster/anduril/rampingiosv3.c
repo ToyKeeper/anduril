@@ -21,6 +21,7 @@
 // Physical driver type (uncomment one of the following or define it at the gcc command line)
 //#define FSM_EMISAR_D4_DRIVER
 #define FSM_EMISAR_D4S_DRIVER
+//#define FSM_EMISAR_D4S_219c_DRIVER
 //#define FSM_BLF_Q8_DRIVER
 //#define FSM_FW3A_DRIVER
 //#define FSM_BLF_GT_DRIVER
@@ -63,6 +64,9 @@
 
 #elif defined(FSM_EMISAR_D4_DRIVER)
 #include "cfg-emisar-d4.h"
+
+#elif defined(FSM_EMISAR_D4S_219c_DRIVER)
+#include "cfg-emisar-d4s-219c.h"
 
 #elif defined(FSM_EMISAR_D4S_DRIVER)
 #include "cfg-emisar-d4s.h"
@@ -301,6 +305,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     #ifdef USE_INDICATOR_LED
     // 7 clicks: next aux LED mode
     else if (event == EV_7clicks) {
+        blink_confirm(1);
         set_state(auxled_next_state, 0);
         return MISCHIEF_MANAGED;
     }
@@ -747,7 +752,7 @@ uint8_t auxled_next_state(EventPtr event, uint16_t arg) {
         save_config();
         return MISCHIEF_MANAGED;
     }
-    else {
+    else if (event == EV_tick) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
