@@ -84,6 +84,9 @@
 #elif defined(FSM_EMISAR_D4_DRIVER)
 #include "hwdef-Emisar_D4.h"
 
+#elif defined(FSM_EMISAR_D4S_DRIVER)
+#include "hwdef-Emisar_D4S.h"
+
 #elif defined(FSM_EMISAR_D1_DRIVER)
 #include "hwdef-Emisar_D1.h"
 

@@ -68,6 +68,7 @@ static volatile uint16_t ticks_since_last_event = 0;
 #define A_DEBUG           255  // test event for debugging
 
 // Event types
+// TODO: make these progmem-only?
 Event EV_debug[] = {
     A_DEBUG,
     0 } ;
@@ -407,9 +408,76 @@ Event EV_click12_complete[] = {
     A_RELEASE_TIMEOUT,
     0 };
 #endif
+#if MAX_CLICKS >= 13
+#define EV_13clicks EV_click13_complete
+Event EV_click13_complete[] = {
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_RELEASE_TIMEOUT,
+    0 };
+#endif
+#if MAX_CLICKS >= 14
+#define EV_14clicks EV_click14_complete
+Event EV_click14_complete[] = {
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_RELEASE_TIMEOUT,
+    0 };
+#endif
 // ... and so on
 
 // A list of button event types for easy iteration
+// TODO: make this progmem-only?
 EventPtr event_sequences[] = {
     EV_click1_press,
     EV_release,
@@ -457,6 +525,12 @@ EventPtr event_sequences[] = {
     #endif
     #if MAX_CLICKS >= 12
     EV_click12_complete,
+    #endif
+    #if MAX_CLICKS >= 13
+    EV_click13_complete,
+    #endif
+    #if MAX_CLICKS >= 14
+    EV_click14_complete,
     #endif
     // ...
 };
