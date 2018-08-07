@@ -34,6 +34,7 @@
 #include "fsm-pcint.h"
 #include "fsm-standby.h"
 #include "fsm-ramping.h"
+#include "fsm-random.h"
 #ifdef USE_EEPROM
 #include "fsm-eeprom.h"
 #endif
@@ -71,6 +72,7 @@ void loop();
 #include "fsm-pcint.c"
 #include "fsm-standby.c"
 #include "fsm-ramping.c"
+#include "fsm-random.c"
 #ifdef USE_EEPROM
 #include "fsm-eeprom.c"
 #endif

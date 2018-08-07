@@ -31,7 +31,12 @@
 #define standby_mode sleep_until_eswitch_pressed
 void sleep_until_eswitch_pressed()
 {
+    #ifdef TICK_DURING_STANDBY
+    WDT_slow();
+    #else
     WDT_off();
+    #endif
+
     ADC_off();
 
     // make sure switch isn't currently pressed
@@ -41,15 +46,29 @@ void sleep_until_eswitch_pressed()
 
     PCINT_on();  // wake on e-switch event
 
-    // configure sleep mode
-    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+    #ifdef TICK_DURING_STANDBY
+    while (go_to_standby) {
+        f_wdt = 0;  // detect if WDT was what caused a wake-up
+    #else
+        go_to_standby = 0;
+    #endif
+        // configure sleep mode
+        set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 
-    sleep_enable();
-    sleep_bod_disable();
-    sleep_cpu();  // wait here
+        sleep_enable();
+        sleep_bod_disable();
+        sleep_cpu();  // wait here
 
-    // something happened; wake up
-    sleep_disable();
+        // something happened; wake up
+        sleep_disable();
+
+    #ifdef TICK_DURING_STANDBY
+        // determine what woke us up... WDT or PCINT
+        if (! f_wdt) {  // PCINT went off; wake up
+            go_to_standby = 0;
+        }
+    }
+    #endif
 
     #ifdef USE_THERMAL_REGULATION
     // forget what the temperature was last time we were on
@@ -58,7 +77,6 @@ void sleep_until_eswitch_pressed()
 
     // go back to normal running mode
     //PCINT_on();  // should be on already
-    // FIXME? if button is down, make sure a button press event is added to the current sequence
     ADC_on();
     WDT_on();
 }

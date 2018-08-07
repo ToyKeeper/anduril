@@ -25,6 +25,28 @@
 // set this to nonzero to enter standby mode next time the system is idle
 volatile uint8_t go_to_standby = 0;
 
+#ifdef TICK_DURING_STANDBY
+#ifndef STANDBY_TICK_SPEED
+#define STANDBY_TICK_SPEED 5  // every 0.512 s
+/*
+ * From the Attiny85 manual:
+ * 0: 16 ms
+ * 1: 32 ms
+ * 2: 64 ms
+ * 3: 0.125 s
+ * 4: 0.25 s
+ * 5: 0.5 s
+ * 6: 1.0 s
+ * 7: 2.0 s
+ * 32: 4.0 s
+ * 33: 8.0 s
+ * (other values may have unexpected effects; not sure why the final bit is
+ *  separated from the others, in the "32" position instead of "8", but that's
+ *  how it is)
+ */
+#endif
+#endif
+
 #define standby_mode sleep_until_eswitch_pressed
 void sleep_until_eswitch_pressed();
 
@@ -33,7 +55,5 @@ void sleep_until_eswitch_pressed();
 // (I think)
 void idle_mode();
 #endif
-
-// TODO: half-sleep "twilight" mode with WDT on but running slowly
 
 #endif

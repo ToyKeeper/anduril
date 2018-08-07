@@ -42,10 +42,9 @@ typedef struct Emission {
 #define EV_MAX_LEN ((MAX_CLICKS*2)+3)
 uint8_t current_event[EV_MAX_LEN];
 // at 0.016 ms per tick, 255 ticks = 4.08 s
-// TODO: 16 bits?
 static volatile uint16_t ticks_since_last_event = 0;
 
-// timeout durations in ticks (each tick 1/60th s)
+// timeout durations in ticks (each tick 1/62th s)
 #ifndef HOLD_TIMEOUT
 #define HOLD_TIMEOUT 24
 #endif
@@ -57,17 +56,19 @@ static volatile uint16_t ticks_since_last_event = 0;
 #define A_LEAVE_STATE     2
 #define A_REENTER_STATE   3
 #define A_TICK            4
-#define A_PRESS           5
-#define A_HOLD            6
-#define A_RELEASE         7
-#define A_RELEASE_TIMEOUT 8
-#define A_OVERHEATING     9
-#define A_UNDERHEATING    10
-#define A_VOLTAGE_LOW     11
-//#define A_VOLTAGE_CRITICAL 12
+#define A_SLEEP_TICK      5
+#define A_PRESS           6
+#define A_HOLD            7
+#define A_RELEASE         8
+#define A_RELEASE_TIMEOUT 9
+#define A_OVERHEATING     10
+#define A_UNDERHEATING    11
+#define A_VOLTAGE_LOW     12
+//#define A_VOLTAGE_CRITICAL 13
 #define A_DEBUG           255  // test event for debugging
 
 // Event types
+// TODO: make these progmem-only?
 Event EV_debug[] = {
     A_DEBUG,
     0 } ;
@@ -83,6 +84,11 @@ Event EV_reenter_state[] = {
 Event EV_tick[] = {
     A_TICK,
     0 } ;
+#ifdef TICK_DURING_STANDBY
+Event EV_sleep_tick[] = {
+    A_SLEEP_TICK,
+    0 } ;
+#endif
 #ifdef USE_LVP
 Event EV_voltage_low[] = {
     A_VOLTAGE_LOW,
@@ -402,9 +408,76 @@ Event EV_click12_complete[] = {
     A_RELEASE_TIMEOUT,
     0 };
 #endif
+#if MAX_CLICKS >= 13
+#define EV_13clicks EV_click13_complete
+Event EV_click13_complete[] = {
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_RELEASE_TIMEOUT,
+    0 };
+#endif
+#if MAX_CLICKS >= 14
+#define EV_14clicks EV_click14_complete
+Event EV_click14_complete[] = {
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_PRESS,
+    A_RELEASE,
+    A_RELEASE_TIMEOUT,
+    0 };
+#endif
 // ... and so on
 
 // A list of button event types for easy iteration
+// TODO: make this progmem-only?
 EventPtr event_sequences[] = {
     EV_click1_press,
     EV_release,
@@ -452,6 +525,12 @@ EventPtr event_sequences[] = {
     #endif
     #if MAX_CLICKS >= 12
     EV_click12_complete,
+    #endif
+    #if MAX_CLICKS >= 13
+    EV_click13_complete,
+    #endif
+    #if MAX_CLICKS >= 14
+    EV_click14_complete,
     #endif
     // ...
 };

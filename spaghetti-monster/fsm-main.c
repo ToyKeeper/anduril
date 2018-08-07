@@ -126,7 +126,6 @@ int main() {
             PWM4_LVL = 255;  // inverted  :(
             #endif
             #endif
-            go_to_standby = 0;
             standby_mode();
         }
 

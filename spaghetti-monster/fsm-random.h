@@ -1,5 +1,5 @@
 /*
- * fsm-wdt.h: WDT (Watch Dog Timer) functions for SpaghettiMonster.
+ * fsm-random.h: Random number generator for SpaghettiMonster.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,16 +17,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FSM_WDT_H
-#define FSM_WDT_H
+#ifndef FSM_RANDOM_H
+#define FSM_RANDOM_H
 
-#define TICKS_PER_SECOND 62
-
-void WDT_on();
-inline void WDT_off();
-
-#ifdef TICK_DURING_STANDBY
-volatile uint8_t f_wdt = 0;
+#ifdef USE_PSEUDO_RAND
+uint8_t pseudo_rand();
+// TODO: test without "volatile", in case it's not needed
+volatile uint8_t pseudo_rand_seed = 0;
 #endif
 
 #endif

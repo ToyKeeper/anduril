@@ -33,6 +33,18 @@ void WDT_on()
     //sei();                          // Enable interrupts
 }
 
+#ifdef TICK_DURING_STANDBY
+inline void WDT_slow()
+{
+    // interrupt slower
+    //cli();                          // Disable interrupts
+    wdt_reset();                    // Reset the WDT
+    WDTCR |= (1<<WDCE) | (1<<WDE);  // Start timed sequence
+    WDTCR = (1<<WDIE) | STANDBY_TICK_SPEED; // Enable interrupt every so often
+    //sei();                          // Enable interrupts
+}
+#endif
+
 inline void WDT_off()
 {
     //cli();                          // Disable interrupts
@@ -45,6 +57,20 @@ inline void WDT_off()
 
 // clock tick -- this runs every 16ms (62.5 fps)
 ISR(WDT_vect) {
+    #ifdef TICK_DURING_STANDBY
+    f_wdt = 1;  // WDT event happened
+
+    static uint16_t sleep_counter = 0;
+    // handle standby mode specially
+    if (go_to_standby) {
+        // emit a halfsleep tick, and process it
+        emit(EV_sleep_tick, sleep_counter++);
+        process_emissions();
+        return;
+    }
+    sleep_counter = 0;
+    #endif
+
     // detect and emit button change events
     uint8_t was_pressed = button_last_state;
     uint8_t pressed = button_is_pressed();

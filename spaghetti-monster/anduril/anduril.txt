@@ -84,7 +84,7 @@ Discrete ramp config mode:
   Beacon mode:
     * 1 click: off
     * 2 clicks: tempcheck mode
-    * 3 clicks: configure time between pulses
+    * 4 clicks: configure time between pulses
 
     Beacon config mode:
       * At buzz, click N times to set beacon frequency to N seconds.
@@ -92,7 +92,7 @@ Discrete ramp config mode:
   Tempcheck mode:
     * 1 click: off
     * 2 clicks: battcheck mode
-    * 3 clicks: thermal config mode
+    * 4 clicks: thermal config mode
     - Hold: thermal calibration mode
 
     Thermal config mode:
@@ -110,6 +110,9 @@ Discrete ramp config mode:
 Lockout mode:
   * Hold: momentary moon
   * 4 clicks: exit lockout (return to regular "off" mode)
+  * On hardware with an indicator LED...
+    * 3 clicks: Change button brightness used in lockout mode.  (low/high/off)
+    * Click, click, hold: Change button brightness used in "off" mode.
 
 Momentary mode:
   * Press button: Light on (at memorized level).
@@ -121,6 +124,26 @@ Muggle mode:
   * Hold: Ramp up / down.
   * 6 clicks: Exit muggle mode.
 
+Indicator LED support:
+
+  The indicator LED, if there is one, tracks the brightness of the main 
+  LED(s) during use.  It'll be off, low, or high depending on whether 
+  the main emitter is off, using only the first power channel, or using 
+  a higher level.
+
+  The indicator LED can stay on when the light is in the "off" state or 
+  lockout state.  The user can configure each state to be low, high, or 
+  off.  To configure it:
+
+    1. Go to lockout mode.  (4 clicks)
+    2. Click 3 times, optionally holding the third press, to change the 
+       value:
+       * 3 fast clicks: Change lockout mode button brightness.
+       * Hold the third click: Change regular "off" mode button 
+         brightness.  Let go when desired level is reached.
+    3. Exit lockout mode.  (4 clicks)
+
+
 TODO:
   * save settings in eeprom
   * decide on "hold until hot" or "click N times" for thermal config mode
@@ -128,13 +151,17 @@ TODO:
   * improve thermal regulation
   - a way to blink out the firmware version?
   * indicator LED support
-  * a way to configure indicator LED behavior?
+  * a way to configure indicator LED behavior
+    * Go to lockout mode, then click three times.  Hold the third click 
+      to change regular "off" brightness, or make it a fast click to 
+      change lockout mode brightness.
   * add goodnight mode?
   * add lightning mode?
   * muggle mode: smooth ramp
   * refactor to make config modes smaller
   * move all config menus to four clicks
   * candle mode timer, with three clicks to add 30 minutes
-  - diagram updates for 3-click special actions
+  * diagram updates for 3-click special actions
   - candle mode: smoother adjustments?
   - make sunset mode timer and brightness configurable?
+  - make beacon mode actually sleep between pulses
