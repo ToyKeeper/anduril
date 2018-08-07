@@ -22,6 +22,7 @@
 // Physical driver type (uncomment one of the following or define it at the gcc command line)
 //#define FSM_EMISAR_D4_DRIVER
 //#define FSM_EMISAR_D4S_DRIVER
+//#define FSM_EMISAR_D4S_219c_DRIVER
 //#define FSM_BLF_Q8_DRIVER
 //#define FSM_FW3A_DRIVER
 //#define FSM_BLF_GT_DRIVER
@@ -65,8 +66,17 @@
 #elif defined(FSM_BLF_Q8_DRIVER)
 #include "cfg-blf-q8.h"
 
+#elif defined(FSM_EMISAR_D1_DRIVER)
+#include "cfg-emisar-d1.h"
+
+#elif defined(FSM_EMISAR_D1S_DRIVER)
+#include "cfg-emisar-d1s.h"
+
 #elif defined(FSM_EMISAR_D4_DRIVER)
 #include "cfg-emisar-d4.h"
+
+#elif defined(FSM_EMISAR_D4S_219c_DRIVER)
+#include "cfg-emisar-d4s-219c.h"
 
 #elif defined(FSM_EMISAR_D4S_DRIVER)
 #include "cfg-emisar-d4s.h"
