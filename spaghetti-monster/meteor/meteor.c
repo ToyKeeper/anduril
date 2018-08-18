@@ -521,6 +521,7 @@ void setup() {
 }
 
 void loop() {
+    if (0) {}
     /*
     if (current_state == strobe_beacon_state) {
         switch(strobe_beacon_mode) {
