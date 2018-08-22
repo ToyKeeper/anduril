@@ -1147,8 +1147,6 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
     else if (event == EV_click3_hold) {
         #ifndef USE_INDICATOR_LED_WHILE_RAMPING
         // if main LED obscures aux LEDs, turn it off
-        // FIXME: might not work, since it was turned on just a few clock
-        //        cycles ago at beginning of this function
         set_level(0);
         #endif
         #ifdef TICK_DURING_STANDBY
