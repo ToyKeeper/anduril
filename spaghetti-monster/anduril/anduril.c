@@ -52,7 +52,7 @@
 #define USE_BIKE_FLASHER_MODE
 #define USE_PARTY_STROBE_MODE
 #define USE_TACTICAL_STROBE_MODE
-//#define USE_LIGHTNING_MODE
+#define USE_LIGHTNING_MODE
 #define USE_CANDLE_MODE
 
 //Muggle mode for easy UI
@@ -462,7 +462,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     // 3 clicks: toggle smooth vs discrete ramping
-    /*else if (event == EV_3clicks) {
+    else if (event == EV_3clicks) {
         ramp_style = !ramp_style;
         memorized_level = nearest_level(memorized_level);
         #ifdef USE_THERMAL_REGULATION
@@ -479,7 +479,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         delay_4ms(20/4);
         set_level(memorized_level);
         return MISCHIEF_MANAGED;
-    }*/
+    }
     // 4 clicks: configure this ramp mode
     else if (event == EV_4clicks) {
         push_state(ramp_config_state, 0);
