@@ -809,7 +809,7 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
         #ifdef USE_CANDLE_MODE
         candle_mode_timer = 0;  // in case any time was left over from earlier
         #endif
-        interrupt_nice_delays();
+        //interrupt_nice_delays();
         save_config();
         return MISCHIEF_MANAGED;
     }
@@ -1832,13 +1832,13 @@ void loop() {
             brightness += pseudo_rand() % brightness;  // 2 to 159 now (w/ low bias)
             if (brightness > MAX_LEVEL) brightness = MAX_LEVEL;
             set_level(brightness);
-            if (! nice_delay_ms(rand_time)) return;
+            nice_delay_ms(rand_time);
 
             // decrease the brightness somewhat more gradually, like lightning
             uint8_t stepdown = brightness >> 3;
             if (stepdown < 1) stepdown = 1;
             while(brightness > 1) {
-                if (! nice_delay_ms(rand_time)) return;
+                nice_delay_ms(rand_time);
                 brightness -= stepdown;
                 if (brightness < 0) brightness = 0;
                 set_level(brightness);
@@ -1849,7 +1849,7 @@ void loop() {
                 }
                 */
                 if (! (pseudo_rand() & 3)) {
-                    if (! nice_delay_ms(rand_time)) return;
+                    nice_delay_ms(rand_time);
                     set_level(brightness>>1);
                 }
             }
@@ -1877,9 +1877,9 @@ void loop() {
             if (burst > MAX_LEVEL) burst = MAX_LEVEL;
             for(uint8_t i=0; i<4; i++) {
                 set_level(burst);
-                if (! nice_delay_ms(5)) return;
+                nice_delay_ms(5);
                 set_level(bike_flasher_brightness);
-                if (! nice_delay_ms(65)) return;
+                nice_delay_ms(65);
             }
             nice_delay_ms(720);  // no return check necessary on final delay
         }
@@ -1903,7 +1903,7 @@ void loop() {
 
     else if (state == beacon_state) {
         set_level(memorized_level);
-        if (! nice_delay_ms(500)) return;
+        nice_delay_ms(500);
         set_level(0);
         nice_delay_ms(((beacon_seconds) * 1000) - 500);
     }
