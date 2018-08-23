@@ -49,11 +49,9 @@ uint8_t blink_digit(uint8_t num) {
 
     for (; num>0; num--) {
         set_level(BLINK_BRIGHTNESS);
-        if (! nice_delay_ms(ontime)) { return 0; }
+        nice_delay_ms(ontime);
         set_level(0);
-        //if (current_state != old_state) return 0;
-        if (! nice_delay_ms(400)) return 0;
-        //if (current_state != old_state) return 0;
+        nice_delay_ms(400);
     }
     return nice_delay_ms(600);
 }
@@ -77,7 +75,7 @@ uint8_t blink_num(uint8_t num) {
     #if 0
     // wait a moment in the dark before starting
     set_level(0);
-    if (! nice_delay_ms(200)) return 0;
+    nice_delay_ms(200);
     #endif
 
     #if 0
@@ -102,7 +100,7 @@ uint8_t blink_num(uint8_t num) {
     volts = voltage / 10;
     tenths = voltage % 10;
     if (! blink(volts)) return;
-    if (! nice_delay_ms(200)) return;
+    nice_delay_ms(200);
     if (! blink(tenths)) return;
     nice_delay_ms(200);
     */

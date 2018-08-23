@@ -22,7 +22,7 @@
 
 #include "fsm-eeprom.h"
 
-#if EEPROM_BYTES > 0
+#ifdef USE_EEPROM
 #ifdef EEPROM_OVERRIDE
 uint8_t *eeprom;
 #else
@@ -57,7 +57,7 @@ void save_eeprom() {
 }
 #endif
 
-#if EEPROM_WL_BYTES > 0
+#ifdef USE_EEPROM_WL
 uint8_t eeprom_wl[EEPROM_WL_BYTES];
 EEP_OFFSET_T eep_wl_prev_offset;
 
