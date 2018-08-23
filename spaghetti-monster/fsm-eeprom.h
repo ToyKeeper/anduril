@@ -32,7 +32,7 @@
 #define EEPROM_WL_BYTES 0
 #endif
 
-#if EEPROM_BYTES > 0
+#ifdef USE_EEPROM
 #if EEPROM_BYTES >= (EEPSIZE/2)
 #error Requested EEPROM_BYTES too big.
 #endif
@@ -46,7 +46,7 @@ void save_eeprom();
 #define EEP_START (EEPSIZE/2)
 #endif
 
-#if EEPROM_WL_BYTES > 0
+#ifdef USE_EEPROM_WL
 #if EEPROM_WL_BYTES >= (EEPSIZE/4)
 #error Requested EEPROM_WL_BYTES too big.
 #endif

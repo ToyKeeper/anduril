@@ -132,16 +132,44 @@
 #define STROBE_BRIGHTNESS MAX_LEVEL
 #endif
 
-// try to auto-detect how many eeprom bytes
-// FIXME: detect this better, and assign offsets better, for various configs
-#define USE_EEPROM
-#ifdef USE_INDICATOR_LED
-#define EEPROM_BYTES 15
-#elif defined(USE_THERMAL_REGULATION)
-#define EEPROM_BYTES 14
-#else
-#define EEPROM_BYTES 12
+#if defined(USE_CANDLE_MODE) || defined(USE_BIKE_FLASHER_MODE) || defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE) || defined(USE_LIGHTNING_MODE)
+#define USE_STROBE_STATE
 #endif
+
+// auto-detect how many eeprom bytes
+#define USE_EEPROM
+typedef enum {
+    ramp_style_e,
+    ramp_smooth_floor_e,
+    ramp_smooth_ceil_e,
+    ramp_discrete_floor_e,
+    ramp_discrete_ceil_e,
+    ramp_discrete_steps_e,
+    #ifdef USE_STROBE_STATE
+    strobe_type_e,
+    #endif
+    #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
+    strobe_delays_0_e,
+    strobe_delays_1_e,
+    #endif
+    #ifdef USE_BIKE_FLASHER_MODE
+    bike_flasher_brightness_e,
+    #endif
+    beacon_seconds_e,
+    #ifdef USE_MUGGLE_MODE
+    muggle_mode_active_e,
+    #endif
+    #ifdef USE_THERMAL_REGULATION
+    therm_ceil_e,
+    therm_cal_offset_e,
+    #endif
+    #ifdef USE_INDICATOR_LED
+    indicator_led_mode_e,
+    #endif
+    eeprom_indexes_e_END
+} eeprom_indexes_e;
+#define EEPROM_BYTES eeprom_indexes_e_END
+
 #ifdef START_AT_MEMORIZED_LEVEL
 #define USE_EEPROM_WL
 #define EEPROM_WL_BYTES 1
@@ -167,8 +195,7 @@ uint8_t config_state_values[MAX_CONFIG_VALUES];
 uint8_t steady_state(EventPtr event, uint16_t arg);
 uint8_t ramp_config_state(EventPtr event, uint16_t arg);
 // party and tactical strobes
-#if defined(USE_CANDLE_MODE) || defined(USE_BIKE_FLASHER_MODE) || defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE) || defined(USE_LIGHTNING_MODE)
-#define USE_STROBE_STATE
+#ifdef USE_STROBE_STATE
 uint8_t strobe_state(EventPtr event, uint16_t arg);
 #endif
 #ifdef USE_BATTCHECK
@@ -284,7 +311,7 @@ typedef enum {
     lightning_storm_e,
     #endif
     strobe_mode_END
-} strobe_mode_te ;
+} strobe_mode_te;
 
 const int NUM_STROBES = strobe_mode_END;
 
@@ -1604,30 +1631,30 @@ uint8_t triangle_wave(uint8_t phase) {
 
 void load_config() {
     if (load_eeprom()) {
-        ramp_style = eeprom[0];
-        ramp_smooth_floor = eeprom[1];
-        ramp_smooth_ceil = eeprom[2];
-        ramp_discrete_floor = eeprom[3];
-        ramp_discrete_ceil = eeprom[4];
-        ramp_discrete_steps = eeprom[5];
+        ramp_style = eeprom[ramp_style_e];
+        ramp_smooth_floor = eeprom[ramp_smooth_floor_e];
+        ramp_smooth_ceil = eeprom[ramp_smooth_ceil_e];
+        ramp_discrete_floor = eeprom[ramp_discrete_floor_e];
+        ramp_discrete_ceil = eeprom[ramp_discrete_ceil_e];
+        ramp_discrete_steps = eeprom[ramp_discrete_steps_e];
         #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
-        strobe_type = eeprom[6];  // TODO: move this to eeprom_wl?
-        strobe_delays[0] = eeprom[7];
-        strobe_delays[1] = eeprom[8];
+        strobe_type = eeprom[strobe_type_e];  // TODO: move this to eeprom_wl?
+        strobe_delays[0] = eeprom[strobe_delays_0_e];
+        strobe_delays[1] = eeprom[strobe_delays_1_e];
         #endif
         #ifdef USE_BIKE_FLASHER_MODE
-        bike_flasher_brightness = eeprom[9];
+        bike_flasher_brightness = eeprom[bike_flasher_brightness_e];
         #endif
-        beacon_seconds = eeprom[10];
+        beacon_seconds = eeprom[beacon_seconds_e];
         #ifdef USE_MUGGLE_MODE
-        muggle_mode_active = eeprom[11];
+        muggle_mode_active = eeprom[muggle_mode_active_e];
         #endif
         #ifdef USE_THERMAL_REGULATION
-        therm_ceil = eeprom[12];
-        therm_cal_offset = eeprom[13];
+        therm_ceil = eeprom[therm_ceil_e];
+        therm_cal_offset = eeprom[therm_cal_offset_e];
         #endif
         #ifdef USE_INDICATOR_LED
-        indicator_led_mode = eeprom[14];
+        indicator_led_mode = eeprom[indicator_led_mode_e];
         #endif
     }
     #ifdef START_AT_MEMORIZED_LEVEL
@@ -1638,30 +1665,30 @@ void load_config() {
 }
 
 void save_config() {
-    eeprom[0] = ramp_style;
-    eeprom[1] = ramp_smooth_floor;
-    eeprom[2] = ramp_smooth_ceil;
-    eeprom[3] = ramp_discrete_floor;
-    eeprom[4] = ramp_discrete_ceil;
-    eeprom[5] = ramp_discrete_steps;
+    eeprom[ramp_style_e] = ramp_style;
+    eeprom[ramp_smooth_floor_e] = ramp_smooth_floor;
+    eeprom[ramp_smooth_ceil_e] = ramp_smooth_ceil;
+    eeprom[ramp_discrete_floor_e] = ramp_discrete_floor;
+    eeprom[ramp_discrete_ceil_e] = ramp_discrete_ceil;
+    eeprom[ramp_discrete_steps_e] = ramp_discrete_steps;
     #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
-    eeprom[6] = strobe_type;  // TODO: move this to eeprom_wl?
-    eeprom[7] = strobe_delays[0];
-    eeprom[8] = strobe_delays[1];
+    eeprom[strobe_type_e] = strobe_type;  // TODO: move this to eeprom_wl?
+    eeprom[strobe_delays_0_e] = strobe_delays[0];
+    eeprom[strobe_delays_1_e] = strobe_delays[1];
     #endif
     #ifdef USE_BIKE_FLASHER_MODE
-    eeprom[9] = bike_flasher_brightness;
+    eeprom[bike_flasher_brightness_e] = bike_flasher_brightness;
     #endif
-    eeprom[10] = beacon_seconds;
+    eeprom[beacon_seconds_e] = beacon_seconds;
     #ifdef USE_MUGGLE_MODE
-    eeprom[11] = muggle_mode_active;
+    eeprom[muggle_mode_active_e] = muggle_mode_active;
     #endif
     #ifdef USE_THERMAL_REGULATION
-    eeprom[12] = therm_ceil;
-    eeprom[13] = therm_cal_offset;
+    eeprom[therm_ceil_e] = therm_ceil;
+    eeprom[therm_cal_offset_e] = therm_cal_offset;
     #endif
     #ifdef USE_INDICATOR_LED
-    eeprom[14] = indicator_led_mode;
+    eeprom[indicator_led_mode_e] = indicator_led_mode;
     #endif
 
     save_eeprom();
