@@ -39,6 +39,12 @@ uint8_t compare_event_sequences(uint8_t *a, const uint8_t *b) {
 
 void empty_event_sequence() {
     for(uint8_t i=0; i<EV_MAX_LEN; i++) current_event[i] = 0;
+    // when the user completes an input sequence, interrupt any running timers
+    // to cancel any delays currently in progress
+    // This eliminates a whole bunch of extra code:
+    //   before: if (! nice_delay_ms(ms)) {break;}
+    //   after: nice_delay_ms(ms);
+    interrupt_nice_delays();
 }
 
 uint8_t push_event(uint8_t ev_type) {
@@ -156,7 +162,7 @@ uint8_t nice_delay_ms(uint16_t ms) {
 
         process_emissions();
         if ((nice_delay_interrupt) || (old_state != current_state)) {
-            nice_delay_interrupt = 0;
+            //nice_delay_interrupt = 0;
             return 0;  // state changed; abort
         }
     }

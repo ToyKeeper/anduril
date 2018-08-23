@@ -132,6 +132,8 @@ int main() {
         // give the recipe some time slices
         loop();
 
+        // in case we fell through, turn delays back on
+        nice_delay_interrupt = 0;
     }
 }
 
