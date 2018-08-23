@@ -295,12 +295,6 @@ uint8_t target_level = 0;
 // internal numbering for strobe modes
 #ifdef USE_STROBE_STATE
 typedef enum {
-    #ifdef USE_CANDLE_MODE
-    candle_mode_e,
-    #endif
-    #ifdef USE_BIKE_FLASHER_MODE
-    bike_flasher_e,
-    #endif
     #ifdef USE_PARTY_STROBE_MODE
     party_strobe_e,
     #endif
@@ -310,13 +304,23 @@ typedef enum {
     #ifdef USE_LIGHTNING_MODE
     lightning_storm_e,
     #endif
+    #ifdef USE_CANDLE_MODE
+    candle_mode_e,
+    #endif
+    #ifdef USE_BIKE_FLASHER_MODE
+    bike_flasher_e,
+    #endif
     strobe_mode_END
 } strobe_mode_te;
 
 const int NUM_STROBES = strobe_mode_END;
 
 // which strobe mode is active?
+#ifdef USE_CANDLE_MODE
+volatile strobe_mode_te strobe_type = candle_mode_e;
+#else
 volatile strobe_mode_te strobe_type = 0;
+#endif
 #endif
 
 #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
@@ -814,6 +818,22 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
     else if (event == EV_click1_hold) {
         if (0) {}  // placeholder
 
+        // party / tactical strobe faster
+        #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
+        #ifdef USE_TACTICAL_STROBE_MODE
+        else if (st <= tactical_strobe_e) {
+        #else
+        else if (st == party_strobe_e) {
+        #endif
+            if ((arg & 1) == 0) {
+                if (strobe_delays[st] > 8) strobe_delays[st] --;
+            }
+        }
+        #endif
+
+        // lightning has no adjustments
+        //else if (st == lightning_storm_e) {}
+
         // candle mode brighter
         #ifdef USE_CANDLE_MODE
         else if (st == candle_mode_e) {
@@ -831,7 +851,14 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
         }
         #endif
 
-        // party / tactical strobe faster
+        return MISCHIEF_MANAGED;
+    }
+    // click, hold: change speed (go slower)
+    //       or change brightness (dimmer)
+    else if (event == EV_click2_hold) {
+        if (0) {}  // placeholder
+
+        // party / tactical strobe slower
         #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
         #ifdef USE_TACTICAL_STROBE_MODE
         else if (st <= tactical_strobe_e) {
@@ -839,20 +866,13 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
         else if (st == party_strobe_e) {
         #endif
             if ((arg & 1) == 0) {
-                if (strobe_delays[st-1] > 8) strobe_delays[st-1] --;
+                if (strobe_delays[st] < 255) strobe_delays[st] ++;
             }
         }
         #endif
 
         // lightning has no adjustments
         //else if (st == lightning_storm_e) {}
-
-        return MISCHIEF_MANAGED;
-    }
-    // click, hold: change speed (go slower)
-    //       or change brightness (dimmer)
-    else if (event == EV_click2_hold) {
-        if (0) {}  // placeholder
 
         // candle mode dimmer
         #ifdef USE_CANDLE_MODE
@@ -870,22 +890,6 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
             set_level(bike_flasher_brightness);
         }
         #endif
-
-        // party / tactical strobe slower
-        #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
-        #ifdef USE_TACTICAL_STROBE_MODE
-        else if (st <= tactical_strobe_e) {
-        #else
-        else if (st == party_strobe_e) {
-        #endif
-            if ((arg & 1) == 0) {
-                if (strobe_delays[st-1] < 255) strobe_delays[st-1] ++;
-            }
-        }
-        #endif
-
-        // lightning has no adjustments
-        //else if (st == lightning_storm_e) {}
 
         return MISCHIEF_MANAGED;
     }
@@ -1791,26 +1795,6 @@ void loop() {
 
         if (0) {}  // placeholder
 
-        // candle mode
-        #ifdef USE_CANDLE_MODE
-        //else if (st == candle_mode_e) {}
-        #endif
-
-        // bike flasher
-        #ifdef USE_BIKE_FLASHER_MODE
-        else if (st == bike_flasher_e) {
-            uint8_t burst = bike_flasher_brightness << 1;
-            if (burst > MAX_LEVEL) burst = MAX_LEVEL;
-            for(uint8_t i=0; i<4; i++) {
-                set_level(burst);
-                if (! nice_delay_ms(5)) return;
-                set_level(bike_flasher_brightness);
-                if (! nice_delay_ms(65)) return;
-            }
-            nice_delay_ms(720);  // no return check necessary on final delay
-        }
-        #endif
-
         // party / tactial strobe
         #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
         #ifdef USE_TACTICAL_STROBE_MODE
@@ -1818,11 +1802,11 @@ void loop() {
         #else
         else if (st == party_strobe_e) {
         #endif
-            uint8_t del = strobe_delays[st-1];
+            uint8_t del = strobe_delays[st];
             // TODO: make tac strobe brightness configurable?
             set_level(STROBE_BRIGHTNESS);
             CLKPR = 1<<CLKPCE; CLKPR = 0;  // run at full speed
-            if (st == 1) {  // party strobe
+            if (st == party_strobe_e) {  // party strobe
                 if (del < 42) delay_zero();
                 else nice_delay_ms(1);
             } else {  //tactical strobe
@@ -1877,6 +1861,27 @@ void loop() {
             rand_time += pseudo_rand() % rand_time;
             set_level(0);
             nice_delay_ms(rand_time);  // no return check necessary on final delay
+        }
+        #endif
+
+        // candle mode
+        #ifdef USE_CANDLE_MODE
+        // this NOP should get compiled out
+        else if (st == candle_mode_e) {}
+        #endif
+
+        // bike flasher
+        #ifdef USE_BIKE_FLASHER_MODE
+        else if (st == bike_flasher_e) {
+            uint8_t burst = bike_flasher_brightness << 1;
+            if (burst > MAX_LEVEL) burst = MAX_LEVEL;
+            for(uint8_t i=0; i<4; i++) {
+                set_level(burst);
+                if (! nice_delay_ms(5)) return;
+                set_level(bike_flasher_brightness);
+                if (! nice_delay_ms(65)) return;
+            }
+            nice_delay_ms(720);  // no return check necessary on final delay
         }
         #endif
 
