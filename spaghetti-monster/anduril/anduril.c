@@ -20,12 +20,15 @@
 
 /********* User-configurable options *********/
 // Physical driver type (uncomment one of the following or define it at the gcc command line)
+//#define FSM_BLF_GT_DRIVER
+//#define FSM_BLF_Q8_DRIVER
+//#define FSM_EMISAR_D1_DRIVER
+//#define FSM_EMISAR_D1S_DRIVER
 //#define FSM_EMISAR_D4_DRIVER
 //#define FSM_EMISAR_D4S_DRIVER
 //#define FSM_EMISAR_D4S_219c_DRIVER
-//#define FSM_BLF_Q8_DRIVER
+//#define FSM_FF_ROT66_DRIVER
 //#define FSM_FW3A_DRIVER
-//#define FSM_BLF_GT_DRIVER
 
 #define USE_LVP  // FIXME: won't build when this option is turned off
 
@@ -85,6 +88,9 @@
 
 #elif defined(FSM_EMISAR_D4S_DRIVER)
 #include "cfg-emisar-d4s.h"
+
+#elif defined(FSM_FF_ROT66_DRIVER)
+#include "cfg-ff-rot66.h"
 
 #elif defined(FSM_FW3A_DRIVER)
 #include "cfg-fw3a.h"
