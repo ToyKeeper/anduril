@@ -1098,16 +1098,15 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
         last = pgm_read_byte(event + i);
     if (arg == 0) {  // Only turn on/off when button state changes
         if ((last == A_PRESS) || (last == A_HOLD)) {
-            // detect moon level and activate it
-            uint8_t lvl = ramp_smooth_floor;
             #ifdef LOCKOUT_MOON_LOWEST
             // Use lowest moon configured
+            uint8_t lvl = ramp_smooth_floor;
             if (ramp_discrete_floor < lvl) lvl = ramp_discrete_floor;
+            set_level(lvl);
             #else
             // Use moon from current ramp
-            if (ramp_style) lvl = ramp_discrete_floor;
+            set_level(nearest_level(1));
             #endif
-            set_level(lvl);
         }
         else if ((last == A_RELEASE) || (last == A_RELEASE_TIMEOUT)) {
             set_level(0);
