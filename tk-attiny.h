@@ -78,6 +78,9 @@
 #elif defined(FSM_BLF_GT_DRIVER)
 #include "hwdef-BLF_GT.h"
 
+#elif defined(FSM_BLF_GT_MINI_DRIVER)
+#include "hwdef-BLF_GT_Mini.h"
+
 #elif defined(FSM_BLF_Q8_DRIVER)
 #include "hwdef-BLF_Q8.h"
 
