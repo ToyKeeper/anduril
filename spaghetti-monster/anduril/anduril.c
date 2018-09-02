@@ -375,7 +375,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif
-    // hold (initially): go to lowest level, but allow abort for regular click
+    // hold (initially): go to lowest level (floor), but allow abort for regular click
     else if (event == EV_click1_press) {
         set_level(nearest_level(1));
         return MISCHIEF_MANAGED;
@@ -389,7 +389,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         }
         return MISCHIEF_MANAGED;
     }
-    // hold, release quickly: go to lowest level
+    // hold, release quickly: go to lowest level (floor)
     else if (event == EV_click1_hold_release) {
         set_state(steady_state, 1);
         return MISCHIEF_MANAGED;
@@ -409,14 +409,14 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         set_level(0);
         return MISCHIEF_MANAGED;
     }
-    // click, hold: go to highest level (for ramping down)
+    // click, hold: go to highest level (ceiling) (for ramping down)
     else if (event == EV_click2_hold) {
         set_state(steady_state, MAX_LEVEL);
         return MISCHIEF_MANAGED;
     }
-    // 2 clicks: highest mode
+    // 2 clicks: highest mode (ceiling)
     else if (event == EV_2clicks) {
-        set_state(steady_state, nearest_level(MAX_LEVEL));
+        set_state(steady_state, MAX_LEVEL);
         return MISCHIEF_MANAGED;
     }
     #ifdef USE_BATTCHECK
