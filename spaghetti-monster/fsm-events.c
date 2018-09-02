@@ -160,11 +160,15 @@ uint8_t nice_delay_ms(uint16_t ms) {
         _delay_loop_2(BOGOMIPS*98/100);
         #endif  // ifdef USE_DYNAMIC_UNDERCLOCKING
 
-        process_emissions();
         if ((nice_delay_interrupt) || (old_state != current_state)) {
-            //nice_delay_interrupt = 0;
             return 0;  // state changed; abort
         }
+        // handle events only afterward, so that any collapsed delays will
+        // finish running the UI's loop() code before taking any further actions
+        // (this helps make sure code runs in the correct order)
+        // (otherwise, a new state's EV_enter runs before the old state's
+        //  loop() has finished, and things can get weird)
+        process_emissions();
     }
     return 1;
 }

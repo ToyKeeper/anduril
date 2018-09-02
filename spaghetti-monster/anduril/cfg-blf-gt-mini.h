@@ -1,0 +1,11 @@
+// BLF/Lumintop GT Mini config options for Anduril
+// Same as an Emisar D1S, except it has a lighted button
+#include "cfg-emisar-d1s.h"
+
+// the button lights up
+#define USE_INDICATOR_LED
+// the button is visible while main LEDs are on
+#define USE_INDICATOR_LED_WHILE_RAMPING
+// enable blinking indicator LED while off
+#define TICK_DURING_STANDBY
+
