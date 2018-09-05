@@ -6,7 +6,7 @@
 #define USE_INDICATOR_LED_WHILE_RAMPING
 // enable blinking indicator LED while off
 // (no, it doesn't really make sense on this light)
-//#define TICK_DURING_STANDBY
+#define TICK_DURING_STANDBY
 
 #ifdef RAMP_LENGTH
 #undef RAMP_LENGTH
