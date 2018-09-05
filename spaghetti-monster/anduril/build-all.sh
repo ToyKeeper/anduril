@@ -1,5 +1,7 @@
 #!/bin/sh
 
+UI=anduril
+
 for TARGET in \
   BLF_GT \
   BLF_GT_MINI \
@@ -13,6 +15,6 @@ for TARGET in \
   FW3A \
   ; do
   echo "===== $TARGET ====="
-  ../../../bin/build-85.sh anduril "-DFSM_${TARGET}_DRIVER"
-  mv -f anduril.hex anduril.$TARGET.hex
+  ../../../bin/build-85.sh "$UI" "-DFSM_${TARGET}_DRIVER"
+  mv -f "$UI".hex "$UI".$TARGET.hex
 done

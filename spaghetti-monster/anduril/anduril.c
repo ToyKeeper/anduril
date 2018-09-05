@@ -1008,6 +1008,7 @@ uint8_t battcheck_state(EventPtr event, uint16_t arg) {
 }
 #endif
 
+
 #ifdef USE_THERMAL_REGULATION
 uint8_t tempcheck_state(EventPtr event, uint16_t arg) {
     // 1 click: off
@@ -1036,6 +1037,8 @@ uint8_t beacon_state(EventPtr event, uint16_t arg) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
+    // TODO: use sleep ticks to measure time between pulses,
+    //       to save power
     // 2 clicks: tempcheck mode
     else if (event == EV_2clicks) {
         #ifdef USE_THERMAL_REGULATION
@@ -1601,7 +1604,7 @@ uint8_t nearest_level(int16_t target) {
 
     for(uint8_t i=0; i<ramp_discrete_steps; i++) {
         this_level = ramp_discrete_floor + (i * (uint16_t)ramp_range / (ramp_discrete_steps-1));
-        int8_t diff = target - this_level;
+        int16_t diff = target - this_level;
         if (diff < 0) diff = -diff;
         if (diff <= (ramp_discrete_step_size>>1))
             return this_level;
