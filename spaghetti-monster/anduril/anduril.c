@@ -1595,7 +1595,7 @@ uint8_t nearest_level(int16_t target) {
 
     for(uint8_t i=0; i<ramp_discrete_steps; i++) {
         this_level = ramp_discrete_floor + (i * (uint16_t)ramp_range / (ramp_discrete_steps-1));
-        int8_t diff = target - this_level;
+        int16_t diff = target - this_level;
         if (diff < 0) diff = -diff;
         if (diff <= (ramp_discrete_step_size>>1))
             return this_level;
