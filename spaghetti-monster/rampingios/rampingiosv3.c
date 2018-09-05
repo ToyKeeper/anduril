@@ -25,20 +25,13 @@
 //#define FSM_BLF_Q8_DRIVER
 //#define FSM_FW3A_DRIVER
 //#define FSM_BLF_GT_DRIVER
+//#define FSM_BLF_GT_MINI_DRIVER
 
 #define USE_LVP  // FIXME: won't build when this option is turned off
 
+// parameters for this defined below or per-driver
 #define USE_THERMAL_REGULATION
-#define DEFAULT_THERM_CEIL 45
-#define MIN_THERM_STEPDOWN MAX_1x7135  // lowest value it'll step down to
-#ifdef MAX_Nx7135
-#define THERM_DOUBLE_SPEED_LEVEL MAX_Nx7135  // throttle back faster when high
-#else
-#define THERM_DOUBLE_SPEED_LEVEL (RAMP_SIZE*4/5)  // throttle back faster when high
-#endif
-#ifdef USE_THERMAL_REGULATION
-#define USE_SET_LEVEL_GRADUALLY  // isn't used except for thermal adjustments
-#endif
+#define DEFAULT_THERM_CEIL 45  // try not to get hotter than this
 
 // short blips while ramping
 #define BLINK_AT_CHANNEL_BOUNDARIES
@@ -58,6 +51,9 @@
 /***** specific settings for known driver types *****/
 #if defined(FSM_BLF_GT_DRIVER)
 #include "cfg-blf-gt.h"
+
+#elif defined(FSM_BLF_GT_MINI_DRIVER)
+#include "cfg-blf-gt-mini.h"
 
 #elif defined(FSM_BLF_Q8_DRIVER)
 #include "cfg-blf-q8.h"
@@ -82,10 +78,27 @@
 
 #endif
 
+
+// thermal properties, if not defined per-driver
+#ifndef MIN_THERM_STEPDOWN
+#define MIN_THERM_STEPDOWN MAX_1x7135  // lowest value it'll step down to
+#endif
+#ifndef THERM_FASTER_LEVEL
+    #ifdef MAX_Nx7135
+    #define THERM_FASTER_LEVEL MAX_Nx7135  // throttle back faster when high
+    #else
+    #define THERM_FASTER_LEVEL (RAMP_SIZE*4/5)  // throttle back faster when high
+    #endif
+#endif
+#ifdef USE_THERMAL_REGULATION
+#define USE_SET_LEVEL_GRADUALLY  // isn't used except for thermal adjustments
+#endif
+
+
 /********* Configure SpaghettiMonster *********/
 #define USE_DELAY_ZERO
 #define USE_RAMPING
-#define RAMP_LENGTH 150
+#define RAMP_LENGTH 150  // default, if not overridden in a driver cfg file
 #define USE_BATTCHECK
 #define MAX_CLICKS 10
 #define USE_IDLE_MODE  // reduce power use while awake and no tasks are pending
@@ -245,7 +258,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif
-    // hold (initially): go to lowest level, but allow abort for regular click
+    // hold (initially): go to lowest level (floor), but allow abort for regular click
     else if (event == EV_click1_press) {
         set_level(nearest_level(1));
         return MISCHIEF_MANAGED;
@@ -259,7 +272,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         }
         return MISCHIEF_MANAGED;
     }
-    // hold, release quickly: go to lowest level
+    // hold, release quickly: go to lowest level (floor)
     else if (event == EV_click1_hold_release) {
         set_state(steady_state, 1);
         return MISCHIEF_MANAGED;
@@ -279,14 +292,14 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         set_level(0);
         return MISCHIEF_MANAGED;
     }
-    // click, hold: go to highest level (for ramping down)
+    // click, hold: go to highest level (ceiling) (for ramping down)
     else if (event == EV_click2_hold) {
         set_state(steady_state, MAX_LEVEL);
         return MISCHIEF_MANAGED;
     }
-    // 2 clicks: highest mode
+    // 2 clicks: highest mode (ceiling)
     else if (event == EV_2clicks) {
-        set_state(steady_state, nearest_level(MAX_LEVEL));
+        set_state(steady_state, MAX_LEVEL);
         return MISCHIEF_MANAGED;
     }
     #ifdef USE_BATTCHECK
@@ -530,10 +543,16 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         #endif
         #ifdef USE_SET_LEVEL_GRADUALLY
         // make thermal adjustment speed scale with magnitude
-        // if we're on a really high mode, drop faster
-        if ((arg & 1) && (actual_level < THERM_DOUBLE_SPEED_LEVEL)) {
+        if ((arg & 1) && (actual_level < THERM_FASTER_LEVEL)) {
             return MISCHIEF_MANAGED;  // adjust slower when not a high mode
         }
+        #ifdef THERM_HARD_TURBO_DROP
+        else if ((! (actual_level < THERM_FASTER_LEVEL))
+                && (actual_level > gradual_target)) {
+            gradual_tick();
+        }
+        else {
+        #endif
         // [int(62*4 / (x**0.8)) for x in (1,2,4,8,16,32,64,128)]
         //uint8_t intervals[] = {248, 142, 81, 46, 26, 15, 8, 5};
         // [int(62*4 / (x**0.9)) for x in (1,2,4,8,16,32,64,128)]
@@ -548,8 +567,10 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
             diff = actual_level - gradual_target;
         }
         uint8_t magnitude = 0;
+        #ifndef THERM_HARD_TURBO_DROP
         // if we're on a really high mode, drop faster
-        if (actual_level >= THERM_DOUBLE_SPEED_LEVEL) { magnitude ++; }
+        if (actual_level >= THERM_FASTER_LEVEL) { magnitude ++; }
+        #endif
         while (diff) {
             magnitude ++;
             diff >>= 1;
@@ -561,6 +582,9 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
             ticks_since_adjust = 0;
         }
         //if (!(arg % ticks_per_adjust)) gradual_tick();
+        #ifdef THERM_HARD_TURBO_DROP
+        }
+        #endif
         #endif
         return MISCHIEF_MANAGED;
     }
@@ -573,6 +597,15 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         set_level(0);
         delay_4ms(2);
         set_level(foo);
+        #endif
+        #ifdef THERM_HARD_TURBO_DROP
+        if (actual_level > THERM_FASTER_LEVEL) {
+            #ifdef USE_SET_LEVEL_GRADUALLY
+            set_level_gradually(THERM_FASTER_LEVEL);
+            #else
+            set_level(THERM_FASTER_LEVEL);
+            #endif
+        } else
         #endif
         if (actual_level > MIN_THERM_STEPDOWN) {
             int16_t stepdown = actual_level - arg;
@@ -669,25 +702,24 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
     // momentary(ish) moon mode during lockout
     // not all presses will be counted;
     // it depends on what is in the master event_sequences table
-    // FIXME: maybe do this only if arg == 0?
-    //        (so it'll only get turned on once, instead of every frame)
     uint8_t last = 0;
     for(uint8_t i=0; pgm_read_byte(event + i) && (i<EV_MAX_LEN); i++)
         last = pgm_read_byte(event + i);
-    if ((last == A_PRESS) || (last == A_HOLD)) {
-        // detect moon level and activate it
-        uint8_t lvl = ramp_smooth_floor;
-        #ifdef LOCKOUT_MOON_LOWEST
-        // Use lowest moon configured
-        if (ramp_discrete_floor < lvl) lvl = ramp_discrete_floor;
-        #else
-        // Use moon from current ramp
-        if (ramp_style) lvl = ramp_discrete_floor;
-        #endif
-        set_level(lvl);
-    }
-    else if ((last == A_RELEASE) || (last == A_RELEASE_TIMEOUT)) {
-        set_level(0);
+    if (arg == 0) {  // Only turn on/off when button state changes
+        if ((last == A_PRESS) || (last == A_HOLD)) {
+            #ifdef LOCKOUT_MOON_LOWEST
+            // Use lowest moon configured
+            uint8_t lvl = ramp_smooth_floor;
+            if (ramp_discrete_floor < lvl) lvl = ramp_discrete_floor;
+            set_level(lvl);
+            #else
+            // Use moon from current ramp
+            set_level(nearest_level(1));
+            #endif
+        }
+        else if ((last == A_RELEASE) || (last == A_RELEASE_TIMEOUT)) {
+            set_level(0);
+        }
     }
     #endif
 
@@ -1018,7 +1050,7 @@ uint8_t nearest_level(int16_t target) {
 
     for(uint8_t i=0; i<ramp_discrete_steps; i++) {
         this_level = ramp_discrete_floor + (i * (uint16_t)ramp_range / (ramp_discrete_steps-1));
-        int8_t diff = target - this_level;
+        int16_t diff = target - this_level;
         if (diff < 0) diff = -diff;
         if (diff <= (ramp_discrete_step_size>>1))
             return this_level;
@@ -1151,7 +1183,7 @@ void loop() {
 
     else if (state == beacon_state) {
         set_level(memorized_level);
-        if (! nice_delay_ms(500)) return;
+        nice_delay_ms(500);
         set_level(0);
         nice_delay_ms(((beacon_seconds) * 1000) - 500);
     }

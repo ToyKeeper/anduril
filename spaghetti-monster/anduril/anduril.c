@@ -1002,6 +1002,7 @@ uint8_t battcheck_state(EventPtr event, uint16_t arg) {
 }
 #endif
 
+
 #ifdef USE_THERMAL_REGULATION
 uint8_t tempcheck_state(EventPtr event, uint16_t arg) {
     // 1 click: off
@@ -1030,6 +1031,8 @@ uint8_t beacon_state(EventPtr event, uint16_t arg) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
+    // TODO: use sleep ticks to measure time between pulses,
+    //       to save power
     // 2 clicks: tempcheck mode
     else if (event == EV_2clicks) {
         #ifdef USE_THERMAL_REGULATION
