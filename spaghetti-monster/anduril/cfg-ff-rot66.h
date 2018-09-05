@@ -8,6 +8,11 @@
 // (no, it doesn't really make sense on this light)
 #define TICK_DURING_STANDBY
 
+// off mode: high (2)
+// lockout: blinking (3)
+#define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 2)
+
+
 #ifdef RAMP_LENGTH
 #undef RAMP_LENGTH
 #endif

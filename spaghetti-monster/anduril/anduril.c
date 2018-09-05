@@ -281,15 +281,19 @@ volatile uint8_t ramp_discrete_steps = RAMP_DISCRETE_STEPS;
 uint8_t ramp_discrete_step_size;  // don't set this
 
 #ifdef USE_INDICATOR_LED
-// bits 2-3 control lockout mode
-// bits 0-1 control "off" mode
-// modes are: 0=off, 1=low, 2=high, 3=blinking (if TICK_DURING_STANDBY enabled)
-#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-//uint8_t indicator_led_mode = (1<<2) + 2;
-uint8_t indicator_led_mode = (2<<2) + 1;
-#else
-uint8_t indicator_led_mode = (3<<2) + 1;
-#endif
+    // bits 2-3 control lockout mode
+    // bits 0-1 control "off" mode
+    // modes are: 0=off, 1=low, 2=high, 3=blinking (if TICK_DURING_STANDBY enabled)
+    #ifdef INDICATOR_LED_DEFAULT_MODE
+    uint8_t indicator_led_mode = INDICATOR_LED_DEFAULT_MODE;
+    #else
+        #ifdef USE_INDICATOR_LED_WHILE_RAMPING
+        //uint8_t indicator_led_mode = (1<<2) + 2;
+        uint8_t indicator_led_mode = (2<<2) + 1;
+        #else
+        uint8_t indicator_led_mode = (3<<2) + 1;
+        #endif
+    #endif
 #endif
 
 // calculate the nearest ramp level which would be valid at the moment
