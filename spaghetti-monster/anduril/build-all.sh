@@ -11,6 +11,7 @@ for TARGET in \
   EMISAR_D4 \
   EMISAR_D4S \
   EMISAR_D4S_219c \
+  FF_ROT66 \
   FW3A \
   ; do
   echo "===== $TARGET ====="
