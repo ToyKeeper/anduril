@@ -742,6 +742,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
             #else
             set_level(THERM_FASTER_LEVEL);
             #endif
+            target_level = THERM_FASTER_LEVEL;
         } else
         #endif
         if (actual_level > MIN_THERM_STEPDOWN) {
