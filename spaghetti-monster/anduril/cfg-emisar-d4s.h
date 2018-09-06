@@ -40,7 +40,13 @@
 #define RAMP_SMOOTH_CEIL (MAX_LEVEL*4/5)
 
 // thermal regulation parameters
+#ifdef MIN_THERM_STEPDOWN
 #undef MIN_THERM_STEPDOWN  // this should be lower, because 3x7135 instead of 1x7135
+#endif
 #define MIN_THERM_STEPDOWN 60  // lowest value it'll step down to
 #define THERM_FASTER_LEVEL (RAMP_SIZE*9/10)  // throttle back faster when high
 
+// no need to be extra-careful on this light
+#ifdef THERM_HARD_TURBO_DROP
+#undef THERM_HARD_TURBO_DROP
+#endif
