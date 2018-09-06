@@ -19,13 +19,16 @@
 
 /********* User-configurable options *********/
 // Physical driver type (uncomment one of the following or define it at the gcc command line)
+//#define FSM_BLF_GT_DRIVER
+//#define FSM_BLF_GT_MINI_DRIVER
+//#define FSM_BLF_Q8_DRIVER
+//#define FSM_EMISAR_D1_DRIVER
+//#define FSM_EMISAR_D1S_DRIVER
 //#define FSM_EMISAR_D4_DRIVER
 //#define FSM_EMISAR_D4S_DRIVER
 //#define FSM_EMISAR_D4S_219c_DRIVER
-//#define FSM_BLF_Q8_DRIVER
+//#define FSM_FF_ROT66_DRIVER
 //#define FSM_FW3A_DRIVER
-//#define FSM_BLF_GT_DRIVER
-//#define FSM_BLF_GT_MINI_DRIVER
 
 #define USE_LVP  // FIXME: won't build when this option is turned off
 
@@ -72,6 +75,9 @@
 
 #elif defined(FSM_EMISAR_D4S_DRIVER)
 #include "cfg-emisar-d4s.h"
+
+#elif defined(FSM_FF_ROT66_DRIVER)
+#include "cfg-ff-rot66.h"
 
 #elif defined(FSM_FW3A_DRIVER)
 #include "cfg-fw3a.h"
@@ -203,15 +209,19 @@ volatile uint8_t ramp_discrete_steps = RAMP_DISCRETE_STEPS;
 uint8_t ramp_discrete_step_size;  // don't set this
 
 #ifdef USE_INDICATOR_LED
-// bits 2-3 control lockout mode
-// bits 0-1 control "off" mode
-// modes are: 0=off, 1=low, 2=high, 3=blinking (if TICK_DURING_STANDBY enabled)
-#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-//uint8_t indicator_led_mode = (1<<2) + 2;
-uint8_t indicator_led_mode = (2<<2) + 1;
-#else
-uint8_t indicator_led_mode = (3<<2) + 1;
-#endif
+    // bits 2-3 control lockout mode
+    // bits 0-1 control "off" mode
+    // modes are: 0=off, 1=low, 2=high, 3=blinking (if TICK_DURING_STANDBY enabled)
+    #ifdef INDICATOR_LED_DEFAULT_MODE
+    uint8_t indicator_led_mode = INDICATOR_LED_DEFAULT_MODE;
+    #else
+        #ifdef USE_INDICATOR_LED_WHILE_RAMPING
+        //uint8_t indicator_led_mode = (1<<2) + 2;
+        uint8_t indicator_led_mode = (2<<2) + 1;
+        #else
+        uint8_t indicator_led_mode = (3<<2) + 1;
+        #endif
+    #endif
 #endif
 
 // calculate the nearest ramp level which would be valid at the moment
@@ -605,6 +615,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
             #else
             set_level(THERM_FASTER_LEVEL);
             #endif
+            target_level = THERM_FASTER_LEVEL;
         } else
         #endif
         if (actual_level > MIN_THERM_STEPDOWN) {
