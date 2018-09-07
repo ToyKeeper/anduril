@@ -50,10 +50,14 @@ void empty_event_sequence() {
 uint8_t push_event(uint8_t ev_type) {
     ticks_since_last_event = 0;  // something happened
     uint8_t i;
-    uint8_t prev_event = 0;  // never push the same event twice in a row
-    for(i=0; current_event[i] && (i<EV_MAX_LEN); i++)
-        prev_event = current_event[i];
-    if ((i < EV_MAX_LEN-1)  &&  (prev_event != ev_type)) {
+    //uint8_t prev_event = 0;  // never push the same event twice in a row
+    for(i=0; current_event[i] && (i<EV_MAX_LEN); i++) {
+        // this doesn't actually seem to be necessary any more...
+        //prev_event = current_event[i];
+    }
+    //if ((i < EV_MAX_LEN)  &&  (prev_event != ev_type)) {
+    //if (prev_event != ev_type) {
+    if (i < EV_MAX_LEN) {
         current_event[i] = ev_type;
         return 1;  // event pushed
     } else {
