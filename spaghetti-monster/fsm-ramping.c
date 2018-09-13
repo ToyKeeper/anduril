@@ -25,9 +25,20 @@
 
 void set_level(uint8_t level) {
     actual_level = level;
+
+    #ifdef USE_TINT_RAMPING
+    // calculate actual PWM levels based on a single-channel ramp
+    // and a global tint value
+    uint8_t brightness = pgm_read_byte(pwm1_levels + level);
+    uint8_t warm_PWM, cool_PWM;
+    cool_PWM = (uint16_t)tint * brightness / 255;
+    warm_PWM = brightness - cool_PWM;
+    #endif
+
     #ifdef USE_SET_LEVEL_GRADUALLY
     gradual_target = level;
     #endif
+
     #ifdef USE_INDICATOR_LED
     #ifdef USE_INDICATOR_LED_WHILE_RAMPING
     if (! go_to_standby)
@@ -40,6 +51,7 @@ void set_level(uint8_t level) {
         indicator_led(0);
     #endif
     #endif
+
     //TCCR0A = PHASE;
     if (level == 0) {
         #if PWM_CHANNELS >= 1
@@ -56,6 +68,12 @@ void set_level(uint8_t level) {
         #endif
     } else {
         level --;
+
+        #ifdef USE_TINT_RAMPING
+        PWM1_LVL = warm_PWM;
+        PWM2_LVL = cool_PWM;
+        #else
+
         #if PWM_CHANNELS >= 1
         PWM1_LVL = pgm_read_byte(pwm1_levels + level);
         #endif
@@ -68,6 +86,8 @@ void set_level(uint8_t level) {
         #if PWM_CHANNELS >= 4
         PWM4_LVL = pgm_read_byte(pwm4_levels + level);
         #endif
+
+        #endif  // ifdef USE_TINT_RAMPING
     }
     #ifdef USE_DYNAMIC_UNDERCLOCKING
     auto_clock_speed();

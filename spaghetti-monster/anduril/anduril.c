@@ -75,6 +75,9 @@
 #elif defined(FSM_BLF_GT_MINI_DRIVER)
 #include "cfg-blf-gt-mini.h"
 
+#elif defined(FSM_BLF_LANTERN_DRIVER)
+#include "cfg-blf-lantern.h"
+
 #elif defined(FSM_BLF_Q8_DRIVER)
 #include "cfg-blf-q8.h"
 
@@ -204,6 +207,10 @@ uint8_t config_state_values[MAX_CONFIG_VALUES];
 // ramping mode and its related config mode
 uint8_t steady_state(EventPtr event, uint16_t arg);
 uint8_t ramp_config_state(EventPtr event, uint16_t arg);
+#ifdef USE_TINT_RAMPING
+// not actually a mode, more of a fallback under other modes
+uint8_t tint_ramping_state(EventPtr event, uint16_t arg);
+#endif
 // party and tactical strobes
 #ifdef USE_STROBE_STATE
 uint8_t strobe_state(EventPtr event, uint16_t arg);
@@ -782,6 +789,34 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     #endif
     return EVENT_NOT_HANDLED;
 }
+
+
+#ifdef USE_TINT_RAMPING
+uint8_t tint_ramping_state(EventPtr event, uint16_t arg) {
+    static int8_t tint_ramp_direction = 1;
+
+    // click, click, hold: change the tint
+    if (event == EV_click3_hold) {
+        if ((arg & 1) == 0) {  // ramp slower
+            if ((tint_ramp_direction > 0) && (tint < 255)) {
+                tint += 1;
+            }
+            else if ((tint_ramp_direction < 0) && (tint > 0)) {
+                tint -= 1;
+            }
+        }
+        return EVENT_HANDLED;
+    }
+
+    // click, click, hold, release: reverse direction for next ramp
+    else if (event == EV_click3_hold_release) {
+        tint_ramp_direction = -tint_ramp_direction;
+        return EVENT_HANDLED;
+    }
+
+    return EVENT_NOT_HANDLED;
+}
+#endif  // ifdef USE_TINT_RAMPING
 
 
 #ifdef USE_STROBE_STATE
@@ -1786,14 +1821,20 @@ void setup() {
 
     load_config();
 
+    #ifdef USE_TINT_RAMPING
+    // add tint ramping underneath every other state
+    push_state(tint_ramping_state, 0);
+
     #ifdef USE_MUGGLE_MODE
     if (muggle_mode_active)
         push_state(muggle_state, (MUGGLE_FLOOR+MUGGLE_CEILING)/2);
     else
     #endif
         push_state(off_state, 0);
-    #endif
 
+    #endif  // ifdef USE_TINT_RAMPING
+
+    #endif  // ifdef START_AT_MEMORIZED_LEVEL
 }
 
 

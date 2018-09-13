@@ -26,6 +26,10 @@
 // actual_level: last ramp level set by set_level()
 volatile uint8_t actual_level = 0;
 
+#ifdef USE_TINT_RAMPING
+uint8_t tint = 0;
+#endif
+
 #ifdef USE_SET_LEVEL_GRADUALLY
 // adjust brightness very smoothly
 volatile uint8_t gradual_target;
