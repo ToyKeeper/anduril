@@ -26,15 +26,6 @@
 void set_level(uint8_t level) {
     actual_level = level;
 
-    #ifdef USE_TINT_RAMPING
-    // calculate actual PWM levels based on a single-channel ramp
-    // and a global tint value
-    uint8_t brightness = pgm_read_byte(pwm1_levels + level);
-    uint8_t warm_PWM, cool_PWM;
-    cool_PWM = (uint16_t)tint * brightness / 255;
-    warm_PWM = brightness - cool_PWM;
-    #endif
-
     #ifdef USE_SET_LEVEL_GRADUALLY
     gradual_target = level;
     #endif
@@ -70,6 +61,13 @@ void set_level(uint8_t level) {
         level --;
 
         #ifdef USE_TINT_RAMPING
+        // calculate actual PWM levels based on a single-channel ramp
+        // and a global tint value
+        uint8_t brightness = pgm_read_byte(pwm1_levels + level);
+        uint8_t warm_PWM, cool_PWM;
+        cool_PWM = (((uint16_t)tint * (uint16_t)brightness) + 127) / 255;
+        warm_PWM = brightness - cool_PWM;
+
         PWM1_LVL = warm_PWM;
         PWM2_LVL = cool_PWM;
         #else
