@@ -29,9 +29,9 @@
 // set floor and ceiling as far apart as possible
 // because this lantern isn't overpowered
 #define RAMP_SMOOTH_FLOOR 1
-#define RAMP_SMOOTH_CEILING 150
+#define RAMP_SMOOTH_CEIL 150
 #define RAMP_DISCRETE_FLOOR RAMP_SMOOTH_FLOOR
-#define RAMP_DISCRETE_CEILING RAMP_SMOOTH_CEILING
+#define RAMP_DISCRETE_CEIL RAMP_SMOOTH_CEIL
 
 // the sensor (attiny85) is nowhere near the emitters
 // so thermal regulation can't work

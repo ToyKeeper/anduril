@@ -158,6 +158,9 @@ typedef enum {
     ramp_discrete_floor_e,
     ramp_discrete_ceil_e,
     ramp_discrete_steps_e,
+    #ifdef USE_TINT_RAMPING
+    tint_e,
+    #endif
     #ifdef USE_STROBE_STATE
     strobe_type_e,
     #endif
@@ -797,7 +800,7 @@ uint8_t tint_ramping_state(EventPtr event, uint16_t arg) {
 
     // click, click, hold: change the tint
     if (event == EV_click3_hold) {
-        if ((arg & 1) == 0) {  // ramp slower
+        //if ((arg & 1) == 0) {  // ramp slower
             if ((tint_ramp_direction > 0) && (tint < 255)) {
                 tint += 1;
             }
@@ -805,7 +808,7 @@ uint8_t tint_ramping_state(EventPtr event, uint16_t arg) {
                 tint -= 1;
             }
             set_level(actual_level);
-        }
+        //}
         return EVENT_HANDLED;
     }
 
@@ -814,6 +817,8 @@ uint8_t tint_ramping_state(EventPtr event, uint16_t arg) {
         tint_ramp_direction = -tint_ramp_direction;
         if (tint == 0) tint_ramp_direction = 1;
         else if (tint == 255) tint_ramp_direction = -1;
+        // remember tint after battery change
+        save_config();
         return EVENT_HANDLED;
     }
 
@@ -1696,6 +1701,9 @@ void load_config() {
         ramp_discrete_floor = eeprom[ramp_discrete_floor_e];
         ramp_discrete_ceil = eeprom[ramp_discrete_ceil_e];
         ramp_discrete_steps = eeprom[ramp_discrete_steps_e];
+        #ifdef USE_TINT_RAMPING
+        tint = eeprom[tint_e];
+        #endif
         #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
         strobe_type = eeprom[strobe_type_e];  // TODO: move this to eeprom_wl?
         strobe_delays[0] = eeprom[strobe_delays_0_e];
@@ -1730,6 +1738,9 @@ void save_config() {
     eeprom[ramp_discrete_floor_e] = ramp_discrete_floor;
     eeprom[ramp_discrete_ceil_e] = ramp_discrete_ceil;
     eeprom[ramp_discrete_steps_e] = ramp_discrete_steps;
+    #ifdef USE_TINT_RAMPING
+    eeprom[tint_e] = tint;
+    #endif
     #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
     eeprom[strobe_type_e] = strobe_type;  // TODO: move this to eeprom_wl?
     eeprom[strobe_delays_0_e] = strobe_delays[0];
