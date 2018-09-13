@@ -804,6 +804,7 @@ uint8_t tint_ramping_state(EventPtr event, uint16_t arg) {
             else if ((tint_ramp_direction < 0) && (tint > 0)) {
                 tint -= 1;
             }
+            set_level(actual_level);
         }
         return EVENT_HANDLED;
     }
@@ -811,6 +812,8 @@ uint8_t tint_ramping_state(EventPtr event, uint16_t arg) {
     // click, click, hold, release: reverse direction for next ramp
     else if (event == EV_click3_hold_release) {
         tint_ramp_direction = -tint_ramp_direction;
+        if (tint == 0) tint_ramp_direction = 1;
+        else if (tint == 255) tint_ramp_direction = -1;
         return EVENT_HANDLED;
     }
 
