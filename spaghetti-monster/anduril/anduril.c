@@ -524,7 +524,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     // 3 clicks: toggle smooth vs discrete ramping
     else if (event == EV_3clicks) {
         ramp_style = !ramp_style;
-        memorized_level = nearest_level(memorized_level);
+        memorized_level = nearest_level(actual_level);
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #ifdef USE_SET_LEVEL_GRADUALLY
