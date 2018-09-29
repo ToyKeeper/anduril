@@ -9,9 +9,9 @@ for TARGET in \
   EMISAR_D1 \
   EMISAR_D1S \
   EMISAR_D4 \
-  EMISAR_D4_219c \
+  EMISAR_D4_219C \
   EMISAR_D4S \
-  EMISAR_D4S_219c \
+  EMISAR_D4S_219C \
   FF_ROT66 \
   FW3A \
   ; do
