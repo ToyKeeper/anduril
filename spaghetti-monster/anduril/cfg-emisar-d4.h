@@ -14,7 +14,8 @@
 #define QUARTERSPEED_LEVEL 5
 
 // optional, makes initial turbo step-down faster so first peak isn't as hot
-//#define THERM_HARD_TURBO_DROP
+// the D4 runs very very hot, so be extra careful
+#define THERM_HARD_TURBO_DROP
 
-// stop panicking at ~25% power or ~1000 lm, this light is a hotrod
-#define THERM_FASTER_LEVEL (RAMP_SIZE*2/3)  // throttle back faster when high
+// stop panicking at ~30% power or ~1200 lm
+#define THERM_FASTER_LEVEL 105

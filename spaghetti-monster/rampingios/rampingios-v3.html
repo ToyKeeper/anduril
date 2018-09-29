@@ -1,0 +1,501 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scape=1.0; user-scalable=false;">
+  <link rel="apple-touch-icon" href="/phil/avatar-iphone.png">
+  <title>RampingIOS V3 Manual :: Phil! Gold</title>
+
+  <meta name="DC.title" content="Phil! Gold">
+
+  <link rel="openid2.provider" href="https://www.google.com/accounts/o8/ud" />
+  <link rel="openid2.local_id" href="https://plus.google.com/116471799767513262335" />
+  <!-- Old one preserved, because some sites use the provider as an account key (bad them). -->
+  <!--link rel="openid.server" href="http://www.livejournal.com/openid/server.bml"-->
+  <!--link rel="openid.delegate" href="http://phil-g.livejournal.com/"-->
+
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="http://aperiodic.net/phil/archives/index.rss">
+  <link rel="stylesheet" type="text/css" href="/phil/default.css">
+  <link rel="stylesheet" type="text/css" href="/phil/blog.css">
+
+</head>
+
+<body>
+
+<div id="header">
+  <h1>RampingIOS V3 Manual</h1>
+</div>
+
+<div id="content">
+<h2>Tue, 28 Aug 2018</h2>
+
+<div class="story-title" id="rampingios-v3">
+  <h3>RampingIOS V3 Manual</h3>
+  <div class="title-links">
+    9:47AM |
+    <a href="http://aperiodic.net/phil/archives/Geekery" >Geekery</a> |
+    
+    <a href="http://aperiodic.net/phil/archives/Geekery/rampingios-v3.html" title="permalink for RampingIOS V3 Manual" rel="bookmark">#</a>
+  </div>
+</div>
+
+<p><figure style="float: right">
+  <a href="https://bazaar.launchpad.net/~toykeeper/flashlight-firmware/trunk/download/head:/rampingiosv3ui.png-20180807025443-zdamv4ixtu49o7hm-1/rampingiosv3-ui.png">
+    <!-- img width="256em" src="https://bazaar.launchpad.net/~toykeeper/flashlight-firmware/trunk/download/head:/rampingiosv3.svg-20180807025420-q28902kbav01123w-1/rampingiosv3.svg" -->
+    <img width="256em" src="https://bazaar.launchpad.net/~toykeeper/flashlight-firmware/trunk/download/head:/rampingiosv3ui.png-20180807025443-zdamv4ixtu49o7hm-1/rampingiosv3-ui.png">
+  </a>
+  <figcaption>RampingIOS V3 UI diagram</figcaption>
+</figure></p>
+
+<p>The Emisar <a href="https://intl-outdoor.com/emisar-d4s-26650-high-power-led-flashlight-p-932.html">D4S</a> flashlights use a firmware named RampingIOS
+V3.  (The Emisar <a href="https://intl-outdoor.com/emisar-d4-high-power-led-flashlight-p-921.html">D4</a>, <a href="https://intl-outdoor.com/emisar-d1-mini-thrower-p-922.html">D1</a>, and <a href="https://intl-outdoor.com/emisar-d1s-thrower-p-926.html">D1S</a>
+all use <a href="http://aperiodic.net/phil/archives/Geekery/rampingios-v2.html">RampingIOS V2</a>.)  There's not really a manual; the
+only thing we get is the diagram on the right.  It's reasonably
+comprehensive, but there's a fair amount of detail it merely summarizes,
+so I thought a textual manual would be nice.</p>
+
+<p>The Emisar D4S only works when the head and tailcap are tightened fully.
+You can physically lock it out--prevent it from turning on
+accidentally--by simply loosening the tailcap a small amount.  A quarter
+turn will do it.</p>
+
+<p>Emisar lights are known for their ramping interfaces.  Rather than have a
+small number of distinct brightness levels, they can vary their brightness
+anywhere between their lowest and highest levels, like a light on a
+dimmer.  The D4S is in ramping mode by default, but it also has a stepped
+mode that can be configured to be closer to how non-ramping lights work.</p>
+
+<p>Each mode--ramping and stepped--can have differently-configured brightness
+floors and ceilings.</p>
+
+<p>The driver for the D4S has two different chipsets.  At low brightness
+levels, a fairly-efficient but low-power chipset (called a <em>7135</em>) is
+used.  These lowest brightness levels are called the "<em>regulated levels</em>".
+Each regulated level will always be the same brightness regardless of how
+much charge the battery has.  Above a particular brightness level, the
+light switches over to a less-efficient but high-power chipset (called a
+<em>FET</em>).  These levels are called "<em>direct-drive</em>".  The brightness of the
+direct-drive levels is directly related to the battery's charge level; the
+more charged the battery, the brighter the levels.  The light is at its
+most efficient, in terms of power used for every lumen generated, at the
+brightest regulated level.  When the light is first powered by tightening
+the tailcap, it will default to this level.</p>
+
+<p>At higher brightness levels, the light's LEDs generate a lot of heat.  If
+the light exceeds its configured maximum temperature, it will begin
+dimming itself automatically until the temperature drops below the allowed
+maximum.</p>
+
+<p>The D4S has a set of cyan-colored auxiliary LEDs that can be on when the
+main LEDs are off.  You can configure the behavior of the aux LEDs.</p>
+
+<h4>Basic Usage</h4>
+
+<p>The default mode for the light is ramping mode.  Triple-pressing the
+button (<strong>3 clicks</strong>) while the light is on will toggle between ramping
+and stepped mode.</p>
+
+<p>While the light is off, press and release the button (<strong>1 click</strong>) to turn
+it on.  It will turn on at the last-used brightness level.  (This is
+called "<em>mode memory</em>".)  Immediately after loosening and tightening the
+tailcap (or after changing the battery), the memorized level will be the
+light's max regulated level.</p>
+
+<p>When the light is on, 1 click will turn it off.  The current brightness
+level will be memorized for future use.  There's a fraction of a second
+delay between pressing the button and the light actually turning off.
+That's because of the way the light processes input; it's waiting to make
+sure you're only going to press the button once (since multiple presses
+will trigger other actions).</p>
+
+<p>When the light is on, holding the button down will brighten the light.  In
+ramping mode, the brightness will increase gradually ("<em>ramping up</em>").  In
+stepped mode, the light will jump through increasing brightness levels.
+If you press, release, and then hold the button, it will begin dimming.
+In ramping mode, the brightness will decrease gradually ("<em>ramping
+down</em>").  In stepped mode, the light will jump through decreasing
+brightness levels.  While the light is changing, if you release the button
+and immediately hold it again, the direction (dimming or brightening) will
+switch.</p>
+
+<p>In ramping mode, while the light is ramping, it'll briefly blink off and
+on again at two different brightness levels: the maximum regulated level
+and the brightness ceiling.</p>
+
+<p>While the light is off, double-pressing the button (<strong>2 clicks</strong>) will
+immediately jump to the brightness ceiling.</p>
+
+<p>While the light is on, <strong>2 clicks</strong> will jump to the maximum brightness
+level, regardless of the configured brightness ceiling.  Another two
+clicks will go back to the previous brightness level.</p>
+
+<p>While the light is off, if you hold the button the light will turn on at
+its lowest level.  If you continue holding the button, the light will
+begin brightening from there.</p>
+
+<h5>Configuration Menus</h5>
+
+<p>The light has several different configuration modes.  Each of those modes
+works more or less the same way.  The mode will have a series of menu
+items that it will go through.  For each menu item, the light will first
+blink a number of times corresponding to the item number (first, second,
+etc.)  After that, the light will begin fluttering on and off fairly
+quickly.  While the light is fluttering, you can click the button a number
+of times; the light will count the number of button presses and use that
+number as its new configuration for that menu item.  After a short period
+of time, the fluttering will stop and the light will move on to the next
+menu item.  After the light has gone through all of the menu items, it
+will return to whatever mode it was in before entering the configuration
+mode.</p>
+
+<p>If you don't press the button during a particular menu item's fluttering,
+that item will remain unchanged.</p>
+
+<h5>Configuring the Basic Modes</h5>
+
+<p>While the light is on, <strong>4 clicks</strong> will enter ramping or stepped
+configuration mode, depending on which mode the light was in before the 4
+clicks.</p>
+
+<p>For ramping mode, there are two menu options:</p>
+
+<ol>
+<li>Brightness floor (default 1/150)</li>
+<li>Brightness ceiling (default 150/150)</li>
+</ol>
+
+<p>During the floor configuration, press the button equal to the number of
+ramping levels (out of 150) at which the floor should be.  To set the
+lowest possible floor, click the button once.</p>
+
+<p>The ceiling is configured similarly, but you press the button equal to the
+number of steps away from maximum brightness.  To set the highest possible
+ceiling (at max brightness), click the button once.</p>
+
+<p>For stepped mode, there are three menu options:</p>
+
+<ol>
+<li>Brightness floor (default 20/150)</li>
+<li>Brightness ceiling (default 120/150)</li>
+<li>Number of steps (default 7)</li>
+</ol>
+
+<h4>Other Modes</h4>
+
+<p>The other modes largely involve multiple clicks from off.  Most of them
+are not generally needed for everyday use, but they supplement the light's
+basic operations.</p>
+
+<h5>BattCheck/TempCheck Modes</h5>
+
+<p>From off, <strong>3 clicks</strong> will enter "BattCheck" mode, which blinks out the
+current battery voltage.  First it blinks the number of volts, then it
+pauses, then it blinks out the tenths of volts.  Thus, if the battery were
+at 3.5 volts, the light would blink three times, pause, then five times.
+For zeroes, it gives a very short blink.</p>
+
+<p>A fully-charged lithium-ion battery is 4.2 volts.  The light considers 2.8
+volts to be an empty battery and won't turn on if the battery is at or
+below 2.8 volts.</p>
+
+<p>The voltage sequence will continue blinking until you turn off the light
+with a single click.</p>
+
+<p>While the light is in BattCheck mode, <strong>2 clicks</strong> will enter TempCheck
+mode.  Instead of blinking out the battery voltage, the light will start
+blinking out its current temperature in degrees Celsius, first the tens
+digit then the units digit.  Like BattCheck mode, the light will continue
+blinking out the temperature until you turn it off with a single click.</p>
+
+<p>While the light is in TempCheck mode, <strong>4 clicks</strong> will enter thermal
+configuration mode.  See the thermal configuration mode documentation
+below for how that works.</p>
+
+<h5>Tactical Mode</h5>
+
+<p>From off, <strong>4 clicks</strong> will enter "tactical" or "momentary" mode.  The
+light will flash once to show that it's entered the mode.  The auxiliary
+LEDs will turn off (if they were on).  In tactical mode, the light will
+turn on at its memorized brightness for as long as the button is being
+held down.  It will turn off as soon as the button is released.</p>
+
+<p>There's no button press combination that will exit tactical mode.  To exit
+it, you will have to partially unscrew and retighten the tailcap.</p>
+
+<h5>Lockout Mode</h5>
+
+<p>From off, <strong>6 clicks</strong> will enter lockout mode.  The light will flash
+twice to show that it's entered the mode.  There's a separate aux LED mode
+for lockout mode, so you can tell whether the light is in lockout or not.</p>
+
+<p>In lockout mode, pressing the button will turn on the light at its lowest
+brightness ("<em>moonlight mode</em>") for as long as the button is held down.</p>
+
+<p>Another 6 clicks will exit lockout mode.  The light will flash twice to
+show that it's left the mode.</p>
+
+<p>While in lockout mode, <strong>3 clicks</strong> will cycle through the various
+settings for the aux LEDs in lockout mode.  The four modes are, in order:
+low, high, blink (on high), and off.  The default mode is blink.</p>
+
+<p>Remember that loosening the tailcap a quarter turn will also lock out the
+light.  Using the 6 clicks is called "<em>electronic lockout</em>", while turning
+the tailcap is "<em>physical lockout</em>".</p>
+
+<h5>Aux LED Configuration</h5>
+
+<p>From off, <strong>7 clicks</strong> will cycle to the next aux LED mode.  The four
+modes are, in order:  low, high, blink (on high), and off.  The default
+mode is low.</p>
+
+<h5>Beacon Mode</h5>
+
+<p>From off, <strong>8 clicks</strong> will enter beacon mode.  In beacon mode, the light
+will blink on and off every few seconds.</p>
+
+<p>By default, the light will blink every two seconds.  To change the timing,
+use <strong>4 clicks</strong> while in beacon mode.  The light will enter a one-item
+menu.  During the flickering for input, press the button a number of times
+equal to the number of seconds between blinks.</p>
+
+<p>1 click will exit beacon mode.</p>
+
+<h5>Thermal Configuration Mode</h5>
+
+<p>From off, <strong>10 clicks</strong> will enter thermal configuration mode.</p>
+
+<p>The menu items here are:</p>
+
+<ol>
+<li>Current temperature (every click is one degree Celsius)</li>
+<li>Temperature ceiling (every click is one degree <em>above 30°C</em>)</li>
+</ol>
+
+<p>The "current temperature" item can be used to adjust the calibration of
+the light's temperature sensor.  To use it, make sure the light has been
+off long enough that all of its components have cooled (or warmed) to the
+ambient temperature.  Check the ambient temperature using a thermometer
+you trust.  Go to thermal configuration mode, and enter the current
+temperature by clicking the button a number of times equal to the
+temperature in degrees Celsius.  (If it's 22°C, click the button 22
+times.)</p>
+
+<p>You can check the default calibration by entering TempCheck mode from a
+room-temperature light.  The D4Ss are supposed to go through a temperature
+calibration at the factory, so hopefully most of them won't need manual
+thermal calibration.</p>
+
+<p>The temperature ceiling is simply the highest temperature the light should
+be allowed to reach.  Once it hits its temperature ceiling, it will
+progressively dim itself until the temperature stabilizes below the
+ceiling.  Note that the number of clicks in that menu option is added to
+<em>30</em> to reach the actual ceiling.  (Thus, you can't set a ceiling below
+31°C.)  The maximum allowed ceiling is 70°C.</p>
+
+<p>The default temperature ceiling is 45°C.</p>
+
+
+</div>
+
+<div id="sidebar">
+  <h2>Static</h2>
+  <ul>
+    <li><a href="/phil/prompt/">zsh prompt</a></li>
+    <li><a href="/phil/pgp/">PGP</a></li>
+    <li><a href="/phil/ssh/">SSH</a></li>
+    <li><a href="/phil/MTA/">MTA</a></li>
+    <li><a href="/phil/tutorials/">tutorials</a></li>
+    <li><a href="/phil/configs/">config files</a></li>
+    <li><a href="http://www.flickr.com/photos/phil_g/sets/1671829/">desktop</a></li>
+    <li><a href="http://www.librarything.com/catalog/asciiphil">books I own</a></li>
+    <li><a href="/phil/stuff/">stuff I'm giving away</a></li>
+    <li><a href="/phil/drwho/">Dr. Who eps I have</a></li>
+    <li><a href="http://del.icio.us/phil_g">bookmarks</a></li>
+    <li><a href="http://www.flickr.com/photos/phil_g/">photos</a></li>
+    <li><a href="/phil/about.html">about</a></li>
+  </ul>
+
+  <h2>Directory</h2>
+  <ul class="categories">
+<li><a href="http://aperiodic.net/phil/archives/index.html">Root</a> (143)
+<ul>
+<li><a href="http://aperiodic.net/phil/archives/Books/index.html">Books</a> (32)
+</li>
+<li><a href="http://aperiodic.net/phil/archives/Events/index.html">Events</a> (7)
+<ul>
+<li><a href="http://aperiodic.net/phil/archives/Events/Burning_Man/index.html">Burning Man</a> (3)
+</li>
+<li><a href="http://aperiodic.net/phil/archives/Events/Camping/index.html">Camping</a> (2)
+</li>
+<li><a href="http://aperiodic.net/phil/archives/Events/PDF/index.html">PDF</a> (2)
+</li>
+</ul>
+</li>
+<li class="this-category">Geekery (36)
+<ul>
+<li><a href="http://aperiodic.net/phil/archives/Geekery/Test/index.html">Test</a> (3)
+</li>
+</ul>
+</li>
+<li><a href="http://aperiodic.net/phil/archives/General/index.html">General</a> (24)
+</li>
+<li><a href="http://aperiodic.net/phil/archives/Links/index.html">Links</a> (12)
+<ul>
+<li><a href="http://aperiodic.net/phil/archives/Links/Slashdot/index.html">Slashdot</a> (1)
+</li>
+</ul>
+</li>
+<li><a href="http://aperiodic.net/phil/archives/MTA/index.html">MTA</a> (22)
+</li>
+<li><a href="http://aperiodic.net/phil/archives/Recipes/index.html">Recipes</a> (4)
+</li>
+<li><a href="http://aperiodic.net/phil/archives/Video_Games/index.html">Video Games</a> (6)
+<ul>
+<li><a href="http://aperiodic.net/phil/archives/Video_Games/FFXI/index.html">FFXI</a> (1)
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+
+  <h2>Archive</h2>
+  <table class="month-calendar"><caption class="month-calendar-head"><a title="December 2017 (1)" href="http://aperiodic.net/phil/archives/2017/12/">&larr;</a><a title="August 2018 (2)" href="http://aperiodic.net/phil/archives/2018/08/">August</a>&rarr;</caption>
+    <tr>
+      <th class="month-calendar-day-head Sunday">Sun</th>
+      <th class="month-calendar-day-head Monday">Mon</th>
+      <th class="month-calendar-day-head Tuesday">Tue</th>
+      <th class="month-calendar-day-head Wednesday">Wed</th>
+      <th class="month-calendar-day-head Thursday">Thu</th>
+      <th class="month-calendar-day-head Friday">Fri</th>
+      <th class="month-calendar-day-head Saturday">Sat</th>
+    </tr>
+    <tr>
+      <td class="month-calendar-day-noday Sunday">&nbsp;</td>
+      <td class="month-calendar-day-noday Monday">&nbsp;</td>
+      <td class="month-calendar-day-noday Tuesday">&nbsp;</td>
+<td class="month-calendar-day-nolink Wednesday">1</td>
+<td class="month-calendar-day-nolink Thursday">2</td>
+<td class="month-calendar-day-nolink Friday">3</td>
+<td class="month-calendar-day-nolink Saturday">4</td>
+</tr>
+    <tr>
+<td class="month-calendar-day-nolink Sunday">5</td>
+<td class="month-calendar-day-nolink Monday">6</td>
+<td class="month-calendar-day-nolink Tuesday">7</td>
+<td class="month-calendar-day-nolink Wednesday">8</td>
+<td class="month-calendar-day-nolink Thursday">9</td>
+<td class="month-calendar-day-nolink Friday">10</td>
+<td class="month-calendar-day-nolink Saturday">11</td>
+</tr>
+    <tr>
+<td class="month-calendar-day-nolink Sunday">12</td>
+<td class="month-calendar-day-nolink Monday">13</td>
+<td class="month-calendar-day-nolink Tuesday">14</td>
+<td class="month-calendar-day-nolink Wednesday">15</td>
+<td class="month-calendar-day-nolink Thursday">16</td>
+<td class="month-calendar-day-nolink Friday">17</td>
+<td class="month-calendar-day-nolink Saturday">18</td>
+</tr>
+    <tr>
+<td class="month-calendar-day-nolink Sunday">19</td>
+<td class="month-calendar-day-nolink Monday">20</td>
+<td class="month-calendar-day-nolink Tuesday">21</td>
+<td class="month-calendar-day-nolink Wednesday">22</td>
+<td class="month-calendar-day-nolink Thursday">23</td>
+<td class="month-calendar-day-nolink Friday">24</td>
+<td class="month-calendar-day-nolink Saturday">25</td>
+</tr>
+    <tr>
+<td class="month-calendar-day-link Sunday"><a title="Sunday, 26 August 2018 (1)" href="http://aperiodic.net/phil/archives/2018/08/26/">26</a></td>
+<td class="month-calendar-day-nolink Monday">27</td>
+<td class="month-calendar-day-this-day Tuesday"><a title="Tuesday, 28 August 2018 (current) (1)" href="http://aperiodic.net/phil/archives/2018/08/28/">28</a></td>
+<td class="month-calendar-day-nolink Wednesday">29</td>
+<td class="month-calendar-day-nolink Thursday">30</td>
+<td class="month-calendar-day-nolink Friday">31</td>
+      <td class="month-calendar-day-noday Saturday">&nbsp;</td>
+</tr>
+</table>
+
+  <table class="year-calendar"><caption class="year-calendar-head"><a title="2017 (3)" href="http://aperiodic.net/phil/archives/2017/">&larr;</a><a title="2018 (2)" href="http://aperiodic.net/phil/archives/2018/">2018</a>&rarr;</caption><tr><th class="year-calendar-subhead" colspan="6">Months</th></tr>
+<tr>
+<td class="year-calendar-month-nolink">Jan</td>
+<td class="year-calendar-month-nolink">Feb</td>
+<td class="year-calendar-month-nolink">Mar</td>
+<td class="year-calendar-month-nolink">Apr</td>
+<td class="year-calendar-month-nolink">May</td>
+<td class="year-calendar-month-nolink">Jun</td>
+</tr>
+<tr>
+<td class="year-calendar-month-nolink">Jul</td>
+<td class="year-calendar-this-month"><a title="August 2018 (2)" href="http://aperiodic.net/phil/archives/2018/08/">Aug</a></td><td class="year-calendar-month-future">Sep</td>
+<td class="year-calendar-month-future">Oct</td>
+<td class="year-calendar-month-future">Nov</td>
+<td class="year-calendar-month-future">Dec</td>
+</tr>
+</table>
+
+
+  <h2>Search</h2>
+  <form method="GET" action="http://www.google.com/custom">
+    <p style="text-align: center">
+      <input type="hidden" name="domains" value="aperiodic.net">
+      <input type="hidden" name="cof" VALUE="GALT:#66CC6;S:http://aperiodic.net/phil/;GL:2;VLC:#CC66CC;AH:center;BGC:#000000;LC:#6666CC;GFNT:#666666;ALC:#CC6666;T:#CCCCCC;GIMP:#FFFFFF;AWFID:d3f1afbc39619250;">
+      <input type="hidden" name="sitesearch" value="aperiodic.net">
+      <input name="q" type="text" size="25" maxlength="255" style="width: 10em"><br>
+      Powered by <a href="http://www.google.com/"><span class="google-G1">G</span><span class="google-o1">o</span><span class="google-o2">o</span><span class="google-g2">g</span><span class="google-l">l</span><span class="google-e">e</span></a>
+    </p>
+  </form>
+
+
+  <h2>Currently Reading</h2>
+
+  <div id="wb55a1f3ca64835526140c06560a0205e"></div>
+  <script type="text/javascript" charset="UTF-8"
+          src="http://www.librarything.com/widget_get.php?userid=asciiphil&theID=wb55a1f3ca64835526140c06560a0205e">
+  </script>
+
+  <h2>Recent Books</h2>
+
+  <div id="wa13cfbb5a4be4d629ebe322b83f1e2f6"></div>
+  <script type="text/javascript" charset="UTF-8"
+          src="http://www.librarything.com/widget_get.php?userid=asciiphil&theID=wa13cfbb5a4be4d629ebe322b83f1e2f6">
+  </script>
+
+</div>
+
+<div class="hr"><hr></div>
+<address><a href="mailto:phil_g@pobox.com">Phil! Gold</a></address>
+<p class="footer">
+<a href="/phil/">Back to main page.</a><br>
+</p>
+<ul class="validation">
+  <li>
+  <a href="http://validator.w3.org/check/referer">
+  <img src="/phil/pics/html401.png" alt="Valid HTML 4.01">
+  </a>
+  </li>
+
+  <li>
+  <a href="http://jigsaw.w3.org/css-validator/check/referer">
+  <img src="/phil/pics/validcss.png" alt="Valid CSS 2">
+  </a>
+  </li>
+
+  <li>
+  <a href="http://aperiodic.net/phil/archives/index.rss">
+  <img src="/phil/pics/rss10.png" alt="RSS syndication">
+  </a>
+  </li>
+
+  <li>
+  <a href="http://feedvalidator.org/check?url=http://aperiodic.net/phil/archives/index.rss">
+  <img src="/phil/pics/validrss.png" alt="Valid RSS 1.0">
+  </a>
+  </li>
+
+</ul>
+
+</html>
