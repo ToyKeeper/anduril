@@ -25,8 +25,9 @@
 //#define FSM_EMISAR_D1_DRIVER
 //#define FSM_EMISAR_D1S_DRIVER
 //#define FSM_EMISAR_D4_DRIVER
+//#define FSM_EMISAR_D4_219C_DRIVER
 //#define FSM_EMISAR_D4S_DRIVER
-//#define FSM_EMISAR_D4S_219c_DRIVER
+//#define FSM_EMISAR_D4S_219C_DRIVER
 //#define FSM_FF_ROT66_DRIVER
 //#define FSM_FW3A_DRIVER
 
@@ -36,6 +37,10 @@
 #define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 45  // try not to get hotter than this
 
+// short blip when crossing from "click" to "hold" from off
+// (helps the user hit moon mode exactly, instead of holding too long
+//  or too short)
+#define MOON_TIMING_HINT
 // short blips while ramping
 #define BLINK_AT_CHANNEL_BOUNDARIES
 //#define BLINK_AT_RAMP_FLOOR
@@ -67,10 +72,13 @@
 #elif defined(FSM_EMISAR_D1S_DRIVER)
 #include "cfg-emisar-d1s.h"
 
+#elif defined(FSM_EMISAR_D4_219C_DRIVER)
+#include "cfg-emisar-d4-219c.h"
+
 #elif defined(FSM_EMISAR_D4_DRIVER)
 #include "cfg-emisar-d4.h"
 
-#elif defined(FSM_EMISAR_D4S_219c_DRIVER)
+#elif defined(FSM_EMISAR_D4S_219C_DRIVER)
 #include "cfg-emisar-d4s-219c.h"
 
 #elif defined(FSM_EMISAR_D4S_DRIVER)
@@ -275,9 +283,19 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     }
     // hold: go to lowest level
     else if (event == EV_click1_hold) {
+        #ifdef MOON_TIMING_HINT
+        if (arg == 0) {
+            // let the user know they can let go now to stay at moon
+            uint8_t temp = actual_level;
+            set_level(0);
+            delay_4ms(2);
+            set_level(temp);
+        } else
+        #endif
         // don't start ramping immediately;
         // give the user time to release at moon level
-        if (arg >= HOLD_TIMEOUT) {
+        //if (arg >= HOLD_TIMEOUT) {  // smaller
+        if (arg >= (!ramp_style) * HOLD_TIMEOUT) {  // more consistent
             set_state(steady_state, 1);
         }
         return MISCHIEF_MANAGED;
@@ -410,7 +428,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     // 3 clicks: toggle smooth vs discrete ramping
     else if (event == EV_3clicks) {
         ramp_style = !ramp_style;
-        memorized_level = nearest_level(memorized_level);
+        memorized_level = nearest_level(actual_level);
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #ifdef USE_SET_LEVEL_GRADUALLY
