@@ -6,7 +6,7 @@ import math
 
 interactive = False
 # supported shapes: ninth, fifth, cube, square, log_e, log_2
-ramp_shape = 'cube'
+#ramp_shape = 'cube'
 
 
 def main(args):
@@ -14,6 +14,7 @@ def main(args):
     """
     # Get parameters from the user
     questions_main = [
+            (str, 'ramp_shape', 'cube', 'Ramp shape? [cube, square, fifth, ninth, log_e, log_2]'),
             (int, 'num_channels', 1, 'How many power channels?'),
             (int, 'num_levels', 4, 'How many total levels do you want?'),
             ]
@@ -36,6 +37,10 @@ def main(args):
 
     answers = Empty()
     ask(questions_main, answers)
+
+    global ramp_shape 
+    ramp_shape = answers.ramp_shape
+
     channels = []
     if not args:
         print('Describe the channels in order of lowest to highest power.')
