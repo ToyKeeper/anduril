@@ -30,6 +30,7 @@
 //#define FSM_EMISAR_D4S_DRIVER
 //#define FSM_EMISAR_D4S_219C_DRIVER
 //#define FSM_FF_ROT66_DRIVER
+//#define FSM_FF_ROT66_219_DRIVER
 //#define FSM_FW3A_DRIVER
 
 #define USE_LVP  // FIXME: won't build when this option is turned off
@@ -103,6 +104,9 @@
 
 #elif defined(FSM_FF_ROT66_DRIVER)
 #include "cfg-ff-rot66.h"
+
+#elif defined(FSM_FF_ROT66_219_DRIVER)
+#include "cfg-ff-rot66-219.h"
 
 #elif defined(FSM_FW3A_DRIVER)
 #include "cfg-fw3a.h"
