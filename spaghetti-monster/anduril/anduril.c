@@ -102,6 +102,9 @@
 #elif defined(FSM_EMISAR_D4S_DRIVER)
 #include "cfg-emisar-d4s.h"
 
+#elif defined(FSM_FF_PL47_DRIVER)
+#include "cfg-ff-pl47.h"
+
 #elif defined(FSM_FF_ROT66_DRIVER)
 #include "cfg-ff-rot66.h"
 
