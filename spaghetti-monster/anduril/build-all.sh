@@ -12,6 +12,7 @@ for TARGET in \
   EMISAR_D4_219C \
   EMISAR_D4S \
   EMISAR_D4S_219C \
+  FF_PL47 \
   FF_ROT66 \
   FF_ROT66_219 \
   FW3A \
