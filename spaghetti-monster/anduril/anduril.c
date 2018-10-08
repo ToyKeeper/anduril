@@ -1189,6 +1189,9 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
         #else
         mode = (mode + 1) % 3;
         #endif
+        #ifdef INDICATOR_LED_SKIP_LOW
+        if (mode == 1) { mode ++; }
+        #endif
         indicator_led_mode = (mode << 2) + (indicator_led_mode & 0x03);
         indicator_led(mode);
         save_config();
@@ -1204,6 +1207,9 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
         uint8_t mode = (arg >> 5) & 3;
         #else
         uint8_t mode = (arg >> 5) % 3;
+        #endif
+        #ifdef INDICATOR_LED_SKIP_LOW
+        if (mode == 1) { mode ++; }
         #endif
         indicator_led_mode = (indicator_led_mode & 0b11111100) | mode;
         #ifdef TICK_DURING_STANDBY

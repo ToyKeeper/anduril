@@ -15,6 +15,10 @@
 // lockout: blinking (3)
 #define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 2)
 
+// the "low" mode doesn't work on this light's aux LEDs
+// (but it does work on the switch LEDs)
+//#define INDICATOR_LED_SKIP_LOW
+
 // ... or if TICK_DURING_STANDBY is turned off:
 // off mode: high (2)
 // lockout: off (0)
