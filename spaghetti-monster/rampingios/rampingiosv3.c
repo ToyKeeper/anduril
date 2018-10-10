@@ -394,10 +394,11 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         if ((arg > mode_min) && (arg < mode_max))
             memorized_level = arg;
         // use the requested level even if not memorized
+        arg = nearest_level(arg);
         #ifdef USE_THERMAL_REGULATION
         target_level = arg;
         #endif
-        set_level(nearest_level(arg));
+        set_level(arg);
         #ifdef USE_REVERSING
         ramp_direction = 1;
         #endif
