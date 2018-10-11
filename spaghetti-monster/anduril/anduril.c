@@ -1838,6 +1838,7 @@ void setup() {
     #ifdef USE_TINT_RAMPING
     // add tint ramping underneath every other state
     push_state(tint_ramping_state, 0);
+    #endif  // ifdef USE_TINT_RAMPING
 
     #ifdef USE_MUGGLE_MODE
     if (muggle_mode_active)
@@ -1845,8 +1846,6 @@ void setup() {
     else
     #endif
         push_state(off_state, 0);
-
-    #endif  // ifdef USE_TINT_RAMPING
 
     #endif  // ifdef START_AT_MEMORIZED_LEVEL
 }
