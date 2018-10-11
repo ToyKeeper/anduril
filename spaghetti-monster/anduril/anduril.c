@@ -26,9 +26,11 @@
 //#define FSM_EMISAR_D1_DRIVER
 //#define FSM_EMISAR_D1S_DRIVER
 //#define FSM_EMISAR_D4_DRIVER
+//#define FSM_EMISAR_D4_219C_DRIVER
 //#define FSM_EMISAR_D4S_DRIVER
-//#define FSM_EMISAR_D4S_219c_DRIVER
+//#define FSM_EMISAR_D4S_219C_DRIVER
 //#define FSM_FF_ROT66_DRIVER
+//#define FSM_FF_ROT66_219_DRIVER
 //#define FSM_FW3A_DRIVER
 
 #define USE_LVP  // FIXME: won't build when this option is turned off
@@ -37,6 +39,10 @@
 #define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 45  // try not to get hotter than this
 
+// short blip when crossing from "click" to "hold" from off
+// (helps the user hit moon mode exactly, instead of holding too long
+//  or too short)
+#define MOON_TIMING_HINT
 // short blips while ramping
 #define BLINK_AT_CHANNEL_BOUNDARIES
 //#define BLINK_AT_RAMP_FLOOR
@@ -87,17 +93,26 @@
 #elif defined(FSM_EMISAR_D1S_DRIVER)
 #include "cfg-emisar-d1s.h"
 
+#elif defined(FSM_EMISAR_D4_219C_DRIVER)
+#include "cfg-emisar-d4-219c.h"
+
 #elif defined(FSM_EMISAR_D4_DRIVER)
 #include "cfg-emisar-d4.h"
 
-#elif defined(FSM_EMISAR_D4S_219c_DRIVER)
+#elif defined(FSM_EMISAR_D4S_219C_DRIVER)
 #include "cfg-emisar-d4s-219c.h"
 
 #elif defined(FSM_EMISAR_D4S_DRIVER)
 #include "cfg-emisar-d4s.h"
 
+#elif defined(FSM_FF_PL47_DRIVER)
+#include "cfg-ff-pl47.h"
+
 #elif defined(FSM_FF_ROT66_DRIVER)
 #include "cfg-ff-rot66.h"
+
+#elif defined(FSM_FF_ROT66_219_DRIVER)
+#include "cfg-ff-rot66-219.h"
 
 #elif defined(FSM_FW3A_DRIVER)
 #include "cfg-fw3a.h"
@@ -402,9 +417,19 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     }
     // hold: go to lowest level
     else if (event == EV_click1_hold) {
+        #ifdef MOON_TIMING_HINT
+        if (arg == 0) {
+            // let the user know they can let go now to stay at moon
+            uint8_t temp = actual_level;
+            set_level(0);
+            delay_4ms(2);
+            set_level(temp);
+        } else
+        #endif
         // don't start ramping immediately;
         // give the user time to release at moon level
-        if (arg >= HOLD_TIMEOUT) {
+        //if (arg >= HOLD_TIMEOUT) {  // smaller
+        if (arg >= (!ramp_style) * HOLD_TIMEOUT) {  // more consistent
             set_state(steady_state, 1);
         }
         return MISCHIEF_MANAGED;
@@ -500,10 +525,11 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         if ((arg > mode_min) && (arg < mode_max))
             memorized_level = arg;
         // use the requested level even if not memorized
+        arg = nearest_level(arg);
         #ifdef USE_THERMAL_REGULATION
         target_level = arg;
         #endif
-        set_level(nearest_level(arg));
+        set_level(arg);
         #ifdef USE_REVERSING
         ramp_direction = 1;
         #endif
@@ -534,7 +560,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     // 3 clicks: toggle smooth vs discrete ramping
     else if (event == EV_3clicks) {
         ramp_style = !ramp_style;
-        memorized_level = nearest_level(memorized_level);
+        memorized_level = nearest_level(actual_level);
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #ifdef USE_SET_LEVEL_GRADUALLY
@@ -1207,6 +1233,9 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
         #else
         mode = (mode + 1) % 3;
         #endif
+        #ifdef INDICATOR_LED_SKIP_LOW
+        if (mode == 1) { mode ++; }
+        #endif
         indicator_led_mode = (mode << 2) + (indicator_led_mode & 0x03);
         indicator_led(mode);
         save_config();
@@ -1222,6 +1251,9 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
         uint8_t mode = (arg >> 5) & 3;
         #else
         uint8_t mode = (arg >> 5) % 3;
+        #endif
+        #ifdef INDICATOR_LED_SKIP_LOW
+        if (mode == 1) { mode ++; }
         #endif
         indicator_led_mode = (indicator_led_mode & 0b11111100) | mode;
         #ifdef TICK_DURING_STANDBY
