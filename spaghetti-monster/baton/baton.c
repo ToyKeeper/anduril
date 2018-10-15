@@ -20,16 +20,12 @@
 #define FSM_EMISAR_D4_DRIVER
 #define USE_LVP
 #define USE_THERMAL_REGULATION
-#define USE_DEBUG_BLINK
 #define USE_DELAY_MS
-#define USE_DELAY_4MS
-#define USE_DELAY_ZERO
 #include "spaghetti-monster.h"
 
 // FSM states
 uint8_t off_state(EventPtr event, uint16_t arg);
 uint8_t steady_state(EventPtr event, uint16_t arg);
-uint8_t party_strobe_state(EventPtr event, uint16_t arg);
 uint8_t lockout_state(EventPtr event, uint16_t arg);
 
 // brightness control
@@ -82,11 +78,6 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         set_state(steady_state, MAX_LEVEL);
         return EVENT_HANDLED;
     }
-    // 3 clicks: strobe mode
-    else if (event == EV_3clicks) {
-        set_state(party_strobe_state, 255);
-        return EVENT_HANDLED;
-    }
     // 4 clicks: soft lockout
     else if (event == EV_4clicks) {
         set_state(lockout_state, 0);
@@ -129,11 +120,6 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
         }
         return EVENT_HANDLED;
     }
-    // 3 clicks: go to strobe modes
-    else if (event == EV_3clicks) {
-        set_state(party_strobe_state, 0xff);
-        return EVENT_HANDLED;
-    }
     // hold: change brightness
     else if (event == EV_click1_hold) {
         if ((arg % HOLD_TIMEOUT) == 0) {
@@ -160,54 +146,11 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     return EVENT_NOT_HANDLED;
 }
 
-uint8_t party_strobe_state(EventPtr event, uint16_t arg) {
-    static volatile uint8_t frames = 0;
-    static volatile uint8_t between = 2;
-    if (event == EV_enter_state) {
-        if (arg < 64) between = arg;
-        frames = 0;
-        return MISCHIEF_MANAGED;
-    }
-    // tick: strobe the emitter
-    else if (event == EV_tick) {
-        if (frames == 0) {
-            PWM1_LVL = 0;
-            PWM2_LVL = 255;
-            if (between < 3) delay_zero();
-            else delay_ms(1);
-            PWM2_LVL = 0;
-        }
-        //frames = (frames + 1) % between;
-        frames++;
-        if (frames > between) frames = 0;
-        return MISCHIEF_MANAGED;
-    }
-    // 1 click: off
-    else if (event == EV_1click) {
-        set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
-    }
-    // 2 clicks: go back to regular modes
-    else if (event == EV_2clicks) {
-        set_state(steady_state, memorized_level);
-        return MISCHIEF_MANAGED;
-    }
-    // hold: change speed
-    else if (event == EV_click1_hold) {
-        if ((arg % HOLD_TIMEOUT) == 0) {
-            between = (between+1)%6;
-            frames = 0;
-        }
-        return MISCHIEF_MANAGED;
-    }
-    return EVENT_NOT_HANDLED;
-}
-
 uint8_t lockout_state(EventPtr event, uint16_t arg) {
     // stay asleep while locked
     if (event == EV_tick) {
         PWM1_LVL = 0;  PWM2_LVL = 0;  // make sure emitters are off
-        // sleep 1 second after user stops pressing
+        // sleep 1 second after user stops pressing buttons
         if (arg > TICKS_PER_SECOND) { go_to_standby = 1; }
         return MISCHIEF_MANAGED;
     }
@@ -220,29 +163,26 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
 }
 
 void low_voltage() {
-    // "step down" from strobe to level 2
-    if (current_state == party_strobe_state) {
-        set_state(steady_state, 1);
-    }
-    // in normal mode, step down by one level or turn off
-    else if (current_state == steady_state) {
-        if (actual_level > 0) {
-            set_level(actual_level - 1);
+    // step down by one level or turn off
+    if (actual_level > 0) {
+        set_level(actual_level - 1);
         #ifdef USE_THERMAL_REGULATION
         target_level = actual_level;  // don't let low temperature override LVP
         #endif
-
-        }
-        else {
-            set_state(off_state, 0);
-        }
+    }
+    else {
+        set_state(off_state, 0);
     }
 }
 
 void setup() {
-    debug_blink(2);
+    // blink when power is connected
+    set_level(MAX_LEVEL/2);
+    delay_ms(10);
+    set_level(0);
 
     push_state(off_state, 0);
 }
 
-void loop() { }
+void loop() {
+}
