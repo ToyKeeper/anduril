@@ -20,7 +20,6 @@
 #define FSM_EMISAR_D4_DRIVER
 #define USE_LVP
 #define USE_THERMAL_REGULATION
-#define DEFAULT_THERM_CEIL 45
 #define USE_DELAY_MS
 #include "spaghetti-monster.h"
 
@@ -59,6 +58,11 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         set_level(0);
         return EVENT_HANDLED;
     }
+    // hold (longer): go to lowest level
+    else if (event == EV_click1_hold) {
+        set_state(steady_state, 0);
+        return EVENT_HANDLED;
+    }
     // 1 click (before timeout): go to memorized level, but allow abort for double click
     else if (event == EV_click1_release) {
         set_level(memorized_level);
@@ -79,11 +83,6 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
         set_state(lockout_state, 0);
         return EVENT_HANDLED;
     }
-    // hold: go to lowest level
-    else if (event == EV_click1_hold) {
-        set_state(steady_state, 0);
-        return EVENT_HANDLED;
-    }
     return EVENT_NOT_HANDLED;
 }
 
@@ -91,8 +90,8 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     // turn LED on when we first enter the mode
     if (event == EV_enter_state) {
         // remember this level, unless it's moon or turbo
-        if ((arg > 0) && (arg < MAX_LEVEL))
-            memorized_level = arg;
+        if ((arg > 0) && (arg < MAX_LEVEL)) memorized_level = arg;
+        // use the requested level even if not memorized
         #ifdef USE_THERMAL_REGULATION
         target_level = arg;
         #endif
@@ -135,16 +134,12 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     #ifdef USE_THERMAL_REGULATION
     // overheating: drop by 1 level
     else if (event == EV_temperature_high) {
-        if (actual_level > 1) {
-            set_level(actual_level - 1);
-        }
+        if (actual_level > 1) { set_level(actual_level - 1); }
         return EVENT_HANDLED;
     }
     // underheating: increase by 1 level if we're lower than the target
     else if (event == EV_temperature_low) {
-        if (actual_level < target_level) {
-            set_level(actual_level + 1);
-        }
+        if (actual_level < target_level) { set_level(actual_level + 1); }
         return EVENT_HANDLED;
     }
     #endif
@@ -152,18 +147,14 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
 }
 
 uint8_t lockout_state(EventPtr event, uint16_t arg) {
-    // stay asleep while locked, but allow waking long enough to click 4 times
+    // stay asleep while locked
     if (event == EV_tick) {
-        static uint8_t ticks_spent_awake = 0;
-        ticks_spent_awake ++;
-        PWM1_LVL = 0;  PWM2_LVL = 0;
-        if (ticks_spent_awake > 3 * TICKS_PER_SECOND) {
-            ticks_spent_awake = 0;
-            go_to_standby = 1;
-        }
+        PWM1_LVL = 0;  PWM2_LVL = 0;  // make sure emitters are off
+        // sleep 1 second after user stops pressing buttons
+        if (arg > TICKS_PER_SECOND) { go_to_standby = 1; }
         return MISCHIEF_MANAGED;
     }
-    // 4 clicks: exit
+    // 4 clicks: exit, and turn on at "low" level
     else if (event == EV_4clicks) {
         set_state(steady_state, 1);
         return MISCHIEF_MANAGED;
@@ -175,6 +166,9 @@ void low_voltage() {
     // step down by one level or turn off
     if (actual_level > 0) {
         set_level(actual_level - 1);
+        #ifdef USE_THERMAL_REGULATION
+        target_level = actual_level;  // don't let low temperature override LVP
+        #endif
     }
     else {
         set_state(off_state, 0);
