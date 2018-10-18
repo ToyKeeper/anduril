@@ -17,7 +17,8 @@
 
 // the "low" mode doesn't work on this light's aux LEDs
 // (but it does work on the switch LEDs)
-//#define INDICATOR_LED_SKIP_LOW
+// Fireflies wants to skip aux LED mode 1 (low)
+#define INDICATOR_LED_SKIP_LOW
 
 // ... or if TICK_DURING_STANDBY is turned off:
 // off mode: high (2)
