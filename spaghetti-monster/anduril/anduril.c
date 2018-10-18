@@ -32,6 +32,7 @@
 //#define FSM_FF_ROT66_DRIVER
 //#define FSM_FF_ROT66_219_DRIVER
 //#define FSM_FW3A_DRIVER
+//#define FSM_SOFIRN_SP36_DRIVER
 
 #define USE_LVP  // FIXME: won't build when this option is turned off
 
@@ -113,6 +114,9 @@
 
 #elif defined(FSM_FW3A_DRIVER)
 #include "cfg-fw3a.h"
+
+#elif defined(FSM_SOFIRN_SP36_DRIVER)
+#include "cfg-sofirn-sp36.h"
 
 #endif
 
