@@ -154,8 +154,12 @@
 #endif
 
 #if defined(USE_MUGGLE_MODE)
+#ifndef MUGGLE_FLOOR
 #define MUGGLE_FLOOR 22
+#endif
+#ifndef MUGGLE_CEILING
 #define MUGGLE_CEILING (MAX_1x7135+20)
+#endif
 #endif
 #define USE_IDLE_MODE  // reduce power use while awake and no tasks are pending
 #define USE_DYNAMIC_UNDERCLOCKING  // cut clock speed at very low modes for better efficiency
