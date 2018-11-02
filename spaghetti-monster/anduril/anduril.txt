@@ -17,6 +17,9 @@ From off:
   * 4 clicks: lock-out
   * 5 clicks: momentary mode (disconnect power to exit)
   * 6 clicks: muggle mode
+  * On hardware with an indicator LED...
+    * 7 clicks: Change aux LED mode used in "off" mode.
+                (the modes are usually off/low/high/blinking)
 
 In steady mode:
   * 1 click: off
@@ -111,8 +114,8 @@ Lockout mode:
   * Hold: momentary moon
   * 4 clicks: exit lockout (return to regular "off" mode)
   * On hardware with an indicator LED...
-    * 3 clicks: Change button brightness used in lockout mode.  (low/high/off)
-    * Click, click, hold: Change button brightness used in "off" mode.
+    * 3 clicks: Change aux LED brightness used in lockout mode.
+                (the modes are usually off/low/high/blinking)
 
 Momentary mode:
   * Press button: Light on (at memorized level).
