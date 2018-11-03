@@ -13,6 +13,6 @@ for TARGET in \
   EMISAR_D4S_219C \
   ; do
   echo "===== $TARGET ====="
-  ../../../bin/build-85.sh "$UI" "-DFSM_${TARGET}_DRIVER"
+  ../../../bin/build.sh 85 "$UI" "-DFSM_${TARGET}_DRIVER"
   mv -f "$UI".hex "$UI".$TARGET.hex
 done
