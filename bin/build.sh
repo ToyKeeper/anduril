@@ -3,6 +3,12 @@
 # Instead of using a Makefile, since most of the firmwares here build in the
 # same exact way, here's a script to do the same thing
 
+if [ -z "$1" ]; then
+  echo "Usage: build.sh MCU myprogram"
+  echo "MCU is a number, like '13' for attiny13 or '841' for attiny841"
+  exit
+fi
+
 export ATTINY=$1 ; shift
 export PROGRAM=$1 ; shift
 export MCU=attiny$ATTINY
