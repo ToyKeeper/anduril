@@ -140,7 +140,9 @@
 /********* Configure SpaghettiMonster *********/
 #define USE_DELAY_ZERO
 #define USE_RAMPING
+#ifndef RAMP_LENGTH
 #define RAMP_LENGTH 150  // default, if not overridden in a driver cfg file
+#endif
 #define MAX_BIKING_LEVEL 120  // should be 127 or less
 #define USE_BATTCHECK
 
