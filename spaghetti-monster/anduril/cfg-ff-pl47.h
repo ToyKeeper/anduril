@@ -26,9 +26,6 @@
 //#define INDICATOR_LED_DEFAULT_MODE ((0<<2) + 2)
 
 
-#ifdef RAMP_LENGTH
-#undef RAMP_LENGTH
-#endif
 #define RAMP_LENGTH 150
 
 // driver is a FET + 3x7135, ~400 lm at highest regulated level
