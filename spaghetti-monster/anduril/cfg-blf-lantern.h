@@ -1,4 +1,12 @@
 // BLF Lantern config options for Anduril
+/* BLF Lantern pinout
+ *           ----
+ *   Reset -|1  8|- VCC
+ * eswitch -|2  7|- powerbank enable?
+ * aux LED -|3  6|- PWM (5000K)
+ *     GND -|4  5|- PWM (3000K)
+ *           ----
+ */
 
 // basically the same as a Q8...  sort of
 #define FSM_BLF_Q8_DRIVER
