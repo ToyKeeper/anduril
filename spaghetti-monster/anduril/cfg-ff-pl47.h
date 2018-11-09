@@ -17,7 +17,8 @@
 
 // the "low" mode doesn't work on this light's aux LEDs
 // (but it does work on the switch LEDs)
-//#define INDICATOR_LED_SKIP_LOW
+// Fireflies wants to skip aux LED mode 1 (low)
+#define INDICATOR_LED_SKIP_LOW
 
 // ... or if TICK_DURING_STANDBY is turned off:
 // off mode: high (2)
@@ -25,9 +26,6 @@
 //#define INDICATOR_LED_DEFAULT_MODE ((0<<2) + 2)
 
 
-#ifdef RAMP_LENGTH
-#undef RAMP_LENGTH
-#endif
 #define RAMP_LENGTH 150
 
 // driver is a FET + 3x7135, ~400 lm at highest regulated level
@@ -38,14 +36,26 @@
 #define HALFSPEED_LEVEL 13
 #define QUARTERSPEED_LEVEL 6
 
-// ceiling is level 120/150
-#define RAMP_SMOOTH_CEIL (MAX_LEVEL*4/5)
-
 // thermal regulation parameters
 #ifdef MIN_THERM_STEPDOWN
 #undef MIN_THERM_STEPDOWN  // this should be lower, because 3x7135 instead of 1x7135
 #endif
 #define MIN_THERM_STEPDOWN 60  // lowest value it'll step down to
+
+// ceiling is level 120/150
+#define RAMP_SMOOTH_CEIL 120
+
+// 10, 28, 46, 65, 83, 101, 120  (83 is highest regulated)
+#define RAMP_DISCRETE_FLOOR 10
+#define RAMP_DISCRETE_CEIL 120
+#define RAMP_DISCRETE_STEPS 7
+
+// ~25 lm to ~300 lm
+#define MUGGLE_FLOOR 30
+#define MUGGLE_CEILING MAX_1x7135
+// ~50 lm to ~500 lm
+//#define MUGGLE_FLOOR 40
+//#define MUGGLE_CEILING 90
 
 // regulate down faster when the FET is active, slower otherwise
 #define THERM_FASTER_LEVEL 130  // throttle back faster when high

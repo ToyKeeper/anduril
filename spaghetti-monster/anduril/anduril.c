@@ -32,6 +32,7 @@
 //#define FSM_FF_ROT66_DRIVER
 //#define FSM_FF_ROT66_219_DRIVER
 //#define FSM_FW3A_DRIVER
+//#define FSM_SOFIRN_SP36_DRIVER
 
 #define USE_LVP  // FIXME: won't build when this option is turned off
 
@@ -117,6 +118,9 @@
 #elif defined(FSM_FW3A_DRIVER)
 #include "cfg-fw3a.h"
 
+#elif defined(FSM_SOFIRN_SP36_DRIVER)
+#include "cfg-sofirn-sp36.h"
+
 #endif
 
 
@@ -139,15 +143,28 @@
 /********* Configure SpaghettiMonster *********/
 #define USE_DELAY_ZERO
 #define USE_RAMPING
+#ifndef RAMP_LENGTH
 #define RAMP_LENGTH 150  // default, if not overridden in a driver cfg file
+#endif
 #define MAX_BIKING_LEVEL 120  // should be 127 or less
 #define USE_BATTCHECK
-#ifdef USE_MUGGLE_MODE
+
+// determine the highest number of clicks to handle
+#ifdef USE_INDICATOR_LED
+#define MAX_CLICKS 7
+#elif defined(USE_MUGGLE_MODE)
 #define MAX_CLICKS 6
-#define MUGGLE_FLOOR 22
-#define MUGGLE_CEILING (MAX_1x7135+20)
 #else
 #define MAX_CLICKS 5
+#endif
+
+#if defined(USE_MUGGLE_MODE)
+#ifndef MUGGLE_FLOOR
+#define MUGGLE_FLOOR 22
+#endif
+#ifndef MUGGLE_CEILING
+#define MUGGLE_CEILING (MAX_1x7135+20)
+#endif
 #endif
 #define USE_IDLE_MODE  // reduce power use while awake and no tasks are pending
 #define USE_DYNAMIC_UNDERCLOCKING  // cut clock speed at very low modes for better efficiency
@@ -495,6 +512,24 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     else if (event == EV_6clicks) {
         blink_confirm(1);
         set_state(muggle_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    #endif
+    #ifdef USE_INDICATOR_LED
+    // 7 clicks: change indicator LED mode
+    else if (event == EV_7clicks) {
+        uint8_t mode = (indicator_led_mode & 3) + 1;
+        #ifdef TICK_DURING_STANDBY
+        mode = mode & 3;
+        #else
+        mode = mode % 3;
+        #endif
+        #ifdef INDICATOR_LED_SKIP_LOW
+        if (mode == 1) { mode ++; }
+        #endif
+        indicator_led_mode = (indicator_led_mode & 0b11111100) | mode;
+        indicator_led(mode);
+        save_config();
         return MISCHIEF_MANAGED;
     }
     #endif
@@ -1241,6 +1276,7 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
         save_config();
         return MISCHIEF_MANAGED;
     }
+    #if 0  // old method, deprecated in favor of "7 clicks from off"
     // click, click, hold: rotate through indicator LED modes (off mode)
     else if (event == EV_click3_hold) {
         #ifndef USE_INDICATOR_LED_WHILE_RAMPING
@@ -1272,6 +1308,7 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
         save_config();
         return MISCHIEF_MANAGED;
     }
+    #endif
     #endif
     // 4 clicks: exit
     else if (event == EV_4clicks) {

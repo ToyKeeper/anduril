@@ -18,10 +18,6 @@
 #define INDICATOR_LED_DEFAULT_MODE ((0<<2) + 2)
 
 
-#ifdef RAMP_LENGTH
-#undef RAMP_LENGTH
-#endif
-
 // driver is a FET+N+1,
 // where N=6 for the 219b version,
 // or N=13 for the XP-L HI version (this version)
