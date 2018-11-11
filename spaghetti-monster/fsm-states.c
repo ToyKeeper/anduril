@@ -32,7 +32,7 @@
 // TODO: function to call stacked callbacks until one returns "handled"
 
 void _set_state(StatePtr new_state, uint16_t arg,
-                EventPtr exit_event, EventPtr enter_event) {
+                Event exit_event, Event enter_event) {
     // call old state-exit hook (don't use stack)
     if (current_state != NULL) current_state(exit_event, arg);
     // set new state
@@ -82,7 +82,7 @@ uint8_t set_state(StatePtr new_state, uint16_t arg) {
 #ifndef DONT_USE_DEFAULT_STATE
 // bottom state on stack
 // handles default actions for LVP, thermal regulation, etc
-uint8_t default_state(EventPtr event, uint16_t arg) {
+uint8_t default_state(Event event, uint16_t arg) {
     if (0) {}  // this should get compiled out
 
     #ifdef USE_LVP

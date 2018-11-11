@@ -23,7 +23,7 @@
 #include "fsm-adc.h"
 
 // typedefs
-typedef uint8_t State(EventPtr event, uint16_t arg);
+typedef uint8_t State(Event event, uint16_t arg);
 typedef State * StatePtr;
 
 // top of the stack
@@ -36,12 +36,12 @@ StatePtr state_stack[STATE_STACK_SIZE];
 uint8_t state_stack_len = 0;
 
 void _set_state(StatePtr new_state, uint16_t arg,
-                EventPtr exit_event, EventPtr enter_event);
+                Event exit_event, Event enter_event);
 int8_t push_state(StatePtr new_state, uint16_t arg);
 StatePtr pop_state();
 uint8_t set_state(StatePtr new_state, uint16_t arg);
 #ifndef DONT_USE_DEFAULT_STATE
-uint8_t default_state(EventPtr event, uint16_t arg);
+uint8_t default_state(Event event, uint16_t arg);
 #endif
 
 #endif

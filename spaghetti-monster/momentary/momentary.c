@@ -40,7 +40,7 @@ void light_off() {
     PWM2_LVL = 0;
 }
 
-uint8_t momentary_state(EventPtr event, uint16_t arg) {
+uint8_t momentary_state(Event event, uint16_t arg) {
 
     if (event == EV_click1_press) {
         brightness = 255;
