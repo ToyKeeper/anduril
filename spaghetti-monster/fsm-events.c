@@ -50,7 +50,7 @@ uint8_t push_event(uint8_t ev_type) {
     // handle button releases
     else if (ev_type == B_RELEASE) {
         // clear the press flag
-        current_event ^= B_PRESS;
+        current_event &= (~B_PRESS);
         // if a "hold" event just ended, set the timeout flag
         // to indicate that the event is done and can be cleared
         if (current_event & B_HOLD) { current_event |= B_TIMEOUT; }
