@@ -34,11 +34,6 @@ typedef struct Emission {
 #define MISCHIEF_MANAGED EVENT_HANDLED
 #define MISCHIEF_NOT_MANAGED EVENT_NOT_HANDLED
 
-#ifndef MAX_CLICKS
-#define MAX_CLICKS 15
-#endif
-
-#define EV_MAX_LEN ((MAX_CLICKS*2)+3)
 Event current_event;
 // at 0.016 ms per tick, 255 ticks = 4.08 s
 static volatile uint16_t ticks_since_last_event = 0;
@@ -59,7 +54,7 @@ static volatile uint16_t ticks_since_last_event = 0;
  *     Bit  5: 1 for a "hold" event, 0 otherwise.
  *     Bit  6: 1 for a "timeout" event, 0 otherwise.
  * If bit 7 is 0:
- *     Not yet defined.
+ *     Sort of ad-hoc, shown in #defines below.
  */
 
 // event masks / bits
@@ -73,6 +68,9 @@ static volatile uint16_t ticks_since_last_event = 0;
 #define B_FLAGS                0b11110000
 
 // Event types
+#define EV_none                0
+
+// Events which aren't button presses
 #define EV_debug               (B_SYSTEM|0b01111111)
 #define EV_enter_state         (B_SYSTEM|0b00001000)
 #define EV_leave_state         (B_SYSTEM|0b00001001)
@@ -89,7 +87,7 @@ static volatile uint16_t ticks_since_last_event = 0;
 #define EV_temperature_low     (B_SYSTEM|0b00000110)
 #endif
 
-#define EV_none                0
+// Button press events
 
 // shouldn't normally happen, but UI might reset event while button is down
 // so a release with no recorded prior hold could be possible
@@ -202,9 +200,6 @@ static volatile uint16_t ticks_since_last_event = 0;
 #define EV_15clicks EV_click15_complete
 
 
-#define events_match(a,b) (a == b)
-// return 1 if (a == b), 0 otherwise
-#define compare_event_sequences(a,b) (a == b)
 void empty_event_sequence();
 uint8_t push_event(uint8_t ev_type);
 

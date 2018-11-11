@@ -64,7 +64,9 @@ ISR(WDT_vect) {
     // handle standby mode specially
     if (go_to_standby) {
         // emit a halfsleep tick, and process it
-        emit(EV_sleep_tick, sleep_counter++);
+        emit(EV_sleep_tick, sleep_counter);
+        // wrap around from 65535 to 32768, not 0
+        sleep_counter = (sleep_counter + 1) | (sleep_counter & 0x8000);
         process_emissions();
         return;
     }
