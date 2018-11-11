@@ -112,6 +112,11 @@ Event types:
         entering the state.  When 'arg' exceeds 65535, it wraps around 
         to 32768.
 
+      - EV_sleep_tick: This happens every 0.5s during standby, if 
+        enabled at compile time.  The 'arg' is the number of ticks since 
+        entering the state.  When 'arg' exceeds 65535, it wraps around 
+        to 32768.
+
     LVP and thermal regulation:
 
       - EV_voltage_low: Sent whenever the input power drops below the 
@@ -130,56 +135,80 @@ Event types:
 
     Button presses:
 
-      - EV_1click: The user clicked the e-switch, released it, and 
-        enough time passed that no more clicks were detected.
+      Button events can be referred to either by pre-defined symbols, or 
+      by teasing out the flags manually.  The structure of a button 
+      event is as follows:
 
-      - EV_2clicks: The user clicked and released the e-switch twice, then 
-        enough time passed that no more clicks were detected.
+        - Bit 7: 1 for button events, 0 otherwise.
 
-      - EV_3clicks: The user clicked and released the e-switch three 
-        times, then enough time passed that no more clicks were detected.
+        - Bit 6: 1 for a "timeout" event (signals the end of a 
+          sequence), or 0 otherwise.
 
-      - EV_4clicks: The user clicked and released the e-switch four times, 
-        then enough time passed that no more clicks were detected.
+        - Bit 5: 1 for a "hold" event, 0 otherwise.  This flag is only 
+          necessary because, without it, it would be impossible to 
+          distinguish between "click, click, timeout" and "click, hold, 
+          release".
 
-      - EV_click1_hold: The user pressed the button and is still holding 
-        it.  The 'arg' indicates how many clock ticks since the "hold" 
-        state started.
+        - Bit 4: 1 if button is currently pressed, 0 otherwise.  Button 
+          release events look just like button press events, except this 
+          is not set.
 
-      - EV_click1_hold_release: The user pressed the button, held it for a 
-        while, and then released it.  No timeout is attempted after this.
+        - Bits 0,1,2,3: Counter for how many clicks there have been.  
+          The first click is 1, second is 2, and it goes up to 15 clicks 
+          in a row.  Clicks after 15 are coded as 15.
 
-      - EV_click2_hold: The user clicked once, then pressed the button and 
-        is still holding it.  The 'arg' indicates how many clock ticks 
-        since the "hold" state started.
+      The pre-defined button event symbols are like the following:
 
-      - EV_click2_hold_release: The user clicked once, then pressed the 
-        button, held it for a while, and released it.  No timeout is 
-        attempted after this.
+        - EV_click1_press: The user pressed the button, but no time has 
+          passed since then.
 
-      - EV_click1_press: The user pressed the button and it's still down.  
-        No time has yet passed.
+        - EV_click1_release: The user pressed and released the button, 
+          but no time has passed since then.
 
-      - EV_click1_release: The user quickly pressed and released the 
-        button.  The click timeout has not yet expired, so they might 
-        still click again.
+        - EV_click1_complete: The user clicked the e-switch, released 
+          it, and enough time passed that no more clicks were detected.
+          (a.k.a. EV_1click)
 
-      - EV_click2_press: The user pressed the button, released it, pressed 
-        again, and it's still down.  No time has yet passed since then.
+        - EV_click1_hold: The user pressed the button, and continued 
+          holding it long enough to count as a "hold" event.  This event 
+          is sent once per timer tick as long as the button is held, and 
+          the 'arg' value indicates how many timer ticks since the 
+          button state went from 'press' to 'hold'. 
 
-      - EV_click2_release: The quickly pressed and released the button 
-        twice.  The click timeout has not yet expired, so they might still 
-        click again.
+        - EV_click1_hold_release: The button was released at the end of 
+          a "hold" event.  This is the end of the input sequence, 
+          because no timeout period is used after a hold.
+
+          It's worth noting that a "hold" event can only happen at the 
+          end of an input sequence, and the sequence will reset to empty 
+          after the hold is released.
+
+      If the user pressed the button more than once, events follow the 
+      same pattern.  These are the same as above, except with a full 
+      short-press and release first.
+
+        - EV_click2_press
+        - EV_click2_release
+        - EV_click2_complete (a.k.a. EV_2clicks)
+        - EV_click2_hold
+        - EV_click2_hold_release
+
+      Each of the above patterns continues up to 15 clicks.
+
+      To match entire categories of events, use the bitmasks provided.  
+      For example, to match button events where the button is down or 
+      the button is up, the code would look like this:
+
+        if ((event & (B_CLICK | B_PRESS)) == (B_CLICK | B_PRESS)) {
+          // button is down (can be a press event or a hold event)
+        }
+        else if ((event & (B_CLICK | B_PRESS)) == (B_CLICK)) {
+          // button was just released
+        }
 
   In theory, you could also define your own arbitrary event types, and 
   emit() them as necessary, and handle them in State functions the same 
   as any other event.
-
-  One thing to note if you create your own Event types:  The copy which 
-  gets sent to States must be in the 'event_sequences' array, meaning 
-  the State gets a const PROGMEM version of the Event.  It cannot simply 
-  send the dynamic 'current_event' object, because it has probably 
-  already changed by the time the callback happens.
 
 
 Cooperative multitasking:
@@ -286,10 +315,6 @@ Useful #defines:
     - RELEASE_TIMEOUT: How many clock ticks before a "release" event 
       becomes a "click" event?  Basically, the maximum time between 
       clicks in a double-click or triple-click.
-
-    - MAX_CLICKS N: Convenience define to limit the size of the 
-      recognized Event arrays.  Click sequences longer than N won't be 
-      recognized or sent to State functions.
 
     - USE_BATTCHECK: Enable the battcheck function.  Also define one of 
       the following to select a display style:
