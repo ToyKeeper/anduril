@@ -21,7 +21,7 @@
 #define FSM_EVENTS_C
 
 void empty_event_sequence() {
-    current_event = 0;
+    current_event = EV_none;
     // when the user completes an input sequence, interrupt any running timers
     // to cancel any delays currently in progress
     // This eliminates a whole bunch of extra code:
@@ -34,7 +34,7 @@ uint8_t push_event(uint8_t ev_type) {
     ticks_since_last_event = 0;  // something happened
 
     // only click events are sent to this function
-    //current_event |= B_CLICK;
+    current_event |= B_CLICK;
 
     // handle button presses
     if (ev_type == B_PRESS) {
@@ -43,9 +43,9 @@ uint8_t push_event(uint8_t ev_type) {
         // increase click counter
         if ((current_event & B_COUNT) < (B_COUNT-1)) {
             current_event ++;
-            return 1;  // event pushed
         }
-        return 0;  // maximum number of clicks reached
+        return 1;  // event pushed, even if max clicks already reached
+                   // (will just repeat the max over and over)
     }
     // handle button releases
     else if (ev_type == B_RELEASE) {
@@ -192,6 +192,11 @@ void emit(Event event, uint16_t arg) {
     // add this event to the queue for later,
     // so we won't use too much time during an interrupt
     append_emission(event, arg);
+}
+
+void emit_current_event(uint16_t arg) {
+    ticks_since_last_event = arg;
+    emit(current_event, arg);
 }
 
 #endif

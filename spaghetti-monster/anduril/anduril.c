@@ -1166,25 +1166,21 @@ uint8_t goodnight_state(Event event, uint16_t arg) {
 uint8_t lockout_state(Event event, uint16_t arg) {
     #ifdef MOON_DURING_LOCKOUT_MODE
     // momentary(ish) moon mode during lockout
-    // not all presses will be counted;
-    // it depends on what is in the master event_sequences table
-    if (arg == 0) {  // Only turn on/off when button state changes
-        if (! (event & B_SYSTEM)) {  // event is a button click type
-            if (event & B_PRESS) {  // button is being held
-                #ifdef LOCKOUT_MOON_LOWEST
-                // Use lowest moon configured
-                uint8_t lvl = ramp_smooth_floor;
-                if (ramp_discrete_floor < lvl) lvl = ramp_discrete_floor;
-                set_level(lvl);
-                #else
-                // Use moon from current ramp
-                set_level(nearest_level(1));
-                #endif
-            }
-            else {  // button not being held
-                set_level(0);
-            }
-        }
+    // button is being held
+    if ((event & (B_CLICK | B_PRESS)) == (B_CLICK | B_PRESS)) {
+        #ifdef LOCKOUT_MOON_LOWEST
+        // Use lowest moon configured
+        uint8_t lvl = ramp_smooth_floor;
+        if (ramp_discrete_floor < lvl) lvl = ramp_discrete_floor;
+        set_level(lvl);
+        #else
+        // Use moon from current ramp
+        set_level(nearest_level(1));
+        #endif
+    }
+    // button was released
+    else if ((event & (B_CLICK | B_PRESS)) == (B_CLICK)) {
+        set_level(0);
     }
     #endif
 
@@ -1281,29 +1277,17 @@ uint8_t momentary_state(Event event, uint16_t arg) {
     // TODO: momentary strobe here?  (for light painting)
 
     // light up when the button is pressed; go dark otherwise
-    #if 0
-    if ((event ^ B_SYSTEM) & B_PRESS) {
+    // button is being held
+    if ((event & (B_CLICK | B_PRESS)) == (B_CLICK | B_PRESS)) {
         set_level(memorized_level);
         return MISCHIEF_MANAGED;
     }
-    else if (((event ^ B_SYSTEM) & B_PRESS) == 0) {
+    // button was released
+    else if ((event & (B_CLICK | B_PRESS)) == (B_CLICK)) {
         set_level(0);
-        empty_event_sequence();
         //go_to_standby = 1;  // sleep while light is off
         return MISCHIEF_MANAGED;
     }
-    #else
-    if (! (event & B_SYSTEM)) {  // is a button-related event
-        if (event & B_PRESS) {  // button is pressed
-            set_level(memorized_level);
-        } else {  // button was released
-            set_level(0);
-            empty_event_sequence();
-            //go_to_standby = 1;  // sleep while light is off
-        }
-        return MISCHIEF_MANAGED;
-    }
-    #endif
 
     // Sleep, dammit!  (but wait a few seconds first)
     // (because standby mode uses such little power that it can interfere

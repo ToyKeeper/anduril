@@ -76,32 +76,38 @@ ISR(WDT_vect) {
     uint8_t pressed = button_is_pressed();
     if (was_pressed != pressed) PCINT_inner(pressed);
 
-    //if (ticks_since_last_event < 0xff) ticks_since_last_event ++;
+    // cache this here to reduce ROM size, because it's volatile
+    uint16_t ticks_since_last = ticks_since_last_event;
+ 
     // increment, but loop from max back to half
-    ticks_since_last_event = (ticks_since_last_event + 1) \
-                             | (ticks_since_last_event & 0x8000);
+    //if (ticks_since_last < 0xff) ticks_since_last ++;
+    ticks_since_last = (ticks_since_last + 1) \
+                     | (ticks_since_last & 0x8000);
+    // copy back to the original
+    ticks_since_last_event = ticks_since_last;
 
     // if time since last event exceeds timeout,
     // append timeout to current event sequence, then
     // send event to current state callback
 
     // callback on each timer tick
-    if ((current_event & B_FLAGS) == (B_HOLD | B_PRESS)) {
+    if ((current_event & B_FLAGS) == (B_CLICK | B_HOLD | B_PRESS)) {
         emit(EV_tick, 0);  // override tick counter while holding button
     }
     else {
-        emit(EV_tick, ticks_since_last_event);
+        emit(EV_tick, ticks_since_last);
     }
 
     // user held button long enough to count as a long click?
     if (current_event & B_PRESS) {
         // during a "hold", send a hold event each tick, with a timer
         if (current_event & B_HOLD) {
-            emit_current_event(ticks_since_last_event);
+            emit_current_event(ticks_since_last);
         }
         // has button been down long enough to become a "hold"?
         else {
-            if (ticks_since_last_event >= HOLD_TIMEOUT) {
+            if (ticks_since_last >= HOLD_TIMEOUT) {
+                //ticks_since_last_event = 0;
                 current_event |= B_HOLD;
                 emit_current_event(0);
             }
@@ -118,8 +124,9 @@ ISR(WDT_vect) {
             empty_event_sequence();
         }
         // end and clear event after release timeout
-        else if (ticks_since_last_event >= RELEASE_TIMEOUT) {
+        else if (ticks_since_last >= RELEASE_TIMEOUT) {
             current_event |= B_TIMEOUT;
+            //ticks_since_last_event = 0;
             emit_current_event(0);
             empty_event_sequence();
         }

@@ -63,8 +63,8 @@ static volatile uint16_t ticks_since_last_event = 0;
  */
 
 // event masks / bits
-#define B_SYSTEM               0b10000000
-#define B_CLICK                0b00000000
+#define B_SYSTEM               0b00000000
+#define B_CLICK                0b10000000
 #define B_TIMEOUT              0b01000000
 #define B_HOLD                 0b00100000
 #define B_PRESS                0b00010000
@@ -219,7 +219,7 @@ void process_emissions();
 //#define emit_now emit
 uint8_t emit_now(Event event, uint16_t arg);
 void emit(Event event, uint16_t arg);
-#define emit_current_event(arg) emit(current_event, arg)
+void emit_current_event(uint16_t arg);
 
 uint8_t nice_delay_ms(uint16_t ms);
 //uint8_t nice_delay_4ms(uint8_t ms);
