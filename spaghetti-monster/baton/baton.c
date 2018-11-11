@@ -24,9 +24,9 @@
 #include "spaghetti-monster.h"
 
 // FSM states
-uint8_t off_state(EventPtr event, uint16_t arg);
-uint8_t steady_state(EventPtr event, uint16_t arg);
-uint8_t lockout_state(EventPtr event, uint16_t arg);
+uint8_t off_state(Event event, uint16_t arg);
+uint8_t steady_state(Event event, uint16_t arg);
+uint8_t lockout_state(Event event, uint16_t arg);
 
 // brightness control
 uint8_t memorized_level = 1;
@@ -47,7 +47,7 @@ void set_level(uint8_t lvl) {
     PWM2_LVL = pwm2_levels[lvl];
 }
 
-uint8_t off_state(EventPtr event, uint16_t arg) {
+uint8_t off_state(Event event, uint16_t arg) {
     // turn emitter off when entering state
     if (event == EV_enter_state) {
         go_to_standby = 1; // sleep while off  (lower power use)
@@ -86,7 +86,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
     return EVENT_NOT_HANDLED;
 }
 
-uint8_t steady_state(EventPtr event, uint16_t arg) {
+uint8_t steady_state(Event event, uint16_t arg) {
     // turn LED on when we first enter the mode
     if (event == EV_enter_state) {
         // remember this level, unless it's moon or turbo
@@ -146,7 +146,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
     return EVENT_NOT_HANDLED;
 }
 
-uint8_t lockout_state(EventPtr event, uint16_t arg) {
+uint8_t lockout_state(Event event, uint16_t arg) {
     // stay asleep while locked
     if (event == EV_tick) {
         PWM1_LVL = 0;  PWM2_LVL = 0;  // make sure emitters are off

@@ -31,12 +31,12 @@
 #include "spaghetti-monster.h"
 
 // FSM states
-uint8_t off_state(EventPtr event, uint16_t arg);
-uint8_t steady_state(EventPtr event, uint16_t arg);
-uint8_t strobe_state(EventPtr event, uint16_t arg);
+uint8_t off_state(Event event, uint16_t arg);
+uint8_t steady_state(Event event, uint16_t arg);
+uint8_t strobe_state(Event event, uint16_t arg);
 #ifdef USE_BATTCHECK
-uint8_t battcheck_state(EventPtr event, uint16_t arg);
-uint8_t tempcheck_state(EventPtr event, uint16_t arg);
+uint8_t battcheck_state(Event event, uint16_t arg);
+uint8_t tempcheck_state(Event event, uint16_t arg);
 #endif
 
 // brightness control
@@ -54,7 +54,7 @@ volatile uint8_t strobe_delay = 67;
 volatile uint8_t strobe_type = 0;  // 0 == party strobe, 1 == tactical strobe
 
 
-uint8_t off_state(EventPtr event, uint16_t arg) {
+uint8_t off_state(Event event, uint16_t arg) {
     // turn emitter off when entering state
     if (event == EV_enter_state) {
         set_level(0);
@@ -121,7 +121,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
 }
 
 
-uint8_t steady_state(EventPtr event, uint16_t arg) {
+uint8_t steady_state(Event event, uint16_t arg) {
     // turn LED on when we first enter the mode
     if (event == EV_enter_state) {
         // remember this level, unless it's moon or turbo
@@ -243,7 +243,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
 }
 
 
-uint8_t strobe_state(EventPtr event, uint16_t arg) {
+uint8_t strobe_state(Event event, uint16_t arg) {
     if (event == EV_enter_state) {
         return MISCHIEF_MANAGED;
     }
@@ -281,7 +281,7 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
 
 
 #ifdef USE_BATTCHECK
-uint8_t battcheck_state(EventPtr event, uint16_t arg) {
+uint8_t battcheck_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(off_state, 0);
@@ -295,7 +295,7 @@ uint8_t battcheck_state(EventPtr event, uint16_t arg) {
     return EVENT_NOT_HANDLED;
 }
 
-uint8_t tempcheck_state(EventPtr event, uint16_t arg) {
+uint8_t tempcheck_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(off_state, 0);

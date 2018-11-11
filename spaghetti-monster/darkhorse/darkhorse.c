@@ -32,16 +32,16 @@
 #include "spaghetti-monster.h"
 
 // FSM states
-uint8_t off_state(EventPtr event, uint16_t arg);
-uint8_t low_mode_state(EventPtr event, uint16_t arg);
-uint8_t med_mode_state(EventPtr event, uint16_t arg);
-uint8_t hi_mode_state(EventPtr event, uint16_t arg);
-uint8_t strobe_beacon_state(EventPtr event, uint16_t arg);
+uint8_t off_state(Event event, uint16_t arg);
+uint8_t low_mode_state(Event event, uint16_t arg);
+uint8_t med_mode_state(Event event, uint16_t arg);
+uint8_t hi_mode_state(Event event, uint16_t arg);
+uint8_t strobe_beacon_state(Event event, uint16_t arg);
 #ifdef USE_BATTCHECK
-uint8_t battcheck_state(EventPtr event, uint16_t arg);
+uint8_t battcheck_state(Event event, uint16_t arg);
 #endif
 // Not a FSM state, just handles stuff common to all low/med/hi states
-uint8_t any_mode_state(EventPtr event, uint16_t arg, uint8_t *primary, uint8_t *secondary, uint8_t *modes);
+uint8_t any_mode_state(Event event, uint16_t arg, uint8_t *primary, uint8_t *secondary, uint8_t *modes);
 
 void load_config();
 void save_config();
@@ -89,7 +89,7 @@ inline void set_med_mode() { set_any_mode(M1, M2, med_modes); }
 inline void set_hi_mode()  { set_any_mode(H1, H2, hi_modes); }
 
 
-uint8_t off_state(EventPtr event, uint16_t arg) {
+uint8_t off_state(Event event, uint16_t arg) {
     // turn emitter off when entering state
     if (event == EV_enter_state) {
         set_level(0);
@@ -163,7 +163,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
 }
 
 
-uint8_t any_mode_state(EventPtr event, uint16_t arg, uint8_t *primary, uint8_t *secondary, uint8_t *modes) {
+uint8_t any_mode_state(Event event, uint16_t arg, uint8_t *primary, uint8_t *secondary, uint8_t *modes) {
     // turn on LED when entering the mode
     if (event == EV_enter_state) {
         set_any_mode(*primary, *secondary, modes);
@@ -236,27 +236,27 @@ uint8_t any_mode_state(EventPtr event, uint16_t arg, uint8_t *primary, uint8_t *
     return EVENT_NOT_HANDLED;
 }
 
-uint8_t low_mode_state(EventPtr event, uint16_t arg) {
+uint8_t low_mode_state(Event event, uint16_t arg) {
     return any_mode_state(event, arg, &L1, &L2, low_modes);
 }
 
-uint8_t med_mode_state(EventPtr event, uint16_t arg) {
+uint8_t med_mode_state(Event event, uint16_t arg) {
     return any_mode_state(event, arg, &M1, &M2, med_modes);
 }
 
-uint8_t hi_mode_state(EventPtr event, uint16_t arg) {
+uint8_t hi_mode_state(Event event, uint16_t arg) {
     return any_mode_state(event, arg, &H1, &H2, hi_modes);
 }
 
 
 #ifdef USE_BATTCHECK
-uint8_t battcheck_state(EventPtr event, uint16_t arg) {
+uint8_t battcheck_state(Event event, uint16_t arg) {
     return EVENT_NOT_HANDLED;
 }
 #endif
 
 
-uint8_t strobe_beacon_state(EventPtr event, uint16_t arg) {
+uint8_t strobe_beacon_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(off_state, 0);
