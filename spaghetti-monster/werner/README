@@ -1,0 +1,56 @@
+This is a Werner-style interface for dual-switch lights
+(e-switch + clicky switch).  What that means is:
+
+While the clicky switch is off:
+
+  - Click the clicky switch:  Turn on, at the last-used level.  The clicky
+    switch works as a momentary mode.
+
+  - Click the clicky switch while holding the e-switch:  Go into sort of a
+    utility mode.
+
+While on, in a normal steady mode:
+
+  - Click the clicky switch: Turn off.
+
+  - Click the e-switch: Brighter.  One step per click.
+
+  - Hold the e-switch: Dimmer.  Keep holding to go down multiple steps.
+
+While in standby, in utility mode:
+
+  - Click the e-switch: Turn on.
+
+  - Hold the e-switch: Turn on at lowest level.
+
+  - Double-click the e-switch: Turn on at highest level.
+
+  - Triple-click the e-switch: Battery check mode.
+
+  - Quad-click the e-switch: Ramp config mode.
+
+While in battery check mode:
+
+  - Click either switch: Turn off.
+
+  - Double-click the e-switch: Go to temperature check mode.
+
+While in temperature check mode:
+
+  - Click either switch: Turn off.
+
+  - Double-click the e-switch: Go to battery check mode.
+
+  - Quad-click the e-switch: Go to thermal config mode.
+
+Ramp config mode and thermal config mode work the same as in Anduril or
+RampingIOS V3.  The options are:
+
+  - Ramp config mode:
+    1. Floor level.
+    2. Ceiling level.
+    3. Number of steps.
+
+  - Thermal config mode:
+    1. Calibrate sensor by entering current temperature in C.
+    2. Set temperature limit to 30 C + N clicks.
