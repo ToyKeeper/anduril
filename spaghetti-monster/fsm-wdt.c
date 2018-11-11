@@ -85,15 +85,8 @@ ISR(WDT_vect) {
     // append timeout to current event sequence, then
     // send event to current state callback
 
-    // preload recent events
-    uint8_t le_num = last_event_num();
-    uint8_t last_event = 0;
-    uint8_t prev_event = 0;
-    if (le_num >= 1) last_event = current_event[le_num-1];
-    if (le_num >= 2) prev_event = current_event[le_num-2];
-
     // callback on each timer tick
-    if (last_event == A_HOLD) {
+    if ((current_event & B_FLAGS) == (B_HOLD | B_PRESS)) {
         emit(EV_tick, 0);  // override tick counter while holding button
     }
     else {
@@ -101,29 +94,32 @@ ISR(WDT_vect) {
     }
 
     // user held button long enough to count as a long click?
-    if (last_event == A_PRESS) {
-        if (ticks_since_last_event >= HOLD_TIMEOUT) {
-            push_event(A_HOLD);
-            emit_current_event(0);
+    if (current_event & B_PRESS) {
+        // during a "hold", send a hold event each tick, with a timer
+        if (current_event & B_HOLD) {
+            emit_current_event(ticks_since_last_event);
+        }
+        // has button been down long enough to become a "hold"?
+        else {
+            if (ticks_since_last_event >= HOLD_TIMEOUT) {
+                current_event |= B_HOLD;
+                emit_current_event(0);
+            }
         }
     }
 
-    // user is still holding button, so tick
-    else if (last_event == A_HOLD) {
-        emit_current_event(ticks_since_last_event);
-    }
-
-    // detect completed button presses with expired timeout
-    else if (last_event == A_RELEASE) {
+    // event in progress, but button not currently down
+    else if (current_event) {
+        // "hold" event just ended
         // no timeout required when releasing a long-press
         // TODO? move this logic to PCINT() and simplify things here?
-        if (prev_event == A_HOLD) {
+        if (current_event & B_HOLD) {
             //emit_current_event(0);  // should have been emitted by PCINT
             empty_event_sequence();
         }
         // end and clear event after release timeout
         else if (ticks_since_last_event >= RELEASE_TIMEOUT) {
-            push_event(A_RELEASE_TIMEOUT);
+            current_event |= B_TIMEOUT;
             emit_current_event(0);
             empty_event_sequence();
         }

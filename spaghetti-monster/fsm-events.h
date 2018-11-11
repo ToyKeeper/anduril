@@ -23,10 +23,9 @@
 #include <avr/pgmspace.h>
 
 // typedefs
-typedef PROGMEM const uint8_t Event;
-typedef Event * EventPtr;
+typedef uint8_t Event;
 typedef struct Emission {
-    EventPtr event;
+    Event event;
     uint16_t arg;
 } Emission;
 
@@ -36,11 +35,11 @@ typedef struct Emission {
 #define MISCHIEF_NOT_MANAGED EVENT_NOT_HANDLED
 
 #ifndef MAX_CLICKS
-#define MAX_CLICKS 4
+#define MAX_CLICKS 15
 #endif
 
 #define EV_MAX_LEN ((MAX_CLICKS*2)+3)
-uint8_t current_event[EV_MAX_LEN];
+Event current_event;
 // at 0.016 ms per tick, 255 ticks = 4.08 s
 static volatile uint16_t ticks_since_last_event = 0;
 
@@ -52,509 +51,175 @@ static volatile uint16_t ticks_since_last_event = 0;
 #define RELEASE_TIMEOUT 24
 #endif
 
-#define A_ENTER_STATE     1
-#define A_LEAVE_STATE     2
-#define A_REENTER_STATE   3
-#define A_TICK            4
-#define A_SLEEP_TICK      5
-#define A_PRESS           6
-#define A_HOLD            7
-#define A_RELEASE         8
-#define A_RELEASE_TIMEOUT 9
-#define A_OVERHEATING     10
-#define A_UNDERHEATING    11
-#define A_VOLTAGE_LOW     12
-//#define A_VOLTAGE_CRITICAL 13
-#define A_DEBUG           255  // test event for debugging
+/* Event structure
+ * Bit  7: 1 for a button input event, 0 for all others.
+ * If bit 7 is 1:
+ *     Bits 0,1,2,3:  Click counter.  Up to 15 clicks.
+ *     Bit  4: 1 for a "press" event, 0 for a "release" event.
+ *     Bit  5: 1 for a "hold" event, 0 otherwise.
+ *     Bit  6: 1 for a "timeout" event, 0 otherwise.
+ * If bit 7 is 0:
+ *     Not yet defined.
+ */
+
+// event masks / bits
+#define B_SYSTEM               0b10000000
+#define B_CLICK                0b00000000
+#define B_TIMEOUT              0b01000000
+#define B_HOLD                 0b00100000
+#define B_PRESS                0b00010000
+#define B_RELEASE              0b00000000
+#define B_COUNT                0b00001111
+#define B_FLAGS                0b11110000
 
 // Event types
-// TODO: make these progmem-only?
-Event EV_debug[] = {
-    A_DEBUG,
-    0 } ;
-Event EV_enter_state[] = {
-    A_ENTER_STATE,
-    0 } ;
-Event EV_leave_state[] = {
-    A_LEAVE_STATE,
-    0 } ;
-Event EV_reenter_state[] = {
-    A_REENTER_STATE,
-    0 } ;
-Event EV_tick[] = {
-    A_TICK,
-    0 } ;
+#define EV_debug               (B_SYSTEM|0b01111111)
+#define EV_enter_state         (B_SYSTEM|0b00001000)
+#define EV_leave_state         (B_SYSTEM|0b00001001)
+#define EV_reenter_state       (B_SYSTEM|0b00001010)
+#define EV_tick                (B_SYSTEM|0b00000001)
 #ifdef TICK_DURING_STANDBY
-Event EV_sleep_tick[] = {
-    A_SLEEP_TICK,
-    0 } ;
+#define EV_sleep_tick          (B_SYSTEM|0b00000011)
 #endif
 #ifdef USE_LVP
-Event EV_voltage_low[] = {
-    A_VOLTAGE_LOW,
-    0 } ;
+#define EV_voltage_low         (B_SYSTEM|0b00000100)
 #endif
 #ifdef USE_THERMAL_REGULATION
-Event EV_temperature_high[] = {
-    A_OVERHEATING,
-    0 } ;
-Event EV_temperature_low[] = {
-    A_UNDERHEATING,
-    0 } ;
+#define EV_temperature_high    (B_SYSTEM|0b00000101)
+#define EV_temperature_low     (B_SYSTEM|0b00000110)
 #endif
-Event EV_click1_press[] = {
-    A_PRESS,
-    0 };
+
+#define EV_none                0
+
 // shouldn't normally happen, but UI might reset event while button is down
 // so a release with no recorded prior hold could be possible
-Event EV_release[] = {
-    A_RELEASE,
-    0 };
-Event EV_click1_release[] = {
-    A_PRESS,
-    A_RELEASE,
-    0 };
+#define EV_release             (B_CLICK|B_RELEASE|0)
+
+#define EV_click1_press        (B_CLICK|B_PRESS|1)
+#define EV_click1_hold         (B_CLICK|B_HOLD|B_PRESS|1)
+#define EV_click1_hold_release (B_CLICK|B_TIMEOUT|B_HOLD|B_RELEASE|1)
+#define EV_click1_release      (B_CLICK|B_RELEASE|1)
+#define EV_click1_complete     (B_CLICK|B_TIMEOUT|1)
 #define EV_1click EV_click1_complete
-Event EV_click1_complete[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_RELEASE_TIMEOUT,
-    0 };
 #define EV_hold EV_click1_hold
-// FIXME: Should holds use "start+tick" or just "tick" with a tick number?
-//        Or "start+tick" with a tick number?
-Event EV_click1_hold[] = {
-    A_PRESS,
-    A_HOLD,
-    0 };
-Event EV_click1_hold_release[] = {
-    A_PRESS,
-    A_HOLD,
-    A_RELEASE,
-    0 };
-#if MAX_CLICKS >= 2
-Event EV_click2_press[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    0 };
-Event EV_click2_hold[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_HOLD,
-    0 };
-Event EV_click2_hold_release[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_HOLD,
-    A_RELEASE,
-    0 };
-Event EV_click2_release[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    0 };
+
+#define EV_click2_press        (B_CLICK|B_PRESS|2)
+#define EV_click2_hold         (B_CLICK|B_HOLD|B_PRESS|2)
+#define EV_click2_hold_release (B_CLICK|B_TIMEOUT|B_HOLD|B_RELEASE|2)
+#define EV_click2_release      (B_CLICK|B_RELEASE|2)
+#define EV_click2_complete     (B_CLICK|B_TIMEOUT|2)
 #define EV_2clicks EV_click2_complete
-Event EV_click2_complete[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_RELEASE_TIMEOUT,
-    0 };
-#endif  // MAX_CLICKS >= 2
-#if MAX_CLICKS >= 3
-Event EV_click3_press[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    0 };
-Event EV_click3_hold[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_HOLD,
-    0 };
-Event EV_click3_hold_release[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_HOLD,
-    A_RELEASE,
-    0 };
-Event EV_click3_release[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    0 };
+
+#define EV_click3_press        (B_CLICK|B_PRESS|3)
+#define EV_click3_hold         (B_CLICK|B_HOLD|B_PRESS|3)
+#define EV_click3_hold_release (B_CLICK|B_TIMEOUT|B_HOLD|B_RELEASE|3)
+#define EV_click3_release      (B_CLICK|B_RELEASE|3)
+#define EV_click3_complete     (B_CLICK|B_TIMEOUT|3)
 #define EV_3clicks EV_click3_complete
-Event EV_click3_complete[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_RELEASE_TIMEOUT,
-    0 };
-#endif  // MAX_CLICKS >= 3
-#if MAX_CLICKS >= 4
+
+#define EV_click4_press        (B_CLICK|B_PRESS|4)
+#define EV_click4_hold         (B_CLICK|B_HOLD|B_PRESS|4)
+#define EV_click4_hold_release (B_CLICK|B_TIMEOUT|B_HOLD|B_RELEASE|4)
+#define EV_click4_release      (B_CLICK|B_RELEASE|4)
+#define EV_click4_complete     (B_CLICK|B_TIMEOUT|4)
 #define EV_4clicks EV_click4_complete
-Event EV_click4_complete[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_RELEASE_TIMEOUT,
-    0 };
-#endif
-#if MAX_CLICKS >= 5
+
+#define EV_click5_press        (B_CLICK|B_PRESS|5)
+#define EV_click5_hold         (B_CLICK|B_HOLD|B_PRESS|5)
+#define EV_click5_hold_release (B_CLICK|B_TIMEOUT|B_HOLD|B_RELEASE|5)
+#define EV_click5_release      (B_CLICK|B_RELEASE|5)
+#define EV_click5_complete     (B_CLICK|B_TIMEOUT|5)
 #define EV_5clicks EV_click5_complete
-Event EV_click5_complete[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_RELEASE_TIMEOUT,
-    0 };
-#endif
-#if MAX_CLICKS >= 6
+
+#define EV_click6_press        (B_CLICK|B_PRESS|6)
+#define EV_click6_hold         (B_CLICK|B_HOLD|B_PRESS|6)
+#define EV_click6_hold_release (B_CLICK|B_TIMEOUT|B_HOLD|B_RELEASE|6)
+#define EV_click6_release      (B_CLICK|B_RELEASE|6)
+#define EV_click6_complete     (B_CLICK|B_TIMEOUT|6)
 #define EV_6clicks EV_click6_complete
-Event EV_click6_complete[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_RELEASE_TIMEOUT,
-    0 };
-#endif
-#if MAX_CLICKS >= 7
+
+#define EV_click7_press        (B_CLICK|B_PRESS|7)
+#define EV_click7_hold         (B_CLICK|B_HOLD|B_PRESS|7)
+#define EV_click7_hold_release (B_CLICK|B_TIMEOUT|B_HOLD|B_RELEASE|7)
+#define EV_click7_release      (B_CLICK|B_RELEASE|7)
+#define EV_click7_complete     (B_CLICK|B_TIMEOUT|7)
 #define EV_7clicks EV_click7_complete
-Event EV_click7_complete[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_RELEASE_TIMEOUT,
-    0 };
-#endif
-#if MAX_CLICKS >= 8
+
+#define EV_click8_press        (B_CLICK|B_PRESS|8)
+#define EV_click8_hold         (B_CLICK|B_HOLD|B_PRESS|8)
+#define EV_click8_hold_release (B_CLICK|B_TIMEOUT|B_HOLD|B_RELEASE|8)
+#define EV_click8_release      (B_CLICK|B_RELEASE|8)
+#define EV_click8_complete     (B_CLICK|B_TIMEOUT|8)
 #define EV_8clicks EV_click8_complete
-Event EV_click8_complete[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_RELEASE_TIMEOUT,
-    0 };
-#endif
-#if MAX_CLICKS >= 9
+
+#define EV_click9_press        (B_CLICK|B_PRESS|9)
+#define EV_click9_hold         (B_CLICK|B_HOLD|B_PRESS|9)
+#define EV_click9_hold_release (B_CLICK|B_TIMEOUT|B_HOLD|B_RELEASE|9)
+#define EV_click9_release      (B_CLICK|B_RELEASE|9)
+#define EV_click9_complete     (B_CLICK|B_TIMEOUT|9)
 #define EV_9clicks EV_click9_complete
-Event EV_click9_complete[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_RELEASE_TIMEOUT,
-    0 };
-#endif
-#if MAX_CLICKS >= 10
+
+#define EV_click10_press        (B_CLICK|B_PRESS|10)
+#define EV_click10_hold         (B_CLICK|B_HOLD|B_PRESS|10)
+#define EV_click10_hold_release (B_CLICK|B_TIMEOUT|B_HOLD|B_RELEASE|10)
+#define EV_click10_release      (B_CLICK|B_RELEASE|10)
+#define EV_click10_complete     (B_CLICK|B_TIMEOUT|10)
 #define EV_10clicks EV_click10_complete
-Event EV_click10_complete[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_RELEASE_TIMEOUT,
-    0 };
-#endif
-#if MAX_CLICKS >= 11
+
+#define EV_click11_press        (B_CLICK|B_PRESS|11)
+#define EV_click11_hold         (B_CLICK|B_HOLD|B_PRESS|11)
+#define EV_click11_hold_release (B_CLICK|B_TIMEOUT|B_HOLD|B_RELEASE|11)
+#define EV_click11_release      (B_CLICK|B_RELEASE|11)
+#define EV_click11_complete     (B_CLICK|B_TIMEOUT|11)
 #define EV_11clicks EV_click11_complete
-Event EV_click11_complete[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_RELEASE_TIMEOUT,
-    0 };
-#endif
-#if MAX_CLICKS >= 12
+
+#define EV_click12_press        (B_CLICK|B_PRESS|12)
+#define EV_click12_hold         (B_CLICK|B_HOLD|B_PRESS|12)
+#define EV_click12_hold_release (B_CLICK|B_TIMEOUT|B_HOLD|B_RELEASE|12)
+#define EV_click12_release      (B_CLICK|B_RELEASE|12)
+#define EV_click12_complete     (B_CLICK|B_TIMEOUT|12)
 #define EV_12clicks EV_click12_complete
-Event EV_click12_complete[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_RELEASE_TIMEOUT,
-    0 };
-#endif
-#if MAX_CLICKS >= 13
+
+#define EV_click13_press        (B_CLICK|B_PRESS|13)
+#define EV_click13_hold         (B_CLICK|B_HOLD|B_PRESS|13)
+#define EV_click13_hold_release (B_CLICK|B_TIMEOUT|B_HOLD|B_RELEASE|13)
+#define EV_click13_release      (B_CLICK|B_RELEASE|13)
+#define EV_click13_complete     (B_CLICK|B_TIMEOUT|13)
 #define EV_13clicks EV_click13_complete
-Event EV_click13_complete[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_RELEASE_TIMEOUT,
-    0 };
-#endif
-#if MAX_CLICKS >= 14
+
+#define EV_click14_press        (B_CLICK|B_PRESS|14)
+#define EV_click14_hold         (B_CLICK|B_HOLD|B_PRESS|14)
+#define EV_click14_hold_release (B_CLICK|B_TIMEOUT|B_HOLD|B_RELEASE|14)
+#define EV_click14_release      (B_CLICK|B_RELEASE|14)
+#define EV_click14_complete     (B_CLICK|B_TIMEOUT|14)
 #define EV_14clicks EV_click14_complete
-Event EV_click14_complete[] = {
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_PRESS,
-    A_RELEASE,
-    A_RELEASE_TIMEOUT,
-    0 };
-#endif
-// ... and so on
 
-// A list of button event types for easy iteration
-// TODO: make this progmem-only?
-EventPtr event_sequences[] = {
-    EV_click1_press,
-    EV_release,
-    EV_click1_release,
-    EV_click1_complete,
-    EV_click1_hold,
-    EV_click1_hold_release,
-    #if MAX_CLICKS >= 2
-    EV_click2_press,
-    EV_click2_hold,
-    EV_click2_hold_release,
-    EV_click2_release,
-    EV_click2_complete,
-    #endif
-    #if MAX_CLICKS >= 3
-    EV_click3_press,
-    EV_click3_hold,
-    EV_click3_hold_release,
-    EV_click3_release,
-    EV_click3_complete,
-    #endif
-    #if MAX_CLICKS >= 4
-    EV_click4_complete,
-    #endif
-    #if MAX_CLICKS >= 5
-    EV_click5_complete,
-    #endif
-    #if MAX_CLICKS >= 6
-    EV_click6_complete,
-    #endif
-    #if MAX_CLICKS >= 7
-    EV_click7_complete,
-    #endif
-    #if MAX_CLICKS >= 8
-    EV_click8_complete,
-    #endif
-    #if MAX_CLICKS >= 9
-    EV_click9_complete,
-    #endif
-    #if MAX_CLICKS >= 10
-    EV_click10_complete,
-    #endif
-    #if MAX_CLICKS >= 11
-    EV_click11_complete,
-    #endif
-    #if MAX_CLICKS >= 12
-    EV_click12_complete,
-    #endif
-    #if MAX_CLICKS >= 13
-    EV_click13_complete,
-    #endif
-    #if MAX_CLICKS >= 14
-    EV_click14_complete,
-    #endif
-    // ...
-};
+#define EV_click15_press        (B_CLICK|B_PRESS|15)
+#define EV_click15_hold         (B_CLICK|B_HOLD|B_PRESS|15)
+#define EV_click15_hold_release (B_CLICK|B_TIMEOUT|B_HOLD|B_RELEASE|15)
+#define EV_click15_release      (B_CLICK|B_RELEASE|15)
+#define EV_click15_complete     (B_CLICK|B_TIMEOUT|15)
+#define EV_15clicks EV_click15_complete
 
-#define events_match(a,b) compare_event_sequences(a,b)
+
+#define events_match(a,b) (a == b)
 // return 1 if (a == b), 0 otherwise
-uint8_t compare_event_sequences(uint8_t *a, const uint8_t *b);
+#define compare_event_sequences(a,b) (a == b)
 void empty_event_sequence();
 uint8_t push_event(uint8_t ev_type);
-// uint8_t last_event(uint8_t offset);
-inline uint8_t last_event_num();
 
 
 #define EMISSION_QUEUE_LEN 16
 // no comment about "volatile emissions"
 volatile Emission emissions[EMISSION_QUEUE_LEN];
 
-void append_emission(EventPtr event, uint16_t arg);
+void append_emission(Event event, uint16_t arg);
 void delete_first_emission();
 void process_emissions();
 //#define emit_now emit
-uint8_t emit_now(EventPtr event, uint16_t arg);
-void emit(EventPtr event, uint16_t arg);
-void emit_current_event(uint16_t arg);
+uint8_t emit_now(Event event, uint16_t arg);
+void emit(Event event, uint16_t arg);
+#define emit_current_event(arg) emit(current_event, arg)
 
 uint8_t nice_delay_ms(uint16_t ms);
 //uint8_t nice_delay_4ms(uint8_t ms);

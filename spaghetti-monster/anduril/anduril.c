@@ -226,45 +226,45 @@ typedef enum {
 
 
 // FSM states
-uint8_t off_state(EventPtr event, uint16_t arg);
+uint8_t off_state(Event event, uint16_t arg);
 // simple numeric entry config menu
-uint8_t config_state_base(EventPtr event, uint16_t arg,
+uint8_t config_state_base(Event event, uint16_t arg,
                           uint8_t num_config_steps,
                           void (*savefunc)());
 #define MAX_CONFIG_VALUES 3
 uint8_t config_state_values[MAX_CONFIG_VALUES];
 // ramping mode and its related config mode
-uint8_t steady_state(EventPtr event, uint16_t arg);
-uint8_t ramp_config_state(EventPtr event, uint16_t arg);
+uint8_t steady_state(Event event, uint16_t arg);
+uint8_t ramp_config_state(Event event, uint16_t arg);
 // party and tactical strobes
 #ifdef USE_STROBE_STATE
-uint8_t strobe_state(EventPtr event, uint16_t arg);
+uint8_t strobe_state(Event event, uint16_t arg);
 #endif
 #ifdef USE_BATTCHECK
-uint8_t battcheck_state(EventPtr event, uint16_t arg);
+uint8_t battcheck_state(Event event, uint16_t arg);
 #endif
 #ifdef USE_THERMAL_REGULATION
-uint8_t tempcheck_state(EventPtr event, uint16_t arg);
-uint8_t thermal_config_state(EventPtr event, uint16_t arg);
+uint8_t tempcheck_state(Event event, uint16_t arg);
+uint8_t thermal_config_state(Event event, uint16_t arg);
 #endif
 // 1-hour ramp down from low, then automatic off
-uint8_t goodnight_state(EventPtr event, uint16_t arg);
+uint8_t goodnight_state(Event event, uint16_t arg);
 // beacon mode and its related config mode
-uint8_t beacon_state(EventPtr event, uint16_t arg);
-uint8_t beacon_config_state(EventPtr event, uint16_t arg);
+uint8_t beacon_state(Event event, uint16_t arg);
+uint8_t beacon_config_state(Event event, uint16_t arg);
 // soft lockout
 #define MOON_DURING_LOCKOUT_MODE
-uint8_t lockout_state(EventPtr event, uint16_t arg);
+uint8_t lockout_state(Event event, uint16_t arg);
 // momentary / signalling mode
-uint8_t momentary_state(EventPtr event, uint16_t arg);
+uint8_t momentary_state(Event event, uint16_t arg);
 #ifdef USE_MUGGLE_MODE
 // muggle mode, super-simple, hard to exit
-uint8_t muggle_state(EventPtr event, uint16_t arg);
+uint8_t muggle_state(Event event, uint16_t arg);
 uint8_t muggle_mode_active = 0;
 #endif
 
 // general helper function for config modes
-uint8_t number_entry_state(EventPtr event, uint16_t arg);
+uint8_t number_entry_state(Event event, uint16_t arg);
 // return value from number_entry_state()
 volatile uint8_t number_entry_value;
 
@@ -387,7 +387,7 @@ uint8_t triangle_wave(uint8_t phase);
 volatile uint8_t beacon_seconds = 2;
 
 
-uint8_t off_state(EventPtr event, uint16_t arg) {
+uint8_t off_state(Event event, uint16_t arg) {
     // turn emitter off when entering state
     if (event == EV_enter_state) {
         set_level(0);
@@ -527,7 +527,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
 }
 
 
-uint8_t steady_state(EventPtr event, uint16_t arg) {
+uint8_t steady_state(Event event, uint16_t arg) {
     uint8_t mode_min = ramp_smooth_floor;
     uint8_t mode_max = ramp_smooth_ceil;
     uint8_t ramp_step_size = 1;
@@ -846,7 +846,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
 
 
 #ifdef USE_STROBE_STATE
-uint8_t strobe_state(EventPtr event, uint16_t arg) {
+uint8_t strobe_state(Event event, uint16_t arg) {
     // 'st' reduces ROM size by avoiding access to a volatile var
     // (maybe I should just make it nonvolatile?)
     strobe_mode_te st = strobe_type;
@@ -1059,7 +1059,7 @@ uint8_t strobe_state(EventPtr event, uint16_t arg) {
 
 
 #ifdef USE_BATTCHECK
-uint8_t battcheck_state(EventPtr event, uint16_t arg) {
+uint8_t battcheck_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(off_state, 0);
@@ -1076,7 +1076,7 @@ uint8_t battcheck_state(EventPtr event, uint16_t arg) {
 
 
 #ifdef USE_THERMAL_REGULATION
-uint8_t tempcheck_state(EventPtr event, uint16_t arg) {
+uint8_t tempcheck_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(off_state, 0);
@@ -1097,7 +1097,7 @@ uint8_t tempcheck_state(EventPtr event, uint16_t arg) {
 #endif
 
 
-uint8_t beacon_state(EventPtr event, uint16_t arg) {
+uint8_t beacon_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(off_state, 0);
@@ -1124,7 +1124,7 @@ uint8_t beacon_state(EventPtr event, uint16_t arg) {
 
 
 #define GOODNIGHT_TICKS_PER_STEPDOWN (GOODNIGHT_TIME*TICKS_PER_SECOND*60L/GOODNIGHT_LEVEL)
-uint8_t goodnight_state(EventPtr event, uint16_t arg) {
+uint8_t goodnight_state(Event event, uint16_t arg) {
     static uint16_t ticks_since_stepdown = 0;
     // blink on start
     if (event == EV_enter_state) {
@@ -1163,28 +1163,27 @@ uint8_t goodnight_state(EventPtr event, uint16_t arg) {
 }
 
 
-uint8_t lockout_state(EventPtr event, uint16_t arg) {
+uint8_t lockout_state(Event event, uint16_t arg) {
     #ifdef MOON_DURING_LOCKOUT_MODE
     // momentary(ish) moon mode during lockout
     // not all presses will be counted;
     // it depends on what is in the master event_sequences table
-    uint8_t last = 0;
-    for(uint8_t i=0; pgm_read_byte(event + i) && (i<EV_MAX_LEN); i++)
-        last = pgm_read_byte(event + i);
     if (arg == 0) {  // Only turn on/off when button state changes
-        if ((last == A_PRESS) || (last == A_HOLD)) {
-            #ifdef LOCKOUT_MOON_LOWEST
-            // Use lowest moon configured
-            uint8_t lvl = ramp_smooth_floor;
-            if (ramp_discrete_floor < lvl) lvl = ramp_discrete_floor;
-            set_level(lvl);
-            #else
-            // Use moon from current ramp
-            set_level(nearest_level(1));
-            #endif
-        }
-        else if ((last == A_RELEASE) || (last == A_RELEASE_TIMEOUT)) {
-            set_level(0);
+        if (! (event & B_SYSTEM)) {  // event is a button click type
+            if (event & B_PRESS) {  // button is being held
+                #ifdef LOCKOUT_MOON_LOWEST
+                // Use lowest moon configured
+                uint8_t lvl = ramp_smooth_floor;
+                if (ramp_discrete_floor < lvl) lvl = ramp_discrete_floor;
+                set_level(lvl);
+                #else
+                // Use moon from current ramp
+                set_level(nearest_level(1));
+                #endif
+            }
+            else {  // button not being held
+                set_level(0);
+            }
         }
     }
     #endif
@@ -1278,21 +1277,33 @@ uint8_t lockout_state(EventPtr event, uint16_t arg) {
 }
 
 
-uint8_t momentary_state(EventPtr event, uint16_t arg) {
+uint8_t momentary_state(Event event, uint16_t arg) {
     // TODO: momentary strobe here?  (for light painting)
-    if (event == EV_click1_press) {
-        set_level(memorized_level);
-        empty_event_sequence();  // don't attempt to parse multiple clicks
-        return MISCHIEF_MANAGED;
-    }
 
-    else if (event == EV_release) {
-        set_level(0);
-        empty_event_sequence();  // don't attempt to parse multiple clicks
-        //go_to_standby = 1;  // sleep while light is off
-        // TODO: lighted button should use lockout config?
+    // light up when the button is pressed; go dark otherwise
+    #if 0
+    if ((event ^ B_SYSTEM) & B_PRESS) {
+        set_level(memorized_level);
         return MISCHIEF_MANAGED;
     }
+    else if (((event ^ B_SYSTEM) & B_PRESS) == 0) {
+        set_level(0);
+        empty_event_sequence();
+        //go_to_standby = 1;  // sleep while light is off
+        return MISCHIEF_MANAGED;
+    }
+    #else
+    if (! (event & B_SYSTEM)) {  // is a button-related event
+        if (event & B_PRESS) {  // button is pressed
+            set_level(memorized_level);
+        } else {  // button was released
+            set_level(0);
+            empty_event_sequence();
+            //go_to_standby = 1;  // sleep while light is off
+        }
+        return MISCHIEF_MANAGED;
+    }
+    #endif
 
     // Sleep, dammit!  (but wait a few seconds first)
     // (because standby mode uses such little power that it can interfere
@@ -1302,6 +1313,7 @@ uint8_t momentary_state(EventPtr event, uint16_t arg) {
     else if ((event == EV_tick)  &&  (actual_level == 0)) {
         if (arg > TICKS_PER_SECOND*15) {  // sleep after 15 seconds
             go_to_standby = 1;  // sleep while light is off
+            // TODO: lighted button should use lockout config?
         }
         return MISCHIEF_MANAGED;
     }
@@ -1311,7 +1323,7 @@ uint8_t momentary_state(EventPtr event, uint16_t arg) {
 
 
 #ifdef USE_MUGGLE_MODE
-uint8_t muggle_state(EventPtr event, uint16_t arg) {
+uint8_t muggle_state(Event event, uint16_t arg) {
     static int8_t ramp_direction;
     static int8_t muggle_off_mode;
 
@@ -1461,7 +1473,7 @@ uint8_t muggle_state(EventPtr event, uint16_t arg) {
 
 
 // ask the user for a sequence of numbers, then save them and return to caller
-uint8_t config_state_base(EventPtr event, uint16_t arg,
+uint8_t config_state_base(Event event, uint16_t arg,
                           uint8_t num_config_steps,
                           void (*savefunc)()) {
     static uint8_t config_step;
@@ -1520,7 +1532,7 @@ void ramp_config_save() {
     }
 }
 
-uint8_t ramp_config_state(EventPtr event, uint16_t arg) {
+uint8_t ramp_config_state(Event event, uint16_t arg) {
     uint8_t num_config_steps;
     num_config_steps = 2 + ramp_style;
     return config_state_base(event, arg,
@@ -1548,7 +1560,7 @@ void thermal_config_save() {
     if (therm_ceil > MAX_THERM_CEIL) therm_ceil = MAX_THERM_CEIL;
 }
 
-uint8_t thermal_config_state(EventPtr event, uint16_t arg) {
+uint8_t thermal_config_state(Event event, uint16_t arg) {
     return config_state_base(event, arg,
                              2, thermal_config_save);
 }
@@ -1563,13 +1575,13 @@ void beacon_config_save() {
     }
 }
 
-uint8_t beacon_config_state(EventPtr event, uint16_t arg) {
+uint8_t beacon_config_state(Event event, uint16_t arg) {
     return config_state_base(event, arg,
                              1, beacon_config_save);
 }
 
 
-uint8_t number_entry_state(EventPtr event, uint16_t arg) {
+uint8_t number_entry_state(Event event, uint16_t arg) {
     static uint8_t value;
     static uint8_t blinks_left;
     static uint8_t entry_step;
