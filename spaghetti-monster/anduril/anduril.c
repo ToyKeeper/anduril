@@ -146,15 +146,6 @@
 #define MAX_BIKING_LEVEL 120  // should be 127 or less
 #define USE_BATTCHECK
 
-// determine the highest number of clicks to handle
-#ifdef USE_INDICATOR_LED
-#define MAX_CLICKS 7
-#elif defined(USE_MUGGLE_MODE)
-#define MAX_CLICKS 6
-#else
-#define MAX_CLICKS 5
-#endif
-
 #if defined(USE_MUGGLE_MODE)
 #ifndef MUGGLE_FLOOR
 #define MUGGLE_FLOOR 22
