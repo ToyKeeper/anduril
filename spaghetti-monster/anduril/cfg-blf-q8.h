@@ -6,6 +6,8 @@
 #define USE_INDICATOR_LED_WHILE_RAMPING
 // enable blinking indicator LED while off
 #define TICK_DURING_STANDBY
+#define STANDBY_TICK_SPEED 3  // every 0.128 s
+#define USE_FANCIER_BLINKING_INDICATOR
 
 // copied from Emisar D4 ramp
 // ../../bin/level_calc.py 1 65 7135 1 0.8 150
