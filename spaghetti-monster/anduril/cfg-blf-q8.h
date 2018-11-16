@@ -7,10 +7,6 @@
 // enable blinking indicator LED while off
 #define TICK_DURING_STANDBY
 
-#ifdef RAMP_LENGTH
-#undef RAMP_LENGTH
-#endif
-
 // copied from Emisar D4 ramp
 // ../../bin/level_calc.py 1 65 7135 1 0.8 150
 // ... mixed with this:

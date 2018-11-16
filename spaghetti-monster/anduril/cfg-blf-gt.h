@@ -14,10 +14,6 @@
 
 //#undef USE_SET_LEVEL_GRADUALLY
 
-#ifdef RAMP_LENGTH
-#undef RAMP_LENGTH
-#endif
-
 #define RAMP_LENGTH 150
 // First 60 values: level_calc.py 1 60 7135 4 5.0 255
 // Remainder: all 255 (buck driver at 100% duty cycle)

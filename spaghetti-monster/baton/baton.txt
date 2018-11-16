@@ -1,0 +1,21 @@
+This is a very simple clone of the Olight Baton interface.  It is not 
+exact, but it has the basics.  Mostly, it exists for the purposes of 
+demonstrating how to create interfaces in FSM.
+
+While off:
+
+  - 1 click: Turn on (at memorized level).
+  - Hold: Turn on (at moon level).
+  - 2 clicks: Turn on (at highest level).
+  - 4 clicks: Soft lockout mode.
+
+While on:
+
+  - 1 click: Turn off.
+  - Hold: Change the brightness.  Goes up in steps, then wraps around.
+  - 2 clicks: Go to/from highest level.
+
+While locked:
+
+  - 4 clicks: Exit lockout mode.
+

@@ -73,7 +73,6 @@
 #define USE_RAMPING
 #define RAMP_LENGTH 150  // default, if not overridden in a driver cfg file
 #define USE_BATTCHECK
-#define MAX_CLICKS 4
 #define USE_IDLE_MODE  // reduce power use while awake and no tasks are pending
 #define USE_DYNAMIC_UNDERCLOCKING  // cut clock speed at very low modes for better efficiency
 
@@ -92,26 +91,26 @@
 
 
 // FSM states
-uint8_t off_state(EventPtr event, uint16_t arg);
+uint8_t off_state(Event event, uint16_t arg);
 // simple numeric entry config menu
-uint8_t config_state_base(EventPtr event, uint16_t arg,
+uint8_t config_state_base(Event event, uint16_t arg,
                           uint8_t num_config_steps,
                           void (*savefunc)());
 #define MAX_CONFIG_VALUES 3
 uint8_t config_state_values[MAX_CONFIG_VALUES];
 // ramping mode and its related config mode
-uint8_t steady_state(EventPtr event, uint16_t arg);
-uint8_t ramp_config_state(EventPtr event, uint16_t arg);
+uint8_t steady_state(Event event, uint16_t arg);
+uint8_t ramp_config_state(Event event, uint16_t arg);
 #ifdef USE_BATTCHECK
-uint8_t battcheck_state(EventPtr event, uint16_t arg);
+uint8_t battcheck_state(Event event, uint16_t arg);
 #endif
 #ifdef USE_THERMAL_REGULATION
-uint8_t tempcheck_state(EventPtr event, uint16_t arg);
-uint8_t thermal_config_state(EventPtr event, uint16_t arg);
+uint8_t tempcheck_state(Event event, uint16_t arg);
+uint8_t thermal_config_state(Event event, uint16_t arg);
 #endif
 
 // general helper function for config modes
-uint8_t number_entry_state(EventPtr event, uint16_t arg);
+uint8_t number_entry_state(Event event, uint16_t arg);
 // return value from number_entry_state()
 volatile uint8_t number_entry_value;
 
@@ -152,7 +151,7 @@ uint8_t target_level = 0;
 #endif
 
 
-uint8_t off_state(EventPtr event, uint16_t arg) {
+uint8_t off_state(Event event, uint16_t arg) {
     // turn emitter off when entering state
     if ((event == EV_enter_state) || (event == EV_reenter_state)) {
         // let the user know the power is connected
@@ -230,7 +229,7 @@ uint8_t off_state(EventPtr event, uint16_t arg) {
 }
 
 
-uint8_t steady_state(EventPtr event, uint16_t arg) {
+uint8_t steady_state(Event event, uint16_t arg) {
     uint8_t mode_min = ramp_discrete_floor;
     uint8_t mode_max = ramp_discrete_ceil;
     uint8_t ramp_step_size = ramp_discrete_step_size;
@@ -375,7 +374,7 @@ uint8_t steady_state(EventPtr event, uint16_t arg) {
 
 
 #ifdef USE_BATTCHECK
-uint8_t battcheck_state(EventPtr event, uint16_t arg) {
+uint8_t battcheck_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(off_state, 0);
@@ -392,7 +391,7 @@ uint8_t battcheck_state(EventPtr event, uint16_t arg) {
 #endif
 
 #ifdef USE_THERMAL_REGULATION
-uint8_t tempcheck_state(EventPtr event, uint16_t arg) {
+uint8_t tempcheck_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(off_state, 0);
@@ -415,7 +414,7 @@ uint8_t tempcheck_state(EventPtr event, uint16_t arg) {
 
 
 // ask the user for a sequence of numbers, then save them and return to caller
-uint8_t config_state_base(EventPtr event, uint16_t arg,
+uint8_t config_state_base(Event event, uint16_t arg,
                           uint8_t num_config_steps,
                           void (*savefunc)()) {
     static uint8_t config_step;
@@ -463,7 +462,7 @@ void ramp_config_save() {
     if (val) ramp_discrete_steps = val;
 }
 
-uint8_t ramp_config_state(EventPtr event, uint16_t arg) {
+uint8_t ramp_config_state(Event event, uint16_t arg) {
     uint8_t num_config_steps;
     num_config_steps = 3;
     return config_state_base(event, arg,
@@ -491,14 +490,14 @@ void thermal_config_save() {
     if (therm_ceil > MAX_THERM_CEIL) therm_ceil = MAX_THERM_CEIL;
 }
 
-uint8_t thermal_config_state(EventPtr event, uint16_t arg) {
+uint8_t thermal_config_state(Event event, uint16_t arg) {
     return config_state_base(event, arg,
                              2, thermal_config_save);
 }
 #endif
 
 
-uint8_t number_entry_state(EventPtr event, uint16_t arg) {
+uint8_t number_entry_state(Event event, uint16_t arg) {
     static uint8_t value;
     static uint8_t blinks_left;
     static uint8_t entry_step;

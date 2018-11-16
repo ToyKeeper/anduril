@@ -1,5 +1,6 @@
 /*
  * Meteor: Meteor M43 clone UI for SpaghettiMonster.
+ * (in progress, not really in a usable state yet)
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -29,26 +30,25 @@
 #define DONT_DELAY_AFTER_BATTCHECK
 //#define USE_EEPROM
 //#define EEPROM_BYTES 5
-#define MAX_CLICKS 11
 #include "spaghetti-monster.h"
 
 // FSM states
-uint8_t base_off_state(EventPtr event, uint16_t arg);
-uint8_t ui1_off_state(EventPtr event, uint16_t arg);
-uint8_t ui2_off_state(EventPtr event, uint16_t arg);
-uint8_t ui3_off_state(EventPtr event, uint16_t arg);
-uint8_t base_on_state(EventPtr event, uint16_t arg, uint8_t *mode, uint8_t *group);
-uint8_t ui1_on_state(EventPtr event, uint16_t arg);
-uint8_t ui2_on_state(EventPtr event, uint16_t arg);
-uint8_t ui3_on_state(EventPtr event, uint16_t arg);
-uint8_t beacon_state(EventPtr event, uint16_t arg);
-uint8_t battcheck_state(EventPtr event, uint16_t arg);
-uint8_t strobe_state(EventPtr event, uint16_t arg);
-uint8_t biking_state(EventPtr event, uint16_t arg);
-uint8_t lockout_state(EventPtr event, uint16_t arg);
-uint8_t momentary_state(EventPtr event, uint16_t arg);
+uint8_t base_off_state(Event event, uint16_t arg);
+uint8_t ui1_off_state(Event event, uint16_t arg);
+uint8_t ui2_off_state(Event event, uint16_t arg);
+uint8_t ui3_off_state(Event event, uint16_t arg);
+uint8_t base_on_state(Event event, uint16_t arg, uint8_t *mode, uint8_t *group);
+uint8_t ui1_on_state(Event event, uint16_t arg);
+uint8_t ui2_on_state(Event event, uint16_t arg);
+uint8_t ui3_on_state(Event event, uint16_t arg);
+uint8_t beacon_state(Event event, uint16_t arg);
+uint8_t battcheck_state(Event event, uint16_t arg);
+uint8_t strobe_state(Event event, uint16_t arg);
+uint8_t biking_state(Event event, uint16_t arg);
+uint8_t lockout_state(Event event, uint16_t arg);
+uint8_t momentary_state(Event event, uint16_t arg);
 // Not a FSM state, just handles stuff common to all low/med/hi states
-uint8_t any_mode_state(EventPtr event, uint16_t arg, uint8_t *primary, uint8_t *secondary, uint8_t *modes);
+uint8_t any_mode_state(Event event, uint16_t arg, uint8_t *primary, uint8_t *secondary, uint8_t *modes);
 
 #ifdef USE_EEPROM
 void load_config();
@@ -99,7 +99,7 @@ void blink_fast() {
     set_level(0);
 }
 
-uint8_t base_off_state(EventPtr event, uint16_t arg) {
+uint8_t base_off_state(Event event, uint16_t arg) {
     // turn emitter off when entering state
     if (event == EV_enter_state) {
         set_level(0);
@@ -154,7 +154,7 @@ uint8_t base_off_state(EventPtr event, uint16_t arg) {
     return EVENT_NOT_HANDLED;
 }
 
-uint8_t ui1_off_state(EventPtr event, uint16_t arg) {
+uint8_t ui1_off_state(Event event, uint16_t arg) {
     UI = 1;
     if (event == EV_enter_state) {
         return EVENT_HANDLED;
@@ -187,7 +187,7 @@ uint8_t ui1_off_state(EventPtr event, uint16_t arg) {
     return base_off_state(event, arg);
 }
 
-uint8_t ui2_off_state(EventPtr event, uint16_t arg) {
+uint8_t ui2_off_state(Event event, uint16_t arg) {
     UI = 2;
     if (event == EV_enter_state) {
         return EVENT_HANDLED;
@@ -220,7 +220,7 @@ uint8_t ui2_off_state(EventPtr event, uint16_t arg) {
     return base_off_state(event, arg);
 }
 
-uint8_t ui3_off_state(EventPtr event, uint16_t arg) {
+uint8_t ui3_off_state(Event event, uint16_t arg) {
     UI = 3;
     if (event == EV_enter_state) {
         return EVENT_HANDLED;
@@ -259,7 +259,7 @@ uint8_t ui3_off_state(EventPtr event, uint16_t arg) {
     return base_off_state(event, arg);
 }
 
-uint8_t base_on_state(EventPtr event, uint16_t arg, uint8_t *mode, uint8_t *group) {
+uint8_t base_on_state(Event event, uint16_t arg, uint8_t *mode, uint8_t *group) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(base_off_state, 0);
@@ -289,7 +289,7 @@ uint8_t base_on_state(EventPtr event, uint16_t arg, uint8_t *mode, uint8_t *grou
     return EVENT_NOT_HANDLED;
 }
 
-uint8_t ui1_on_state(EventPtr event, uint16_t arg) {
+uint8_t ui1_on_state(Event event, uint16_t arg) {
     // turn on LED when entering the mode
     static uint8_t *mode = &UI1_mode1;
     static uint8_t *group = UI1_group1;
@@ -328,7 +328,7 @@ uint8_t ui1_on_state(EventPtr event, uint16_t arg) {
     return base_on_state(event, arg, mode, group);
 }
 
-uint8_t ui2_on_state(EventPtr event, uint16_t arg) {
+uint8_t ui2_on_state(Event event, uint16_t arg) {
     // turn on LED when entering the mode
     static uint8_t *mode = &UI2_mode1;
     static uint8_t *group = UI2_group1;
@@ -377,7 +377,7 @@ uint8_t ui2_on_state(EventPtr event, uint16_t arg) {
     return base_on_state(event, arg, mode, group);
 }
 
-uint8_t ui3_on_state(EventPtr event, uint16_t arg) {
+uint8_t ui3_on_state(Event event, uint16_t arg) {
     // turn on LED when entering the mode
     static uint8_t *mode = &UI3_mode1;
     if (event == EV_enter_state) {
@@ -424,7 +424,7 @@ uint8_t ui3_on_state(EventPtr event, uint16_t arg) {
 }
 
 
-uint8_t blinky_base_state(EventPtr event, uint16_t arg) {
+uint8_t blinky_base_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(base_off_state, 0);
@@ -433,27 +433,27 @@ uint8_t blinky_base_state(EventPtr event, uint16_t arg) {
     return EVENT_NOT_HANDLED;
 }
 
-uint8_t beacon_state(EventPtr event, uint16_t arg) {
+uint8_t beacon_state(Event event, uint16_t arg) {
     return blinky_base_state(event, arg);
 }
 
-uint8_t battcheck_state(EventPtr event, uint16_t arg) {
+uint8_t battcheck_state(Event event, uint16_t arg) {
     return EVENT_NOT_HANDLED;
 }
 
-uint8_t strobe_state(EventPtr event, uint16_t arg) {
+uint8_t strobe_state(Event event, uint16_t arg) {
     return blinky_base_state(event, arg);
 }
 
-uint8_t biking_state(EventPtr event, uint16_t arg) {
+uint8_t biking_state(Event event, uint16_t arg) {
     return blinky_base_state(event, arg);
 }
 
-uint8_t lockout_state(EventPtr event, uint16_t arg) {
+uint8_t lockout_state(Event event, uint16_t arg) {
     return blinky_base_state(event, arg);
 }
 
-uint8_t momentary_state(EventPtr event, uint16_t arg) {
+uint8_t momentary_state(Event event, uint16_t arg) {
     return blinky_base_state(event, arg);
 }
 

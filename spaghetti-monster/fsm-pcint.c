@@ -75,9 +75,9 @@ void PCINT_inner(uint8_t pressed) {
     uint8_t pushed;
 
     if (pressed) {
-        pushed = push_event(A_PRESS);
+        pushed = push_event(B_PRESS);
     } else {
-        pushed = push_event(A_RELEASE);
+        pushed = push_event(B_RELEASE);
     }
 
     // check if sequence matches any defined sequences
