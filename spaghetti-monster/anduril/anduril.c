@@ -106,6 +106,9 @@
 #elif defined(FSM_FF_PL47_DRIVER)
 #include "cfg-ff-pl47.h"
 
+#elif defined(FSM_FF_PL47_219_DRIVER)
+#include "cfg-ff-pl47-219.h"
+
 #elif defined(FSM_FF_ROT66_DRIVER)
 #include "cfg-ff-rot66.h"
 
