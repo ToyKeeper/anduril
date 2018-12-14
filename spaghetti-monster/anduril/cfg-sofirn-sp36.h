@@ -9,7 +9,10 @@
 // the high button LED mode on this light uses too much power
 // off mode: low (1)
 // lockout: blinking (3)
+#ifdef INDICATOR_LED_DEFAULT_MODE
+#undef INDICATOR_LED_DEFAULT_MODE
 #define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
+#endif
 
 // don't blink during the ramp; the button LED brightness is sufficient
 // to indicate which power channel(s) are being used

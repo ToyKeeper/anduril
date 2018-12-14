@@ -8,6 +8,9 @@
 #define TICK_DURING_STANDBY
 #define STANDBY_TICK_SPEED 3  // every 0.128 s
 #define USE_FANCIER_BLINKING_INDICATOR
+// off mode: high (2)
+// lockout: blinking (3)
+#define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 2)
 
 // copied from Emisar D4 ramp
 // ../../bin/level_calc.py 1 65 7135 1 0.8 150
