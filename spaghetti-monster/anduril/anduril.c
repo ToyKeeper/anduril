@@ -19,20 +19,8 @@
  */
 
 /********* User-configurable options *********/
-// Physical driver type (uncomment one of the following or define it at the gcc command line)
-//#define FSM_BLF_GT_DRIVER
-//#define FSM_BLF_GT_MINI_DRIVER
-//#define FSM_BLF_Q8_DRIVER
-//#define FSM_EMISAR_D1_DRIVER
-//#define FSM_EMISAR_D1S_DRIVER
-//#define FSM_EMISAR_D4_DRIVER
-//#define FSM_EMISAR_D4_219C_DRIVER
-//#define FSM_EMISAR_D4S_DRIVER
-//#define FSM_EMISAR_D4S_219C_DRIVER
-//#define FSM_FF_ROT66_DRIVER
-//#define FSM_FF_ROT66_219_DRIVER
-//#define FSM_FW3A_DRIVER
-//#define FSM_SOFIRN_SP36_DRIVER
+// Anduril config file name (set it here or define it at the gcc command line)
+//#define CONFIGFILE cfg-blf-q8.h
 
 #define USE_LVP  // FIXME: won't build when this option is turned off
 
@@ -76,55 +64,8 @@
 //#define START_AT_MEMORIZED_LEVEL
 
 /***** specific settings for known driver types *****/
-#if defined(FSM_BLF_GT_DRIVER)
-#include "cfg-blf-gt.h"
-
-#elif defined(FSM_BLF_GT_MINI_DRIVER)
-#include "cfg-blf-gt-mini.h"
-
-#elif defined(FSM_BLF_LANTERN_DRIVER)
-#include "cfg-blf-lantern.h"
-
-#elif defined(FSM_BLF_Q8_DRIVER)
-#include "cfg-blf-q8.h"
-
-#elif defined(FSM_EMISAR_D1_DRIVER)
-#include "cfg-emisar-d1.h"
-
-#elif defined(FSM_EMISAR_D1S_DRIVER)
-#include "cfg-emisar-d1s.h"
-
-#elif defined(FSM_EMISAR_D4_219C_DRIVER)
-#include "cfg-emisar-d4-219c.h"
-
-#elif defined(FSM_EMISAR_D4_DRIVER)
-#include "cfg-emisar-d4.h"
-
-#elif defined(FSM_EMISAR_D4S_219C_DRIVER)
-#include "cfg-emisar-d4s-219c.h"
-
-#elif defined(FSM_EMISAR_D4S_DRIVER)
-#include "cfg-emisar-d4s.h"
-
-#elif defined(FSM_FF_PL47_DRIVER)
-#include "cfg-ff-pl47.h"
-
-#elif defined(FSM_FF_PL47_219_DRIVER)
-#include "cfg-ff-pl47-219.h"
-
-#elif defined(FSM_FF_ROT66_DRIVER)
-#include "cfg-ff-rot66.h"
-
-#elif defined(FSM_FF_ROT66_219_DRIVER)
-#include "cfg-ff-rot66-219.h"
-
-#elif defined(FSM_FW3A_DRIVER)
-#include "cfg-fw3a.h"
-
-#elif defined(FSM_SOFIRN_SP36_DRIVER)
-#include "cfg-sofirn-sp36.h"
-
-#endif
+#include "tk.h"
+#include incfile(CONFIGFILE)
 
 
 // thermal properties, if not defined per-driver

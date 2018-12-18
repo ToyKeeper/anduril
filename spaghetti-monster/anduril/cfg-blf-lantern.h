@@ -9,7 +9,7 @@
  */
 
 // basically the same as a Q8...  sort of
-#define FSM_BLF_Q8_DRIVER
+#include "hwdef-BLF_Q8.h"
 
 // the button lights up
 #define USE_INDICATOR_LED

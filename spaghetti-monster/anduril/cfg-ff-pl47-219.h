@@ -1,7 +1,6 @@
 // Fireflies PL47-219B config options for Anduril
 // same as PL47 but with FET modes limited to 67% power
 // to avoid destroying the LEDs
-#define FSM_FF_PL47_DRIVER
 #include "cfg-ff-pl47.h"
 
 #undef PWM2_LEVELS

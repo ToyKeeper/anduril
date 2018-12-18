@@ -1,3 +1,6 @@
+#ifndef HWDEF_FF_PL47_H
+#define HWDEF_FF_PL47_H
+
 /* Fireflies PL47 driver layout
  * same as a D4S, basically, except ...
  */
@@ -21,3 +24,4 @@
 #undef FSM_EMISAR_D4S_DRIVER
 #undef FSM_EMISAR_D4_DRIVER
 
+#endif

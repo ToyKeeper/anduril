@@ -61,6 +61,11 @@
 #include <avr/interrupt.h>
 
 /******************** I/O pin and register layout ************************/
+#ifdef HWDEFFILE
+#include "tk.h"
+#include incfile(HWDEFFILE)
+#endif
+
 #if 0  // placeholder
 
 #elif defined(NANJG_LAYOUT)
@@ -75,42 +80,10 @@
 #elif defined(FERRERO_ROCHER_LAYOUT)
 #include "hwdef-Ferrero_Rocher.h"
 
-#elif defined(FSM_BLF_GT_DRIVER)
-#include "hwdef-BLF_GT.h"
-
-#elif defined(FSM_BLF_GT_MINI_DRIVER)
-#include "hwdef-BLF_GT_Mini.h"
-
-#elif defined(FSM_BLF_Q8_DRIVER)
-#include "hwdef-BLF_Q8.h"
-
-#elif defined(FSM_EMISAR_D4_DRIVER)
-#include "hwdef-Emisar_D4.h"
-
-#elif defined(FSM_EMISAR_D4S_DRIVER)
-#include "hwdef-Emisar_D4S.h"
-
-#elif defined(FSM_EMISAR_D1_DRIVER)
-#include "hwdef-Emisar_D1.h"
-
-#elif defined(FSM_EMISAR_D1S_DRIVER)
-#include "hwdef-Emisar_D1S.h"
-
-#elif defined(FSM_FF_PL47_DRIVER)
-#include "hwdef-FF_PL47.h"
-
-#elif defined(FSM_FF_ROT66_DRIVER)
-#include "hwdef-FF_ROT66.h"
-
-#elif defined(FSM_FW3A_DRIVER)
-#include "hwdef-FW3A.h"
-
-#elif defined(FSM_TKSABER_DRIVER)
-#include "hwdef-TK_Saber.h"
-
-#else
-#error Hey, you need to define an I/O pin layout.
-
 #endif  // no more recognized driver types
+
+#ifndef LAYOUT_DEFINED
+#error Hey, you need to define an I/O pin layout.
+#endif
 
 #endif  // TK_ATTINY_H

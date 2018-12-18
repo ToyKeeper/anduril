@@ -1,3 +1,6 @@
+#ifndef HWDEF_BLF_Q8_H
+#define HWDEF_BLF_Q8_H
+
 /* BLF Q8 driver layout
  * Q8 driver is the same as a D4, basically
  */
@@ -15,3 +18,4 @@
 // Q8 driver is the same as a D4, basically
 #include "hwdef-Emisar_D4.h"
 
+#endif

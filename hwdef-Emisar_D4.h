@@ -1,3 +1,6 @@
+#ifndef HWDEF_EMISAR_D4_H
+#define HWDEF_EMISAR_D4_H
+
 /* Emisar D4 driver layout
  *           ----
  *   Reset -|1  8|- VCC
@@ -6,6 +9,8 @@
  *     GND -|4  5|- PWM (1x7135)
  *           ----
  */
+
+#define LAYOUT_DEFINED
 
 #define PWM_CHANNELS 2
 
@@ -42,3 +47,4 @@
 #define FAST 0xA3           // fast PWM both channels
 #define PHASE 0xA1          // phase-correct PWM both channels
 
+#endif
