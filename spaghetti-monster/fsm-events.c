@@ -20,25 +20,8 @@
 #ifndef FSM_EVENTS_C
 #define FSM_EVENTS_C
 
-// TODO: maybe compare events by number instead of pointer?
-//       (number = index in event types array)
-//       (comparison would use full event content, but send off index to callbacks)
-//       (saves space by using uint8_t instead of a pointer)
-//       (also eliminates the need to duplicate single-entry events like for voltage or timer tick)
-
-// return 1 if (a == b), 0 otherwise
-uint8_t compare_event_sequences(uint8_t *a, const uint8_t *b) {
-    for(uint8_t i=0; (i<EV_MAX_LEN) && (a[i] == pgm_read_byte(b+i)); i++) {
-        // end of zero-terminated sequence
-        if (a[i] == 0) return 1;
-    }
-    // if we ever fall out, that means something was different
-    // (or the sequence is too long)
-    return 0;
-}
-
 void empty_event_sequence() {
-    for(uint8_t i=0; i<EV_MAX_LEN; i++) current_event[i] = 0;
+    current_event = EV_none;
     // when the user completes an input sequence, interrupt any running timers
     // to cancel any delays currently in progress
     // This eliminates a whole bunch of extra code:
@@ -49,46 +32,41 @@ void empty_event_sequence() {
 
 uint8_t push_event(uint8_t ev_type) {
     ticks_since_last_event = 0;  // something happened
-    uint8_t i;
-    //uint8_t prev_event = 0;  // never push the same event twice in a row
-    for(i=0; current_event[i] && (i<EV_MAX_LEN); i++) {
-        // this doesn't actually seem to be necessary any more...
-        //prev_event = current_event[i];
+
+    // only click events are sent to this function
+    current_event |= B_CLICK;
+
+    // handle button presses
+    if (ev_type == B_PRESS) {
+        // set press flag
+        current_event |= B_PRESS;
+        // increase click counter
+        if ((current_event & B_COUNT) < (B_COUNT-1)) {
+            current_event ++;
+        }
+        return 1;  // event pushed, even if max clicks already reached
+                   // (will just repeat the max over and over)
     }
-    //if ((i < EV_MAX_LEN)  &&  (prev_event != ev_type)) {
-    //if (prev_event != ev_type) {
-    if (i < EV_MAX_LEN) {
-        current_event[i] = ev_type;
+    // handle button releases
+    else if (ev_type == B_RELEASE) {
+        // clear the press flag
+        current_event &= (~B_PRESS);
+        // if a "hold" event just ended, set the timeout flag
+        // to indicate that the event is done and can be cleared
+        if (current_event & B_HOLD) { current_event |= B_TIMEOUT; }
         return 1;  // event pushed
-    } else {
-        // TODO: ... something?
     }
-    return 0;  // no event pushed
-}
 
-// find and return last action in the current event sequence
-/*
-uint8_t last_event(uint8_t offset) {
-    uint8_t i;
-    for(i=0; current_event[i] && (i<EV_MAX_LEN); i++);
-    if (i == EV_MAX_LEN) return current_event[EV_MAX_LEN-offset];
-    else if (i >= offset) return current_event[i-offset];
-    return 0;
-}
-*/
+    return 0;  // unexpected event type
 
-inline uint8_t last_event_num() {
-    uint8_t i;
-    for(i=0; current_event[i] && (i<EV_MAX_LEN); i++);
-    return i;
 }
 
 
-void append_emission(EventPtr event, uint16_t arg) {
+void append_emission(Event event, uint16_t arg) {
     uint8_t i;
     // find last entry
     for(i=0;
-        (i<EMISSION_QUEUE_LEN) && (emissions[i].event != NULL);
+        (i<EMISSION_QUEUE_LEN) && (emissions[i].event != EV_none);
         i++) { }
     // add new entry
     if (i < EMISSION_QUEUE_LEN) {
@@ -105,12 +83,12 @@ void delete_first_emission() {
         emissions[i].event = emissions[i+1].event;
         emissions[i].arg = emissions[i+1].arg;
     }
-    emissions[i].event = NULL;
+    emissions[i].event = EV_none;
     emissions[i].arg = 0;
 }
 
 void process_emissions() {
-    while (emissions[0].event != NULL) {
+    while (emissions[0].event != EV_none) {
         emit_now(emissions[0].event, emissions[0].arg);
         delete_first_emission();
     }
@@ -202,7 +180,7 @@ uint8_t nice_delay_s() {
 */
 
 // Call stacked callbacks for the given event until one handles it.
-uint8_t emit_now(EventPtr event, uint16_t arg) {
+uint8_t emit_now(Event event, uint16_t arg) {
     for(int8_t i=state_stack_len-1; i>=0; i--) {
         uint8_t err = state_stack[i](event, arg);
         if (! err) return 0;
@@ -210,26 +188,15 @@ uint8_t emit_now(EventPtr event, uint16_t arg) {
     return 1;  // event not handled
 }
 
-void emit(EventPtr event, uint16_t arg) {
+void emit(Event event, uint16_t arg) {
     // add this event to the queue for later,
     // so we won't use too much time during an interrupt
     append_emission(event, arg);
 }
 
-// Search the pre-defined event list for one matching what the user just did,
-// and emit it if one was found.
 void emit_current_event(uint16_t arg) {
-    //uint8_t err = 1;
-    for (uint8_t i=0; i<(sizeof(event_sequences)/sizeof(EventPtr)); i++) {
-        if (events_match(current_event, event_sequences[i])) {
-            //DEBUG_FLASH;
-            //err = emit(event_sequences[i], arg);
-            //return err;
-            emit(event_sequences[i], arg);
-            return;
-        }
-    }
-    //return err;
+    ticks_since_last_event = arg;
+    emit(current_event, arg);
 }
 
 #endif
