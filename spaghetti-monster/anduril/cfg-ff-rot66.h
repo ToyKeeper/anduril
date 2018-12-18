@@ -1,4 +1,5 @@
 // Fireflies ROT66 (14x7135) config options for Anduril
+#include "hwdef-FF_ROT66.h"
 
 // the button lights up
 #define USE_INDICATOR_LED

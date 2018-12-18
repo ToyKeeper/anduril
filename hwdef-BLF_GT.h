@@ -1,3 +1,6 @@
+#ifndef HWDEF_BLF_GT_H
+#define HWDEF_BLF_GT_H
+
 /* BLF GT driver layout
  *           ----
  *   Reset -|1  8|- VCC (unused)
@@ -52,3 +55,6 @@
 #define FAST 0xA3           // fast PWM both channels
 #define PHASE 0xA1          // phase-correct PWM both channels
 
+#define LAYOUT_DEFINED
+
+#endif

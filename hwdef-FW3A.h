@@ -1,3 +1,6 @@
+#ifndef HWDEF_FW3A_H
+#define HWDEF_FW3A_H
+
 /* BLF/TLF FW3A driver layout
  *           ----
  *   Reset -|1  8|- VCC
@@ -45,3 +48,6 @@
 #define FAST 0xA3           // fast PWM both channels
 #define PHASE 0xA1          // phase-correct PWM both channels
 
+#define LAYOUT_DEFINED
+
+#endif

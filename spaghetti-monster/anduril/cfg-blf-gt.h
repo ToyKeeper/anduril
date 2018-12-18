@@ -1,4 +1,5 @@
 // BLF GT config options for Anduril
+#include "hwdef-BLF_GT.h"
 
 // the button lights up
 #define USE_INDICATOR_LED

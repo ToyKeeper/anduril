@@ -1,10 +1,10 @@
 // Sofirn SP36 (small Q8) config options for Anduril
+// same as  the  BLF Q8, mostly
+#include "cfg-blf-q8.h"
 
 // voltage readings were a little high with the Q8 value
+#undef VOLTAGE_FUDGE_FACTOR
 #define VOLTAGE_FUDGE_FACTOR 5  // add 0.25V, not 0.35V
-
-#define FSM_BLF_Q8_DRIVER
-#include "cfg-blf-q8.h"
 
 // the high button LED mode on this light uses too much power
 // off mode: low (1)

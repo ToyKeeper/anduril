@@ -1,4 +1,5 @@
 // BLF/Lumintop GT Mini config options for Anduril
+#include "hwdef-BLF_GT_Mini.h"
 // Same as an Emisar D1S, except it has a lighted button
 #include "cfg-emisar-d1s.h"
 

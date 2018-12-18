@@ -1,3 +1,6 @@
+#ifndef HWDEF_FF_ROT66_H
+#define HWDEF_FF_ROT66_H
+
 /* Fireflies ROT66 driver layout
  * same as a FW3A, basically, except ...
  */
@@ -19,3 +22,4 @@
 #undef VISION_PIN
 #endif
 
+#endif

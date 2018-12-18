@@ -1,7 +1,6 @@
 // Emisar D4-219C config options for Anduril
 // same as D4S but with FET modes limited to 80% power
 // to avoid destroying the LEDs
-#define FSM_EMISAR_D4_DRIVER
 #include "cfg-emisar-d4.h"
 
 #undef PWM2_LEVELS

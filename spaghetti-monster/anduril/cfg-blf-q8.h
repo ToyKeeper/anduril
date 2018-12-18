@@ -1,4 +1,5 @@
 // BLF Q8 config options for Anduril
+#include "hwdef-BLF_Q8.h"
 
 // the button lights up
 #define USE_INDICATOR_LED
