@@ -1,6 +1,5 @@
 // Fireflies ROT66-219 (7x7135) config options for Anduril
 // same as regular ROT66, but calibrated for Nichia 219B with 7x7135 chips
-#define FSM_FF_ROT66_DRIVER
 #include "cfg-ff-rot66.h"
 
 // driver is a FET+N+1,

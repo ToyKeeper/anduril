@@ -1,4 +1,5 @@
 // Emisar D4S config options for Anduril
+#include "hwdef-Emisar_D4S.h"
 
 // the button lights up
 #define USE_INDICATOR_LED
