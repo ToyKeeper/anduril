@@ -17,6 +17,11 @@
 #define USE_INDICATOR_LED_WHILE_RAMPING
 // enable blinking indicator LED while off
 #define TICK_DURING_STANDBY
+#define STANDBY_TICK_SPEED 3  // every 0.128 s
+#define USE_FANCIER_BLINKING_INDICATOR
+// off mode: high (2)
+// lockout: blinking (3)
+#define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 2)
 
 // the lantern has two PWM channels, but they drive different sets of emitters
 // (one channel for warm emitters, one channel for cold)
@@ -38,8 +43,9 @@
 // because this lantern isn't overpowered
 #define RAMP_SMOOTH_FLOOR 1
 #define RAMP_SMOOTH_CEIL 150
-#define RAMP_DISCRETE_FLOOR RAMP_SMOOTH_FLOOR
+#define RAMP_DISCRETE_FLOOR 20
 #define RAMP_DISCRETE_CEIL RAMP_SMOOTH_CEIL
+#define RAMP_DISCRETE_STEPS 5
 
 // the sensor (attiny85) is nowhere near the emitters
 // so thermal regulation can't work
