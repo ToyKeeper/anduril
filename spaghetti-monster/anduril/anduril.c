@@ -1817,9 +1817,6 @@ void loop() {
 
     StatePtr state = current_state;
 
-    #ifdef USE_DYNAMIC_UNDERCLOCKING
-    auto_clock_speed();
-    #endif
     if (0) {}
 
     #ifdef USE_STROBE_STATE
@@ -1838,7 +1835,6 @@ void loop() {
             uint8_t del = strobe_delays[st];
             // TODO: make tac strobe brightness configurable?
             set_level(STROBE_BRIGHTNESS);
-            CLKPR = 1<<CLKPCE; CLKPR = 0;  // run at full speed
             if (st == party_strobe_e) {  // party strobe
                 if (del < 42) delay_zero();
                 else nice_delay_ms(1);

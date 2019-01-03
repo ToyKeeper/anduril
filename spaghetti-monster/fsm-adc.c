@@ -51,7 +51,7 @@ inline void ADC_off() {
 static inline uint8_t calc_voltage_divider(uint16_t value) {
     // use 9.7 fixed-point to get sufficient precision
     uint16_t adc_per_volt = ((ADC_44<<7) - (ADC_22<<7)) / (44-22);
-    // incoming value is 14.2 fixed-point, so shift it 2 bits less
+    // incoming value is 8.2 fixed-point, so shift it 2 bits less
     uint8_t result = ((value<<5) / adc_per_volt) + VOLTAGE_FUDGE_FACTOR;
     return result;
 }

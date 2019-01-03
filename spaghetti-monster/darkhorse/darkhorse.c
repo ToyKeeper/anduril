@@ -263,6 +263,7 @@ uint8_t strobe_beacon_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     // 1 click (initially): cancel current blink
+    // FIXME: this is no longer necessary; FSM does this automatically now
     if (event == EV_click1_release) {
         interrupt_nice_delays();
         return MISCHIEF_MANAGED;
