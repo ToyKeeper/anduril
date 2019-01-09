@@ -4,7 +4,8 @@ Anduril User Manual
 Anduril is an open-source firmware for flashlights, distributed under 
 the terms of the GPL v3.  The sources can be obtained here:
 
-  http://FIXME
+  http://tiny.cc/TKAnduril
+  https://bazaar.launchpad.net/~toykeeper/flashlight-firmware/trunk/files/head:/ToyKeeper/spaghetti-monster/anduril/
 
 
 Quick Start
