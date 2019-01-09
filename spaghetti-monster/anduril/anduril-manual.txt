@@ -1,0 +1,349 @@
+Anduril User Manual
+-------------------
+
+Anduril is an open-source firmware for flashlights, distributed under 
+the terms of the GPL v3.  The sources can be obtained here:
+
+  http://FIXME
+
+
+Quick Start
+-----------
+
+After putting a battery in the light and tightening the parts together, 
+the light should quickly blink once to confirm it has power and is now 
+operational.  After that, basic usage is simple:
+
+  - Click to turn the light on or off.
+  - Hold the button to change brightness.
+  - Release and hold again to change brightness the other way.
+
+That is all the user needs to know for basic use, but there are many 
+more modes and features available for people who want more.
+
+Before reading the rest of this manual, it is recommended that users 
+look at the Anduril UI diagram, which should be provided along with the 
+flashlight.
+
+
+Ramping / Stepped Ramping Modes
+-------------------------------
+
+Anduril's normal operation mode uses a smooth ramp or a stepped ramp, 
+depending on which style the user prefers.
+
+Each ramp has its own settings -- floor (lowest level), ceiling (highest 
+level), and the stepped ramp can also have a configurable number of 
+steps.
+
+There are four ways to access this mode when the light is off:
+
+  - Click: Turn on at the memorized brightness.
+  - Hold: Turn on at the floor level.  The light should give a very 
+    subtle dark blink when the user can let go of the button to stay at 
+    the floor, or keep holding the button to ramp up.
+  - 2 clicks: Turn on at the ceiling level.
+  - Click, hold: Turn on at the ceiling level, then ramp down.
+
+While the light is on, a few basic actions are available:
+
+  - Click: Turn off.
+  - 2 clicks: Go to or from turbo (full power).
+  - Hold: Change brightness (up).  If the button was released less than 
+    1 second ago, or if it's already at the ceiling, it goes down 
+    instead.
+  - Click, hold: Change brightness (down).
+  - 3 clicks: Switch to the other ramp.
+  - 4 clicks: Go to ramp config mode.
+
+
+Other Modes
+-----------
+
+Anduril has several other modes too.  To access these, press the button 
+more than 2 times when the light is off:
+
+  - 3 clicks: Access the blinky / utility modes.
+  - Click, click, hold: Access the strobe modes.
+  - 4 clicks: Lockout mode.
+  - 5 clicks: Momentary mode.
+  - 6 clicks: Muggle mode.
+
+
+Blinky / Utility Modes
+----------------------
+
+Click 3 times from Off to access Anduril's blinky / utility modes.  This 
+always starts at battery check and the user can proceed to other blinky 
+modes from there.  The sequence is:
+
+  1. Battery check.
+  2. Sunset mode.
+  3. Beacon mode.
+  4. Temperature check.
+
+In all of these modes, some basic actions are available:
+
+  - Click: Turn off.
+  - 2 clicks: Next blinky mode.
+
+Additionally, in beacon and temperature check modes:
+
+  - 4 clicks: Go to the beacon config mode or thermal config mode.
+
+In more detail, this is what each blinky / utility mode does:
+
+  1. Battery check.
+
+     Blinks out the battery voltage per cell.  Full is 4.2V, empty is 
+     about 3.0V.  The light blinks the whole-number digit first, pauses, 
+     then blinks out the "tenths" digit.  Then a longer pause, and it 
+     repeats.
+     So for 4.2V, it would be "blink-blink-blink-blink .. blink-blink".
+
+     A "zero" digit is represented by a very quick blink.
+
+  2. Sunset mode.
+
+     This starts at a low level, then dims gradually for an hour, and 
+     then shuts off.  It is intended for use when going to bed.
+
+  3. Beacon mode.
+
+     Blinks at a slow speed.  The light stays on for half a second, and 
+     then stays off until the next blink.  The brightness and the number 
+     of seconds between pulses is configurable:
+
+       - Brightness is the user's last-ramped level, so set this in 
+         ramping mode before starting beacon mode.
+
+       - Speed is configured in beacon config mode.  Click 4 times to 
+         enter beacon config mode, wait for the light to stutter, then 
+         click to enter the number of seconds per blink.  For example, 
+         to do a 10-second alpine beacon, click 10 times.
+
+  4. Temperature check.
+
+     Blinks out the current temperature in degrees C.  This number 
+     should be pretty close to what a real thermometer says.  If not, it 
+     would be a good idea to click 4 times to enter thermal config mode, 
+     and calibrate the sensor.
+
+     Thermal config mode has two settings:
+
+     - Current temperature.  Click once per degree C to calibrate the 
+       sensor.  For example, if the ambient temperature is 21 C, then 
+       click 21 times.
+
+     - Temperature limit.  This sets the maximum temperature the light 
+       can reach before it will start doing thermal regulation to keep 
+       itself from overheating.  Click once per degree C above 30.  For 
+       example, to set the limit to 50 C, click 20 times.  The default 
+       is 45 C.
+
+
+Strobe / Mood Modes
+-------------------
+
+Anduril includes a few extra modes for a variety of purposes:
+
+  - Candle mode
+  - Bike flasher
+  - Party strobe
+  - Tactical strobe
+  - Lightning storm mode
+
+Click 3 times from Off to access these, but hold the third click for a 
+moment.  Click, click, hold.  The last-used strobe mode is remembered, 
+so it will return to whichever one you used last.
+
+In all of these modes, a few actions are available:
+
+  - Click: Turn off.
+  - 2 Clicks: Next strobe / mood mode.
+  - Hold: Increase brightness, or strobe faster.  (except lightning)
+  - Click, hold: Decrease brightness, or strobe slower.  (except lightning)
+
+Additionally, candle mode has one more action:
+
+  - 3 clicks: Add 30 minutes to the timer.
+
+In more detail, here is what each mode does:
+
+  - Candle mode
+
+    Brightness changes randomly in a pattern resembling a candle flame.  
+    If a timer is set, it will run until the timer expires, then get 
+    dimmer for one minute, then sputter and turn itself off.  Without a 
+    timer, candle mode runs until the user turns it off.  Brightness is 
+    configurable.
+
+  - Bike flasher
+
+    Runs at a medium level, but stutters to a brighter level once per 
+    second.  Designed to be more visible than a normal ramping mode, but 
+    otherwise works mostly the same.  Brightness is configurable.
+
+  - Party strobe
+
+    Motion-freezing strobe light.  Can be used to freeze spinning fans 
+    and falling water.  Speed is configurable.
+
+  - Tactical strobe
+
+    Disorienting strobe light.  Can be used to irritate people.  Speed 
+    is configurable, and the duty cycle is always 33%.
+
+  - Lightning storm mode
+
+    Flashes at random brightness and random speed to simulate lightning 
+    strikes during a busy lightning storm.  Do not look directly at the 
+    flashlight when this mode is running, because it may suddenly go to 
+    full power without warning.
+
+
+Lockout Mode
+------------
+
+Click 4 times from Off to enter Lockout mode.  This makes the light safe 
+to carry in a pocket or a bag or anywhere else the button might be 
+pressed by accident.
+
+To exit lockout mode, click 4 times.  The light should blink briefly and 
+then return to the regular "off" mode.
+
+Lockout mode also doubles as a momentary moon mode, so the user can do 
+quick tasks without having to unlock the light.  The brightness in 
+lockout mode is determined by the floor setting of the current ramp.
+
+
+Momentary Mode
+--------------
+
+Click 5 times from Off to enter Momentary mode.  This locks the 
+flashlight into a single-mode interface where the LEDs are only on when 
+the button is held down.  It is intended for Morse code and other 
+signalling tasks.
+
+Brightness is the last-ramped level, so adjust that before entering 
+momentary mode.
+
+To exit this mode, physically disconnect power by unscrewing the tailcap 
+or battery tube.
+
+
+Muggle Mode
+-----------
+
+Click 6 times from Off to enter Muggle mode.  This is a simpler and 
+less-bright interface which makes the light relatively safe to lend to 
+children or other people who could use the light unsafely.
+
+In Muggle mode, there are only a few available actions:
+
+  - Click: Turn the light on or off.
+  - Hold: Change brightness.
+  - 6 clicks: Exit Muggle mode.
+
+The brightness in this mode usually goes from about 10 lm to 300 lm.
+
+Muggle mode is remembered even after changing the battery.  This helps 
+prevent children from exiting the mode by unscrewing the tailcap.  
+However, be sure to supervise children whenever they are using any 
+powerful tools, including a bright flashlight.
+
+
+Configuration Modes
+-------------------
+
+Every config mode has the same interface.  The menu has one or more 
+options the user can configure, and it will go through them in order.  
+For each menu item, the light will follow the same pattern:
+
+  - Blink one or more times, corresponding to the item number.
+
+  - Stutter or "buzz" quickly between two brightness levels for a few 
+    seconds.  This indicates that the user can click one or more times 
+    to enter a number.  It will keep buzzing until the user stops 
+    clicking, so there is no need to hurry.
+
+  - Pause, and then go to the next option.
+
+After the light has gone through all of the menu options, it should 
+return to whatever mode the light was in before entering the config 
+mode.
+
+If the user doesn't press a button during a menu item's "buzz" phase, 
+that item remains unchanged from its previous value.
+
+
+Ramp Config Mode
+----------------
+
+While the light is on in a ramping mode, click 4 times to enter the 
+config mode for the current ramp.
+
+For smooth ramping mode, there are two menu options:
+
+  1. Floor.  (default = 1/150)
+  2. Ceiling.  (default = 120/150)
+
+For the stepped ramping mode, there are three menu options:
+
+  1. Floor.  (default = 20/150)
+  2. Ceiling.  (default = 120/150)
+  3. Number of steps.  (default = 7)
+
+To configure the floor level, click the button equal to the number of 
+ramp levels (out of 150) at which the floor should be.  To set the 
+lowest possible level, click once.
+
+To configure the ceiling level, each click goes one level lower.  So 1 
+click sets the highest possible level, 2 clicks is the 2nd-highest, 3 
+clicks is the 3rd-highest level, etc.  To set the default of 120/150, 
+click 31 times.
+
+When configuring the number of steps, the value can be anything from 2 
+to 150.
+
+
+Protection Features
+-------------------
+
+Anduril includes low voltage protection (LVP) and thermal regulation.
+
+LVP makes the light step down to a lower level when the battery is low, 
+and if the light is already at the lowest level, it shuts itself off.  
+This activates at 2.8V.  LVP adjustments happen suddenly, in large 
+steps.
+
+Thermal regulation attempts to keep the light from overheating, and 
+otherwise adjusts output to stay as close as possible to the 
+user-configured temperature limit.  Thermal adjustments happen 
+gradually, in steps so small they are difficult for humans to perceive.
+
+
+Aux LEDs / Button LEDs
+----------------------
+
+Some lights have aux LEDs or button LEDs.  These can be configured to do 
+different things while the main emitters are off.  There is one aux LED 
+mode for the regular "off" mode, and another aux LED mode for "lockout" 
+mode.  This allows the user to see at a glance whether the light is 
+locked.
+
+Aux LED modes typically include:
+
+  - Off
+  - Low
+  - High
+  - Blinking
+
+To configure the aux LEDs, go to the mode you want to configure and then 
+click the button a few times:
+
+  - Off mode: 7 clicks.
+  - Lockout mode: 3 clicks.
+
+This should change the aux LEDs to the next mode supported on this 
+light.
