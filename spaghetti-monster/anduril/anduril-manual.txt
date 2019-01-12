@@ -51,7 +51,7 @@ While the light is on, a few basic actions are available:
   - Click: Turn off.
   - 2 clicks: Go to or from turbo (full power).
   - Hold: Change brightness (up).  If the button was released less than 
-    1 second ago, or if it's already at the ceiling, it goes down 
+    a second ago, or if it's already at the ceiling, it goes down 
     instead.
   - Click, hold: Change brightness (down).
   - 3 clicks: Switch to the other ramp.
@@ -113,7 +113,7 @@ In more detail, this is what each blinky / utility mode does:
 
      Blinks at a slow speed.  The light stays on for half a second, and 
      then stays off until the next blink.  The brightness and the number 
-     of seconds between pulses is configurable:
+     of seconds between pulses are configurable:
 
        - Brightness is the user's last-ramped level, so set this in 
          ramping mode before starting beacon mode.
@@ -348,3 +348,11 @@ click the button a few times:
 
 This should change the aux LEDs to the next mode supported on this 
 light.
+
+For lights with a button LED, the button LED typically stays on while 
+the main emitters are on.  Its brightness level is set in a way which 
+mirrors the main LED -- off, low, or high.
+
+For lights with front-facing aux LEDs, the aux LEDs typically stay off 
+when the main emitters are on, and when the light is otherwise awake.  
+The aux LEDs on most lights only turn on when the light is asleep.
