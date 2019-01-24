@@ -84,7 +84,7 @@ To test if you can flash firmware correctly, or to restore a light to something
 like a default state, try flashing the NLITE driver from DrJones.  It's similar
 to the default nanjg / qlite firmware, but better.
 
-  ./bin/flash.sh DrJones/NLITE/nlite.hex
+  ./bin/flash-tiny13.sh DrJones/NLITE/nlite.hex
 
 For a quick test to make sure your tool chain works and your flashing tools
 are working, try the 'hello world' program:
@@ -95,3 +95,12 @@ are working, try the 'hello world' program:
 
 If that works, you should be ready to start making changes to the code, or
 flashing any of the pre-built firmwares.
+
+Most projects can be compiled with the bin/build.sh script.  For example, to
+build Crescendo for an attiny25-based driver and then flash it:
+
+  cd ToyKeeper/crescendo
+  ../../bin/build.sh 25 crescendo
+  ../../bin/flash-tiny25.sh crescendo.hex
+
+Other useful tools are in bin/ too, so they might be worth a look.
