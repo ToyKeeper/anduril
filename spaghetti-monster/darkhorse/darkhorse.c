@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define FSM_EMISAR_D4_DRIVER
+#include "hwdef-Emisar_D4.h"
 #define USE_LVP
 #define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 45
@@ -263,6 +263,7 @@ uint8_t strobe_beacon_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     // 1 click (initially): cancel current blink
+    // FIXME: this is no longer necessary; FSM does this automatically now
     if (event == EV_click1_release) {
         interrupt_nice_delays();
         return MISCHIEF_MANAGED;

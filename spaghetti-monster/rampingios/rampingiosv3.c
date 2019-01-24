@@ -18,18 +18,8 @@
  */
 
 /********* User-configurable options *********/
-// Physical driver type (uncomment one of the following or define it at the gcc command line)
-//#define FSM_BLF_GT_DRIVER
-//#define FSM_BLF_GT_MINI_DRIVER
-//#define FSM_BLF_Q8_DRIVER
-//#define FSM_EMISAR_D1_DRIVER
-//#define FSM_EMISAR_D1S_DRIVER
-//#define FSM_EMISAR_D4_DRIVER
-//#define FSM_EMISAR_D4_219C_DRIVER
-//#define FSM_EMISAR_D4S_DRIVER
-//#define FSM_EMISAR_D4S_219C_DRIVER
-//#define FSM_FF_ROT66_DRIVER
-//#define FSM_FW3A_DRIVER
+// Anduril config file name (set it here or define it at the gcc command line)
+//#define CONFIGFILE cfg-emisar-d4s.h
 
 #define USE_LVP  // FIXME: won't build when this option is turned off
 
@@ -57,40 +47,8 @@
 //#define BATTCHECK_4bars  // FIXME: breaks build
 
 /***** specific settings for known driver types *****/
-#if defined(FSM_BLF_GT_DRIVER)
-#include "cfg-blf-gt.h"
-
-#elif defined(FSM_BLF_GT_MINI_DRIVER)
-#include "cfg-blf-gt-mini.h"
-
-#elif defined(FSM_BLF_Q8_DRIVER)
-#include "cfg-blf-q8.h"
-
-#elif defined(FSM_EMISAR_D1_DRIVER)
-#include "cfg-emisar-d1.h"
-
-#elif defined(FSM_EMISAR_D1S_DRIVER)
-#include "cfg-emisar-d1s.h"
-
-#elif defined(FSM_EMISAR_D4_219C_DRIVER)
-#include "cfg-emisar-d4-219c.h"
-
-#elif defined(FSM_EMISAR_D4_DRIVER)
-#include "cfg-emisar-d4.h"
-
-#elif defined(FSM_EMISAR_D4S_219C_DRIVER)
-#include "cfg-emisar-d4s-219c.h"
-
-#elif defined(FSM_EMISAR_D4S_DRIVER)
-#include "cfg-emisar-d4s.h"
-
-#elif defined(FSM_FF_ROT66_DRIVER)
-#include "cfg-ff-rot66.h"
-
-#elif defined(FSM_FW3A_DRIVER)
-#include "cfg-fw3a.h"
-
-#endif
+#include "tk.h"
+#include incfile(CONFIGFILE)
 
 
 // thermal properties, if not defined per-driver
@@ -316,11 +274,6 @@ uint8_t off_state(Event event, uint16_t arg) {
         set_state(steady_state, memorized_level);
         return MISCHIEF_MANAGED;
     }
-    // 2 clicks (initial press): off, to prep for later events
-    else if (event == EV_click2_press) {
-        set_level(0);
-        return MISCHIEF_MANAGED;
-    }
     // click, hold: go to highest level (ceiling) (for ramping down)
     else if (event == EV_click2_hold) {
         set_state(steady_state, MAX_LEVEL);
@@ -329,6 +282,11 @@ uint8_t off_state(Event event, uint16_t arg) {
     // 2 clicks: highest mode (ceiling)
     else if (event == EV_2clicks) {
         set_state(steady_state, MAX_LEVEL);
+        return MISCHIEF_MANAGED;
+    }
+    // 3 clicks (initial press): off, to prep for later events
+    else if (event == EV_click3_press) {
+        set_level(0);
         return MISCHIEF_MANAGED;
     }
     #ifdef USE_BATTCHECK
@@ -1196,9 +1154,6 @@ void loop() {
 
     StatePtr state = current_state;
 
-    #ifdef USE_DYNAMIC_UNDERCLOCKING
-    auto_clock_speed();
-    #endif
     if (0) {}
 
     #ifdef USE_BATTCHECK

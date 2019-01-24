@@ -20,10 +20,7 @@
 
 /********* User-configurable options *********/
 // Physical driver type (uncomment one of the following or define it at the gcc command line)
-//#define FSM_EMISAR_D4_DRIVER
-//#define FSM_BLF_Q8_DRIVER
-//#define FSM_FW3A_DRIVER
-//#define FSM_BLF_GT_DRIVER
+//#define CONFIGFILE cfg-emisar-d4.h
 
 #define USE_LVP  // FIXME: won't build when this option is turned off
 
@@ -37,20 +34,12 @@
 //#define BATTCHECK_4bars  // FIXME: breaks build
 
 /***** specific settings for known driver types *****/
-#if defined(FSM_BLF_GT_DRIVER)
-#include "cfg-blf-gt.h"
-
-#elif defined(FSM_BLF_Q8_DRIVER)
-#include "cfg-blf-q8.h"
-
-#elif defined(FSM_EMISAR_D4_DRIVER)
-#include "cfg-emisar-d4.h"
-
-#elif defined(FSM_FW3A_DRIVER)
-#include "cfg-fw3a.h"
-
+#ifdef CONFIGFILE
+#include "tk.h"
+#include incfile(CONFIGFILE)
+#else
+#error You need to define CONFIGFILE
 #endif
-
 
 // thermal properties, if not defined per-driver
 #ifndef MIN_THERM_STEPDOWN

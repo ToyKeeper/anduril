@@ -1,4 +1,5 @@
 // Fireflies PL47 config options for Anduril
+#include "hwdef-FF_PL47.h"
 
 // the button lights up
 #define USE_INDICATOR_LED

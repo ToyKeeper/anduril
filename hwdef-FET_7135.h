@@ -1,3 +1,6 @@
+#ifndef HWDEF_FET_7135_H
+#define HWDEF_FET_7135_H
+
 /* FET + 7135 driver layout
  *           ----
  *   Reset -|1  8|- VCC
@@ -30,3 +33,6 @@
 #define FAST 0xA3           // fast PWM both channels
 #define PHASE 0xA1          // phase-correct PWM both channels
 
+#define LAYOUT_DEFINED
+
+#endif

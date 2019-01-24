@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define FSM_EMISAR_D4_DRIVER
+#include "hwdef-Emisar_D4.h"
 #define USE_LVP
 #define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 45

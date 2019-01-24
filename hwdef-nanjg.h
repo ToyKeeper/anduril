@@ -1,3 +1,6 @@
+#ifndef HWDEF_NANJG_H
+#define HWDEF_NANJG_H
+
 /* NANJG driver layout
  */
 #define STAR2_PIN   PB0
@@ -14,3 +17,6 @@
 #define FAST 0x23           // fast PWM channel 1 only
 #define PHASE 0x21          // phase-correct PWM channel 1 only
 
+#define LAYOUT_DEFINED
+
+#endif

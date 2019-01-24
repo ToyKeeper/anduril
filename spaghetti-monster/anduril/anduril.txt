@@ -21,7 +21,7 @@ From off:
     * 7 clicks: Change aux LED mode used in "off" mode.
                 (the modes are usually off/low/high/blinking)
 
-In steady mode:
+In steady / ramping mode:
   * 1 click: off
   * Hold: ramp up
   * Click, hold: ramp down
@@ -30,19 +30,17 @@ In steady mode:
   * 4 clicks: configure current ramp
 
 Smooth ramp config mode:
-  - Setting 1: memory on/off  (not implemented yet)
-  * Setting 2: low end
+  * Setting 1: low end
     (click N times to set ramp floor to level N)
-  * Setting 3: high end
+  * Setting 2: high end
     (click N times to set ramp ceiling to level "151 - N")
 
 Discrete ramp config mode:
-  - Setting 1: memory on/off  (not implemented yet)
-  * Setting 2: low end
+  * Setting 1: low end
     (click N times to set ramp floor to level N)
-  * Setting 3: high end
+  * Setting 2: high end
     (click N times to set ramp ceiling to level "151 - N")
-  * Setting 4: number of levels in discrete ramp
+  * Setting 3: number of levels in discrete ramp
     (click N times to make discrete mode have N stair-steps)
     (minimum 2, maximum 150)
 
@@ -96,7 +94,6 @@ Discrete ramp config mode:
     * 1 click: off
     * 2 clicks: battcheck mode
     * 4 clicks: thermal config mode
-    - Hold: thermal calibration mode
 
     Thermal config mode:
       * Setting 1: calibrate sensor:
@@ -105,10 +102,6 @@ Discrete ramp config mode:
         intended to only be done once upon initial setup, or not at all.
       * Setting 2: temperature limit:
         At buzz, click N times to set thermal limit to roughly 30 C + N.
-
-    Thermal calibration mode:
-      - Hold until hot: set new ceiling value
-      - ... don't hold: blink out current ceiling value and exit
 
 Lockout mode:
   * Hold: momentary moon
@@ -127,24 +120,33 @@ Muggle mode:
   * Hold: Ramp up / down.
   * 6 clicks: Exit muggle mode.
 
-Indicator LED support:
+Indicator LED / aux LED support:
 
-  The indicator LED, if there is one, tracks the brightness of the main 
-  LED(s) during use.  It'll be off, low, or high depending on whether 
-  the main emitter is off, using only the first power channel, or using 
-  a higher level.
+  The indicator LED (button LED), if there is one, tracks the brightness 
+  of the main LED(s) during use.  It'll be off, low, or high depending 
+  on whether the main emitter is off, using only the first power 
+  channel, or using a higher level.
+
+  If front-facing aux LEDs are present, they stay off while the main 
+  light is on.  They only turn on when the main emitters are off.
 
   The indicator LED can stay on when the light is in the "off" state or 
-  lockout state.  The user can configure each state to be low, high, or 
-  off.  To configure it:
+  "lockout" state.  These modes can have different settings, to make it 
+  easier to see which one the light is in.  To configure it:
 
-    1. Go to lockout mode.  (4 clicks)
-    2. Click 3 times, optionally holding the third press, to change the 
-       value:
-       * 3 fast clicks: Change lockout mode button brightness.
-       * Hold the third click: Change regular "off" mode button 
-         brightness.  Let go when desired level is reached.
-    3. Exit lockout mode.  (4 clicks)
+    1. Go to the standby mode you want to configure.  This is either 
+       "off" or "lockout".
+    2. In "off" mode, click 7 times to switch to the next aux LED mode.
+       Or in "lockout" mode, click 3 times.
+    3. Repeat step 2 until the desired mode is reached.
+
+  The available aux LED / indicator LED modes vary depending on the type 
+  of light, but they typically have the following modes:
+
+    - Off
+    - Low
+    - High
+    - Blinking
 
 
 TODO:
@@ -168,3 +170,4 @@ TODO:
   - candle mode: smoother adjustments?
   - make sunset mode timer and brightness configurable?
   - make beacon mode actually sleep between pulses
+  - add a toggle for memory?

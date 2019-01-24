@@ -19,20 +19,8 @@
  */
 
 /********* User-configurable options *********/
-// Physical driver type (uncomment one of the following or define it at the gcc command line)
-//#define FSM_BLF_GT_DRIVER
-//#define FSM_BLF_GT_MINI_DRIVER
-//#define FSM_BLF_Q8_DRIVER
-//#define FSM_EMISAR_D1_DRIVER
-//#define FSM_EMISAR_D1S_DRIVER
-//#define FSM_EMISAR_D4_DRIVER
-//#define FSM_EMISAR_D4_219C_DRIVER
-//#define FSM_EMISAR_D4S_DRIVER
-//#define FSM_EMISAR_D4S_219C_DRIVER
-//#define FSM_FF_ROT66_DRIVER
-//#define FSM_FF_ROT66_219_DRIVER
-//#define FSM_FW3A_DRIVER
-//#define FSM_SOFIRN_SP36_DRIVER
+// Anduril config file name (set it here or define it at the gcc command line)
+//#define CONFIGFILE cfg-blf-q8.h
 
 #define USE_LVP  // FIXME: won't build when this option is turned off
 
@@ -76,49 +64,8 @@
 //#define START_AT_MEMORIZED_LEVEL
 
 /***** specific settings for known driver types *****/
-#if defined(FSM_BLF_GT_DRIVER)
-#include "cfg-blf-gt.h"
-
-#elif defined(FSM_BLF_GT_MINI_DRIVER)
-#include "cfg-blf-gt-mini.h"
-
-#elif defined(FSM_BLF_Q8_DRIVER)
-#include "cfg-blf-q8.h"
-
-#elif defined(FSM_EMISAR_D1_DRIVER)
-#include "cfg-emisar-d1.h"
-
-#elif defined(FSM_EMISAR_D1S_DRIVER)
-#include "cfg-emisar-d1s.h"
-
-#elif defined(FSM_EMISAR_D4_219C_DRIVER)
-#include "cfg-emisar-d4-219c.h"
-
-#elif defined(FSM_EMISAR_D4_DRIVER)
-#include "cfg-emisar-d4.h"
-
-#elif defined(FSM_EMISAR_D4S_219C_DRIVER)
-#include "cfg-emisar-d4s-219c.h"
-
-#elif defined(FSM_EMISAR_D4S_DRIVER)
-#include "cfg-emisar-d4s.h"
-
-#elif defined(FSM_FF_PL47_DRIVER)
-#include "cfg-ff-pl47.h"
-
-#elif defined(FSM_FF_ROT66_DRIVER)
-#include "cfg-ff-rot66.h"
-
-#elif defined(FSM_FF_ROT66_219_DRIVER)
-#include "cfg-ff-rot66-219.h"
-
-#elif defined(FSM_FW3A_DRIVER)
-#include "cfg-fw3a.h"
-
-#elif defined(FSM_SOFIRN_SP36_DRIVER)
-#include "cfg-sofirn-sp36.h"
-
-#endif
+#include "tk.h"
+#include incfile(CONFIGFILE)
 
 
 // thermal properties, if not defined per-driver
@@ -245,6 +192,8 @@ uint8_t beacon_state(Event event, uint16_t arg);
 uint8_t beacon_config_state(Event event, uint16_t arg);
 // soft lockout
 #define MOON_DURING_LOCKOUT_MODE
+// if enabled, 2nd lockout click goes to the other ramp's floor level
+//#define LOCKOUT_MOON_FANCY
 uint8_t lockout_state(Event event, uint16_t arg);
 // momentary / signalling mode
 uint8_t momentary_state(Event event, uint16_t arg);
@@ -447,11 +396,6 @@ uint8_t off_state(Event event, uint16_t arg) {
         set_state(steady_state, memorized_level);
         return MISCHIEF_MANAGED;
     }
-    // 2 clicks (initial press): off, to prep for later events
-    else if (event == EV_click2_press) {
-        set_level(0);
-        return MISCHIEF_MANAGED;
-    }
     // click, hold: go to highest level (ceiling) (for ramping down)
     else if (event == EV_click2_hold) {
         set_state(steady_state, MAX_LEVEL);
@@ -460,6 +404,11 @@ uint8_t off_state(Event event, uint16_t arg) {
     // 2 clicks: highest mode (ceiling)
     else if (event == EV_2clicks) {
         set_state(steady_state, MAX_LEVEL);
+        return MISCHIEF_MANAGED;
+    }
+    // 3 clicks (initial press): off, to prep for later events
+    else if (event == EV_click3_press) {
+        set_level(0);
         return MISCHIEF_MANAGED;
     }
     #ifdef USE_BATTCHECK
@@ -1164,6 +1113,13 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         uint8_t lvl = ramp_smooth_floor;
         if (ramp_discrete_floor < lvl) lvl = ramp_discrete_floor;
         set_level(lvl);
+        #elif defined(LOCKOUT_MOON_FANCY)
+        uint8_t levels[] = { ramp_smooth_floor, ramp_discrete_floor };
+        if ((event & 0x0f) == 2) {
+            set_level(levels[ramp_style^1]);
+        } else {
+            set_level(levels[ramp_style]);
+        }
         #else
         // Use moon from current ramp
         set_level(nearest_level(1));
@@ -1687,12 +1643,23 @@ void blink_confirm(uint8_t num) {
 #if defined(USE_INDICATOR_LED) && defined(TICK_DURING_STANDBY)
 // beacon-like mode for the indicator LED
 void indicator_blink(uint8_t arg) {
+    #ifdef USE_FANCIER_BLINKING_INDICATOR
+
+    // fancy blink, set off/low/high levels here:
+    uint8_t seq[] = {0, 1, 2, 1,  0, 0, 0, 0,
+                     0, 0, 1, 0,  0, 0, 0, 0};
+    indicator_led(seq[arg & 15]);
+
+    #else  // basic blink, 1/8th duty cycle
+
     if (! (arg & 7)) {
         indicator_led(2);
     }
     else {
         indicator_led(0);
     }
+
+    #endif
 }
 #endif
 
@@ -1781,6 +1748,8 @@ void save_config_wl() {
 void low_voltage() {
     StatePtr state = current_state;
 
+    // TODO: turn off aux LED(s) when power is really low
+
     if (0) {}  // placeholder
 
     #ifdef USE_STROBE_STATE
@@ -1857,9 +1826,6 @@ void loop() {
 
     StatePtr state = current_state;
 
-    #ifdef USE_DYNAMIC_UNDERCLOCKING
-    auto_clock_speed();
-    #endif
     if (0) {}
 
     #ifdef USE_STROBE_STATE
@@ -1878,7 +1844,6 @@ void loop() {
             uint8_t del = strobe_delays[st];
             // TODO: make tac strobe brightness configurable?
             set_level(STROBE_BRIGHTNESS);
-            CLKPR = 1<<CLKPCE; CLKPR = 0;  // run at full speed
             if (st == party_strobe_e) {  // party strobe
                 if (del < 42) delay_zero();
                 else nice_delay_ms(1);
