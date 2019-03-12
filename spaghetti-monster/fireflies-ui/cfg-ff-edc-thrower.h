@@ -8,9 +8,9 @@
 #undef RAMP_SMOOTH_CEIL
 #define RAMP_SMOOTH_CEIL 130
 
-// 10, 28, 46, 65, 83, 101, 120  (83 is highest regulated)
+// 36, 83, 130 (83 is highest regulated)
 #undef RAMP_DISCRETE_FLOOR
-#define RAMP_DISCRETE_FLOOR 20
+#define RAMP_DISCRETE_FLOOR 36
 #undef RAMP_DISCRETE_CEIL
 #define RAMP_DISCRETE_CEIL RAMP_SMOOTH_CEIL
 #undef RAMP_DISCRETE_STEPS
