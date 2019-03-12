@@ -1321,7 +1321,7 @@ uint8_t beacon_state(Event event, uint16_t arg) {
     }
     return EVENT_NOT_HANDLED;
 }
-#endif
+#endif  // #ifdef USE_BEACON_MODE
 
 
 #ifdef USE_GOODNIGHT_MODE

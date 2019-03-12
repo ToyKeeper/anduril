@@ -1,7 +1,7 @@
 /*
  * RampingIOS V3: FSM-based version of RampingIOS V2 UI, with upgrades.
  *
- * Copyright (C) 2018 Selene ToyKeeper
+ * Copyright (C) 2018-2019 Selene ToyKeeper
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 // parameters for this defined below or per-driver
 #define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 45  // try not to get hotter than this
+#define USE_TENCLICK_THERMAL_CONFIG  // ten clicks from off -> thermal config mode
 
 // short blip when crossing from "click" to "hold" from off
 // (helps the user hit moon mode exactly, instead of holding too long
@@ -45,6 +46,12 @@
 #define BATTCHECK_VpT
 //#define BATTCHECK_8bars  // FIXME: breaks build
 //#define BATTCHECK_4bars  // FIXME: breaks build
+
+// enable beacon mode
+#define USE_BEACON_MODE
+
+// make the ramps configurable by the user
+#define USE_RAMP_CONFIG
 
 /***** specific settings for known driver types *****/
 #include "tk.h"
@@ -109,7 +116,9 @@ uint8_t config_state_base(Event event, uint16_t arg,
 uint8_t config_state_values[MAX_CONFIG_VALUES];
 // ramping mode and its related config mode
 uint8_t steady_state(Event event, uint16_t arg);
+#ifdef USE_RAMP_CONFIG
 uint8_t ramp_config_state(Event event, uint16_t arg);
+#endif
 #ifdef USE_BATTCHECK
 uint8_t battcheck_state(Event event, uint16_t arg);
 #endif
@@ -117,11 +126,15 @@ uint8_t battcheck_state(Event event, uint16_t arg);
 uint8_t tempcheck_state(Event event, uint16_t arg);
 uint8_t thermal_config_state(Event event, uint16_t arg);
 #endif
+#ifdef USE_BEACON_MODE
 // beacon mode and its related config mode
 uint8_t beacon_state(Event event, uint16_t arg);
 uint8_t beacon_config_state(Event event, uint16_t arg);
+#endif
 // soft lockout
 #define MOON_DURING_LOCKOUT_MODE
+// if enabled, 2nd lockout click goes to the other ramp's floor level
+//#define LOCKOUT_MOON_FANCY
 uint8_t lockout_state(Event event, uint16_t arg);
 // momentary / signalling mode
 uint8_t momentary_state(Event event, uint16_t arg);
@@ -201,8 +214,10 @@ uint8_t nearest_level(int16_t target);
 uint8_t target_level = 0;
 #endif
 
+#ifdef USE_BEACON_MODE
 // beacon timing
 volatile uint8_t beacon_seconds = 2;
+#endif
 
 
 uint8_t off_state(Event event, uint16_t arg) {
@@ -321,11 +336,13 @@ uint8_t off_state(Event event, uint16_t arg) {
         set_state(beacon_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_TENCLICK_THERMAL_CONFIG
     // 10 clicks: thermal config mode
     else if (event == EV_10clicks) {
         push_state(thermal_config_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #endif
     return EVENT_NOT_HANDLED;
 }
 
@@ -401,11 +418,13 @@ uint8_t steady_state(Event event, uint16_t arg) {
         set_level(memorized_level);
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_RAMP_CONFIG
     // 4 clicks: configure this ramp mode
     else if (event == EV_4clicks) {
         push_state(ramp_config_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #endif
     // hold: change brightness (brighter)
     else if (event == EV_click1_hold) {
         // ramp slower in discrete mode
@@ -669,6 +688,7 @@ uint8_t tempcheck_state(Event event, uint16_t arg) {
 #endif
 
 
+#ifdef USE_BEACON_MODE
 uint8_t beacon_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
@@ -684,6 +704,7 @@ uint8_t beacon_state(Event event, uint16_t arg) {
     }
     return EVENT_NOT_HANDLED;
 }
+#endif  // #ifdef USE_BEACON_MODE
 
 
 uint8_t lockout_state(Event event, uint16_t arg) {
@@ -696,6 +717,13 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         uint8_t lvl = ramp_smooth_floor;
         if (ramp_discrete_floor < lvl) lvl = ramp_discrete_floor;
         set_level(lvl);
+        #elif defined(LOCKOUT_MOON_FANCY)
+        uint8_t levels[] = { ramp_smooth_floor, ramp_discrete_floor };
+        if ((event & 0x0f) == 2) {
+            set_level(levels[ramp_style^1]);
+        } else {
+            set_level(levels[ramp_style]);
+        }
         #else
         // Use moon from current ramp
         set_level(nearest_level(1));
@@ -858,6 +886,7 @@ uint8_t config_state_base(Event event, uint16_t arg,
     return EVENT_HANDLED;
 }
 
+#ifdef USE_RAMP_CONFIG
 void ramp_config_save() {
     // parse values
     uint8_t val;
@@ -889,6 +918,7 @@ uint8_t ramp_config_state(Event event, uint16_t arg) {
     return config_state_base(event, arg,
                              num_config_steps, ramp_config_save);
 }
+#endif  // #ifdef USE_RAMP_CONFIG
 
 
 #ifdef USE_THERMAL_REGULATION
@@ -915,9 +945,10 @@ uint8_t thermal_config_state(Event event, uint16_t arg) {
     return config_state_base(event, arg,
                              2, thermal_config_save);
 }
-#endif
+#endif  // #ifdef USE_THERMAL_REGULATION
 
 
+#ifdef USE_BEACON_MODE
 void beacon_config_save() {
     // parse values
     uint8_t val = config_state_values[0];
@@ -930,6 +961,15 @@ uint8_t beacon_config_state(Event event, uint16_t arg) {
     return config_state_base(event, arg,
                              1, beacon_config_save);
 }
+
+inline void beacon_mode_iter() {
+    // one iteration of main loop()
+    set_level(memorized_level);
+    nice_delay_ms(500);
+    set_level(0);
+    nice_delay_ms(((beacon_seconds) * 1000) - 500);
+}
+#endif  // #ifdef USE_BEACON_MODE
 
 
 uint8_t number_entry_state(Event event, uint16_t arg) {
@@ -1063,12 +1103,23 @@ void blink_confirm(uint8_t num) {
 #if defined(USE_INDICATOR_LED) && defined(TICK_DURING_STANDBY)
 // beacon-like mode for the indicator LED
 void indicator_blink(uint8_t arg) {
+    #ifdef USE_FANCIER_BLINKING_INDICATOR
+
+    // fancy blink, set off/low/high levels here:
+    uint8_t seq[] = {0, 1, 2, 1,  0, 0, 0, 0,
+                     0, 0, 1, 0,  0, 0, 0, 0};
+    indicator_led(seq[arg & 15]);
+
+    #else  // basic blink, 1/8th duty cycle
+
     if (! (arg & 7)) {
         indicator_led(2);
     }
     else {
         indicator_led(0);
     }
+
+    #endif
 }
 #endif
 
@@ -1076,12 +1127,16 @@ void indicator_blink(uint8_t arg) {
 void load_config() {
     if (load_eeprom()) {
         ramp_style = eeprom[0];
+        #ifdef USE_RAMP_CONFIG
         ramp_smooth_floor = eeprom[1];
         ramp_smooth_ceil = eeprom[2];
         ramp_discrete_floor = eeprom[3];
         ramp_discrete_ceil = eeprom[4];
         ramp_discrete_steps = eeprom[5];
+        #endif
+        #ifdef USE_BEACON_MODE
         beacon_seconds = eeprom[6];
+        #endif
         #ifdef USE_THERMAL_REGULATION
         therm_ceil = eeprom[EEPROM_BYTES_BASE];
         therm_cal_offset = eeprom[EEPROM_BYTES_BASE+1];
@@ -1094,12 +1149,16 @@ void load_config() {
 
 void save_config() {
     eeprom[0] = ramp_style;
+    #ifdef USE_RAMP_CONFIG
     eeprom[1] = ramp_smooth_floor;
     eeprom[2] = ramp_smooth_ceil;
     eeprom[3] = ramp_discrete_floor;
     eeprom[4] = ramp_discrete_ceil;
     eeprom[5] = ramp_discrete_steps;
+    #endif
+    #ifdef USE_BEACON_MODE
     eeprom[6] = beacon_seconds;
+    #endif
     #ifdef USE_THERMAL_REGULATION
     eeprom[EEPROM_BYTES_BASE  ] = therm_ceil;
     eeprom[EEPROM_BYTES_BASE+1] = therm_cal_offset;
@@ -1114,8 +1173,12 @@ void save_config() {
 void low_voltage() {
     StatePtr state = current_state;
 
+    // TODO: turn off aux LED(s) when power is really low
+
+    if (0) {}  // placeholder
+
     // in normal mode, step down or turn off
-    if (state == steady_state) {
+    else if (state == steady_state) {
         if (actual_level > 1) {
             uint8_t lvl = (actual_level >> 1) + (actual_level >> 2);
             set_level(lvl);
@@ -1161,20 +1224,20 @@ void loop() {
         battcheck();
     }
     #endif
+
+    #ifdef USE_BEACON_MODE
+    else if (state == beacon_state) {
+        beacon_mode_iter();
+    }
+    #endif
+
     #ifdef USE_THERMAL_REGULATION
-    // TODO: blink out therm_ceil during thermal_config_state
+    // TODO: blink out therm_ceil during thermal_config_state?
     else if (state == tempcheck_state) {
         blink_num(temperature>>1);
         nice_delay_ms(1000);
     }
     #endif
-
-    else if (state == beacon_state) {
-        set_level(memorized_level);
-        nice_delay_ms(500);
-        set_level(0);
-        nice_delay_ms(((beacon_seconds) * 1000) - 500);
-    }
 
     #ifdef USE_IDLE_MODE
     else {
