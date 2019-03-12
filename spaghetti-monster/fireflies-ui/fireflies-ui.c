@@ -54,11 +54,25 @@
 #define USE_LIGHTNING_MODE
 #define USE_CANDLE_MODE
 
+// enable sunset (goodnight) mode
+#define USE_GOODNIGHT_MODE
+#define GOODNIGHT_TIME  60  // minutes (approximately)
+#define GOODNIGHT_LEVEL 24  // ~11 lm
+
+// enable beacon mode
+#define USE_BEACON_MODE
+
 //Muggle mode for easy UI
 #define USE_MUGGLE_MODE
 
-#define GOODNIGHT_TIME  60  // minutes (approximately)
-#define GOODNIGHT_LEVEL 24  // ~11 lm
+// make the ramps configurable by the user
+#define USE_RAMP_CONFIG
+
+// boring strobes nobody really likes, but sometimes flashlight companies want
+// (these replace the fun strobe group,
+//  so don't enable them at the same time as any of the above strobes)
+//#define USE_POLICE_STROBE_MODE
+//#define USE_SOS_MODE
 
 // dual-switch support (second switch is a tail clicky)
 //#define START_AT_MEMORIZED_LEVEL
@@ -67,7 +81,7 @@
 #include "tk.h"
 #include incfile(CONFIGFILE)
 
-// Fireflies-specific configuration
+///// Fireflies-specific configuration
 // disable ramp config
 #ifdef USE_RAMP_CONFIG
 #undef USE_RAMP_CONFIG
@@ -106,6 +120,11 @@
 // use these strobes instead
 #define USE_POLICE_STROBE_MODE
 #define USE_SOS_MODE
+
+// thermal config mode on 10 clicks from off
+#define USE_TENCLICK_THERMAL_CONFIG
+
+///// end Fireflies-specific configuration
 
 // thermal properties, if not defined per-driver
 #ifndef MIN_THERM_STEPDOWN
@@ -514,11 +533,13 @@ uint8_t off_state(Event event, uint16_t arg) {
         set_state(tempcheck_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_TENCLICK_THERMAL_CONFIG
     // 10 clicks: thermal config mode
     else if (event == EV_10clicks) {
         push_state(thermal_config_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #endif
     return EVENT_NOT_HANDLED;
 }
 
@@ -1614,7 +1635,7 @@ uint8_t thermal_config_state(Event event, uint16_t arg) {
     return config_state_base(event, arg,
                              2, thermal_config_save);
 }
-#endif
+#endif  // #ifdef USE_THERMAL_REGULATION
 
 
 #ifdef USE_BEACON_MODE
@@ -1630,7 +1651,7 @@ uint8_t beacon_config_state(Event event, uint16_t arg) {
     return config_state_base(event, arg,
                              1, beacon_config_save);
 }
-#endif
+#endif  // #ifdef USE_BEACON_MODE
 
 
 uint8_t number_entry_state(Event event, uint16_t arg) {
@@ -1797,11 +1818,13 @@ uint8_t triangle_wave(uint8_t phase) {
 void load_config() {
     if (load_eeprom()) {
         ramp_style = eeprom[ramp_style_e];
+        #ifdef USE_RAMP_CONFIG
         ramp_smooth_floor = eeprom[ramp_smooth_floor_e];
         ramp_smooth_ceil = eeprom[ramp_smooth_ceil_e];
         ramp_discrete_floor = eeprom[ramp_discrete_floor_e];
         ramp_discrete_ceil = eeprom[ramp_discrete_ceil_e];
         ramp_discrete_steps = eeprom[ramp_discrete_steps_e];
+        #endif
         #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
         strobe_type = eeprom[strobe_type_e];  // TODO: move this to eeprom_wl?
         strobe_delays[0] = eeprom[strobe_delays_0_e];
@@ -1833,11 +1856,13 @@ void load_config() {
 
 void save_config() {
     eeprom[ramp_style_e] = ramp_style;
+    #ifdef USE_RAMP_CONFIG
     eeprom[ramp_smooth_floor_e] = ramp_smooth_floor;
     eeprom[ramp_smooth_ceil_e] = ramp_smooth_ceil;
     eeprom[ramp_discrete_floor_e] = ramp_discrete_floor;
     eeprom[ramp_discrete_ceil_e] = ramp_discrete_ceil;
     eeprom[ramp_discrete_steps_e] = ramp_discrete_steps;
+    #endif
     #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
     eeprom[strobe_type_e] = strobe_type;  // TODO: move this to eeprom_wl?
     eeprom[strobe_delays_0_e] = strobe_delays[0];
