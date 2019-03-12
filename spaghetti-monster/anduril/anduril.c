@@ -138,11 +138,13 @@
 #define USE_EEPROM
 typedef enum {
     ramp_style_e,
+    #ifdef USE_RAMP_CONFIG
     ramp_smooth_floor_e,
     ramp_smooth_ceil_e,
     ramp_discrete_floor_e,
     ramp_discrete_ceil_e,
     ramp_discrete_steps_e,
+    #endif
     #ifdef USE_STROBE_STATE
     strobe_type_e,
     #endif
