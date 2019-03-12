@@ -951,12 +951,18 @@ inline void party_tactical_strobe_mode_iter(uint8_t st) {
     uint8_t del = strobe_delays[st];
     // TODO: make tac strobe brightness configurable?
     set_level(STROBE_BRIGHTNESS);
-    if (st == party_strobe_e) {  // party strobe
+    if (0) {}  // placeholde0
+    #ifdef USE_PARTY_STROBE_MODE
+    else if (st == party_strobe_e) {  // party strobe
         if (del < 42) delay_zero();
         else nice_delay_ms(1);
-    } else {  //tactical strobe
+    }
+    #endif
+    #ifdef USE_TACTICAL_STROBE_MODE
+    else {  //tactical strobe
         nice_delay_ms(del >> 1);
     }
+    #endif
     set_level(0);
     nice_delay_ms(del);  // no return check necessary on final delay
 }
