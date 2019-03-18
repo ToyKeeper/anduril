@@ -42,6 +42,6 @@
 #define THERM_HARD_TURBO_DROP
 
 // don't do this
-#undef BLINK_AT_CHANNEL_BOUNDARIES
+#undef BLINK_AT_RAMP_MIDDLE
 #undef BLINK_AT_RAMP_CEILING
 
