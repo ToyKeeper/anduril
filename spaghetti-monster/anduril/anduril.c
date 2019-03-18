@@ -242,7 +242,10 @@ void save_config_wl();
 #endif
 
 // brightness control
-uint8_t memorized_level = MAX_1x7135;
+#ifndef DEFAULT_LEVEL
+#define DEFAULT_LEVEL MAX_1x7135
+#endif
+uint8_t memorized_level = DEFAULT_LEVEL;
 // smooth vs discrete ramping
 volatile uint8_t ramp_style = 0;  // 0 = smooth, 1 = discrete
 volatile uint8_t ramp_smooth_floor = RAMP_SMOOTH_FLOOR;
@@ -369,7 +372,7 @@ uint8_t off_state(Event event, uint16_t arg) {
             // let the user know they can let go now to stay at moon
             uint8_t temp = actual_level;
             set_level(0);
-            delay_4ms(2);
+            delay_4ms(3);
             set_level(temp);
         } else
         #endif
