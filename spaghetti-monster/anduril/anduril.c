@@ -624,9 +624,13 @@ uint8_t steady_state(Event event, uint16_t arg) {
             return MISCHIEF_MANAGED;
         }
         #ifdef USE_REVERSING
-        // make it ramp down instead, if already at max
-        if ((arg <= 1) && (actual_level >= mode_max)) {
-            ramp_direction = -1;
+        // fix ramp direction on first frame if necessary
+        if (!arg) {
+            // make it ramp down instead, if already at max
+            if (actual_level >= mode_max) { ramp_direction = -1; }
+            // make it ramp up if already at min
+            // (off->hold->stepped_min->release causes this state)
+            else if (actual_level <= mode_min) { ramp_direction = 1; }
         }
         memorized_level = nearest_level((int16_t)actual_level \
                           + (ramp_step_size * ramp_direction));
