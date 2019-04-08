@@ -62,8 +62,8 @@
 #endif
 
 // don't blink while ramping
-#ifdef BLINK_AT_CHANNEL_BOUNDARIES
-#undef BLINK_AT_CHANNEL_BOUNDARIES
+#ifdef BLINK_AT_RAMP_MIDDLE
+#undef BLINK_AT_RAMP_MIDDLE
 #endif
 #ifdef BLINK_AT_RAMP_CEILING
 #undef BLINK_AT_RAMP_CEILING

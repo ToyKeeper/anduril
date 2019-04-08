@@ -2,7 +2,7 @@
  * Anduril: Narsil-inspired UI for SpaghettiMonster.
  * (Anduril is Aragorn's sword, the blade Narsil reforged)
  *
- * Copyright (C) 2017 Selene ToyKeeper
+ * Copyright (C) 2017-2019 Selene ToyKeeper
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
 //  or too short)
 #define MOON_TIMING_HINT
 // short blips while ramping
-#define BLINK_AT_CHANNEL_BOUNDARIES
+#define BLINK_AT_RAMP_MIDDLE
 //#define BLINK_AT_RAMP_FLOOR
 #define BLINK_AT_RAMP_CEILING
 //#define BLINK_AT_STEPS  // whenever a discrete ramp mode is passed in smooth mode
@@ -54,11 +54,25 @@
 #define USE_LIGHTNING_MODE
 #define USE_CANDLE_MODE
 
+// enable sunset (goodnight) mode
+#define USE_GOODNIGHT_MODE
+#define GOODNIGHT_TIME  60  // minutes (approximately)
+#define GOODNIGHT_LEVEL 24  // ~11 lm
+
+// enable beacon mode
+#define USE_BEACON_MODE
+
 //Muggle mode for easy UI
 #define USE_MUGGLE_MODE
 
-#define GOODNIGHT_TIME  60  // minutes (approximately)
-#define GOODNIGHT_LEVEL 24  // ~11 lm
+// make the ramps configurable by the user
+#define USE_RAMP_CONFIG
+
+// boring strobes nobody really likes, but sometimes flashlight companies want
+// (these replace the fun strobe group,
+//  so don't enable them at the same time as any of the above strobes)
+//#define USE_POLICE_STROBE_MODE
+//#define USE_SOS_MODE
 
 // dual-switch support (second switch is a tail clicky)
 //#define START_AT_MEMORIZED_LEVEL
@@ -116,15 +130,21 @@
 #define USE_STROBE_STATE
 #endif
 
+#if defined(USE_POLICE_STROBE_MODE) || defined(USE_SOS_MODE)
+#define USE_BORING_STROBE_STATE
+#endif
+
 // auto-detect how many eeprom bytes
 #define USE_EEPROM
 typedef enum {
     ramp_style_e,
+    #ifdef USE_RAMP_CONFIG
     ramp_smooth_floor_e,
     ramp_smooth_ceil_e,
     ramp_discrete_floor_e,
     ramp_discrete_ceil_e,
     ramp_discrete_steps_e,
+    #endif
     #ifdef USE_TINT_RAMPING
     tint_e,
     #endif
@@ -138,7 +158,9 @@ typedef enum {
     #ifdef USE_BIKE_FLASHER_MODE
     bike_flasher_brightness_e,
     #endif
+    #ifdef USE_BEACON_MODE
     beacon_seconds_e,
+    #endif
     #ifdef USE_MUGGLE_MODE
     muggle_mode_active_e,
     #endif
@@ -176,7 +198,9 @@ uint8_t config_state_base(Event event, uint16_t arg,
 uint8_t config_state_values[MAX_CONFIG_VALUES];
 // ramping mode and its related config mode
 uint8_t steady_state(Event event, uint16_t arg);
+#ifdef USE_RAMP_CONFIG
 uint8_t ramp_config_state(Event event, uint16_t arg);
+#endif
 #ifdef USE_TINT_RAMPING
 // not actually a mode, more of a fallback under other modes
 uint8_t tint_ramping_state(Event event, uint16_t arg);
@@ -185,6 +209,12 @@ uint8_t tint_ramping_state(Event event, uint16_t arg);
 #ifdef USE_STROBE_STATE
 uint8_t strobe_state(Event event, uint16_t arg);
 #endif
+#ifdef USE_BORING_STROBE_STATE
+uint8_t boring_strobe_state(Event event, uint16_t arg);
+volatile uint8_t boring_strobe_type = 0;
+void sos_blink(uint8_t num, uint8_t dah);
+#define NUM_BORING_STROBES 2
+#endif
 #ifdef USE_BATTCHECK
 uint8_t battcheck_state(Event event, uint16_t arg);
 #endif
@@ -192,11 +222,15 @@ uint8_t battcheck_state(Event event, uint16_t arg);
 uint8_t tempcheck_state(Event event, uint16_t arg);
 uint8_t thermal_config_state(Event event, uint16_t arg);
 #endif
+#ifdef USE_GOODNIGHT_MODE
 // 1-hour ramp down from low, then automatic off
 uint8_t goodnight_state(Event event, uint16_t arg);
+#endif
+#ifdef USE_BEACON_MODE
 // beacon mode and its related config mode
 uint8_t beacon_state(Event event, uint16_t arg);
 uint8_t beacon_config_state(Event event, uint16_t arg);
+#endif
 // soft lockout
 #define MOON_DURING_LOCKOUT_MODE
 // if enabled, 2nd lockout click goes to the other ramp's floor level
@@ -248,8 +282,28 @@ void save_config_wl();
   #define RAMP_DISCRETE_STEPS 7
 #endif
 
+// mile marker(s) partway up the ramp
+// default: blink only at border between regulated and FET
+#ifdef BLINK_AT_RAMP_MIDDLE
+  #if PWM_CHANNELS >= 3
+    #ifndef BLINK_AT_RAMP_MIDDLE_1
+      #define BLINK_AT_RAMP_MIDDLE_1 MAX_Nx7135
+      #ifndef BLINK_AT_RAMP_MIDDLE_2
+      #define BLINK_AT_RAMP_MIDDLE_2 MAX_1x7135
+      #endif
+    #endif
+  #else
+    #ifndef BLINK_AT_RAMP_MIDDLE_1
+    #define BLINK_AT_RAMP_MIDDLE_1 MAX_1x7135
+    #endif
+  #endif
+#endif
+
 // brightness control
-uint8_t memorized_level = MAX_1x7135;
+#ifndef DEFAULT_LEVEL
+#define DEFAULT_LEVEL MAX_1x7135
+#endif
+uint8_t memorized_level = DEFAULT_LEVEL;
 // smooth vs discrete ramping
 volatile uint8_t ramp_style = 0;  // 0 = smooth, 1 = discrete
 volatile uint8_t ramp_smooth_floor = RAMP_SMOOTH_FLOOR;
@@ -327,11 +381,14 @@ volatile uint8_t bike_flasher_brightness = MAX_1x7135;
 #endif
 
 #ifdef USE_CANDLE_MODE
+uint8_t candle_mode_state(Event event, uint16_t arg);
 uint8_t triangle_wave(uint8_t phase);
 #endif
 
+#ifdef USE_BEACON_MODE
 // beacon timing
 volatile uint8_t beacon_seconds = 2;
+#endif
 
 
 uint8_t off_state(Event event, uint16_t arg) {
@@ -376,7 +433,7 @@ uint8_t off_state(Event event, uint16_t arg) {
             // let the user know they can let go now to stay at moon
             uint8_t temp = actual_level;
             set_level(0);
-            delay_4ms(2);
+            delay_4ms(3);
             set_level(temp);
         } else
         #endif
@@ -431,6 +488,11 @@ uint8_t off_state(Event event, uint16_t arg) {
         set_state(strobe_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #elif defined(USE_BORING_STROBE_STATE)
+    else if (event == EV_click3_hold) {
+        set_state(boring_strobe_state, 0);
+        return MISCHIEF_MANAGED;
+    }
     #endif
     // 4 clicks: soft lockout
     else if (event == EV_4clicks) {
@@ -467,6 +529,13 @@ uint8_t off_state(Event event, uint16_t arg) {
         indicator_led_mode = (indicator_led_mode & 0b11111100) | mode;
         indicator_led(mode);
         save_config();
+        return MISCHIEF_MANAGED;
+    }
+    #endif
+    #ifdef USE_TENCLICK_THERMAL_CONFIG
+    // 10 clicks: thermal config mode
+    else if (event == EV_10clicks) {
+        push_state(thermal_config_state, 0);
         return MISCHIEF_MANAGED;
     }
     #endif
@@ -548,11 +617,13 @@ uint8_t steady_state(Event event, uint16_t arg) {
         set_level(memorized_level);
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_RAMP_CONFIG
     // 4 clicks: configure this ramp mode
     else if (event == EV_4clicks) {
         push_state(ramp_config_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #endif
     // hold: change brightness (brighter)
     else if (event == EV_click1_hold) {
         // ramp slower in discrete mode
@@ -560,9 +631,13 @@ uint8_t steady_state(Event event, uint16_t arg) {
             return MISCHIEF_MANAGED;
         }
         #ifdef USE_REVERSING
-        // make it ramp down instead, if already at max
-        if ((arg <= 1) && (actual_level >= mode_max)) {
-            ramp_direction = -1;
+        // fix ramp direction on first frame if necessary
+        if (!arg) {
+            // make it ramp down instead, if already at max
+            if (actual_level >= mode_max) { ramp_direction = -1; }
+            // make it ramp up if already at min
+            // (off->hold->stepped_min->release causes this state)
+            else if (actual_level <= mode_min) { ramp_direction = 1; }
         }
         memorized_level = nearest_level((int16_t)actual_level \
                           + (ramp_step_size * ramp_direction));
@@ -572,15 +647,15 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #endif
-        #if defined(BLINK_AT_RAMP_CEILING) || defined(BLINK_AT_CHANNEL_BOUNDARIES)
+        #if defined(BLINK_AT_RAMP_CEILING) || defined(BLINK_AT_RAMP_MIDDLE)
         // only blink once for each threshold
         if ((memorized_level != actual_level) && (
                 0  // for easier syntax below
-                #ifdef BLINK_AT_CHANNEL_BOUNDARIES
-                || (memorized_level == MAX_1x7135)
-                #if PWM_CHANNELS >= 3
-                || (memorized_level == MAX_Nx7135)
+                #ifdef BLINK_AT_RAMP_MIDDLE_1
+                || (memorized_level == BLINK_AT_RAMP_MIDDLE_1)
                 #endif
+                #ifdef BLINK_AT_RAMP_MIDDLE_2
+                || (memorized_level == BLINK_AT_RAMP_MIDDLE_2)
                 #endif
                 #ifdef BLINK_AT_RAMP_CEILING
                 || (memorized_level == mode_max)
@@ -637,15 +712,15 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #endif
-        #if defined(BLINK_AT_RAMP_FLOOR) || defined(BLINK_AT_CHANNEL_BOUNDARIES)
+        #if defined(BLINK_AT_RAMP_FLOOR) || defined(BLINK_AT_RAMP_MIDDLE)
         // only blink once for each threshold
         if ((memorized_level != actual_level) && (
                 0  // for easier syntax below
-                #ifdef BLINK_AT_CHANNEL_BOUNDARIES
-                || (memorized_level == MAX_1x7135)
-                #if PWM_CHANNELS >= 3
-                || (memorized_level == MAX_Nx7135)
+                #ifdef BLINK_AT_RAMP_MIDDLE_1
+                || (memorized_level == BLINK_AT_RAMP_MIDDLE_1)
                 #endif
+                #ifdef BLINK_AT_RAMP_MIDDLE_2
+                || (memorized_level == BLINK_AT_RAMP_MIDDLE_2)
                 #endif
                 #ifdef BLINK_AT_RAMP_FLOOR
                 || (memorized_level == mode_min)
@@ -830,30 +905,21 @@ uint8_t strobe_state(Event event, uint16_t arg) {
     // 'st' reduces ROM size by avoiding access to a volatile var
     // (maybe I should just make it nonvolatile?)
     strobe_mode_te st = strobe_type;
+
     #ifdef USE_CANDLE_MODE
-    // FIXME: make candle variance magnitude a compile-time option,
-    //        since 20 is sometimes too much or too little,
-    //        depending on the driver type and ramp shape
-    //#define MAX_CANDLE_LEVEL (RAMP_SIZE-8-6-4)
-    #define MAX_CANDLE_LEVEL (RAMP_SIZE/2)
-    static uint8_t candle_wave1 = 0;
-    static uint8_t candle_wave2 = 0;
-    static uint8_t candle_wave3 = 0;
-    static uint8_t candle_wave2_speed = 0;
-    static uint8_t candle_wave2_depth = 7;
-    static uint8_t candle_wave3_depth = 4;
-    static uint8_t candle_mode_brightness = 24;
-    static uint8_t candle_mode_timer = 0;
-    #define TICKS_PER_CANDLE_MINUTE 4096 // about 65 seconds
-    #define MINUTES_PER_CANDLE_HALFHOUR 27 // ish
+    // pass all events to candle mode, when it's active
+    // (the code is in its own pseudo-state to keep things cleaner)
+    if (st == candle_mode_e) {
+        candle_mode_state(event, arg);
+    }
     #endif
 
-    if (event == EV_enter_state) {
-        #ifdef USE_CANDLE_MODE
-        candle_mode_timer = 0;  // in case any time was left over from earlier
-        #endif
+    if (0) {}  // placeholder
+    /* not used any more
+    else if (event == EV_enter_state) {
         return MISCHIEF_MANAGED;
     }
+    */
     // 1 click: off
     else if (event == EV_1click) {
         set_state(off_state, 0);
@@ -862,10 +928,6 @@ uint8_t strobe_state(Event event, uint16_t arg) {
     // 2 clicks: rotate through strobe/flasher modes
     else if (event == EV_2clicks) {
         strobe_type = (st + 1) % NUM_STROBES;
-        #ifdef USE_CANDLE_MODE
-        candle_mode_timer = 0;  // in case any time was left over from earlier
-        #endif
-        //interrupt_nice_delays();
         save_config();
         return MISCHIEF_MANAGED;
     }
@@ -889,14 +951,6 @@ uint8_t strobe_state(Event event, uint16_t arg) {
 
         // lightning has no adjustments
         //else if (st == lightning_storm_e) {}
-
-        // candle mode brighter
-        #ifdef USE_CANDLE_MODE
-        else if (st == candle_mode_e) {
-            if (candle_mode_brightness < MAX_CANDLE_LEVEL)
-                candle_mode_brightness ++;
-        }
-        #endif
 
         // biking mode brighter
         #ifdef USE_BIKE_FLASHER_MODE
@@ -930,14 +984,6 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         // lightning has no adjustments
         //else if (st == lightning_storm_e) {}
 
-        // candle mode dimmer
-        #ifdef USE_CANDLE_MODE
-        else if (st == candle_mode_e) {
-            if (candle_mode_brightness > 1)
-                candle_mode_brightness --;
-        }
-        #endif
-
         // biking mode dimmer
         #ifdef USE_BIKE_FLASHER_MODE
         else if (st == bike_flasher_e) {
@@ -955,87 +1001,287 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         save_config();
         return MISCHIEF_MANAGED;
     }
-    #if defined(USE_CANDLE_MODE)
-    // 3 clicks: add 30m to candle timer
-    else if (event == EV_3clicks) {
-        // candle mode only
-        if (st == candle_mode_e) {
-            if (candle_mode_timer < (255 - MINUTES_PER_CANDLE_HALFHOUR)) {
-                // add 30m to the timer
-                candle_mode_timer += MINUTES_PER_CANDLE_HALFHOUR;
-                // blink to confirm
-                set_level(actual_level + 32);
-                delay_4ms(2);
-            }
-        }
-        return MISCHIEF_MANAGED;
-    }
-    #endif
     #if defined(USE_LIGHTNING_MODE) || defined(USE_CANDLE_MODE)
-    // clock tick: bump the random seed, adjust candle brightness
+    // clock tick: bump the random seed
     else if (event == EV_tick) {
         pseudo_rand_seed += arg;
-
-        #ifdef USE_CANDLE_MODE
-        if (st == candle_mode_e) {
-            // self-timer dims the light during the final minute
-            uint8_t subtract = 0;
-            if (candle_mode_timer == 1) {
-                subtract = ((candle_mode_brightness+20)
-                         * ((arg & (TICKS_PER_CANDLE_MINUTE-1)) >> 4))
-                         >> 8;
-            }
-            // we passed a minute mark, decrease timer if it's running
-            if ((arg & (TICKS_PER_CANDLE_MINUTE-1)) == (TICKS_PER_CANDLE_MINUTE - 1)) {
-                if (candle_mode_timer > 0) {
-                    candle_mode_timer --;
-                    //set_level(0);  delay_4ms(2);
-                    // if the timer ran out, shut off
-                    if (! candle_mode_timer) {
-                        set_state(off_state, 0);
-                    }
-                }
-            }
-            // 3-oscillator synth for a relatively organic pattern
-            uint8_t add;
-            add = ((triangle_wave(candle_wave1) * 8) >> 8)
-                + ((triangle_wave(candle_wave2) * candle_wave2_depth) >> 8)
-                + ((triangle_wave(candle_wave3) * candle_wave3_depth) >> 8);
-            int8_t brightness = candle_mode_brightness + add - subtract;
-            if (brightness < 0) { brightness = 0; }
-            set_level(brightness);
-
-            // wave1: slow random LFO
-            if ((arg & 1) == 0) candle_wave1 += pseudo_rand() & 1;
-            // wave2: medium-speed erratic LFO
-            candle_wave2 += candle_wave2_speed;
-            // wave3: erratic fast wave
-            candle_wave3 += pseudo_rand() % 37;
-            // S&H on wave2 frequency to make it more erratic
-            if ((pseudo_rand() & 0b00111111) == 0)
-                candle_wave2_speed = pseudo_rand() % 13;
-            // downward sawtooth on wave2 depth to simulate stabilizing
-            if ((candle_wave2_depth > 0) && ((pseudo_rand() & 0b00111111) == 0))
-                candle_wave2_depth --;
-            // random sawtooth retrigger
-            if ((pseudo_rand()) == 0) {
-                candle_wave2_depth = 7;
-                //candle_wave3_depth = 5;
-                candle_wave2 = 0;
-            }
-            // downward sawtooth on wave3 depth to simulate stabilizing
-            if ((candle_wave3_depth > 2) && ((pseudo_rand() & 0b00011111) == 0))
-                candle_wave3_depth --;
-            if ((pseudo_rand() & 0b01111111) == 0)
-                candle_wave3_depth = 5;
-        }
-        #endif
         return MISCHIEF_MANAGED;
     }
     #endif
     return EVENT_NOT_HANDLED;
 }
+
+#if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
+inline void party_tactical_strobe_mode_iter(uint8_t st) {
+    // one iteration of main loop()
+    uint8_t del = strobe_delays[st];
+    // TODO: make tac strobe brightness configurable?
+    set_level(STROBE_BRIGHTNESS);
+    if (0) {}  // placeholde0
+    #ifdef USE_PARTY_STROBE_MODE
+    else if (st == party_strobe_e) {  // party strobe
+        if (del < 42) delay_zero();
+        else nice_delay_ms(1);
+    }
+    #endif
+    #ifdef USE_TACTICAL_STROBE_MODE
+    else {  //tactical strobe
+        nice_delay_ms(del >> 1);
+    }
+    #endif
+    set_level(0);
+    nice_delay_ms(del);  // no return check necessary on final delay
+}
+#endif
+
+#ifdef USE_LIGHTNING_MODE
+inline void lightning_storm_iter() {
+    // one iteration of main loop()
+    int16_t brightness;
+    uint16_t rand_time;
+
+    // turn the emitter on at a random level,
+    // for a random amount of time between 1ms and 32ms
+    //rand_time = 1 << (pseudo_rand() % 7);
+    rand_time = pseudo_rand() & 63;
+    brightness = 1 << (pseudo_rand() % 7);  // 1, 2, 4, 8, 16, 32, 64
+    brightness += 1 << (pseudo_rand() & 0x03);  // 2 to 80 now
+    brightness += pseudo_rand() % brightness;  // 2 to 159 now (w/ low bias)
+    if (brightness > MAX_LEVEL) brightness = MAX_LEVEL;
+    set_level(brightness);
+    nice_delay_ms(rand_time);
+
+    // decrease the brightness somewhat more gradually, like lightning
+    uint8_t stepdown = brightness >> 3;
+    if (stepdown < 1) stepdown = 1;
+    while(brightness > 1) {
+        nice_delay_ms(rand_time);
+        brightness -= stepdown;
+        if (brightness < 0) brightness = 0;
+        set_level(brightness);
+        /*
+           if ((brightness < MAX_LEVEL/2) && (! (pseudo_rand() & 15))) {
+           brightness <<= 1;
+           set_level(brightness);
+           }
+           */
+        if (! (pseudo_rand() & 3)) {
+            nice_delay_ms(rand_time);
+            set_level(brightness>>1);
+        }
+    }
+
+    // turn the emitter off,
+    // for a random amount of time between 1ms and 8192ms
+    // (with a low bias)
+    rand_time = 1 << (pseudo_rand() % 13);
+    rand_time += pseudo_rand() % rand_time;
+    set_level(0);
+    nice_delay_ms(rand_time);  // no return check necessary on final delay
+}
+#endif
+
+#ifdef USE_BIKE_FLASHER_MODE
+inline void bike_flasher_iter() {
+    // one iteration of main loop()
+    uint8_t burst = bike_flasher_brightness << 1;
+    if (burst > MAX_LEVEL) burst = MAX_LEVEL;
+    for(uint8_t i=0; i<4; i++) {
+        set_level(burst);
+        nice_delay_ms(5);
+        set_level(bike_flasher_brightness);
+        nice_delay_ms(65);
+    }
+    nice_delay_ms(720);  // no return check necessary on final delay
+}
+#endif
+
 #endif  // ifdef USE_STROBE_STATE
+
+#ifdef USE_CANDLE_MODE
+uint8_t candle_mode_state(Event event, uint16_t arg) {
+    // FIXME: make candle variance magnitude a compile-time option,
+    //        since 20 is sometimes too much or too little,
+    //        depending on the driver type and ramp shape
+    //#define MAX_CANDLE_LEVEL (RAMP_SIZE-8-6-4)
+    #define MAX_CANDLE_LEVEL (RAMP_SIZE/2)
+    static uint8_t candle_wave1 = 0;
+    static uint8_t candle_wave2 = 0;
+    static uint8_t candle_wave3 = 0;
+    static uint8_t candle_wave2_speed = 0;
+    static uint8_t candle_wave2_depth = 7;
+    static uint8_t candle_wave3_depth = 4;
+    static uint8_t candle_mode_brightness = 24;
+    static uint8_t candle_mode_timer = 0;
+    #define TICKS_PER_CANDLE_MINUTE 4096 // about 65 seconds
+    #define MINUTES_PER_CANDLE_HALFHOUR 27 // ish
+
+    if (event == EV_enter_state) {
+        candle_mode_timer = 0;  // in case any time was left over from earlier
+        return MISCHIEF_MANAGED;
+    }
+    // 2 clicks: cancel timer
+    else if (event == EV_2clicks) {
+        // parent state just rotated through strobe/flasher modes,
+        // so cancel timer...  in case any time was left over from earlier
+        candle_mode_timer = 0;
+        return MISCHIEF_MANAGED;
+    }
+    // hold: change brightness (brighter)
+    else if (event == EV_click1_hold) {
+        if (candle_mode_brightness < MAX_CANDLE_LEVEL)
+            candle_mode_brightness ++;
+        return MISCHIEF_MANAGED;
+    }
+    // click, hold: change brightness (dimmer)
+    else if (event == EV_click2_hold) {
+        if (candle_mode_brightness > 1)
+            candle_mode_brightness --;
+        return MISCHIEF_MANAGED;
+    }
+    // 3 clicks: add 30m to candle timer
+    else if (event == EV_3clicks) {
+        if (candle_mode_timer < (255 - MINUTES_PER_CANDLE_HALFHOUR)) {
+            // add 30m to the timer
+            candle_mode_timer += MINUTES_PER_CANDLE_HALFHOUR;
+            // blink to confirm
+            set_level(actual_level + 32);
+            delay_4ms(2);
+        }
+        return MISCHIEF_MANAGED;
+    }
+    // clock tick: animate candle brightness
+    else if (event == EV_tick) {
+        // self-timer dims the light during the final minute
+        uint8_t subtract = 0;
+        if (candle_mode_timer == 1) {
+            subtract = ((candle_mode_brightness+20)
+                     * ((arg & (TICKS_PER_CANDLE_MINUTE-1)) >> 4))
+                     >> 8;
+        }
+        // we passed a minute mark, decrease timer if it's running
+        if ((arg & (TICKS_PER_CANDLE_MINUTE-1)) == (TICKS_PER_CANDLE_MINUTE - 1)) {
+            if (candle_mode_timer > 0) {
+                candle_mode_timer --;
+                //set_level(0);  delay_4ms(2);
+                // if the timer ran out, shut off
+                if (! candle_mode_timer) {
+                    set_state(off_state, 0);
+                }
+            }
+        }
+        // 3-oscillator synth for a relatively organic pattern
+        uint8_t add;
+        add = ((triangle_wave(candle_wave1) * 8) >> 8)
+            + ((triangle_wave(candle_wave2) * candle_wave2_depth) >> 8)
+            + ((triangle_wave(candle_wave3) * candle_wave3_depth) >> 8);
+        int8_t brightness = candle_mode_brightness + add - subtract;
+        if (brightness < 0) { brightness = 0; }
+        set_level(brightness);
+
+        // wave1: slow random LFO
+        if ((arg & 1) == 0) candle_wave1 += pseudo_rand() & 1;
+        // wave2: medium-speed erratic LFO
+        candle_wave2 += candle_wave2_speed;
+        // wave3: erratic fast wave
+        candle_wave3 += pseudo_rand() % 37;
+        // S&H on wave2 frequency to make it more erratic
+        if ((pseudo_rand() & 0b00111111) == 0)
+            candle_wave2_speed = pseudo_rand() % 13;
+        // downward sawtooth on wave2 depth to simulate stabilizing
+        if ((candle_wave2_depth > 0) && ((pseudo_rand() & 0b00111111) == 0))
+            candle_wave2_depth --;
+        // random sawtooth retrigger
+        if ((pseudo_rand()) == 0) {
+            candle_wave2_depth = 7;
+            //candle_wave3_depth = 5;
+            candle_wave2 = 0;
+        }
+        // downward sawtooth on wave3 depth to simulate stabilizing
+        if ((candle_wave3_depth > 2) && ((pseudo_rand() & 0b00011111) == 0))
+            candle_wave3_depth --;
+        if ((pseudo_rand() & 0b01111111) == 0)
+            candle_wave3_depth = 5;
+        return MISCHIEF_MANAGED;
+    }
+    return EVENT_NOT_HANDLED;
+}
+
+uint8_t triangle_wave(uint8_t phase) {
+    uint8_t result = phase << 1;
+    if (phase > 127) result = 255 - result;
+    return result;
+}
+#endif  // #ifdef USE_CANDLE_MODE
+
+
+#ifdef USE_BORING_STROBE_STATE
+uint8_t boring_strobe_state(Event event, uint16_t arg) {
+    // police strobe and SOS, meh
+    // 'st' reduces ROM size by avoiding access to a volatile var
+    // (maybe I should just make it nonvolatile?)
+    uint8_t st = boring_strobe_type;
+
+    if (event == EV_enter_state) {
+        return MISCHIEF_MANAGED;
+    }
+    // 1 click: off
+    else if (event == EV_1click) {
+        // reset to police strobe for next time
+        boring_strobe_type = 0;
+        set_state(off_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    // 2 clicks: rotate through strobe/flasher modes
+    else if (event == EV_2clicks) {
+        boring_strobe_type = (st + 1) % NUM_BORING_STROBES;
+        return MISCHIEF_MANAGED;
+    }
+    return EVENT_NOT_HANDLED;
+}
+
+#ifdef USE_POLICE_STROBE_MODE
+inline void police_strobe_iter() {
+    // one iteration of main loop()
+    // flash at 16 Hz then 8 Hz, 8 times each
+    for (uint8_t del=41; del<100; del+=41) {
+        for (uint8_t f=0; f<8; f++) {
+            set_level(STROBE_BRIGHTNESS);
+            nice_delay_ms(del >> 1);
+            set_level(0);
+            nice_delay_ms(del);
+        }
+    }
+}
+#endif
+
+#ifdef USE_SOS_MODE
+void sos_blink(uint8_t num, uint8_t dah) {
+    #define DIT_LENGTH 200
+    for (; num > 0; num--) {
+        set_level(memorized_level);
+        nice_delay_ms(DIT_LENGTH);
+        if (dah) {  // dah is 3X as long as a dit
+            nice_delay_ms(DIT_LENGTH*2);
+        }
+        set_level(0);
+        // one "off" dit between blinks
+        nice_delay_ms(DIT_LENGTH);
+    }
+    // three "off" dits (or one "dah") between letters
+    nice_delay_ms(DIT_LENGTH*2);
+}
+
+inline void sos_mode_iter() {
+    // one iteration of main loop()
+    nice_delay_ms(1000);
+    sos_blink(3, 0);  // S
+    sos_blink(3, 1);  // O
+    sos_blink(3, 0);  // S
+    nice_delay_ms(1000);
+}
+#endif  // #ifdef USE_SOS_MODE
+#endif  // #ifdef USE_BORING_STROBE_STATE
 
 
 #ifdef USE_BATTCHECK
@@ -1077,6 +1323,7 @@ uint8_t tempcheck_state(Event event, uint16_t arg) {
 #endif
 
 
+#ifdef USE_BEACON_MODE
 uint8_t beacon_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
@@ -1101,8 +1348,10 @@ uint8_t beacon_state(Event event, uint16_t arg) {
     }
     return EVENT_NOT_HANDLED;
 }
+#endif  // #ifdef USE_BEACON_MODE
 
 
+#ifdef USE_GOODNIGHT_MODE
 #define GOODNIGHT_TICKS_PER_STEPDOWN (GOODNIGHT_TIME*TICKS_PER_SECOND*60L/GOODNIGHT_LEVEL)
 uint8_t goodnight_state(Event event, uint16_t arg) {
     static uint16_t ticks_since_stepdown = 0;
@@ -1141,6 +1390,7 @@ uint8_t goodnight_state(Event event, uint16_t arg) {
     }
     return EVENT_NOT_HANDLED;
 }
+#endif
 
 
 uint8_t lockout_state(Event event, uint16_t arg) {
@@ -1478,6 +1728,7 @@ uint8_t config_state_base(Event event, uint16_t arg,
     return EVENT_HANDLED;
 }
 
+#ifdef USE_RAMP_CONFIG
 void ramp_config_save() {
     // parse values
     uint8_t val;
@@ -1509,6 +1760,7 @@ uint8_t ramp_config_state(Event event, uint16_t arg) {
     return config_state_base(event, arg,
                              num_config_steps, ramp_config_save);
 }
+#endif  // #ifdef USE_RAMP_CONFIG
 
 
 #ifdef USE_THERMAL_REGULATION
@@ -1535,9 +1787,10 @@ uint8_t thermal_config_state(Event event, uint16_t arg) {
     return config_state_base(event, arg,
                              2, thermal_config_save);
 }
-#endif
+#endif  // #ifdef USE_THERMAL_REGULATION
 
 
+#ifdef USE_BEACON_MODE
 void beacon_config_save() {
     // parse values
     uint8_t val = config_state_values[0];
@@ -1550,6 +1803,15 @@ uint8_t beacon_config_state(Event event, uint16_t arg) {
     return config_state_base(event, arg,
                              1, beacon_config_save);
 }
+
+inline void beacon_mode_iter() {
+    // one iteration of main loop()
+    set_level(memorized_level);
+    nice_delay_ms(500);
+    set_level(0);
+    nice_delay_ms(((beacon_seconds) * 1000) - 500);
+}
+#endif  // #ifdef USE_BEACON_MODE
 
 
 uint8_t number_entry_state(Event event, uint16_t arg) {
@@ -1704,23 +1966,16 @@ void indicator_blink(uint8_t arg) {
 #endif
 
 
-#ifdef USE_CANDLE_MODE
-uint8_t triangle_wave(uint8_t phase) {
-    uint8_t result = phase << 1;
-    if (phase > 127) result = 255 - result;
-    return result;
-}
-#endif
-
-
 void load_config() {
     if (load_eeprom()) {
         ramp_style = eeprom[ramp_style_e];
+        #ifdef USE_RAMP_CONFIG
         ramp_smooth_floor = eeprom[ramp_smooth_floor_e];
         ramp_smooth_ceil = eeprom[ramp_smooth_ceil_e];
         ramp_discrete_floor = eeprom[ramp_discrete_floor_e];
         ramp_discrete_ceil = eeprom[ramp_discrete_ceil_e];
         ramp_discrete_steps = eeprom[ramp_discrete_steps_e];
+        #endif
         #ifdef USE_TINT_RAMPING
         tint = eeprom[tint_e];
         #endif
@@ -1732,7 +1987,9 @@ void load_config() {
         #ifdef USE_BIKE_FLASHER_MODE
         bike_flasher_brightness = eeprom[bike_flasher_brightness_e];
         #endif
+        #ifdef USE_BEACON_MODE
         beacon_seconds = eeprom[beacon_seconds_e];
+        #endif
         #ifdef USE_MUGGLE_MODE
         muggle_mode_active = eeprom[muggle_mode_active_e];
         #endif
@@ -1753,11 +2010,13 @@ void load_config() {
 
 void save_config() {
     eeprom[ramp_style_e] = ramp_style;
+    #ifdef USE_RAMP_CONFIG
     eeprom[ramp_smooth_floor_e] = ramp_smooth_floor;
     eeprom[ramp_smooth_ceil_e] = ramp_smooth_ceil;
     eeprom[ramp_discrete_floor_e] = ramp_discrete_floor;
     eeprom[ramp_discrete_ceil_e] = ramp_discrete_ceil;
     eeprom[ramp_discrete_steps_e] = ramp_discrete_steps;
+    #endif
     #ifdef USE_TINT_RAMPING
     eeprom[tint_e] = tint;
     #endif
@@ -1769,7 +2028,9 @@ void save_config() {
     #ifdef USE_BIKE_FLASHER_MODE
     eeprom[bike_flasher_brightness_e] = bike_flasher_brightness;
     #endif
+    #ifdef USE_BEACON_MODE
     eeprom[beacon_seconds_e] = beacon_seconds;
+    #endif
     #ifdef USE_MUGGLE_MODE
     eeprom[muggle_mode_active_e] = muggle_mode_active;
     #endif
@@ -1790,6 +2051,7 @@ void save_config_wl() {
     save_eeprom_wl();
 }
 #endif
+
 
 void low_voltage() {
     StatePtr state = current_state;
@@ -1880,122 +2142,74 @@ void loop() {
     if (0) {}
 
     #ifdef USE_STROBE_STATE
-    if (state == strobe_state) {
+    else if (state == strobe_state) {
         uint8_t st = strobe_type;
 
-        if (0) {}  // placeholder
+        switch(st) {
+            #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
+            #ifdef USE_PARTY_STROBE_MODE
+            case party_strobe_e:
+            #endif
+            #ifdef USE_TACTICAL_STROBE_MODE
+            case tactical_strobe_e:
+            #endif
+                party_tactical_strobe_mode_iter(st);
+                break;
+            #endif
 
-        // party / tactial strobe
-        #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
-        #ifdef USE_TACTICAL_STROBE_MODE
-        else if (st <= tactical_strobe_e) {
-        #else
-        else if (st == party_strobe_e) {
-        #endif
-            uint8_t del = strobe_delays[st];
-            // TODO: make tac strobe brightness configurable?
-            set_level(STROBE_BRIGHTNESS);
-            if (st == party_strobe_e) {  // party strobe
-                if (del < 42) delay_zero();
-                else nice_delay_ms(1);
-            } else {  //tactical strobe
-                nice_delay_ms(del >> 1);
-            }
-            set_level(0);
-            nice_delay_ms(del);  // no return check necessary on final delay
+            #ifdef USE_LIGHTNING_MODE
+            case lightning_storm_e:
+                lightning_storm_iter();
+                break;
+            #endif
+
+            #ifdef USE_BIKE_FLASHER_MODE
+            case bike_flasher_e:
+                bike_flasher_iter();
+                break;
+            #endif
         }
-        #endif
-
-        // lightning storm
-        #ifdef USE_LIGHTNING_MODE
-        else if (st == lightning_storm_e) {
-            int16_t brightness;
-            uint16_t rand_time;
-
-            // turn the emitter on at a random level,
-            // for a random amount of time between 1ms and 32ms
-            //rand_time = 1 << (pseudo_rand() % 7);
-            rand_time = pseudo_rand() & 63;
-            brightness = 1 << (pseudo_rand() % 7);  // 1, 2, 4, 8, 16, 32, 64
-            brightness += 1 << (pseudo_rand() & 0x03);  // 2 to 80 now
-            brightness += pseudo_rand() % brightness;  // 2 to 159 now (w/ low bias)
-            if (brightness > MAX_LEVEL) brightness = MAX_LEVEL;
-            set_level(brightness);
-            nice_delay_ms(rand_time);
-
-            // decrease the brightness somewhat more gradually, like lightning
-            uint8_t stepdown = brightness >> 3;
-            if (stepdown < 1) stepdown = 1;
-            while(brightness > 1) {
-                nice_delay_ms(rand_time);
-                brightness -= stepdown;
-                if (brightness < 0) brightness = 0;
-                set_level(brightness);
-                /*
-                if ((brightness < MAX_LEVEL/2) && (! (pseudo_rand() & 15))) {
-                    brightness <<= 1;
-                    set_level(brightness);
-                }
-                */
-                if (! (pseudo_rand() & 3)) {
-                    nice_delay_ms(rand_time);
-                    set_level(brightness>>1);
-                }
-            }
-
-            // turn the emitter off,
-            // for a random amount of time between 1ms and 8192ms
-            // (with a low bias)
-            rand_time = 1 << (pseudo_rand() % 13);
-            rand_time += pseudo_rand() % rand_time;
-            set_level(0);
-            nice_delay_ms(rand_time);  // no return check necessary on final delay
-        }
-        #endif
-
-        // candle mode
-        #ifdef USE_CANDLE_MODE
-        // this NOP should get compiled out
-        else if (st == candle_mode_e) {}
-        #endif
-
-        // bike flasher
-        #ifdef USE_BIKE_FLASHER_MODE
-        else if (st == bike_flasher_e) {
-            uint8_t burst = bike_flasher_brightness << 1;
-            if (burst > MAX_LEVEL) burst = MAX_LEVEL;
-            for(uint8_t i=0; i<4; i++) {
-                set_level(burst);
-                nice_delay_ms(5);
-                set_level(bike_flasher_brightness);
-                nice_delay_ms(65);
-            }
-            nice_delay_ms(720);  // no return check necessary on final delay
-        }
-        #endif
 
     }
     #endif  // #ifdef USE_STROBE_STATE
+
+    #ifdef USE_BORING_STROBE_STATE
+    else if (state == boring_strobe_state) {
+        switch(boring_strobe_type) {
+            #ifdef USE_POLICE_STROBE_MODE
+            case 0: // police strobe
+                police_strobe_iter();
+                break;
+            #endif
+
+            #ifdef USE_SOS_MODE
+            default: // SOS
+                sos_mode_iter();
+                break;
+            #endif
+        }
+    }
+    #endif  // #ifdef USE_BORING_STROBE_STATE
 
     #ifdef USE_BATTCHECK
     else if (state == battcheck_state) {
         battcheck();
     }
     #endif
+
+    #ifdef USE_BEACON_MODE
+    else if (state == beacon_state) {
+        beacon_mode_iter();
+    }
+    #endif
+
     #ifdef USE_THERMAL_REGULATION
-    // TODO: blink out therm_ceil during thermal_config_state
+    // TODO: blink out therm_ceil during thermal_config_state?
     else if (state == tempcheck_state) {
         blink_num(temperature>>1);
         nice_delay_ms(1000);
     }
     #endif
-
-    else if (state == beacon_state) {
-        set_level(memorized_level);
-        nice_delay_ms(500);
-        set_level(0);
-        nice_delay_ms(((beacon_seconds) * 1000) - 500);
-    }
 
     #ifdef USE_IDLE_MODE
     else {
