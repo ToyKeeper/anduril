@@ -199,6 +199,8 @@ uint8_t beacon_state(Event event, uint16_t arg);
 uint8_t beacon_config_state(Event event, uint16_t arg);
 // soft lockout
 #define MOON_DURING_LOCKOUT_MODE
+// if enabled, 2nd lockout click goes to the other ramp's floor level
+//#define LOCKOUT_MOON_FANCY
 uint8_t lockout_state(Event event, uint16_t arg);
 // momentary / signalling mode
 uint8_t momentary_state(Event event, uint16_t arg);
@@ -401,11 +403,6 @@ uint8_t off_state(Event event, uint16_t arg) {
         set_state(steady_state, memorized_level);
         return MISCHIEF_MANAGED;
     }
-    // 2 clicks (initial press): off, to prep for later events
-    else if (event == EV_click2_press) {
-        set_level(0);
-        return MISCHIEF_MANAGED;
-    }
     // click, hold: go to highest level (ceiling) (for ramping down)
     else if (event == EV_click2_hold) {
         set_state(steady_state, MAX_LEVEL);
@@ -414,6 +411,11 @@ uint8_t off_state(Event event, uint16_t arg) {
     // 2 clicks: highest mode (ceiling)
     else if (event == EV_2clicks) {
         set_state(steady_state, MAX_LEVEL);
+        return MISCHIEF_MANAGED;
+    }
+    // 3 clicks (initial press): off, to prep for later events
+    else if (event == EV_click3_press) {
+        set_level(0);
         return MISCHIEF_MANAGED;
     }
     #ifdef USE_BATTCHECK
@@ -1151,6 +1153,13 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         uint8_t lvl = ramp_smooth_floor;
         if (ramp_discrete_floor < lvl) lvl = ramp_discrete_floor;
         set_level(lvl);
+        #elif defined(LOCKOUT_MOON_FANCY)
+        uint8_t levels[] = { ramp_smooth_floor, ramp_discrete_floor };
+        if ((event & 0x0f) == 2) {
+            set_level(levels[ramp_style^1]);
+        } else {
+            set_level(levels[ramp_style]);
+        }
         #else
         // Use moon from current ramp
         set_level(nearest_level(1));
@@ -1868,9 +1877,6 @@ void loop() {
 
     StatePtr state = current_state;
 
-    #ifdef USE_DYNAMIC_UNDERCLOCKING
-    auto_clock_speed();
-    #endif
     if (0) {}
 
     #ifdef USE_STROBE_STATE
@@ -1889,7 +1895,6 @@ void loop() {
             uint8_t del = strobe_delays[st];
             // TODO: make tac strobe brightness configurable?
             set_level(STROBE_BRIGHTNESS);
-            CLKPR = 1<<CLKPCE; CLKPR = 0;  // run at full speed
             if (st == party_strobe_e) {  // party strobe
                 if (del < 42) delay_zero();
                 else nice_delay_ms(1);

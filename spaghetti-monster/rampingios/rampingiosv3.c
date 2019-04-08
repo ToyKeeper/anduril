@@ -274,11 +274,6 @@ uint8_t off_state(Event event, uint16_t arg) {
         set_state(steady_state, memorized_level);
         return MISCHIEF_MANAGED;
     }
-    // 2 clicks (initial press): off, to prep for later events
-    else if (event == EV_click2_press) {
-        set_level(0);
-        return MISCHIEF_MANAGED;
-    }
     // click, hold: go to highest level (ceiling) (for ramping down)
     else if (event == EV_click2_hold) {
         set_state(steady_state, MAX_LEVEL);
@@ -287,6 +282,11 @@ uint8_t off_state(Event event, uint16_t arg) {
     // 2 clicks: highest mode (ceiling)
     else if (event == EV_2clicks) {
         set_state(steady_state, MAX_LEVEL);
+        return MISCHIEF_MANAGED;
+    }
+    // 3 clicks (initial press): off, to prep for later events
+    else if (event == EV_click3_press) {
+        set_level(0);
         return MISCHIEF_MANAGED;
     }
     #ifdef USE_BATTCHECK
@@ -1154,9 +1154,6 @@ void loop() {
 
     StatePtr state = current_state;
 
-    #ifdef USE_DYNAMIC_UNDERCLOCKING
-    auto_clock_speed();
-    #endif
     if (0) {}
 
     #ifdef USE_BATTCHECK

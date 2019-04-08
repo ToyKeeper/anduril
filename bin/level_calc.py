@@ -5,7 +5,7 @@ from __future__ import print_function
 import math
 
 interactive = False
-# supported shapes: ninth, fifth, cube, square, log_e, log_2
+# supported shapes: ninth, fifth, cube, square, log
 #ramp_shape = 'cube'
 
 
@@ -14,7 +14,7 @@ def main(args):
     """
     # Get parameters from the user
     questions_main = [
-            (str, 'ramp_shape', 'cube', 'Ramp shape? [cube, square, fifth, ninth, log_e, log_2]'),
+            (str, 'ramp_shape', 'cube', 'Ramp shape? [cube, square, fifth, ninth, log]'),
             (int, 'num_channels', 1, 'How many power channels?'),
             (int, 'num_levels', 4, 'How many total levels do you want?'),
             ]
@@ -172,8 +172,9 @@ shapes = dict(
         fifth  = (lambda x: x**5,      lambda x: math.pow(x, 1/5.0)),
         cube   = (lambda x: x**3,      lambda x: math.pow(x, 1/3.0)),
         square = (lambda x: x**2,      lambda x: math.pow(x, 1/2.0)),
-        log_e  = (lambda x: math.e**x, lambda x: math.log(x, math.e)),
-        log_2  = (lambda x: 2.0**x,    lambda x: math.log(x, 2.0)),
+        log    = (lambda x: math.e**x, lambda x: math.log(x, math.e)),
+        # makes no difference; all logs have the same curve
+        #log_2  = (lambda x: 2.0**x,    lambda x: math.log(x, 2.0)),
         )
 
 def power(x):
