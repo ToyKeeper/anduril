@@ -33,7 +33,7 @@
 //  or too short)
 #define MOON_TIMING_HINT
 // short blips while ramping
-#define BLINK_AT_CHANNEL_BOUNDARIES
+#define BLINK_AT_RAMP_MIDDLE
 //#define BLINK_AT_RAMP_FLOOR
 #define BLINK_AT_RAMP_CEILING
 //#define BLINK_AT_STEPS  // whenever a discrete ramp mode is passed in smooth mode
@@ -319,8 +319,28 @@ void save_config_wl();
   #define RAMP_DISCRETE_STEPS 7
 #endif
 
+// mile marker(s) partway up the ramp
+// default: blink only at border between regulated and FET
+#ifdef BLINK_AT_RAMP_MIDDLE
+  #if PWM_CHANNELS >= 3
+    #ifndef BLINK_AT_RAMP_MIDDLE_1
+      #define BLINK_AT_RAMP_MIDDLE_1 MAX_Nx7135
+      #ifndef BLINK_AT_RAMP_MIDDLE_2
+      #define BLINK_AT_RAMP_MIDDLE_2 MAX_1x7135
+      #endif
+    #endif
+  #else
+    #ifndef BLINK_AT_RAMP_MIDDLE_1
+    #define BLINK_AT_RAMP_MIDDLE_1 MAX_1x7135
+    #endif
+  #endif
+#endif
+
 // brightness control
-uint8_t memorized_level = MAX_1x7135;
+#ifndef DEFAULT_LEVEL
+#define DEFAULT_LEVEL MAX_1x7135
+#endif
+uint8_t memorized_level = DEFAULT_LEVEL;
 // smooth vs discrete ramping
 volatile uint8_t ramp_style = 0;  // 0 = smooth, 1 = discrete
 volatile uint8_t ramp_smooth_floor = RAMP_SMOOTH_FLOOR;
@@ -450,7 +470,7 @@ uint8_t off_state(Event event, uint16_t arg) {
             // let the user know they can let go now to stay at moon
             uint8_t temp = actual_level;
             set_level(0);
-            delay_4ms(2);
+            delay_4ms(3);
             set_level(temp);
         } else
         #endif
@@ -635,9 +655,13 @@ uint8_t steady_state(Event event, uint16_t arg) {
             return MISCHIEF_MANAGED;
         }
         #ifdef USE_REVERSING
-        // make it ramp down instead, if already at max
-        if ((arg <= 1) && (actual_level >= mode_max)) {
-            ramp_direction = -1;
+        // fix ramp direction on first frame if necessary
+        if (!arg) {
+            // make it ramp down instead, if already at max
+            if (actual_level >= mode_max) { ramp_direction = -1; }
+            // make it ramp up if already at min
+            // (off->hold->stepped_min->release causes this state)
+            else if (actual_level <= mode_min) { ramp_direction = 1; }
         }
         memorized_level = nearest_level((int16_t)actual_level \
                           + (ramp_step_size * ramp_direction));
@@ -647,15 +671,15 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #endif
-        #if defined(BLINK_AT_RAMP_CEILING) || defined(BLINK_AT_CHANNEL_BOUNDARIES)
+        #if defined(BLINK_AT_RAMP_CEILING) || defined(BLINK_AT_RAMP_MIDDLE)
         // only blink once for each threshold
         if ((memorized_level != actual_level) && (
                 0  // for easier syntax below
-                #ifdef BLINK_AT_CHANNEL_BOUNDARIES
-                || (memorized_level == MAX_1x7135)
-                #if PWM_CHANNELS >= 3
-                || (memorized_level == MAX_Nx7135)
+                #ifdef BLINK_AT_RAMP_MIDDLE_1
+                || (memorized_level == BLINK_AT_RAMP_MIDDLE_1)
                 #endif
+                #ifdef BLINK_AT_RAMP_MIDDLE_2
+                || (memorized_level == BLINK_AT_RAMP_MIDDLE_2)
                 #endif
                 #ifdef BLINK_AT_RAMP_CEILING
                 || (memorized_level == mode_max)
@@ -712,15 +736,15 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #ifdef USE_THERMAL_REGULATION
         target_level = memorized_level;
         #endif
-        #if defined(BLINK_AT_RAMP_FLOOR) || defined(BLINK_AT_CHANNEL_BOUNDARIES)
+        #if defined(BLINK_AT_RAMP_FLOOR) || defined(BLINK_AT_RAMP_MIDDLE)
         // only blink once for each threshold
         if ((memorized_level != actual_level) && (
                 0  // for easier syntax below
-                #ifdef BLINK_AT_CHANNEL_BOUNDARIES
-                || (memorized_level == MAX_1x7135)
-                #if PWM_CHANNELS >= 3
-                || (memorized_level == MAX_Nx7135)
+                #ifdef BLINK_AT_RAMP_MIDDLE_1
+                || (memorized_level == BLINK_AT_RAMP_MIDDLE_1)
                 #endif
+                #ifdef BLINK_AT_RAMP_MIDDLE_2
+                || (memorized_level == BLINK_AT_RAMP_MIDDLE_2)
                 #endif
                 #ifdef BLINK_AT_RAMP_FLOOR
                 || (memorized_level == mode_min)
