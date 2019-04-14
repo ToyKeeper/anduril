@@ -551,8 +551,26 @@ uint8_t off_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif
-    // 7 clicks: temperature check
+    #ifdef USE_INDICATOR_LED
+    // 7 clicks: change indicator LED mode
     else if (event == EV_7clicks) {
+        uint8_t mode = (indicator_led_mode & 3) + 1;
+        #ifdef TICK_DURING_STANDBY
+        mode = mode & 3;
+        #else
+        mode = mode % 3;
+        #endif
+        #ifdef INDICATOR_LED_SKIP_LOW
+        if (mode == 1) { mode ++; }
+        #endif
+        indicator_led_mode = (indicator_led_mode & 0b11111100) | mode;
+        indicator_led(mode);
+        save_config();
+        return MISCHIEF_MANAGED;
+    }
+    #endif
+    // 8 clicks: temperature check
+    else if (event == EV_8clicks) {
         set_state(tempcheck_state, 0);
         return MISCHIEF_MANAGED;
     }
