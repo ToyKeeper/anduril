@@ -253,6 +253,9 @@ prevent children from exiting the mode by unscrewing the tailcap.
 However, be sure to supervise children whenever they are using any 
 powerful tools, including a bright flashlight.
 
+Note: If the light steps down in muggle mode, it probably needs to have 
+the temperature sensor calibrated.  Use thermal config mode to do this.
+
 
 Configuration Modes
 -------------------
