@@ -383,6 +383,9 @@ volatile uint8_t bike_flasher_brightness = MAX_1x7135;
 #ifdef USE_CANDLE_MODE
 uint8_t candle_mode_state(Event event, uint16_t arg);
 uint8_t triangle_wave(uint8_t phase);
+#ifndef CANDLE_AMPLITUDE
+#define CANDLE_AMPLITUDE 20
+#endif
 #endif
 
 #ifdef USE_BEACON_MODE
@@ -1100,17 +1103,14 @@ inline void bike_flasher_iter() {
 
 #ifdef USE_CANDLE_MODE
 uint8_t candle_mode_state(Event event, uint16_t arg) {
-    // FIXME: make candle variance magnitude a compile-time option,
-    //        since 20 is sometimes too much or too little,
-    //        depending on the driver type and ramp shape
-    //#define MAX_CANDLE_LEVEL (RAMP_SIZE-8-6-4)
-    #define MAX_CANDLE_LEVEL (RAMP_SIZE/2)
+    #define MAX_CANDLE_LEVEL (RAMP_LENGTH-CANDLE_AMPLITUDE-20)
     static uint8_t candle_wave1 = 0;
     static uint8_t candle_wave2 = 0;
     static uint8_t candle_wave3 = 0;
     static uint8_t candle_wave2_speed = 0;
-    static uint8_t candle_wave2_depth = 7;
-    static uint8_t candle_wave3_depth = 4;
+    static const uint8_t candle_wave1_depth = 8 * CANDLE_AMPLITUDE / 20;
+    static uint8_t candle_wave2_depth = 7 * CANDLE_AMPLITUDE / 20;
+    static uint8_t candle_wave3_depth = 5 * CANDLE_AMPLITUDE / 20;
     static uint8_t candle_mode_brightness = 24;
     static uint8_t candle_mode_timer = 0;
     #define TICKS_PER_CANDLE_MINUTE 4096 // about 65 seconds
@@ -1155,7 +1155,7 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
         // self-timer dims the light during the final minute
         uint8_t subtract = 0;
         if (candle_mode_timer == 1) {
-            subtract = ((candle_mode_brightness+20)
+            subtract = ((candle_mode_brightness+CANDLE_AMPLITUDE)
                      * ((arg & (TICKS_PER_CANDLE_MINUTE-1)) >> 4))
                      >> 8;
         }
@@ -1172,7 +1172,7 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
         }
         // 3-oscillator synth for a relatively organic pattern
         uint8_t add;
-        add = ((triangle_wave(candle_wave1) * 8) >> 8)
+        add = ((triangle_wave(candle_wave1) * candle_wave1_depth) >> 8)
             + ((triangle_wave(candle_wave2) * candle_wave2_depth) >> 8)
             + ((triangle_wave(candle_wave3) * candle_wave3_depth) >> 8);
         int8_t brightness = candle_mode_brightness + add - subtract;
@@ -1180,6 +1180,7 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
         set_level(brightness);
 
         // wave1: slow random LFO
+        // TODO: make wave slower and more erratic?
         if ((arg & 1) == 0) candle_wave1 += pseudo_rand() & 1;
         // wave2: medium-speed erratic LFO
         candle_wave2 += candle_wave2_speed;
@@ -1192,16 +1193,20 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
         if ((candle_wave2_depth > 0) && ((pseudo_rand() & 0b00111111) == 0))
             candle_wave2_depth --;
         // random sawtooth retrigger
+        // TODO: trigger less often?
         if ((pseudo_rand()) == 0) {
-            candle_wave2_depth = 7;
+            // TODO: random amplitude with higher maximum?
+            candle_wave2_depth = 7 * CANDLE_AMPLITUDE / 20;
             //candle_wave3_depth = 5;
             candle_wave2 = 0;
         }
         // downward sawtooth on wave3 depth to simulate stabilizing
         if ((candle_wave3_depth > 2) && ((pseudo_rand() & 0b00011111) == 0))
             candle_wave3_depth --;
+        // TODO: trigger less often?
         if ((pseudo_rand() & 0b01111111) == 0)
-            candle_wave3_depth = 5;
+            // TODO: random amplitude with higher maximum?
+            candle_wave3_depth = 5 * CANDLE_AMPLITUDE / 20;
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;

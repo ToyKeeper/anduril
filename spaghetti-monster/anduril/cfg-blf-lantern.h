@@ -39,6 +39,9 @@
 #define HALFSPEED_LEVEL 14
 #define QUARTERSPEED_LEVEL 5
 
+// the default of 20 looks a bit flat, so increase it
+#define CANDLE_AMPLITUDE 33
+
 // set floor and ceiling as far apart as possible
 // because this lantern isn't overpowered
 #define RAMP_SMOOTH_FLOOR 1
