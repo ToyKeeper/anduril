@@ -384,7 +384,7 @@ volatile uint8_t bike_flasher_brightness = MAX_1x7135;
 uint8_t candle_mode_state(Event event, uint16_t arg);
 uint8_t triangle_wave(uint8_t phase);
 #ifndef CANDLE_AMPLITUDE
-#define CANDLE_AMPLITUDE 20
+#define CANDLE_AMPLITUDE 25
 #endif
 #endif
 
