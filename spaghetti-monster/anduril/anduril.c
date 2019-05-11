@@ -145,6 +145,9 @@ typedef enum {
     ramp_discrete_ceil_e,
     ramp_discrete_steps_e,
     #endif
+    #ifdef USE_TINT_RAMPING
+    tint_e,
+    #endif
     #ifdef USE_STROBE_STATE
     strobe_type_e,
     #endif
@@ -197,6 +200,10 @@ uint8_t config_state_values[MAX_CONFIG_VALUES];
 uint8_t steady_state(Event event, uint16_t arg);
 #ifdef USE_RAMP_CONFIG
 uint8_t ramp_config_state(Event event, uint16_t arg);
+#endif
+#ifdef USE_TINT_RAMPING
+// not actually a mode, more of a fallback under other modes
+uint8_t tint_ramping_state(Event event, uint16_t arg);
 #endif
 // party and tactical strobes
 #ifdef USE_STROBE_STATE
@@ -376,6 +383,9 @@ volatile uint8_t bike_flasher_brightness = MAX_1x7135;
 #ifdef USE_CANDLE_MODE
 uint8_t candle_mode_state(Event event, uint16_t arg);
 uint8_t triangle_wave(uint8_t phase);
+#ifndef CANDLE_AMPLITUDE
+#define CANDLE_AMPLITUDE 25
+#endif
 #endif
 
 #ifdef USE_BEACON_MODE
@@ -860,6 +870,39 @@ uint8_t steady_state(Event event, uint16_t arg) {
 }
 
 
+#ifdef USE_TINT_RAMPING
+uint8_t tint_ramping_state(Event event, uint16_t arg) {
+    static int8_t tint_ramp_direction = 1;
+
+    // click, click, hold: change the tint
+    if (event == EV_click3_hold) {
+        //if ((arg & 1) == 0) {  // ramp slower
+            if ((tint_ramp_direction > 0) && (tint < 255)) {
+                tint += 1;
+            }
+            else if ((tint_ramp_direction < 0) && (tint > 0)) {
+                tint -= 1;
+            }
+            set_level(actual_level);
+        //}
+        return EVENT_HANDLED;
+    }
+
+    // click, click, hold, release: reverse direction for next ramp
+    else if (event == EV_click3_hold_release) {
+        tint_ramp_direction = -tint_ramp_direction;
+        if (tint == 0) tint_ramp_direction = 1;
+        else if (tint == 255) tint_ramp_direction = -1;
+        // remember tint after battery change
+        save_config();
+        return EVENT_HANDLED;
+    }
+
+    return EVENT_NOT_HANDLED;
+}
+#endif  // ifdef USE_TINT_RAMPING
+
+
 #ifdef USE_STROBE_STATE
 uint8_t strobe_state(Event event, uint16_t arg) {
     // 'st' reduces ROM size by avoiding access to a volatile var
@@ -1060,17 +1103,18 @@ inline void bike_flasher_iter() {
 
 #ifdef USE_CANDLE_MODE
 uint8_t candle_mode_state(Event event, uint16_t arg) {
-    // FIXME: make candle variance magnitude a compile-time option,
-    //        since 20 is sometimes too much or too little,
-    //        depending on the driver type and ramp shape
-    //#define MAX_CANDLE_LEVEL (RAMP_SIZE-8-6-4)
-    #define MAX_CANDLE_LEVEL (RAMP_SIZE/2)
+    #define MAX_CANDLE_LEVEL (RAMP_LENGTH-CANDLE_AMPLITUDE-15)
     static uint8_t candle_wave1 = 0;
     static uint8_t candle_wave2 = 0;
     static uint8_t candle_wave3 = 0;
     static uint8_t candle_wave2_speed = 0;
-    static uint8_t candle_wave2_depth = 7;
-    static uint8_t candle_wave3_depth = 4;
+    // these should add up to 100
+    #define CANDLE_WAVE1_MAXDEPTH 30
+    #define CANDLE_WAVE2_MAXDEPTH 45
+    #define CANDLE_WAVE3_MAXDEPTH 25
+    static const uint8_t candle_wave1_depth = CANDLE_WAVE1_MAXDEPTH * CANDLE_AMPLITUDE / 100;
+    static uint8_t candle_wave2_depth       = CANDLE_WAVE2_MAXDEPTH * CANDLE_AMPLITUDE / 100;
+    static uint8_t candle_wave3_depth       = CANDLE_WAVE3_MAXDEPTH * CANDLE_AMPLITUDE / 100;
     static uint8_t candle_mode_brightness = 24;
     static uint8_t candle_mode_timer = 0;
     #define TICKS_PER_CANDLE_MINUTE 4096 // about 65 seconds
@@ -1115,7 +1159,7 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
         // self-timer dims the light during the final minute
         uint8_t subtract = 0;
         if (candle_mode_timer == 1) {
-            subtract = ((candle_mode_brightness+20)
+            subtract = ((candle_mode_brightness+CANDLE_AMPLITUDE)
                      * ((arg & (TICKS_PER_CANDLE_MINUTE-1)) >> 4))
                      >> 8;
         }
@@ -1132,7 +1176,7 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
         }
         // 3-oscillator synth for a relatively organic pattern
         uint8_t add;
-        add = ((triangle_wave(candle_wave1) * 8) >> 8)
+        add = ((triangle_wave(candle_wave1) * candle_wave1_depth) >> 8)
             + ((triangle_wave(candle_wave2) * candle_wave2_depth) >> 8)
             + ((triangle_wave(candle_wave3) * candle_wave3_depth) >> 8);
         int8_t brightness = candle_mode_brightness + add - subtract;
@@ -1140,6 +1184,7 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
         set_level(brightness);
 
         // wave1: slow random LFO
+        // TODO: make wave slower and more erratic?
         if ((arg & 1) == 0) candle_wave1 += pseudo_rand() & 1;
         // wave2: medium-speed erratic LFO
         candle_wave2 += candle_wave2_speed;
@@ -1152,8 +1197,10 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
         if ((candle_wave2_depth > 0) && ((pseudo_rand() & 0b00111111) == 0))
             candle_wave2_depth --;
         // random sawtooth retrigger
-        if ((pseudo_rand()) == 0) {
-            candle_wave2_depth = 7;
+        if (pseudo_rand() == 0) {
+            // random amplitude
+            //candle_wave2_depth = 2 + (pseudo_rand() % ((CANDLE_WAVE2_MAXDEPTH * CANDLE_AMPLITUDE / 100) - 2));
+            candle_wave2_depth = pseudo_rand() % (CANDLE_WAVE2_MAXDEPTH * CANDLE_AMPLITUDE / 100);
             //candle_wave3_depth = 5;
             candle_wave2 = 0;
         }
@@ -1161,7 +1208,9 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
         if ((candle_wave3_depth > 2) && ((pseudo_rand() & 0b00011111) == 0))
             candle_wave3_depth --;
         if ((pseudo_rand() & 0b01111111) == 0)
-            candle_wave3_depth = 5;
+            // random amplitude
+            //candle_wave3_depth = 2 + (pseudo_rand() % ((CANDLE_WAVE3_MAXDEPTH * CANDLE_AMPLITUDE / 100) - 2));
+            candle_wave3_depth = pseudo_rand() % (CANDLE_WAVE3_MAXDEPTH * CANDLE_AMPLITUDE / 100);
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
@@ -1936,6 +1985,9 @@ void load_config() {
         ramp_discrete_ceil = eeprom[ramp_discrete_ceil_e];
         ramp_discrete_steps = eeprom[ramp_discrete_steps_e];
         #endif
+        #ifdef USE_TINT_RAMPING
+        tint = eeprom[tint_e];
+        #endif
         #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
         strobe_type = eeprom[strobe_type_e];  // TODO: move this to eeprom_wl?
         strobe_delays[0] = eeprom[strobe_delays_0_e];
@@ -1973,6 +2025,9 @@ void save_config() {
     eeprom[ramp_discrete_floor_e] = ramp_discrete_floor;
     eeprom[ramp_discrete_ceil_e] = ramp_discrete_ceil;
     eeprom[ramp_discrete_steps_e] = ramp_discrete_steps;
+    #endif
+    #ifdef USE_TINT_RAMPING
+    eeprom[tint_e] = tint;
     #endif
     #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
     eeprom[strobe_type_e] = strobe_type;  // TODO: move this to eeprom_wl?
@@ -2073,14 +2128,19 @@ void setup() {
 
     load_config();
 
+    #ifdef USE_TINT_RAMPING
+    // add tint ramping underneath every other state
+    push_state(tint_ramping_state, 0);
+    #endif  // ifdef USE_TINT_RAMPING
+
     #ifdef USE_MUGGLE_MODE
     if (muggle_mode_active)
         push_state(muggle_state, (MUGGLE_FLOOR+MUGGLE_CEILING)/2);
     else
     #endif
         push_state(off_state, 0);
-    #endif
 
+    #endif  // ifdef START_AT_MEMORIZED_LEVEL
 }
 
 
