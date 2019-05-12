@@ -1,31 +1,15 @@
 // Fireflies E01 SST-40 thrower config options for Anduril
-#include "cfg-ff-pl47.h"
+// most of the good stuff is in the FFUI config; just copy it
+#include "../fireflies-ui/cfg-ff-e01.h"
 
-// disable indicator LED
-#undef USE_INDICATOR_LED
-#undef TICK_DURING_STANDBY
-
-// ceiling is level 130/150  (50% power)
-#undef RAMP_SMOOTH_CEIL
-#define RAMP_SMOOTH_CEIL 130
+#ifndef BLINK_AT_RAMP_CEILING
 #define BLINK_AT_RAMP_CEILING
-
-// 13, 36, 59, [83], 106, 130 (83 is highest regulated)
-#undef RAMP_DISCRETE_FLOOR
-#define RAMP_DISCRETE_FLOOR 13
-#undef RAMP_DISCRETE_CEIL
-#define RAMP_DISCRETE_CEIL RAMP_SMOOTH_CEIL
-#undef RAMP_DISCRETE_STEPS
-#define RAMP_DISCRETE_STEPS 6
-
-// regulate down faster when the FET is active, slower otherwise
-#undef THERM_FASTER_LEVEL
-#define THERM_FASTER_LEVEL 130  // throttle back faster when high
-
-// play it safe, don't try to regulate above the recommended safe level
-#ifndef THERM_HARD_TURBO_DROP
-#define THERM_HARD_TURBO_DROP
 #endif
+
+// 20, 38, 56, 75, [93], 111, 130 (93 is highest regulated)
+// (9 / 45 / 116 / 248 / 467 / 742 / 1280 + 2140 lm)
+#undef RAMP_DISCRETE_STEPS
+#define RAMP_DISCRETE_STEPS 7
 
 // shortcut for first-time setup
 #define USE_TENCLICK_THERMAL_CONFIG
