@@ -262,6 +262,9 @@ void save_config_wl();
 #endif
 
 // default ramp options if not overridden earlier per-driver
+#ifndef RAMP_STYLE
+#define RAMP_STYLE 0  // smooth default
+#endif
 #ifndef RAMP_SMOOTH_FLOOR
   #define RAMP_SMOOTH_FLOOR 1
 #endif
@@ -305,7 +308,7 @@ void save_config_wl();
 #endif
 uint8_t memorized_level = DEFAULT_LEVEL;
 // smooth vs discrete ramping
-volatile uint8_t ramp_style = 0;  // 0 = smooth, 1 = discrete
+volatile uint8_t ramp_style = RAMP_STYLE;  // 0 = smooth, 1 = discrete
 volatile uint8_t ramp_smooth_floor = RAMP_SMOOTH_FLOOR;
 volatile uint8_t ramp_smooth_ceil = RAMP_SMOOTH_CEIL;
 volatile uint8_t ramp_discrete_floor = RAMP_DISCRETE_FLOOR;
@@ -873,6 +876,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
 #ifdef USE_TINT_RAMPING
 uint8_t tint_ramping_state(Event event, uint16_t arg) {
     static int8_t tint_ramp_direction = 1;
+    static uint8_t prev_tint = 0;
 
     // click, click, hold: change the tint
     if (event == EV_click3_hold) {
@@ -883,6 +887,14 @@ uint8_t tint_ramping_state(Event event, uint16_t arg) {
             else if ((tint_ramp_direction < 0) && (tint > 0)) {
                 tint -= 1;
             }
+            if ((prev_tint != tint) &&
+                ( (tint == 0) || (tint == 255) )) {
+                uint8_t foo = actual_level;
+                set_level(0);
+                delay_4ms(3);
+                set_level(foo);
+            }
+            prev_tint = tint;
             set_level(actual_level);
         //}
         return EVENT_HANDLED;
@@ -1816,9 +1828,9 @@ uint8_t beacon_config_state(Event event, uint16_t arg) {
 inline void beacon_mode_iter() {
     // one iteration of main loop()
     set_level(memorized_level);
-    nice_delay_ms(500);
+    nice_delay_ms(100);
     set_level(0);
-    nice_delay_ms(((beacon_seconds) * 1000) - 500);
+    nice_delay_ms(((beacon_seconds) * 1000) - 100);
 }
 #endif  // #ifdef USE_BEACON_MODE
 
