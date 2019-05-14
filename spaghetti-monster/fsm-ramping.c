@@ -68,17 +68,28 @@ void set_level(uint8_t level) {
 
         // auto-tint modes
         uint8_t mytint;
-        // linear with power level
-        //if (tint == 0) { mytint = brightness; }
-        //else if (tint == 255) { mytint = 255 - brightness; }
+        #if 1
         // perceptual by ramp level
         if (tint == 0) { mytint = 255 * (uint16_t)level / RAMP_SIZE; }
         else if (tint == 255) { mytint = 255 - (255 * (uint16_t)level / RAMP_SIZE); }
-        // stretch 1-254 to fit 0-255 range
+        #else
+        // linear with power level
+        //if (tint == 0) { mytint = brightness; }
+        //else if (tint == 255) { mytint = 255 - brightness; }
+        #endif
+        // stretch 1-254 to fit 0-255 range (hits every value except 98 and 198)
         else { mytint = (tint * 100 / 99) - 1; }
 
-        cool_PWM = (((uint16_t)mytint * (uint16_t)brightness) + 127) / 255;
-        warm_PWM = brightness - cool_PWM;
+        // middle tints sag, so correct for that effect
+        uint16_t base_PWM = brightness;
+        // correction is only necessary when PWM is fast
+        if (level > HALFSPEED_LEVEL) {
+            base_PWM = brightness
+                     + ((brightness>>1) * triangle_wave(mytint) / 255);
+        }
+
+        cool_PWM = (((uint16_t)mytint * (uint16_t)base_PWM) + 127) / 255;
+        warm_PWM = base_PWM - cool_PWM;
 
         PWM1_LVL = warm_PWM;
         PWM2_LVL = cool_PWM;
