@@ -65,7 +65,19 @@ void set_level(uint8_t level) {
         // and a global tint value
         uint8_t brightness = pgm_read_byte(pwm1_levels + level);
         uint8_t warm_PWM, cool_PWM;
-        cool_PWM = (((uint16_t)tint * (uint16_t)brightness) + 127) / 255;
+
+        // auto-tint modes
+        uint8_t mytint;
+        // linear with power level
+        //if (tint == 0) { mytint = brightness; }
+        //else if (tint == 255) { mytint = 255 - brightness; }
+        // perceptual by ramp level
+        if (tint == 0) { mytint = 255 * (uint16_t)level / RAMP_SIZE; }
+        else if (tint == 255) { mytint = 255 - (255 * (uint16_t)level / RAMP_SIZE); }
+        // stretch 1-254 to fit 0-255 range
+        else { mytint = (tint * 100 / 99) - 1; }
+
+        cool_PWM = (((uint16_t)mytint * (uint16_t)brightness) + 127) / 255;
         warm_PWM = brightness - cool_PWM;
 
         PWM1_LVL = warm_PWM;

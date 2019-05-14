@@ -250,6 +250,7 @@ uint8_t number_entry_state(Event event, uint16_t arg);
 volatile uint8_t number_entry_value;
 
 void blink_confirm(uint8_t num);
+void blip();
 #if defined(USE_INDICATOR_LED) && defined(TICK_DURING_STANDBY)
 void indicator_blink(uint8_t arg);
 #endif
@@ -437,10 +438,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         #ifdef MOON_TIMING_HINT
         if (arg == 0) {
             // let the user know they can let go now to stay at moon
-            uint8_t temp = actual_level;
-            set_level(0);
-            delay_4ms(3);
-            set_level(temp);
+            blip();
         } else
         #endif
         // don't start ramping immediately;
@@ -618,8 +616,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #ifdef START_AT_MEMORIZED_LEVEL
         save_config_wl();
         #endif
-        set_level(0);
-        delay_4ms(20/4);
+        blip();
         set_level(memorized_level);
         return MISCHIEF_MANAGED;
     }
@@ -670,8 +667,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
                 || (memorized_level == mode_min)
                 #endif
                 )) {
-            set_level(0);
-            delay_4ms(8/4);
+            blip();
         }
         #endif
         #if defined(BLINK_AT_STEPS)
@@ -685,8 +681,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
                     (memorized_level == nearest)
                     )
         {
-            set_level(0);
-            delay_4ms(8/4);
+            blip();
         }
         #endif
         set_level(memorized_level);
@@ -732,8 +727,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
                 || (memorized_level == mode_min)
                 #endif
                 )) {
-            set_level(0);
-            delay_4ms(8/4);
+            blip();
         }
         #endif
         #if defined(BLINK_AT_STEPS)
@@ -747,8 +741,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
                     (memorized_level == nearest)
                     )
         {
-            set_level(0);
-            delay_4ms(8/4);
+            blip();
         }
         #endif
         set_level(memorized_level);
@@ -819,10 +812,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
     // overheating: drop by an amount proportional to how far we are above the ceiling
     else if (event == EV_temperature_high) {
         #if 0
-        uint8_t foo = actual_level;
-        set_level(0);
-        delay_4ms(2);
-        set_level(foo);
+        blip();
         #endif
         #ifdef THERM_HARD_TURBO_DROP
         if (actual_level > THERM_FASTER_LEVEL) {
@@ -850,10 +840,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
     //               (proportional to how low we are)
     else if (event == EV_temperature_low) {
         #if 0
-        uint8_t foo = actual_level;
-        set_level(0);
-        delay_4ms(2);
-        set_level(foo);
+        blip();
         #endif
         if (actual_level < target_level) {
             //int16_t stepup = actual_level + (arg>>1);
@@ -877,26 +864,32 @@ uint8_t steady_state(Event event, uint16_t arg) {
 uint8_t tint_ramping_state(Event event, uint16_t arg) {
     static int8_t tint_ramp_direction = 1;
     static uint8_t prev_tint = 0;
+    static uint8_t past_edge_counter = 0;
 
     // click, click, hold: change the tint
     if (event == EV_click3_hold) {
-        //if ((arg & 1) == 0) {  // ramp slower
-            if ((tint_ramp_direction > 0) && (tint < 255)) {
-                tint += 1;
-            }
-            else if ((tint_ramp_direction < 0) && (tint > 0)) {
-                tint -= 1;
-            }
-            if ((prev_tint != tint) &&
-                ( (tint == 0) || (tint == 255) )) {
-                uint8_t foo = actual_level;
-                set_level(0);
-                delay_4ms(3);
-                set_level(foo);
-            }
-            prev_tint = tint;
-            set_level(actual_level);
-        //}
+        // reset at beginning of movement
+        if (! arg) { past_edge_counter = 0; }
+        // change normal tints
+        if ((tint_ramp_direction > 0) && (tint < 254)) {
+            tint += 1;
+        }
+        else if ((tint_ramp_direction < 0) && (tint > 1)) {
+            tint -= 1;
+        }
+        // if the user kept pressing long enough, go the final step
+        if (past_edge_counter == 64) {
+            past_edge_counter ++;
+            tint ^= 1;
+            blip();
+        }
+        else if (prev_tint == tint) {
+            if (past_edge_counter == 0) blip();
+            // count up but don't wrap back to zero
+            if (past_edge_counter < 255) past_edge_counter ++;
+        }
+        prev_tint = tint;
+        set_level(actual_level);
         return EVENT_HANDLED;
     }
 
@@ -1960,6 +1953,14 @@ void blink_confirm(uint8_t num) {
         set_level(0);
         delay_4ms(100/4);
     }
+}
+
+// Just go dark for a moment to indicate to user that something happened
+void blip() {
+    uint8_t temp = actual_level;
+    set_level(0);
+    delay_4ms(3);
+    set_level(temp);
 }
 
 

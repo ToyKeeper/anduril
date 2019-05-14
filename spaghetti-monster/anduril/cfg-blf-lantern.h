@@ -69,9 +69,10 @@
 #ifdef BLINK_AT_RAMP_MIDDLE
 #undef BLINK_AT_RAMP_MIDDLE
 #endif
-#ifdef BLINK_AT_RAMP_CEILING
-#undef BLINK_AT_RAMP_CEILING
-#endif
 #ifdef BLINK_AT_RAMP_FLOOR
 #undef BLINK_AT_RAMP_FLOOR
+#endif
+// except the top... blink at the top
+#ifndef BLINK_AT_RAMP_CEILING
+#define BLINK_AT_RAMP_CEILING
 #endif
