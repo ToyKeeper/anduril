@@ -185,6 +185,12 @@ typedef enum {
 #define USE_PSEUDO_RAND
 #endif
 
+#if defined(USE_CANDLE_MODE)
+#ifndef USE_TRIANGLE_WAVE
+#define USE_TRIANGLE_WAVE
+#endif
+#endif
+
 #include "spaghetti-monster.h"
 
 
@@ -1234,12 +1240,6 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
-}
-
-uint8_t triangle_wave(uint8_t phase) {
-    uint8_t result = phase << 1;
-    if (phase > 127) result = 255 - result;
-    return result;
 }
 #endif  // #ifdef USE_CANDLE_MODE
 
