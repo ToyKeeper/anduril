@@ -1005,7 +1005,7 @@ inline void lightning_storm_iter() {
     //rand_time = 1 << (pseudo_rand() % 7);
     rand_time = pseudo_rand() & 63;
     brightness = 1 << (pseudo_rand() % 7);  // 1, 2, 4, 8, 16, 32, 64
-    brightness += 1 << (pseudo_rand() & 0x03);  // 2 to 80 now
+    brightness += 1 << (pseudo_rand() % 5);  // 2 to 80 now
     brightness += pseudo_rand() % brightness;  // 2 to 159 now (w/ low bias)
     if (brightness > MAX_LEVEL) brightness = MAX_LEVEL;
     set_level(brightness);
