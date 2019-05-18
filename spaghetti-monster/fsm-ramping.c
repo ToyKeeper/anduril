@@ -25,9 +25,11 @@
 
 void set_level(uint8_t level) {
     actual_level = level;
+
     #ifdef USE_SET_LEVEL_GRADUALLY
     gradual_target = level;
     #endif
+
     #ifdef USE_INDICATOR_LED
     #ifdef USE_INDICATOR_LED_WHILE_RAMPING
     if (! go_to_standby)
@@ -40,6 +42,7 @@ void set_level(uint8_t level) {
         indicator_led(0);
     #endif
     #endif
+
     //TCCR0A = PHASE;
     if (level == 0) {
         #if PWM_CHANNELS >= 1
@@ -56,6 +59,42 @@ void set_level(uint8_t level) {
         #endif
     } else {
         level --;
+
+        #ifdef USE_TINT_RAMPING
+        // calculate actual PWM levels based on a single-channel ramp
+        // and a global tint value
+        uint8_t brightness = pgm_read_byte(pwm1_levels + level);
+        uint8_t warm_PWM, cool_PWM;
+
+        // auto-tint modes
+        uint8_t mytint;
+        #if 1
+        // perceptual by ramp level
+        if (tint == 0) { mytint = 255 * (uint16_t)level / RAMP_SIZE; }
+        else if (tint == 255) { mytint = 255 - (255 * (uint16_t)level / RAMP_SIZE); }
+        #else
+        // linear with power level
+        //if (tint == 0) { mytint = brightness; }
+        //else if (tint == 255) { mytint = 255 - brightness; }
+        #endif
+        // stretch 1-254 to fit 0-255 range (hits every value except 98 and 198)
+        else { mytint = (tint * 100 / 99) - 1; }
+
+        // middle tints sag, so correct for that effect
+        uint16_t base_PWM = brightness;
+        // correction is only necessary when PWM is fast
+        if (level > HALFSPEED_LEVEL) {
+            base_PWM = brightness
+                     + ((((uint16_t)brightness) * 26 / 64) * triangle_wave(mytint) / 255);
+        }
+
+        cool_PWM = (((uint16_t)mytint * (uint16_t)base_PWM) + 127) / 255;
+        warm_PWM = base_PWM - cool_PWM;
+
+        PWM1_LVL = warm_PWM;
+        PWM2_LVL = cool_PWM;
+        #else
+
         #if PWM_CHANNELS >= 1
         PWM1_LVL = pgm_read_byte(pwm1_levels + level);
         #endif
@@ -68,6 +107,8 @@ void set_level(uint8_t level) {
         #if PWM_CHANNELS >= 4
         PWM4_LVL = pgm_read_byte(pwm4_levels + level);
         #endif
+
+        #endif  // ifdef USE_TINT_RAMPING
     }
     #ifdef USE_DYNAMIC_UNDERCLOCKING
     auto_clock_speed();

@@ -9,8 +9,8 @@
 #define TICK_DURING_STANDBY
 
 // don't blink during ramp, it's irrelevant and annoying on this light
-#undef BLINK_AT_CHANNEL_BOUNDARIES
 #undef BLINK_AT_RAMP_CEILING
+#undef BLINK_AT_RAMP_MIDDLE
 #undef BLINK_AT_RAMP_FLOOR
 
 //#undef USE_SET_LEVEL_GRADUALLY
