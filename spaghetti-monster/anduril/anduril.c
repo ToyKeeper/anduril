@@ -244,6 +244,8 @@ uint8_t beacon_config_state(Event event, uint16_t arg);
 uint8_t lockout_state(Event event, uint16_t arg);
 // momentary / signalling mode
 uint8_t momentary_state(Event event, uint16_t arg);
+uint8_t momentary_mode = 0;  // 0 = ramping, 1 = strobe
+uint8_t momentary_active = 0;  // boolean, true if active *right now*
 #ifdef USE_MUGGLE_MODE
 // muggle mode, super-simple, hard to exit
 uint8_t muggle_state(Event event, uint16_t arg);
@@ -568,6 +570,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
 
     // turn LED on when we first enter the mode
     if ((event == EV_enter_state) || (event == EV_reenter_state)) {
+        momentary_mode = 0;  // 0 = ramping, 1 = strobes
         // if we just got back from config mode, go back to memorized level
         if (event == EV_reenter_state) {
             arg = memorized_level;
@@ -934,6 +937,8 @@ uint8_t strobe_state(Event event, uint16_t arg) {
     // 'st' reduces ROM size by avoiding access to a volatile var
     // (maybe I should just make it nonvolatile?)
     strobe_mode_te st = strobe_type;
+
+    momentary_mode = 1;  // 0 = ramping, 1 = strobes
 
     #ifdef USE_CANDLE_MODE
     // pass all events to candle mode, when it's active
@@ -1542,14 +1547,24 @@ uint8_t lockout_state(Event event, uint16_t arg) {
 uint8_t momentary_state(Event event, uint16_t arg) {
     // TODO: momentary strobe here?  (for light painting)
 
+    // init strobe mode, if relevant
+    if ((event == EV_enter_state) && (momentary_mode == 1)) {
+        strobe_state(event, arg);
+    }
+
     // light up when the button is pressed; go dark otherwise
     // button is being held
     if ((event & (B_CLICK | B_PRESS)) == (B_CLICK | B_PRESS)) {
-        set_level(memorized_level);
+        momentary_active = 1;
+        // 0 = ramping, 1 = strobes
+        if (momentary_mode == 0) {
+            set_level(memorized_level);
+        }
         return MISCHIEF_MANAGED;
     }
     // button was released
     else if ((event & (B_CLICK | B_PRESS)) == (B_CLICK)) {
+        momentary_active = 0;
         set_level(0);
         //go_to_standby = 1;  // sleep while light is off
         return MISCHIEF_MANAGED;
@@ -1560,10 +1575,18 @@ uint8_t momentary_state(Event event, uint16_t arg) {
     //  with exiting via tailcap loosen+tighten unless you leave power
     //  disconnected for several seconds, so we want to be awake when that
     //  happens to speed up the process)
-    else if ((event == EV_tick)  &&  (actual_level == 0)) {
-        if (arg > TICKS_PER_SECOND*15) {  // sleep after 15 seconds
-            go_to_standby = 1;  // sleep while light is off
-            // TODO: lighted button should use lockout config?
+    else if (event == EV_tick) {
+        if (momentary_active) {
+            // 0 = ramping, 1 = strobes
+            if (momentary_mode == 1) {
+                return strobe_state(event, arg);
+            }
+        }
+        else {
+            if (arg > TICKS_PER_SECOND*15) {  // sleep after 15 seconds
+                go_to_standby = 1;  // sleep while light is off
+                // TODO: lighted button should use lockout config?
+            }
         }
         return MISCHIEF_MANAGED;
     }
@@ -2181,7 +2204,8 @@ void loop() {
     if (0) {}
 
     #ifdef USE_STROBE_STATE
-    else if (state == strobe_state) {
+    else if ((state == strobe_state)
+         ||  ((state == momentary_state) && (momentary_mode == 1) && (momentary_active)) ) {  // also handle momentary strobes
         uint8_t st = strobe_type;
 
         switch(st) {
