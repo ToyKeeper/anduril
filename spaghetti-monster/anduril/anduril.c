@@ -240,7 +240,7 @@ uint8_t beacon_config_state(Event event, uint16_t arg);
 // soft lockout
 #define MOON_DURING_LOCKOUT_MODE
 // if enabled, 2nd lockout click goes to the other ramp's floor level
-//#define LOCKOUT_MOON_FANCY
+#define LOCKOUT_MOON_FANCY
 uint8_t lockout_state(Event event, uint16_t arg);
 // momentary / signalling mode
 uint8_t momentary_state(Event event, uint16_t arg);
