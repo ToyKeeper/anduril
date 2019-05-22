@@ -13,7 +13,9 @@
 
 // optional, makes initial turbo step-down faster so first peak isn't as hot
 // the D4 runs very very hot, so be extra careful
-#define THERM_HARD_TURBO_DROP
+#ifdef THERM_HARD_TURBO_DROP
+#undef THERM_HARD_TURBO_DROP
+#endif
 
 // stop panicking at ~30% power or ~1200 lm
 #define THERM_FASTER_LEVEL 105

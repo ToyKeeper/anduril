@@ -1697,12 +1697,13 @@ uint8_t muggle_state(Event event, uint16_t arg) {
     #ifdef USE_THERMAL_REGULATION
     // overheating is handled specially in muggle mode
     else if(event == EV_temperature_high) {
-        // don't even try...
-        // go immediately to the bottom, in case someone put the light on
-        // maximum while wrapped in dark-colored flammable insulation
-        // or something, because muggles are cool like that
-        // memorized_level = MUGGLE_FLOOR;  // override memory?  maybe not
-        set_level(MUGGLE_FLOOR);
+        #if 0
+        blip();
+        #endif
+        // step down proportional to the amount of overheating
+        uint8_t new = actual_level - arg;
+        if (new < MUGGLE_FLOOR) { new = MUGGLE_FLOOR; }
+        set_level(new);
         return MISCHIEF_MANAGED;
     }
     #endif
@@ -1800,14 +1801,15 @@ void thermal_config_save() {
     // calibrate room temperature
     val = config_state_values[0];
     if (val) {
-        int8_t rawtemp = (temperature >> 1) - therm_cal_offset;
+        int8_t rawtemp = temperature - therm_cal_offset;
         therm_cal_offset = val - rawtemp;
+        reset_thermal_history = 1;  // invalidate all recent temperature data
     }
 
     val = config_state_values[1];
     if (val) {
         // set maximum heat limit
-        therm_ceil = 30 + val;
+        therm_ceil = 30 + val - 1;
     }
     if (therm_ceil > MAX_THERM_CEIL) therm_ceil = MAX_THERM_CEIL;
 }
@@ -2243,7 +2245,7 @@ void loop() {
     #ifdef USE_THERMAL_REGULATION
     // TODO: blink out therm_ceil during thermal_config_state?
     else if (state == tempcheck_state) {
-        blink_num(temperature>>1);
+        blink_num(temperature);
         nice_delay_ms(1000);
     }
     #endif
