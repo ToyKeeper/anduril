@@ -46,5 +46,8 @@ uint8_t blink(uint8_t num, uint8_t speed);
 void indicator_led(uint8_t lvl);
 #endif
 
+#ifdef USE_TRIANGLE_WAVE
+uint8_t triangle_wave(uint8_t phase);
+#endif
 
 #endif

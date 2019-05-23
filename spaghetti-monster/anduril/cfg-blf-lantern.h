@@ -44,9 +44,10 @@
 
 // set floor and ceiling as far apart as possible
 // because this lantern isn't overpowered
+#define RAMP_STYLE 1  // 0 = smooth, 1 = stepped
 #define RAMP_SMOOTH_FLOOR 1
 #define RAMP_SMOOTH_CEIL 150
-#define RAMP_DISCRETE_FLOOR 20
+#define RAMP_DISCRETE_FLOOR 10
 #define RAMP_DISCRETE_CEIL RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 5
 
@@ -68,9 +69,10 @@
 #ifdef BLINK_AT_RAMP_MIDDLE
 #undef BLINK_AT_RAMP_MIDDLE
 #endif
-#ifdef BLINK_AT_RAMP_CEILING
-#undef BLINK_AT_RAMP_CEILING
-#endif
 #ifdef BLINK_AT_RAMP_FLOOR
 #undef BLINK_AT_RAMP_FLOOR
+#endif
+// except the top... blink at the top
+#ifndef BLINK_AT_RAMP_CEILING
+#define BLINK_AT_RAMP_CEILING
 #endif

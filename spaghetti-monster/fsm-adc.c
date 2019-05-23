@@ -89,20 +89,16 @@ ISR(ADC_vect) {
 
     // thermal declarations
     #ifdef USE_THERMAL_REGULATION
-    #define NUM_THERMAL_VALUES 8
-    #define NUM_THERMAL_VALUES_HISTORY 16
-    #define NUM_THERMAL_PROJECTED_HISTORY 8
+    #define NUM_THERMAL_VALUES_HISTORY 8
     #define ADC_STEPS 4
-    static int16_t temperature_values[NUM_THERMAL_VALUES];  // last few readings in C
-    static int16_t temperature_history[NUM_THERMAL_VALUES_HISTORY];  // 14.1 fixed-point
-    static int16_t projected_temperature_history[NUM_THERMAL_PROJECTED_HISTORY];  // 14.1 fixed-point
-    static uint8_t projected_temperature_history_counter = 0;
+    static uint8_t history_step = 0;  // don't update history as often
+    static int16_t temperature_history[NUM_THERMAL_VALUES_HISTORY];
     static uint8_t temperature_timer = 0;
     static uint8_t overheat_lowpass = 0;
     static uint8_t underheat_lowpass = 0;
     #define TEMPERATURE_TIMER_START (THERMAL_WARNING_SECONDS*ADC_CYCLES_PER_SECOND)  // N seconds between thermal regulation events
-    #define OVERHEAT_LOWPASS_STRENGTH ADC_CYCLES_PER_SECOND  // lowpass for one second
-    #define UNDERHEAT_LOWPASS_STRENGTH ADC_CYCLES_PER_SECOND  // lowpass for one second
+    #define OVERHEAT_LOWPASS_STRENGTH (ADC_CYCLES_PER_SECOND*2)  // lowpass for 2 seconds
+    #define UNDERHEAT_LOWPASS_STRENGTH (ADC_CYCLES_PER_SECOND*2)  // lowpass for 2 seconds
     #else
     #define ADC_STEPS 2
     #endif
@@ -190,33 +186,17 @@ ISR(ADC_vect) {
         // prime on first execution
         if (reset_thermal_history) {
             reset_thermal_history = 0;
-            for(uint8_t i=0; i<NUM_THERMAL_VALUES; i++)
-                temperature_values[i] = temp;
+            temperature = temp;
             for(uint8_t i=0; i<NUM_THERMAL_VALUES_HISTORY; i++)
-                temperature_history[i] = temp<<1;
-            for(uint8_t i=0; i<NUM_THERMAL_PROJECTED_HISTORY; i++)
-                projected_temperature_history[i] = temp<<1;
-            temperature = temp<<1;
+                temperature_history[i] = temp;
         } else {  // update our current temperature estimate
-            uint8_t i;
-            int16_t total=0;
-
-            // rotate array
-            // FIXME: just move the index, don't move the values?
-            for(i=0; i<NUM_THERMAL_VALUES-1; i++) {
-                temperature_values[i] = temperature_values[i+1];
-                total += temperature_values[i];
+            // crude lowpass filter
+            // (limit rate of change to 1 degree per measurement)
+            if (temp > temperature) {
+                temperature ++;
+            } else if (temp < temperature) {
+                temperature --;
             }
-            temperature_values[i] = temp;
-            total += temp;
-
-            // Divide back to original range:
-            //temperature = total >> 2;
-            // More precise method: use noise as extra precision
-            // (values are now basically fixed-point, signed 13.2)
-            //temperature = total;
-            // 14.1 is less prone to overflows
-            temperature = total >> 2;
         }
 
         // guess what the temperature will be in a few seconds
@@ -230,18 +210,20 @@ ISR(ADC_vect) {
             // how far ahead should we predict?
             #define THERM_PREDICTION_STRENGTH 4
             // how proportional should the adjustments be?
-            #define THERM_DIFF_ATTENUATION 3
             // acceptable temperature window size in C
-            #define THERM_WINDOW_SIZE 10
+            #define THERM_WINDOW_SIZE 5
             // highest temperature allowed
-            // (convert configured value to 14.1 fixed-point)
-            #define THERM_CEIL (((int16_t)therm_ceil)<<1)
-            // bottom of target temperature window (14.1 fixed-point)
-            #define THERM_FLOOR (THERM_CEIL - (THERM_WINDOW_SIZE<<1))
+            #define THERM_CEIL ((int16_t)therm_ceil)
+            // bottom of target temperature window
+            #define THERM_FLOOR (THERM_CEIL - THERM_WINDOW_SIZE)
 
-            // rotate measurements and add a new one
-            for (i=0; i<NUM_THERMAL_VALUES_HISTORY-1; i++) {
-                temperature_history[i] = temperature_history[i+1];
+            // if it's time to rotate the thermal history, do it
+            history_step ++;
+            if (0 == (history_step & 7)) {
+                // rotate measurements and add a new one
+                for (i=0; i<NUM_THERMAL_VALUES_HISTORY-1; i++) {
+                    temperature_history[i] = temperature_history[i+1];
+                }
             }
             temperature_history[NUM_THERMAL_VALUES_HISTORY-1] = t;
 
@@ -249,24 +231,15 @@ ISR(ADC_vect) {
             // diff = rate of temperature change
             //diff = temperature_history[NUM_THERMAL_VALUES_HISTORY-1] - temperature_history[0];
             diff = t - temperature_history[0];
+            // slight bias toward zero; ignore very small changes (noise)
+            for (uint8_t z=0; z<3; z++) {
+                if (diff < 0) diff ++;
+                if (diff > 0) diff --;
+            }
             // projected_temperature = current temp extended forward by amplified rate of change
             //projected_temperature = temperature_history[NUM_THERMAL_VALUES_HISTORY-1] + (diff<<THERM_PREDICTION_STRENGTH);
             pt = projected_temperature = t + (diff<<THERM_PREDICTION_STRENGTH);
-
-            // store prediction for later averaging
-            projected_temperature_history[projected_temperature_history_counter] = pt;
-            projected_temperature_history_counter = (projected_temperature_history_counter + 1) & (NUM_THERMAL_PROJECTED_HISTORY-1);
         }
-
-        // average prediction to reduce noise
-        int16_t avg_projected_temperature = 0;
-        uint8_t i;
-        for (i = 0;
-             (i < NUM_THERMAL_PROJECTED_HISTORY) && (avg_projected_temperature < 16000);
-             i++)
-            avg_projected_temperature += projected_temperature_history[i];
-        avg_projected_temperature /= NUM_THERMAL_PROJECTED_HISTORY;
-        //avg_projected_temperature /= i;
 
         // cancel counters if appropriate
         if (pt > THERM_FLOOR) {
@@ -280,7 +253,7 @@ ISR(ADC_vect) {
         } else {  // it has been long enough since the last warning
 
             // Too hot?
-            if (avg_projected_temperature > THERM_CEIL) {
+            if (pt > THERM_CEIL) {
                 if (overheat_lowpass < OVERHEAT_LOWPASS_STRENGTH) {
                     overheat_lowpass ++;
                 } else {
@@ -288,16 +261,14 @@ ISR(ADC_vect) {
                     overheat_lowpass = 0;
                     temperature_timer = TEMPERATURE_TIMER_START;
                     // how far above the ceiling?
-                    int16_t howmuch = (avg_projected_temperature - THERM_CEIL) >> THERM_DIFF_ATTENUATION;
-                    if (howmuch > 0) {
-                        // try to send out a warning
-                        emit(EV_temperature_high, howmuch);
-                    }
+                    int16_t howmuch = pt - THERM_CEIL;
+                    // try to send out a warning
+                    emit(EV_temperature_high, howmuch);
                 }
             }
 
             // Too cold?
-            else if (avg_projected_temperature < THERM_FLOOR) {
+            else if (pt < THERM_FLOOR) {
                 if (underheat_lowpass < UNDERHEAT_LOWPASS_STRENGTH) {
                     underheat_lowpass ++;
                 } else {
@@ -305,13 +276,11 @@ ISR(ADC_vect) {
                     underheat_lowpass = 0;
                     temperature_timer = TEMPERATURE_TIMER_START;
                     // how far below the floor?
-                    int16_t howmuch = (THERM_FLOOR - avg_projected_temperature) >> THERM_DIFF_ATTENUATION;
-                    if (howmuch > 0) {
-                        // try to send out a warning (unless voltage is low)
-                        // (LVP and underheat warnings fight each other)
-                        if (voltage > VOLTAGE_LOW)
-                            emit(EV_temperature_low, howmuch);
-                    }
+                    int16_t howmuch = THERM_FLOOR - pt;
+                    // try to send out a warning (unless voltage is low)
+                    // (LVP and underheat warnings fight each other)
+                    if (voltage > VOLTAGE_LOW)
+                        emit(EV_temperature_low, howmuch);
                 }
             }
         }
