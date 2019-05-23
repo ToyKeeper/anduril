@@ -223,11 +223,23 @@ Momentary Mode
 
 Click 5 times from Off to enter Momentary mode.  This locks the 
 flashlight into a single-mode interface where the LEDs are only on when 
-the button is held down.  It is intended for Morse code and other 
-signalling tasks.
+the button is held down.  It is intended for Morse code, light painting, 
+and other tasks where the light should be on only for a short time and 
+probably in a pattern.
 
-Brightness is the last-ramped level, so adjust that before entering 
-momentary mode.
+Momentary mode does either a steady brightness level or a strobe.  To 
+select which one, go to the mode you want to use, adjust the brightness 
+and speed and other settings, then turn the light off.  Then click 5 
+times to enter momentary mode.
+
+Supported momentary modes are steady (normal ramping mode) and strobes 
+(everything in the "strobe" mode group).
+
+In steady mode, brightness is the last-ramped level, so adjust that 
+before entering momentary mode.
+
+In momentary strobe mode, the settings are copied from the last-used 
+strobe mode, such as party strobe, tactical strobe, or lightning.
 
 To exit this mode, physically disconnect power by unscrewing the tailcap 
 or battery tube.

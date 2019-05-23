@@ -28,6 +28,7 @@ volatile uint8_t actual_level = 0;
 
 #ifdef USE_TINT_RAMPING
 uint8_t tint = 128;
+#define USE_TRIANGLE_WAVE
 #endif
 
 #ifdef USE_SET_LEVEL_GRADUALLY
