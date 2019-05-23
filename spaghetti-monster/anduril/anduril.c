@@ -934,6 +934,8 @@ uint8_t tint_ramping_state(Event event, uint16_t arg) {
 
 #ifdef USE_STROBE_STATE
 uint8_t strobe_state(Event event, uint16_t arg) {
+    static int8_t ramp_direction = 1;
+
     // 'st' reduces ROM size by avoiding access to a volatile var
     // (maybe I should just make it nonvolatile?)
     strobe_mode_te st = strobe_type;
@@ -949,11 +951,11 @@ uint8_t strobe_state(Event event, uint16_t arg) {
     #endif
 
     if (0) {}  // placeholder
-    /* not used any more
+    // init anything which needs to be initialized
     else if (event == EV_enter_state) {
+        ramp_direction = 1;
         return MISCHIEF_MANAGED;
     }
-    */
     // 1 click: off
     else if (event == EV_1click) {
         set_state(off_state, 0);
@@ -978,7 +980,11 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         else if (st == party_strobe_e) {
         #endif
             if ((arg & 1) == 0) {
-                if (strobe_delays[st] > 8) strobe_delays[st] --;
+                uint8_t d = strobe_delays[st];
+                d -= ramp_direction;
+                if (d < 8) d = 8;
+                else if (d > 254) d = 254;
+                strobe_delays[st] = d;
             }
         }
         #endif
@@ -989,17 +995,27 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         // biking mode brighter
         #ifdef USE_BIKE_FLASHER_MODE
         else if (st == bike_flasher_e) {
-            if (bike_flasher_brightness < MAX_BIKING_LEVEL)
-                bike_flasher_brightness ++;
+            bike_flasher_brightness += ramp_direction;
+            if (bike_flasher_brightness < 2) bike_flasher_brightness = 2;
+            else if (bike_flasher_brightness > MAX_BIKING_LEVEL) bike_flasher_brightness = MAX_BIKING_LEVEL;
             set_level(bike_flasher_brightness);
         }
         #endif
 
         return MISCHIEF_MANAGED;
     }
+    // reverse ramp direction on hold release
+    // ... and save new strobe settings
+    else if (event == EV_click1_hold_release) {
+        ramp_direction = -ramp_direction;
+        save_config();
+        return MISCHIEF_MANAGED;
+    }
     // click, hold: change speed (go slower)
     //       or change brightness (dimmer)
     else if (event == EV_click2_hold) {
+        ramp_direction = 1;
+
         if (0) {}  // placeholder
 
         // party / tactical strobe slower
@@ -1030,14 +1046,16 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     // release hold: save new strobe settings
-    else if ((event == EV_click1_hold_release)
-          || (event == EV_click2_hold_release)) {
+    else if (event == EV_click2_hold_release) {
         save_config();
         return MISCHIEF_MANAGED;
     }
     #if defined(USE_LIGHTNING_MODE) || defined(USE_CANDLE_MODE)
     // clock tick: bump the random seed
     else if (event == EV_tick) {
+        // un-reverse after 1 second
+        if (arg == TICKS_PER_SECOND) ramp_direction = 1;
+
         pseudo_rand_seed += arg;
         return MISCHIEF_MANAGED;
     }
@@ -1134,6 +1152,7 @@ inline void bike_flasher_iter() {
 
 #ifdef USE_CANDLE_MODE
 uint8_t candle_mode_state(Event event, uint16_t arg) {
+    static int8_t ramp_direction = 1;
     #define MAX_CANDLE_LEVEL (RAMP_LENGTH-CANDLE_AMPLITUDE-15)
     static uint8_t candle_wave1 = 0;
     static uint8_t candle_wave2 = 0;
@@ -1153,6 +1172,7 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
 
     if (event == EV_enter_state) {
         candle_mode_timer = 0;  // in case any time was left over from earlier
+        ramp_direction = 1;
         return MISCHIEF_MANAGED;
     }
     // 2 clicks: cancel timer
@@ -1164,12 +1184,25 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
     }
     // hold: change brightness (brighter)
     else if (event == EV_click1_hold) {
-        if (candle_mode_brightness < MAX_CANDLE_LEVEL)
-            candle_mode_brightness ++;
+        // ramp away from extremes
+        if (! arg) {
+            if (candle_mode_brightness >= MAX_CANDLE_LEVEL) { ramp_direction = -1; }
+            else if (candle_mode_brightness <= 1) { ramp_direction = 1; }
+        }
+        // change brightness, but not too far
+        candle_mode_brightness += ramp_direction;
+        if (candle_mode_brightness < 1) candle_mode_brightness = 1;
+        else if (candle_mode_brightness > MAX_CANDLE_LEVEL) candle_mode_brightness = MAX_CANDLE_LEVEL;
+        return MISCHIEF_MANAGED;
+    }
+    // reverse ramp direction on hold release
+    else if (event == EV_click1_hold_release) {
+        ramp_direction = -ramp_direction;
         return MISCHIEF_MANAGED;
     }
     // click, hold: change brightness (dimmer)
     else if (event == EV_click2_hold) {
+        ramp_direction = 1;
         if (candle_mode_brightness > 1)
             candle_mode_brightness --;
         return MISCHIEF_MANAGED;
@@ -1187,6 +1220,9 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
     }
     // clock tick: animate candle brightness
     else if (event == EV_tick) {
+        // un-reverse after 1 second
+        if (arg == TICKS_PER_SECOND) ramp_direction = 1;
+
         // self-timer dims the light during the final minute
         uint8_t subtract = 0;
         if (candle_mode_timer == 1) {
