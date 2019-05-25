@@ -77,6 +77,9 @@
 // dual-switch support (second switch is a tail clicky)
 //#define START_AT_MEMORIZED_LEVEL
 
+// add a "manual memory" function (as opposed to the default automatic memory)
+//#define USE_MANUAL_MEMORY
+
 /***** specific settings for known driver types *****/
 #include "tk.h"
 #include incfile(CONFIGFILE)
@@ -144,6 +147,9 @@ typedef enum {
     ramp_discrete_floor_e,
     ramp_discrete_ceil_e,
     ramp_discrete_steps_e,
+    #endif
+    #ifdef USE_MANUAL_MEMORY
+    manual_memory_e,
     #endif
     #ifdef USE_TINT_RAMPING
     tint_e,
@@ -316,6 +322,9 @@ void save_config_wl();
 #define DEFAULT_LEVEL MAX_1x7135
 #endif
 uint8_t memorized_level = DEFAULT_LEVEL;
+#ifdef USE_MANUAL_MEMORY
+uint8_t manual_memory = 0;
+#endif
 // smooth vs discrete ramping
 volatile uint8_t ramp_style = RAMP_STYLE;  // 0 = smooth, 1 = discrete
 volatile uint8_t ramp_smooth_floor = RAMP_SMOOTH_FLOOR;
@@ -464,11 +473,21 @@ uint8_t off_state(Event event, uint16_t arg) {
     }
     // 1 click (before timeout): go to memorized level, but allow abort for double click
     else if (event == EV_click1_release) {
+        #ifdef USE_MANUAL_MEMORY
+        if (manual_memory)
+            set_level(nearest_level(manual_memory));
+        else
+        #endif
         set_level(nearest_level(memorized_level));
         return MISCHIEF_MANAGED;
     }
     // 1 click: regular mode
     else if (event == EV_1click) {
+        #ifdef USE_MANUAL_MEMORY
+        if (manual_memory)
+            set_state(steady_state, manual_memory);
+        else
+        #endif
         set_state(steady_state, memorized_level);
         return MISCHIEF_MANAGED;
     }
@@ -761,6 +780,20 @@ uint8_t steady_state(Event event, uint16_t arg) {
     else if (event == EV_click2_hold_release) {
         save_config_wl();
         return MISCHIEF_MANAGED;
+    }
+    #endif
+    #ifdef USE_MANUAL_MEMORY
+    else if (event == EV_5clicks) {
+        manual_memory = actual_level;
+        save_config();
+        blip();
+    }
+    else if (event == EV_click5_hold) {
+        if (0 == arg) {
+            manual_memory = 0;
+            save_config();
+            blip();
+        }
     }
     #endif
     #if defined(USE_SET_LEVEL_GRADUALLY) || defined(USE_REVERSING)
@@ -2074,6 +2107,9 @@ void load_config() {
         ramp_discrete_ceil = eeprom[ramp_discrete_ceil_e];
         ramp_discrete_steps = eeprom[ramp_discrete_steps_e];
         #endif
+        #ifdef USE_MANUAL_MEMORY
+        manual_memory = eeprom[manual_memory_e];
+        #endif
         #ifdef USE_TINT_RAMPING
         tint = eeprom[tint_e];
         #endif
@@ -2114,6 +2150,9 @@ void save_config() {
     eeprom[ramp_discrete_floor_e] = ramp_discrete_floor;
     eeprom[ramp_discrete_ceil_e] = ramp_discrete_ceil;
     eeprom[ramp_discrete_steps_e] = ramp_discrete_steps;
+    #endif
+    #ifdef USE_MANUAL_MEMORY
+    eeprom[manual_memory_e] = manual_memory;
     #endif
     #ifdef USE_TINT_RAMPING
     eeprom[tint_e] = tint;
