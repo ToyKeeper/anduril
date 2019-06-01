@@ -2,6 +2,6 @@ all:
 	./build-all.sh
 
 clean:
-	rm -f *.hex cfg-*.h *~ *.elf *.o
+	rm -f *.hex cfg-ff-[pr]*.h *~ *.elf *.o
 
 .phony: clean

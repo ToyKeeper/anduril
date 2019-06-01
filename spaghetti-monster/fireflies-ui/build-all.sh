@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cp -av ../anduril/cfg-ff*.h .
+cp -av --no-clobber ../anduril/cfg-ff*.h .
 
 UI=fireflies-ui
 
