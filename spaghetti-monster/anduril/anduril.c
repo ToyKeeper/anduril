@@ -42,6 +42,13 @@
 // ("hold, release, hold" ramps down instead of up)
 #define USE_REVERSING
 
+// add a runtime option to switch between automatic memory (default)
+// and manual memory (only available if compiled in)
+// (manual memory makes 1-click-from-off start at the same level each time)
+// (the level can be set explicitly with 5 clicks from on,
+// or the user can go back to automatic with click-click-click-click-hold)
+#define USE_MANUAL_MEMORY
+
 // battery readout style (pick one)
 #define BATTCHECK_VpT
 //#define BATTCHECK_8bars  // FIXME: breaks build
@@ -76,9 +83,6 @@
 
 // dual-switch support (second switch is a tail clicky)
 //#define START_AT_MEMORIZED_LEVEL
-
-// add a "manual memory" function (as opposed to the default automatic memory)
-//#define USE_MANUAL_MEMORY
 
 /***** specific settings for known driver types *****/
 #include "tk.h"
