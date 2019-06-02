@@ -31,7 +31,7 @@
 // short blip when crossing from "click" to "hold" from off
 // (helps the user hit moon mode exactly, instead of holding too long
 //  or too short)
-#define MOON_TIMING_HINT
+#define MOON_TIMING_HINT  // only applies if B_TIMING_ON == B_PRESS_T
 // short blips while ramping
 #define BLINK_AT_RAMP_MIDDLE
 //#define BLINK_AT_RAMP_FLOOR
@@ -202,6 +202,24 @@ typedef enum {
 #endif
 
 #include "spaghetti-monster.h"
+
+
+// configure the timing of turning on/off in regular ramp mode
+// press: react as soon as the button is pressed
+#define B_PRESS_T 0
+// release: react as soon as the button is released
+#define B_RELEASE_T 1
+// timeout: react as soon as we're sure the user isn't doing a double-click
+#define B_TIMEOUT_T 2
+// defaults are release on, timeout off
+#ifndef B_TIMING_ON
+//#define B_TIMING_ON B_PRESS_T
+#define B_TIMING_ON B_RELEASE_T
+#endif
+#ifndef B_TIMING_OFF
+//#define B_TIMING_OFF B_RELEASE_T
+#define B_TIMING_OFF B_TIMEOUT_T
+#endif
 
 
 // FSM states
@@ -449,18 +467,24 @@ uint8_t off_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif
+    #if (B_TIMING_ON == B_PRESS_T)
     // hold (initially): go to lowest level (floor), but allow abort for regular click
     else if (event == EV_click1_press) {
         set_level(nearest_level(1));
         return MISCHIEF_MANAGED;
     }
+    #endif  // B_TIMING_ON == B_PRESS_T
     // hold: go to lowest level
     else if (event == EV_click1_hold) {
+        #if (B_TIMING_ON == B_PRESS_T)
         #ifdef MOON_TIMING_HINT
         if (arg == 0) {
             // let the user know they can let go now to stay at moon
             blip();
         } else
+        #endif
+        #else  // B_RELEASE_T or B_TIMEOUT_T
+        set_level(nearest_level(1));
         #endif
         // don't start ramping immediately;
         // give the user time to release at moon level
@@ -475,6 +499,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         set_state(steady_state, 1);
         return MISCHIEF_MANAGED;
     }
+    #if (B_TIMING_ON != B_TIMEOUT_T)
     // 1 click (before timeout): go to memorized level, but allow abort for double click
     else if (event == EV_click1_release) {
         #ifdef USE_MANUAL_MEMORY
@@ -485,6 +510,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         set_level(nearest_level(memorized_level));
         return MISCHIEF_MANAGED;
     }
+    #endif  // if (B_TIMING_ON != B_TIMEOUT_T)
     // 1 click: regular mode
     else if (event == EV_1click) {
         #ifdef USE_MANUAL_MEMORY
@@ -585,6 +611,11 @@ uint8_t steady_state(Event event, uint16_t arg) {
     #ifdef USE_REVERSING
     static int8_t ramp_direction = 1;
     #endif
+    #if (B_TIMING_OFF == B_RELEASE_T)
+    // if the user double clicks, we need to abort turning off,
+    // and this stores the level to return to
+    static uint8_t level_before_off = 0;
+    #endif
     if (ramp_style) {
         mode_min = ramp_discrete_floor;
         mode_max = ramp_discrete_ceil;
@@ -612,6 +643,25 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #endif
         return MISCHIEF_MANAGED;
     }
+    #if (B_TIMING_OFF == B_RELEASE_T)
+    // 1 click (early): off, if configured for early response
+    else if (event == EV_click1_release) {
+        level_before_off = actual_level;
+        #ifdef USE_THERMAL_REGULATION
+        target_level = 0;
+        #endif
+        set_level(0);
+        return MISCHIEF_MANAGED;
+    }
+    // 2 clicks (early): abort turning off, if configured for early response
+    else if (event == EV_click2_press) {
+        #ifdef USE_THERMAL_REGULATION
+        target_level = level_before_off;
+        #endif
+        set_level(level_before_off);
+        return MISCHIEF_MANAGED;
+    }
+    #endif  // if (B_TIMING_OFF == B_RELEASE_T)
     // 1 click: off
     else if (event == EV_1click) {
         set_state(off_state, 0);
@@ -831,26 +881,29 @@ uint8_t steady_state(Event event, uint16_t arg) {
         else {
             diff = actual_level - gradual_target;
         }
-        uint8_t magnitude = 0;
-        #ifndef THERM_HARD_TURBO_DROP
-        // if we're on a really high mode, drop faster
-        if (actual_level >= THERM_FASTER_LEVEL) { magnitude ++; }
-        #endif
-        while (diff) {
-            magnitude ++;
-            diff >>= 1;
+        // if there's any adjustment to be made, make it
+        if (diff) {
+            uint8_t magnitude = 0;
+            #ifndef THERM_HARD_TURBO_DROP
+            // if we're on a really high mode, drop faster
+            if (actual_level >= THERM_FASTER_LEVEL) { magnitude ++; }
+            #endif
+            while (diff) {
+                magnitude ++;
+                diff >>= 1;
+            }
+            uint8_t ticks_per_adjust = intervals[magnitude];
+            if (ticks_since_adjust > ticks_per_adjust)
+            {
+                gradual_tick();
+                ticks_since_adjust = 0;
+            }
+            //if (!(arg % ticks_per_adjust)) gradual_tick();
         }
-        uint8_t ticks_per_adjust = intervals[magnitude];
-        if (ticks_since_adjust > ticks_per_adjust)
-        {
-            gradual_tick();
-            ticks_since_adjust = 0;
-        }
-        //if (!(arg % ticks_per_adjust)) gradual_tick();
         #ifdef THERM_HARD_TURBO_DROP
         }
         #endif
-        #endif
+        #endif  // ifdef USE_SET_LEVEL_GRADUALLY
         return MISCHIEF_MANAGED;
     }
     #endif
@@ -901,7 +954,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         }
         return MISCHIEF_MANAGED;
     }
-    #endif
+    #endif  // ifdef USE_THERMAL_REGULATION
     return EVENT_NOT_HANDLED;
 }
 
