@@ -1,20 +1,20 @@
-// Fireflies EDC thrower config options for Fireflies UI
+// Fireflies E07-2 config options for Anduril / FFUI
+// mostly the same as PL47
 #include "cfg-ff-pl47.h"
 
-// disable indicator LED
-#undef USE_INDICATOR_LED
-
-// ceiling is level 130/150  (50% power)
+// ceiling is level 130/150 (50% power)
 #undef RAMP_SMOOTH_CEIL
 #define RAMP_SMOOTH_CEIL 130
 
-// 36, 83, 130 (83 is highest regulated)
+// 20, 56, 93, 130 (83 is highest regulated)
+// (requested config is 1%, 5%, 25%, 50%, double-click-turbo)
+// (but this doesn't allow us to hit level 83)
 #undef RAMP_DISCRETE_FLOOR
-#define RAMP_DISCRETE_FLOOR 36
+#define RAMP_DISCRETE_FLOOR 20
 #undef RAMP_DISCRETE_CEIL
 #define RAMP_DISCRETE_CEIL RAMP_SMOOTH_CEIL
 #undef RAMP_DISCRETE_STEPS
-#define RAMP_DISCRETE_STEPS 3
+#define RAMP_DISCRETE_STEPS 4
 
 // regulate down faster when the FET is active, slower otherwise
 #undef THERM_FASTER_LEVEL
