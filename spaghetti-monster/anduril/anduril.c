@@ -380,6 +380,9 @@ uint8_t nearest_level(int16_t target);
 #ifdef USE_THERMAL_REGULATION
 // brightness before thermal step-down
 uint8_t target_level = 0;
+void set_level_and_therm_target(uint8_t level);
+#else
+#define set_level_and_therm_target(level) set_level(level)
 #endif
 
 // internal numbering for strobe modes
@@ -634,10 +637,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
             memorized_level = arg;
         // use the requested level even if not memorized
         arg = nearest_level(arg);
-        #ifdef USE_THERMAL_REGULATION
-        target_level = arg;
-        #endif
-        set_level(arg);
+        set_level_and_therm_target(arg);
         #ifdef USE_REVERSING
         ramp_direction = 1;
         #endif
@@ -647,18 +647,12 @@ uint8_t steady_state(Event event, uint16_t arg) {
     // 1 click (early): off, if configured for early response
     else if (event == EV_click1_release) {
         level_before_off = actual_level;
-        #ifdef USE_THERMAL_REGULATION
-        target_level = 0;
-        #endif
-        set_level(0);
+        set_level_and_therm_target(0);
         return MISCHIEF_MANAGED;
     }
     // 2 clicks (early): abort turning off, if configured for early response
     else if (event == EV_click2_press) {
-        #ifdef USE_THERMAL_REGULATION
-        target_level = level_before_off;
-        #endif
-        set_level(level_before_off);
+        set_level_and_therm_target(level_before_off);
         return MISCHIEF_MANAGED;
     }
     #endif  // if (B_TIMING_OFF == B_RELEASE_T)
@@ -670,36 +664,24 @@ uint8_t steady_state(Event event, uint16_t arg) {
     // 2 clicks: go to/from highest level
     else if (event == EV_2clicks) {
         if (actual_level < MAX_LEVEL) {
-            #ifdef USE_THERMAL_REGULATION
-            target_level = MAX_LEVEL;
-            #endif
             // true turbo, not the mode-specific ceiling
-            set_level(MAX_LEVEL);
+            set_level_and_therm_target(MAX_LEVEL);
         }
         else {
-            #ifdef USE_THERMAL_REGULATION
-            target_level = memorized_level;
-            #endif
-            set_level(memorized_level);
+            set_level_and_therm_target(memorized_level);
         }
         return MISCHIEF_MANAGED;
     }
     // 3 clicks: toggle smooth vs discrete ramping
     else if (event == EV_3clicks) {
         ramp_style = !ramp_style;
-        memorized_level = nearest_level(actual_level);
-        #ifdef USE_THERMAL_REGULATION
-        target_level = memorized_level;
-        #ifdef USE_SET_LEVEL_GRADUALLY
-        //set_level_gradually(lvl);
-        #endif
-        #endif
         save_config();
         #ifdef START_AT_MEMORIZED_LEVEL
         save_config_wl();
         #endif
         blip();
-        set_level(memorized_level);
+        memorized_level = nearest_level(actual_level);
+        set_level_and_therm_target(memorized_level);
         return MISCHIEF_MANAGED;
     }
     #ifdef USE_RAMP_CONFIG
@@ -728,9 +710,6 @@ uint8_t steady_state(Event event, uint16_t arg) {
                           + (ramp_step_size * ramp_direction));
         #else
         memorized_level = nearest_level((int16_t)actual_level + ramp_step_size);
-        #endif
-        #ifdef USE_THERMAL_REGULATION
-        target_level = memorized_level;
         #endif
         #if defined(BLINK_AT_RAMP_CEILING) || defined(BLINK_AT_RAMP_MIDDLE)
         // only blink once for each threshold
@@ -766,7 +745,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
             blip();
         }
         #endif
-        set_level(memorized_level);
+        set_level_and_therm_target(memorized_level);
         return MISCHIEF_MANAGED;
     }
     #if defined(USE_REVERSING) || defined(START_AT_MEMORIZED_LEVEL)
@@ -792,9 +771,6 @@ uint8_t steady_state(Event event, uint16_t arg) {
         }
         // TODO? make it ramp up instead, if already at min?
         memorized_level = nearest_level((int16_t)actual_level - ramp_step_size);
-        #ifdef USE_THERMAL_REGULATION
-        target_level = memorized_level;
-        #endif
         #if defined(BLINK_AT_RAMP_FLOOR) || defined(BLINK_AT_RAMP_MIDDLE)
         // only blink once for each threshold
         if ((memorized_level != actual_level) && (
@@ -826,7 +802,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
             blip();
         }
         #endif
-        set_level(memorized_level);
+        set_level_and_therm_target(memorized_level);
         return MISCHIEF_MANAGED;
     }
     #ifdef START_AT_MEMORIZED_LEVEL
@@ -917,10 +893,10 @@ uint8_t steady_state(Event event, uint16_t arg) {
         if (actual_level > THERM_FASTER_LEVEL) {
             #ifdef USE_SET_LEVEL_GRADUALLY
             set_level_gradually(THERM_FASTER_LEVEL);
-            #else
-            set_level(THERM_FASTER_LEVEL);
-            #endif
             target_level = THERM_FASTER_LEVEL;
+            #else
+            set_level_and_therm_target(THERM_FASTER_LEVEL);
+            #endif
         } else
         #endif
         if (actual_level > MIN_THERM_STEPDOWN) {
@@ -2111,6 +2087,12 @@ uint8_t nearest_level(int16_t target) {
     return this_level;
 }
 
+#ifdef USE_THERMAL_REGULATION
+void set_level_and_therm_target(uint8_t level) {
+    target_level = level;
+    set_level(level);
+}
+#endif
 
 void blink_confirm(uint8_t num) {
     for (; num>0; num--) {
@@ -2266,14 +2248,7 @@ void low_voltage() {
     else if (state == steady_state) {
         if (actual_level > 1) {
             uint8_t lvl = (actual_level >> 1) + (actual_level >> 2);
-            set_level(lvl);
-            #ifdef USE_THERMAL_REGULATION
-            target_level = lvl;
-            #ifdef USE_SET_LEVEL_GRADUALLY
-            // not needed?
-            //set_level_gradually(lvl);
-            #endif
-            #endif
+            set_level_and_therm_target(lvl);
         }
         else {
             set_state(off_state, 0);
