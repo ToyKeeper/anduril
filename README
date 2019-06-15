@@ -70,6 +70,12 @@ To set up an attiny dev environment on Ubuntu (13.10):
   Optional:  (make avrdude usable by non-root users, is a security risk)
   sudo chmod u+s $(which avrdude)
 
+To set up an attiny dev environment on Fedora (30):
+
+  sudo dnf install flex byacc bison gcc libusb libusb-devel glibc-devel
+  sudo dnf install avr-gcc avr-libc avr-binutils
+  sudo dnf install avrdude
+
 Building/installing attiny dev tools on other UNIX systems (in general):
 
   http://www.ladyada.net/learn/avr/setup-unix.html
