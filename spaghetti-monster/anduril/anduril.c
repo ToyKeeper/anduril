@@ -28,6 +28,14 @@
 #define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 45  // try not to get hotter than this
 
+#define USE_FACTORY_RESET
+//#define USE_SOFT_FACTORY_RESET  // only needed on models which can't use hold-button-at-boot
+
+// dual-switch support (second switch is a tail clicky)
+// (currently incompatible with factory reset)
+//#define START_AT_MEMORIZED_LEVEL
+
+
 // short blip when crossing from "click" to "hold" from off
 // (helps the user hit moon mode exactly, instead of holding too long
 //  or too short)
@@ -80,9 +88,6 @@
 //  so don't enable them at the same time as any of the above strobes)
 //#define USE_POLICE_STROBE_MODE
 //#define USE_SOS_MODE
-
-// dual-switch support (second switch is a tail clicky)
-//#define START_AT_MEMORIZED_LEVEL
 
 /***** specific settings for known driver types *****/
 #include "tk.h"
@@ -201,6 +206,10 @@ typedef enum {
 #endif
 #endif
 
+#ifdef USE_SOFT_FACTORY_RESET
+#define USE_REBOOT
+#endif
+
 #include "spaghetti-monster.h"
 
 
@@ -289,6 +298,10 @@ void blink_confirm(uint8_t num);
 void blip();
 #if defined(USE_INDICATOR_LED) && defined(TICK_DURING_STANDBY)
 void indicator_blink(uint8_t arg);
+#endif
+
+#ifdef USE_FACTORY_RESET
+void factory_reset();
 #endif
 
 // remember stuff even after battery was changed
@@ -600,6 +613,13 @@ uint8_t off_state(Event event, uint16_t arg) {
     // 10 clicks: thermal config mode
     else if (event == EV_10clicks) {
         push_state(thermal_config_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    #endif
+    #if defined(USE_FACTORY_RESET) && defined(USE_SOFT_FACTORY_RESET)
+    // 13 clicks and hold the last click: invoke factory reset (reboot)
+    else if (event == EV_click13_hold) {
+        reboot();
         return MISCHIEF_MANAGED;
     }
     #endif
@@ -2136,6 +2156,55 @@ void indicator_blink(uint8_t arg) {
 #endif
 
 
+#ifdef USE_FACTORY_RESET
+void factory_reset() {
+    // display a warning for a few seconds before doing the actual reset,
+    // so the user has time to abort if they want
+    #define SPLODEY_TIME 3000
+    #define SPLODEY_STEPS 64
+    #define SPLODEY_TIME_PER_STEP (SPLODEY_TIME/SPLODEY_STEPS)
+    uint8_t bright;
+    uint8_t reset = 1;
+    // wind up to an explosion
+    for (bright=0; bright<SPLODEY_STEPS; bright++) {
+        set_level(bright);
+        delay_4ms(SPLODEY_TIME_PER_STEP/2/4);
+        set_level(bright>>1);
+        delay_4ms(SPLODEY_TIME_PER_STEP/2/4);
+        if (! button_is_pressed()) {
+            reset = 0;
+            break;
+        }
+    }
+    // explode, if button pressed long enough
+    if (reset) {
+        #ifdef USE_THERMAL_REGULATION
+        // auto-calibrate temperature...  assume current temperature is 21 C
+        config_state_values[0] = 21;
+        config_state_values[1] = 0;
+        thermal_config_save();
+        #endif
+        // save all settings to eeprom
+        // (assuming they're all at default because we haven't loaded them yet)
+        save_config();
+
+        bright = MAX_LEVEL;
+        for (; bright > 0; bright--) {
+            set_level(bright);
+            delay_4ms(SPLODEY_TIME_PER_STEP/6/4);
+        }
+    }
+    // explosion cancelled, fade away
+    else {
+        for (; bright > 0; bright--) {
+            set_level(bright);
+            delay_4ms(SPLODEY_TIME_PER_STEP/3/4);
+        }
+    }
+}
+#endif
+
+
 void load_config() {
     if (load_eeprom()) {
         ramp_style = eeprom[ramp_style_e];
@@ -2285,6 +2354,11 @@ void setup() {
     set_level(RAMP_SIZE/8);
     delay_4ms(3);
     set_level(0);
+
+    #ifdef USE_FACTORY_RESET
+    if (button_is_pressed())
+        factory_reset();
+    #endif
 
     load_config();
 

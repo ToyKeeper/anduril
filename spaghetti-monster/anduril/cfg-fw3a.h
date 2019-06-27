@@ -17,3 +17,6 @@
 #define THERM_FASTER_LEVEL MAX_Nx7135
 
 #define USE_TENCLICK_THERMAL_CONFIG
+
+// can't reset the normal way because power is connected before the button
+#define USE_SOFT_FACTORY_RESET

@@ -50,4 +50,8 @@ void indicator_led(uint8_t lvl);
 uint8_t triangle_wave(uint8_t phase);
 #endif
 
+#ifdef USE_REBOOT
+void reboot();
+#endif
+
 #endif

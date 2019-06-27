@@ -154,4 +154,21 @@ uint8_t triangle_wave(uint8_t phase) {
 }
 #endif
 
+#ifdef USE_REBOOT
+void reboot() {
+    #if 1  // WDT method, safer but larger
+    cli();
+    WDTCR = 0xD8 | WDTO_15MS;
+    sei();
+    wdt_reset();
+    while (1) {}
+    #else  // raw assembly method, doesn't reset registers or anything
+    __asm__ __volatile__ (
+            "cli" "\n\t"
+            "rjmp 0x00" "\n\t"
+            );
+    #endif
+}
+#endif
+
 #endif
