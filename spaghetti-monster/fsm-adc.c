@@ -20,27 +20,76 @@
 #ifndef FSM_ADC_C
 #define FSM_ADC_C
 
-#ifdef USE_VOLTAGE_DIVIDER
-// 1.1V / pin7
-#define ADMUX_VOLTAGE ADMUX_VOLTAGE_DIVIDER
-#else
-// VCC / 1.1V reference
-#define ADMUX_VOLTAGE ADMUX_VCC
-#endif
 
+inline void set_admux_therm() {
+    #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85) || (ATTINY == 1634)
+        ADMUX = ADMUX_THERM;
+    #elif (ATTINY == 841)
+        ADMUXA = ADMUXA_THERM;
+        ADMUXB = ADMUXB_THERM;
+    #else
+        #error Unrecognized MCU type
+    #endif
+}
+
+inline void set_admux_voltage() {
+    #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85) || (ATTINY == 1634)
+        #ifdef USE_VOLTAGE_DIVIDER
+        // 1.1V / pin7
+        ADMUX = ADMUX_VOLTAGE_DIVIDER;
+        #else
+        // VCC / 1.1V reference
+        ADMUX = ADMUX_VCC;
+        #endif
+    #elif (ATTINY == 841)
+        #ifdef USE_VOLTAGE_DIVIDER
+        ADMUXA = ADMUXA_VOLTAGE_DIVIDER;
+        ADMUXB = ADMUXB_VOLTAGE_DIVIDER;
+        #else
+        ADMUXA = ADMUXA_VCC;
+        ADMUXB = ADMUXB_VCC;
+        #endif
+    #else
+        #error Unrecognized MCU type
+    #endif
+}
+
+inline void ADC_start_measurement() {
+    #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85) || (ATTINY == 841) || (ATTINY == 1634)
+        ADCSRA |= (1 << ADSC) | (1 << ADIE);
+    #else
+        #error unrecognized MCU type
+    #endif
+}
+
+// set up ADC for reading battery voltage
 inline void ADC_on()
 {
-    // read voltage on VCC by default
-    ADMUX = ADMUX_VOLTAGE;
-    #ifdef USE_VOLTAGE_DIVIDER
-    // disable digital input on divider pin to reduce power consumption
-    DIDR0 |= (1 << VOLTAGE_ADC_DIDR);
+    #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85) || (ATTINY == 1634)
+        set_admux_voltage();
+        #ifdef USE_VOLTAGE_DIVIDER
+        // disable digital input on divider pin to reduce power consumption
+        DIDR0 |= (1 << VOLTAGE_ADC_DIDR);
+        #else
+        // disable digital input on VCC pin to reduce power consumption
+        //DIDR0 |= (1 << ADC_DIDR);  // FIXME: unsure how to handle for VCC pin
+        #endif
+        #if (ATTINY == 1634)
+            ACSRA |= (1 << ACD);  // turn off analog comparator to save power
+        #endif
+        // enable, start, prescale
+        ADCSRA = (1 << ADEN) | (1 << ADSC) | ADC_PRSCL;
+        // end tiny25/45/85
+    #elif (ATTINY == 841)
+        ADCSRB = 0;  // Right adjusted, auto trigger bits cleared.
+        //ADCSRA = (1 << ADEN ) | 0b011;  // ADC on, prescaler division factor 8.
+        set_admux_voltage();
+        // enable, start, prescale
+        ADCSRA = (1 << ADEN) | (1 << ADSC) | ADC_PRSCL;
+        //ADCSRA |= (1 << ADSC);  // start measuring
     #else
-    // disable digital input on VCC pin to reduce power consumption
-    //DIDR0 |= (1 << ADC_DIDR);  // FIXME: unsure how to handle for VCC pin
+        #error Unrecognized MCU type
     #endif
-    // enable, start, prescale
-    ADCSRA = (1 << ADEN) | (1 << ADSC) | ADC_PRSCL;
 }
 
 inline void ADC_off() {
@@ -89,6 +138,9 @@ ISR(ADC_vect) {
 
     // thermal declarations
     #ifdef USE_THERMAL_REGULATION
+    #ifndef THERMAL_UPDATE_SPEED
+    #define THERMAL_UPDATE_SPEED 2
+    #endif
     #define NUM_THERMAL_VALUES_HISTORY 8
     #define ADC_STEPS 4
     static uint8_t history_step = 0;  // don't update history as often
@@ -96,7 +148,7 @@ ISR(ADC_vect) {
     static uint8_t temperature_timer = 0;
     static uint8_t overheat_lowpass = 0;
     static uint8_t underheat_lowpass = 0;
-    #define TEMPERATURE_TIMER_START (THERMAL_WARNING_SECONDS*ADC_CYCLES_PER_SECOND)  // N seconds between thermal regulation events
+    #define TEMPERATURE_TIMER_START ((THERMAL_WARNING_SECONDS-2)*ADC_CYCLES_PER_SECOND)  // N seconds between thermal regulation events
     #define OVERHEAT_LOWPASS_STRENGTH (ADC_CYCLES_PER_SECOND*2)  // lowpass for 2 seconds
     #define UNDERHEAT_LOWPASS_STRENGTH (ADC_CYCLES_PER_SECOND*2)  // lowpass for 2 seconds
     #else
@@ -110,6 +162,12 @@ ISR(ADC_vect) {
     pseudo_rand_seed += measurement;
     #endif
 
+    #if defined(TICK_DURING_STANDBY) && defined(USE_SLEEP_LVP)
+    // only measure battery voltage while asleep
+    if (go_to_standby) adc_step = 1;
+    else
+    #endif
+
     adc_step = (adc_step + 1) & (ADC_STEPS-1);
 
     #ifdef USE_LVP
@@ -120,7 +178,7 @@ ISR(ADC_vect) {
         if (voltage == 0) {
             for(uint8_t i=0; i<NUM_VOLTAGE_VALUES; i++)
                 voltage_values[i] = measurement;
-            voltage = 42;  // Life, the Universe, and Everything (*)
+            voltage = 42;  // the answer to life, the universe, and the voltage of a full li-ion cell
         } else {
             uint16_t total = 0;
             uint8_t i;
@@ -181,7 +239,7 @@ ISR(ADC_vect) {
     // temperature
     else if (adc_step == 3) {
         // Convert ADC units to Celsius (ish)
-        int16_t temp = measurement - 275 + THERM_CAL_OFFSET + therm_cal_offset;
+        int16_t temp = measurement - 275 + THERM_CAL_OFFSET + (int16_t)therm_cal_offset;
 
         // prime on first execution
         if (reset_thermal_history) {
@@ -202,14 +260,18 @@ ISR(ADC_vect) {
         // guess what the temperature will be in a few seconds
         int16_t pt;
         {
-            uint8_t i;
             int16_t diff;
             int16_t t = temperature;
 
             // algorithm tweaking; not really intended to be modified
             // how far ahead should we predict?
+            #ifndef THERM_PREDICTION_STRENGTH
             #define THERM_PREDICTION_STRENGTH 4
-            // how proportional should the adjustments be?
+            #endif
+            // how proportional should the adjustments be?  (not used yet)
+            #ifndef THERM_RESPONSE_MAGNITUDE
+            #define THERM_RESPONSE_MAGNITUDE 128
+            #endif
             // acceptable temperature window size in C
             #define THERM_WINDOW_SIZE 5
             // highest temperature allowed
@@ -219,13 +281,22 @@ ISR(ADC_vect) {
 
             // if it's time to rotate the thermal history, do it
             history_step ++;
-            if (0 == (history_step & 7)) {
+            #if (THERMAL_UPDATE_SPEED == 4)  // new value every 4s
+            #define THERM_HISTORY_STEP_MAX 15
+            #elif (THERMAL_UPDATE_SPEED == 2)  // new value every 2s
+            #define THERM_HISTORY_STEP_MAX 7
+            #elif (THERMAL_UPDATE_SPEED == 1)  // new value every 1s
+            #define THERM_HISTORY_STEP_MAX 3
+            #elif (THERMAL_UPDATE_SPEED == 0)  // new value every 0.5s
+            #define THERM_HISTORY_STEP_MAX 1
+            #endif
+            if (0 == (history_step & THERM_HISTORY_STEP_MAX)) {
                 // rotate measurements and add a new one
-                for (i=0; i<NUM_THERMAL_VALUES_HISTORY-1; i++) {
+                for (uint8_t i=0; i<NUM_THERMAL_VALUES_HISTORY-1; i++) {
                     temperature_history[i] = temperature_history[i+1];
                 }
+                temperature_history[NUM_THERMAL_VALUES_HISTORY-1] = t;
             }
-            temperature_history[NUM_THERMAL_VALUES_HISTORY-1] = t;
 
             // guess what the temp will be several seconds in the future
             // diff = rate of temperature change
@@ -244,7 +315,8 @@ ISR(ADC_vect) {
         // cancel counters if appropriate
         if (pt > THERM_FLOOR) {
             underheat_lowpass = 0;  // we're probably not too cold
-        } else if (pt < THERM_CEIL) {
+        }
+        if (pt < THERM_CEIL) {
             overheat_lowpass = 0;  // we're probably not too hot
         }
 
@@ -261,6 +333,7 @@ ISR(ADC_vect) {
                     overheat_lowpass = 0;
                     temperature_timer = TEMPERATURE_TIMER_START;
                     // how far above the ceiling?
+                    //int16_t howmuch = (pt - THERM_CEIL) * THERM_RESPONSE_MAGNITUDE / 128;
                     int16_t howmuch = pt - THERM_CEIL;
                     // try to send out a warning
                     emit(EV_temperature_high, howmuch);
@@ -276,6 +349,7 @@ ISR(ADC_vect) {
                     underheat_lowpass = 0;
                     temperature_timer = TEMPERATURE_TIMER_START;
                     // how far below the floor?
+                    //int16_t howmuch = (THERM_FLOOR - pt) * THERM_RESPONSE_MAGNITUDE / 128;
                     int16_t howmuch = THERM_FLOOR - pt;
                     // try to send out a warning (unless voltage is low)
                     // (LVP and underheat warnings fight each other)
@@ -291,15 +365,20 @@ ISR(ADC_vect) {
     // set the correct type of measurement for next time
     #ifdef USE_THERMAL_REGULATION
         #ifdef USE_LVP
-        if (adc_step < 2) ADMUX = ADMUX_VOLTAGE;
-        else ADMUX = ADMUX_THERM;
+        if (adc_step < 2) set_admux_voltage();
+        else set_admux_therm();
         #else
-        ADMUX = ADMUX_THERM;
+        set_admux_therm();
         #endif
     #else
         #ifdef USE_LVP
-        ADMUX = ADMUX_VOLTAGE;
+        set_admux_voltage();
         #endif
+    #endif
+
+    #ifdef TICK_DURING_STANDBY
+        // if we were asleep, go back to sleep
+        if (go_to_standby) ADC_off();
     #endif
 }
 

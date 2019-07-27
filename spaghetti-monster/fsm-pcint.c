@@ -30,7 +30,7 @@ uint8_t button_is_pressed() {
     // and wait for measurements to settle to all zeroes or all ones
     do {
         // shift past readings and add current value
-        readings = (readings << 1) | ((PINB & (1<<SWITCH_PIN)) == 0);
+        readings = (readings << 1) | ((SWITCH_PORT & (1<<SWITCH_PIN)) == 0);
         // wait a moment
         _delay_loop_2(BOGOMIPS/16);  // up to 2ms to stabilize
     }
@@ -40,21 +40,45 @@ uint8_t button_is_pressed() {
 }
 
 inline void PCINT_on() {
-    // enable pin change interrupt for pin N
-    GIMSK |= (1 << PCIE);
-    // only pay attention to the e-switch pin
-    //PCMSK = (1 << SWITCH_PCINT);
-    // set bits 1:0 to 0b01 (interrupt on rising *and* falling edge) (default)
-    // MCUCR &= 0b11111101;  MCUCR |= 0b00000001;
+    #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
+        // enable pin change interrupt
+        GIMSK |= (1 << PCIE);
+        // only pay attention to the e-switch pin
+        #if 0  // this is redundant; was already done in main()
+        PCMSK = (1 << SWITCH_PCINT);
+        #endif
+        // set bits 1:0 to 0b01 (interrupt on rising *and* falling edge) (default)
+        // MCUCR &= 0b11111101;  MCUCR |= 0b00000001;
+    #elif (ATTINY == 1634)
+        // enable pin change interrupt
+        #ifdef SWITCH2_PCIE
+        GIMSK |= ((1 << SWITCH_PCIE) | (1 << SWITCH2_PCIE));
+        #else
+        GIMSK |= (1 << SWITCH_PCIE);
+        #endif
+    #else
+        #error Unrecognized MCU type
+    #endif
 }
 
 inline void PCINT_off() {
-    // disable all pin-change interrupts
-    GIMSK &= ~(1 << PCIE);
+    #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
+        // disable all pin-change interrupts
+        GIMSK &= ~(1 << PCIE);
+    #elif (ATTINY == 1634)
+        // disable all pin-change interrupts
+        GIMSK &= ~(1 << SWITCH_PCIE);
+    #else
+        #error Unrecognized MCU type
+    #endif
 }
 
 //void button_change_interrupt() {
+#if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85) || (ATTINY == 1634)
 EMPTY_INTERRUPT(PCINT0_vect);
+#else
+    #error Unrecognized MCU type
+#endif
 /*
 ISR(PCINT0_vect) {
 

@@ -20,6 +20,7 @@
 #ifndef FSM_EVENTS_C
 #define FSM_EVENTS_C
 
+
 void empty_event_sequence() {
     current_event = EV_none;
     // when the user completes an input sequence, interrupt any running timers
@@ -116,26 +117,26 @@ uint8_t nice_delay_ms(uint16_t ms) {
         #ifdef USE_RAMPING
         uint8_t level = actual_level;  // volatile, avoid repeat access
         if (level < QUARTERSPEED_LEVEL) {
-            CLKPR = 1<<CLKPCE; CLKPR = 2;
+            clock_prescale_set(clock_div_4);
             _delay_loop_2(BOGOMIPS*98/100/4);
         }
         //else if (level < HALFSPEED_LEVEL) {
-        //    CLKPR = 1<<CLKPCE; CLKPR = 1;
+        //    clock_prescale_set(clock_div_2);
         //    _delay_loop_2(BOGOMIPS*98/100/2);
         //}
         else {
-            CLKPR = 1<<CLKPCE; CLKPR = 0;
+            clock_prescale_set(clock_div_1);
             _delay_loop_2(BOGOMIPS*98/100);
         }
         // restore regular clock speed
-        CLKPR = 1<<CLKPCE; CLKPR = 0;
+        clock_prescale_set(clock_div_1);
         #else
         // underclock MCU to save power
-        CLKPR = 1<<CLKPCE; CLKPR = 2;
+        clock_prescale_set(clock_div_4);
         // wait
         _delay_loop_2(BOGOMIPS*98/100/4);
         // restore regular clock speed
-        CLKPR = 1<<CLKPCE; CLKPR = 0;
+        clock_prescale_set(clock_div_1);
         #endif  // ifdef USE_RAMPING
         #else
         // wait
@@ -159,11 +160,18 @@ uint8_t nice_delay_ms(uint16_t ms) {
 void delay_4ms(uint8_t ms) {
     while(ms-- > 0) {
         // underclock MCU to save power
-        CLKPR = 1<<CLKPCE; CLKPR = 2;
+        clock_prescale_set(clock_div_4);
         // wait
         _delay_loop_2(BOGOMIPS*98/100);
         // restore regular clock speed
-        CLKPR = 1<<CLKPCE; CLKPR = 0;
+        clock_prescale_set(clock_div_1);
+    }
+}
+#else
+void delay_4ms(uint8_t ms) {
+    while(ms-- > 0) {
+        // wait
+        _delay_loop_2(BOGOMIPS*398/100);
     }
 }
 #endif
