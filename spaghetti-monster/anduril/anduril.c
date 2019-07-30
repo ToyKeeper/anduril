@@ -1846,7 +1846,7 @@ uint8_t muggle_state(Event event, uint16_t arg) {
         blip();
         #endif
         // step down proportional to the amount of overheating
-        uint8_t new = actual_level - arg;
+        int16_t new = actual_level - arg;
         if (new < MUGGLE_FLOOR) { new = MUGGLE_FLOOR; }
         set_level(new);
         return MISCHIEF_MANAGED;
