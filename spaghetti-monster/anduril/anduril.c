@@ -89,6 +89,10 @@
 //#define USE_POLICE_STROBE_MODE
 //#define USE_SOS_MODE
 
+// cut clock speed at very low modes for better efficiency
+// (defined here so config files can override it)
+#define USE_DYNAMIC_UNDERCLOCKING
+
 /***** specific settings for known driver types *****/
 #include "tk.h"
 #include incfile(CONFIGFILE)
@@ -128,7 +132,6 @@
 #endif
 #endif
 #define USE_IDLE_MODE  // reduce power use while awake and no tasks are pending
-#define USE_DYNAMIC_UNDERCLOCKING  // cut clock speed at very low modes for better efficiency
 
 // full FET strobe can be a bit much...  use max regulated level instead,
 // if there's a bright enough regulated level
