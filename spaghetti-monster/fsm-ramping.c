@@ -71,7 +71,7 @@ void set_level(uint8_t level) {
         #ifdef USE_TINT_RAMPING
         // calculate actual PWM levels based on a single-channel ramp
         // and a global tint value
-        uint8_t brightness = pgm_read_byte(pwm1_levels + level);
+        uint8_t brightness = PWM_GET(pwm1_levels, level);
         uint8_t warm_PWM, cool_PWM;
 
         // auto-tint modes
@@ -104,16 +104,16 @@ void set_level(uint8_t level) {
         #else
 
         #if PWM_CHANNELS >= 1
-        PWM1_LVL = pgm_read_byte(pwm1_levels + level);
+        PWM1_LVL = PWM_GET(pwm1_levels, level);
         #endif
         #if PWM_CHANNELS >= 2
-        PWM2_LVL = pgm_read_byte(pwm2_levels + level);
+        PWM2_LVL = PWM_GET(pwm2_levels, level);
         #endif
         #if PWM_CHANNELS >= 3
-        PWM3_LVL = pgm_read_byte(pwm3_levels + level);
+        PWM3_LVL = PWM_GET(pwm3_levels, level);
         #endif
         #if PWM_CHANNELS >= 4
-        PWM4_LVL = pgm_read_byte(pwm4_levels + level);
+        PWM4_LVL = PWM_GET(pwm4_levels, level);
         #endif
 
         #endif  // ifdef USE_TINT_RAMPING
@@ -140,7 +140,7 @@ void gradual_tick() {
     uint8_t target;
 
     #if PWM_CHANNELS >= 1
-    target = pgm_read_byte(pwm1_levels + gt);
+    target = PWM_GET(pwm1_levels, gt);
     if ((gt < actual_level)     // special case for FET-only turbo
             && (PWM1_LVL == 0)  // (bypass adjustment period for first step)
             && (target == 255)) PWM1_LVL = 255;
@@ -148,32 +148,32 @@ void gradual_tick() {
     else if (PWM1_LVL > target) PWM1_LVL --;
     #endif
     #if PWM_CHANNELS >= 2
-    target = pgm_read_byte(pwm2_levels + gt);
+    target = PWM_GET(pwm2_levels, gt);
     if (PWM2_LVL < target) PWM2_LVL ++;
     else if (PWM2_LVL > target) PWM2_LVL --;
     #endif
     #if PWM_CHANNELS >= 3
-    target = pgm_read_byte(pwm3_levels + gt);
+    target = PWM_GET(pwm3_levels, gt);
     if (PWM3_LVL < target) PWM3_LVL ++;
     else if (PWM3_LVL > target) PWM3_LVL --;
     #endif
     #if PWM_CHANNELS >= 4
-    target = pgm_read_byte(pwm4_levels + gt);
+    target = PWM_GET(pwm4_levels, gt);
     if (PWM4_LVL < target) PWM4_LVL ++;
     else if (PWM4_LVL > target) PWM4_LVL --;
     #endif
 
     // did we go far enough to hit the next defined ramp level?
     // if so, update the main ramp level tracking var
-    if ((PWM1_LVL == pgm_read_byte(pwm1_levels + gt))
+    if ((PWM1_LVL == PWM_GET(pwm1_levels, gt))
         #if PWM_CHANNELS >= 2
-            && (PWM2_LVL == pgm_read_byte(pwm2_levels + gt))
+            && (PWM2_LVL == PWM_GET(pwm2_levels, gt))
         #endif
         #if PWM_CHANNELS >= 3
-            && (PWM3_LVL == pgm_read_byte(pwm3_levels + gt))
+            && (PWM3_LVL == PWM_GET(pwm3_levels, gt))
         #endif
         #if PWM_CHANNELS >= 4
-            && (PWM4_LVL == pgm_read_byte(pwm4_levels + gt))
+            && (PWM4_LVL == PWM_GET(pwm4_levels, gt))
         #endif
         )
     {
