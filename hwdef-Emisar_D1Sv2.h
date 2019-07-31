@@ -51,7 +51,8 @@
 #define PWM1_PIN PB3        // pin 16, Opamp reference
 #define PWM1_LVL OCR1A      // OCR1A is the output compare register for PB3
 
-#define LED_ENABLE_PIN PB0  // pin 19, Opamp power
+#define LED_ENABLE_PIN  PB0    // pin 19, Opamp power
+#define LED_ENABLE_PORT PORTB  // control port for PB0
 //#define PWM2_PIN PB0        // pin 19, Opamp power
 // FIXME:
 //#define PWM2_LVL OCR1B      // OCR1B is the output compare register for PB1

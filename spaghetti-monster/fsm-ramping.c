@@ -65,8 +65,17 @@ void set_level(uint8_t level) {
         #if PWM_CHANNELS >= 4
         PWM4_LVL = 0;
         #endif
+        // disable the power channel, if relevant
+        #ifdef LED_ENABLE_PIN
+        LED_ENABLE_PORT &= ~(1 << LED_ENABLE_PIN);
+        #endif
     } else {
         level --;
+
+        // enable the power channel, if relevant
+        #ifdef LED_ENABLE_PIN
+        LED_ENABLE_PORT |= (1 << LED_ENABLE_PIN);
+        #endif
 
         #ifdef USE_TINT_RAMPING
         // calculate actual PWM levels based on a single-channel ramp
