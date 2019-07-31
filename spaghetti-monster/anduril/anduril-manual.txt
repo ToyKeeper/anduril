@@ -56,6 +56,13 @@ While the light is on, a few basic actions are available:
   - Click, hold: Change brightness (down).
   - 3 clicks: Switch to the other ramp.
   - 4 clicks: Go to ramp config mode.
+  - 5 clicks: Activate manual memory and save the current brightness.
+  - 5 clicks, but hold the last click: Go back to automatic memory.
+
+The "automatic" vs "manual" memory modes change the level the light goes 
+to with 1 click from off.  In automatic mode, it uses the last 
+brightness the user ramped to.  In manual mode, it uses the brightness 
+the user explicitly saved with 5 clicks.
 
 
 Other Modes
@@ -215,7 +222,10 @@ then return to the regular "off" mode.
 
 Lockout mode also doubles as a momentary moon mode, so the user can do 
 quick tasks without having to unlock the light.  The brightness in 
-lockout mode is determined by the floor setting of the current ramp.
+lockout mode has two levels:
+
+  - Hold: light up at the floor level of the current ramp.
+  - Click, Hold: light up at the floor level of the other ramp.
 
 
 Momentary Mode
@@ -363,6 +373,13 @@ click the button a few times:
 
 This should change the aux LEDs to the next mode supported on this 
 light.
+
+If the aux LEDs can change color, there are additional actions to change 
+the color.  It is the same as above, but hold the button on the last 
+click and then let go when the desired color is reached.
+
+  - Off mode: 7 clicks, but hold the last click.
+  - Lockout mode: 3 clicks, but hold the last click.
 
 For lights with a button LED, the button LED typically stays on while 
 the main emitters are on.  Its brightness level is set in a way which 

@@ -40,6 +40,11 @@ int main() {
     // Don't allow interrupts while booting
     cli();
 
+    #ifdef USE_REBOOT  // prevent reboot loops
+    MCUSR &= ~(1<<WDRF);  // reset status flag
+    wdt_disable();
+    #endif
+
     #ifdef HALFSPEED
     // run at half speed
     CLKPR = 1<<CLKPCE;
