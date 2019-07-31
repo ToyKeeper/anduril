@@ -310,6 +310,7 @@ void indicator_blink(uint8_t arg);
 #endif
 #if defined(USE_AUX_RGB_LEDS) && defined(TICK_DURING_STANDBY)
 void rgb_led_update(uint8_t mode, uint8_t arg);
+void rgb_led_voltage_readout(uint8_t bright);
 /*
  * 0: R
  * 1: RG
@@ -321,6 +322,15 @@ void rgb_led_update(uint8_t mode, uint8_t arg);
  * 7: rainbow
  * 8: voltage
  */
+const PROGMEM uint8_t rgb_led_colors[] = {
+    0b00000001,  // 0: red
+    0b00000101,  // 1: yellow
+    0b00000100,  // 2: green
+    0b00010100,  // 3: cyan
+    0b00010000,  // 4: blue
+    0b00010001,  // 5: purple
+    0b00010101,  // 6: white
+};
 #define RGB_LED_NUM_COLORS 10
 #define RGB_LED_NUM_PATTERNS 4
 #ifndef RGB_LED_OFF_DEFAULT
@@ -2269,36 +2279,28 @@ void rgb_led_update(uint8_t mode, uint8_t arg) {
     if ((! go_to_standby) && (pattern > 2)) { pattern = 2; }
 
 
-    uint8_t colors[] = {
-        0b00000001,  // 0: red
-        0b00000101,  // 1: yellow
-        0b00000100,  // 2: green
-        0b00010100,  // 3: cyan
-        0b00010000,  // 4: blue
-        0b00010001,  // 5: purple
-        0b00010101,  // 6: white
-    };
+    const uint8_t *colors = rgb_led_colors;
     uint8_t actual_color = 0;
     if (color < 7) {  // normal color
-        actual_color = colors[color];
+        actual_color = pgm_read_byte(colors + color);
     }
     else if (color == 7) {  // rainbow
         if (0 == (arg & 0x03)) {
             rainbow = (rainbow + 1) % 6;
         }
-        actual_color = colors[rainbow];
+        actual_color = pgm_read_byte(colors + rainbow);
     }
     else {  // voltage
         // show actual voltage while asleep...
         if (go_to_standby) {
             // choose a color based on battery voltage
-            if (volts >= 38) actual_color = colors[4];
-            else if (volts >= 33) actual_color = colors[2];
-            else actual_color = colors[0];
+            if (volts >= 38) actual_color = pgm_read_byte(colors + 4);
+            else if (volts >= 33) actual_color = pgm_read_byte(colors + 2);
+            else actual_color = pgm_read_byte(colors + 0);
         }
         // ... but during preview, cycle colors quickly
         else {
-            actual_color = colors[((arg>>1) % 3) << 1];
+            actual_color = pgm_read_byte(colors + (((arg>>1) % 3) << 1));
         }
     }
 
@@ -2320,6 +2322,31 @@ void rgb_led_update(uint8_t mode, uint8_t arg) {
         case 2:  // high
             rgb_led_set(actual_color << 1);
             break;
+    }
+}
+
+void rgb_led_voltage_readout(uint8_t bright) {
+    uint8_t volts = voltage;
+    if (volts < 29) {
+        rgb_led_set(0);
+    }
+    else {
+        uint8_t levels[] = {
+            30, 0,
+            33, 1,
+            35, 2,
+            37, 3,
+            39, 4,
+            40, 5,
+            255, 6,
+        };
+        uint8_t i;
+        for (i = 0;  volts > levels[i];  i += 2) {
+            if (levels[i] >= volts) break;
+        }
+        uint8_t color = pgm_read_byte(rgb_led_colors + i);
+        if (bright) color = color << 1;
+        rgb_led_set(color);
     }
 }
 #endif
@@ -2558,6 +2585,10 @@ void setup() {
 void loop() {
 
     StatePtr state = current_state;
+
+    #ifdef USE_AUX_RGB_LEDS_WHILE_RAMPING
+        rgb_led_voltage_readout(1);
+    #endif
 
     if (0) {}
 
