@@ -3,16 +3,16 @@
 
 // the button lights up
 #define USE_INDICATOR_LED
-#define INDICATOR_LED_SKIP_LOW  // low mode doesn't work on this driver
+//#define INDICATOR_LED_SKIP_LOW  // low mode doesn't work on this driver
 // the button is visible while main LEDs are on
 //#define USE_INDICATOR_LED_WHILE_RAMPING
 // enable blinking indicator LED while off
 #define TICK_DURING_STANDBY
 #define STANDBY_TICK_SPEED 3  // every 0.128 s
 #define USE_FANCIER_BLINKING_INDICATOR
-// off mode: high (2)
+// off mode: low (1)
 // lockout: blinking (3)
-#define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 2)
+#define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
 
 
 // don't blink during ramp, it's irrelevant and annoying on this light
