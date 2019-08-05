@@ -56,7 +56,9 @@ void sleep_until_eswitch_pressed()
         set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 
         sleep_enable();
+        #ifdef BODCR  // only do this on MCUs which support it
         sleep_bod_disable();
+        #endif
         sleep_cpu();  // wait here
 
         // something happened; wake up

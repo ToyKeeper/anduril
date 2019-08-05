@@ -27,6 +27,11 @@ inline void WDT_off();
 
 #ifdef TICK_DURING_STANDBY
 volatile uint8_t f_wdt = 0;
+
+  #if defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS)
+  // measure battery charge while asleep
+  #define USE_SLEEP_LVP
+  #endif
 #endif
 
 #endif

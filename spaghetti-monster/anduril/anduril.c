@@ -132,10 +132,12 @@
 
 // full FET strobe can be a bit much...  use max regulated level instead,
 // if there's a bright enough regulated level
+#ifndef STROBE_BRIGHTNESS
 #ifdef MAX_Nx7135
 #define STROBE_BRIGHTNESS MAX_Nx7135
 #else
 #define STROBE_BRIGHTNESS MAX_LEVEL
+#endif
 #endif
 
 #if defined(USE_CANDLE_MODE) || defined(USE_BIKE_FLASHER_MODE) || defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE) || defined(USE_LIGHTNING_MODE)
@@ -185,6 +187,10 @@ typedef enum {
     #endif
     #ifdef USE_INDICATOR_LED
     indicator_led_mode_e,
+    #endif
+    #ifdef USE_AUX_RGB_LEDS
+    rgb_led_off_mode_e,
+    rgb_led_lockout_mode_e,
     #endif
     eeprom_indexes_e_END
 } eeprom_indexes_e;
@@ -298,6 +304,31 @@ void blink_confirm(uint8_t num);
 void blip();
 #if defined(USE_INDICATOR_LED) && defined(TICK_DURING_STANDBY)
 void indicator_blink(uint8_t arg);
+#endif
+#if defined(USE_AUX_RGB_LEDS) && defined(TICK_DURING_STANDBY)
+void rgb_led_update(uint8_t mode, uint8_t arg);
+/*
+ * 0: R
+ * 1: RG
+ * 2:  G
+ * 3:  GB
+ * 4:   B
+ * 5: R B
+ * 6: RGB
+ * 7: rainbow
+ * 8: voltage
+ */
+#define RGB_LED_NUM_COLORS 10
+#define RGB_LED_NUM_PATTERNS 4
+#ifndef RGB_LED_OFF_DEFAULT
+//#define RGB_LED_OFF_DEFAULT 0x18  // low, voltage
+#define RGB_LED_OFF_DEFAULT 0x17  // low, rainbow
+#endif
+#ifndef RGB_LED_LOCKOUT_DEFAULT
+#define RGB_LED_LOCKOUT_DEFAULT 0x37  // blinking, rainbow
+#endif
+uint8_t rgb_led_off_mode = RGB_LED_OFF_DEFAULT;
+uint8_t rgb_led_lockout_mode = RGB_LED_LOCKOUT_DEFAULT;
 #endif
 
 #ifdef USE_FACTORY_RESET
@@ -459,27 +490,36 @@ uint8_t off_state(Event event, uint16_t arg) {
         set_level(0);
         #ifdef USE_INDICATOR_LED
         indicator_led(indicator_led_mode & 0x03);
+        #elif defined(USE_AUX_RGB_LEDS)
+        rgb_led_update(rgb_led_off_mode, 0);
         #endif
         // sleep while off  (lower power use)
-        go_to_standby = 1;
+        // (unless delay requested; give the ADC some time to catch up)
+        if (! arg) { go_to_standby = 1; }
         return MISCHIEF_MANAGED;
     }
     // go back to sleep eventually if we got bumped but didn't leave "off" state
     else if (event == EV_tick) {
-        if (arg > TICKS_PER_SECOND*2) {
+        if (arg > HOLD_TIMEOUT) {
             go_to_standby = 1;
             #ifdef USE_INDICATOR_LED
             indicator_led(indicator_led_mode & 0x03);
+            #elif defined(USE_AUX_RGB_LEDS)
+            rgb_led_update(rgb_led_off_mode, arg);
             #endif
         }
         return MISCHIEF_MANAGED;
     }
-    #if defined(TICK_DURING_STANDBY) && defined(USE_INDICATOR_LED)
+    #if defined(TICK_DURING_STANDBY) && (defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS))
     // blink the indicator LED, maybe
     else if (event == EV_sleep_tick) {
+        #ifdef USE_INDICATOR_LED
         if ((indicator_led_mode & 0b00000011) == 0b00000011) {
             indicator_blink(arg);
         }
+        #elif defined(USE_AUX_RGB_LEDS)
+        rgb_led_update(rgb_led_off_mode, arg);
+        #endif
         return MISCHIEF_MANAGED;
     }
     #endif
@@ -608,7 +648,33 @@ uint8_t off_state(Event event, uint16_t arg) {
         save_config();
         return MISCHIEF_MANAGED;
     }
-    #endif
+    #elif defined(USE_AUX_RGB_LEDS)
+    // 7 clicks: change RGB aux LED pattern
+    else if (event == EV_7clicks) {
+        uint8_t mode = (rgb_led_off_mode >> 4) + 1;
+        mode = mode % RGB_LED_NUM_PATTERNS;
+        rgb_led_off_mode = (mode << 4) | (rgb_led_off_mode & 0x0f);
+        rgb_led_update(rgb_led_off_mode, 0);
+        save_config();
+        blink_confirm(1);
+        return MISCHIEF_MANAGED;
+    }
+    // 7 clicks (hold last): change RGB aux LED color
+    else if (event == EV_click7_hold) {
+        if (0 == (arg & 0x3f)) {
+            uint8_t mode = (rgb_led_off_mode & 0x0f) + 1;
+            mode = mode % RGB_LED_NUM_COLORS;
+            rgb_led_off_mode = mode | (rgb_led_off_mode & 0xf0);
+            //save_config();
+        }
+        rgb_led_update(rgb_led_off_mode, arg);
+        return MISCHIEF_MANAGED;
+    }
+    else if (event == EV_click7_hold_release) {
+        save_config();
+        return MISCHIEF_MANAGED;
+    }
+    #endif  // end 7 clicks
     #ifdef USE_TENCLICK_THERMAL_CONFIG
     // 10 clicks: thermal config mode
     else if (event == EV_10clicks) {
@@ -854,7 +920,10 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #endif
         #ifdef USE_SET_LEVEL_GRADUALLY
         // make thermal adjustment speed scale with magnitude
-        if ((arg & 1) && (actual_level < THERM_FASTER_LEVEL)) {
+        // also, adjust slower when going up
+        if ((arg & 1) &&
+            ((actual_level < THERM_FASTER_LEVEL) ||
+             (actual_level < gradual_target))) {
             return MISCHIEF_MANAGED;  // adjust slower when not a high mode
         }
         #ifdef THERM_HARD_TURBO_DROP
@@ -872,17 +941,21 @@ uint8_t steady_state(Event event, uint16_t arg) {
         uint8_t intervals[] = {248, 128, 66, 34, 17, 9, 4, 2};
         uint8_t diff;
         static uint8_t ticks_since_adjust = 0;
-        ticks_since_adjust ++;
-        if (gradual_target > actual_level) diff = gradual_target - actual_level;
-        else {
+        if (gradual_target > actual_level) {
+            // rise at half speed (skip half the frames)
+            if (arg & 2) return MISCHIEF_MANAGED;
+            diff = gradual_target - actual_level;
+        } else {
             diff = actual_level - gradual_target;
         }
+        ticks_since_adjust ++;
         // if there's any adjustment to be made, make it
         if (diff) {
             uint8_t magnitude = 0;
             #ifndef THERM_HARD_TURBO_DROP
             // if we're on a really high mode, drop faster
-            if (actual_level >= THERM_FASTER_LEVEL) { magnitude ++; }
+            if ((actual_level >= THERM_FASTER_LEVEL)
+                && (actual_level > gradual_target)) { magnitude ++; }
             #endif
             while (diff) {
                 magnitude ++;
@@ -910,7 +983,8 @@ uint8_t steady_state(Event event, uint16_t arg) {
         blip();
         #endif
         #ifdef THERM_HARD_TURBO_DROP
-        if (actual_level > THERM_FASTER_LEVEL) {
+        //if (actual_level > THERM_FASTER_LEVEL) {
+        if (actual_level == MAX_LEVEL) {
             #ifdef USE_SET_LEVEL_GRADUALLY
             set_level_gradually(THERM_FASTER_LEVEL);
             target_level = THERM_FASTER_LEVEL;
@@ -1553,6 +1627,10 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     #ifdef MOON_DURING_LOCKOUT_MODE
     // momentary(ish) moon mode during lockout
     // button is being held
+    #ifdef USE_AUX_RGB_LEDS
+    // don't turn on during RGB aux LED configuration
+    if (event == EV_click3_hold) { set_level(0); } else
+    #endif
     if ((event & (B_CLICK | B_PRESS)) == (B_CLICK | B_PRESS)) {
         #ifdef LOCKOUT_MOON_LOWEST
         // Use lowest moon configured
@@ -1586,74 +1664,81 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     if (event == EV_enter_state) {
         indicator_led(indicator_led_mode >> 2);
     } else
+    #elif defined(USE_AUX_RGB_LEDS)
+    if (event == EV_enter_state) {
+        rgb_led_update(rgb_led_lockout_mode, 0);
+    } else
     #endif
     if (event == EV_tick) {
-        if (arg > TICKS_PER_SECOND*2) {
+        if (arg > HOLD_TIMEOUT) {
             go_to_standby = 1;
             #ifdef USE_INDICATOR_LED
             indicator_led(indicator_led_mode >> 2);
+            #elif defined(USE_AUX_RGB_LEDS)
+            rgb_led_update(rgb_led_lockout_mode, arg);
             #endif
         }
         return MISCHIEF_MANAGED;
     }
-    #if defined(TICK_DURING_STANDBY) && defined(USE_INDICATOR_LED)
+    #if defined(TICK_DURING_STANDBY) && (defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS))
     else if (event == EV_sleep_tick) {
+        #if defined(USE_INDICATOR_LED)
         if ((indicator_led_mode & 0b00001100) == 0b00001100) {
             indicator_blink(arg);
         }
+        #elif defined(USE_AUX_RGB_LEDS)
+        rgb_led_update(rgb_led_lockout_mode, arg);
+        #endif
         return MISCHIEF_MANAGED;
     }
     #endif
-    #ifdef USE_INDICATOR_LED
+    #if defined(USE_INDICATOR_LED)
     // 3 clicks: rotate through indicator LED modes (lockout mode)
     else if (event == EV_3clicks) {
-        uint8_t mode = indicator_led_mode >> 2;
-        #ifdef TICK_DURING_STANDBY
-        mode = (mode + 1) & 3;
-        #else
-        mode = (mode + 1) % 3;
+        #if defined(USE_INDICATOR_LED)
+            uint8_t mode = indicator_led_mode >> 2;
+            #ifdef TICK_DURING_STANDBY
+            mode = (mode + 1) & 3;
+            #else
+            mode = (mode + 1) % 3;
+            #endif
+            #ifdef INDICATOR_LED_SKIP_LOW
+            if (mode == 1) { mode ++; }
+            #endif
+            indicator_led_mode = (mode << 2) + (indicator_led_mode & 0x03);
+            indicator_led(mode);
+        #elif defined(USE_AUX_RGB_LEDS)
         #endif
-        #ifdef INDICATOR_LED_SKIP_LOW
-        if (mode == 1) { mode ++; }
-        #endif
-        indicator_led_mode = (mode << 2) + (indicator_led_mode & 0x03);
-        indicator_led(mode);
         save_config();
         return MISCHIEF_MANAGED;
     }
-    #if 0  // old method, deprecated in favor of "7 clicks from off"
-    // click, click, hold: rotate through indicator LED modes (off mode)
-    else if (event == EV_click3_hold) {
-        #ifndef USE_INDICATOR_LED_WHILE_RAMPING
-        // if main LED obscures aux LEDs, turn it off
-        set_level(0);
-        #endif
-        #ifdef TICK_DURING_STANDBY
-        uint8_t mode = (arg >> 5) & 3;
-        #else
-        uint8_t mode = (arg >> 5) % 3;
-        #endif
-        #ifdef INDICATOR_LED_SKIP_LOW
-        if (mode == 1) { mode ++; }
-        #endif
-        indicator_led_mode = (indicator_led_mode & 0b11111100) | mode;
-        #ifdef TICK_DURING_STANDBY
-        if (mode == 3)
-            indicator_led(mode & (arg&3));
-        else
-            indicator_led(mode);
-        #else
-        indicator_led(mode);
-        #endif
-        //save_config();
+    #elif defined(USE_AUX_RGB_LEDS)
+    // 3 clicks: change RGB aux LED pattern
+    else if (event == EV_3clicks) {
+        uint8_t mode = (rgb_led_lockout_mode >> 4) + 1;
+        mode = mode % RGB_LED_NUM_PATTERNS;
+        rgb_led_lockout_mode = (mode << 4) | (rgb_led_lockout_mode & 0x0f);
+        rgb_led_update(rgb_led_lockout_mode, 0);
+        save_config();
+        blink_confirm(1);
         return MISCHIEF_MANAGED;
     }
-    // click, click, hold, release: save indicator LED mode (off mode)
+    // click, click, hold: change RGB aux LED color
+    else if (event == EV_click3_hold) {
+        if (0 == (arg & 0x3f)) {
+            uint8_t mode = (rgb_led_lockout_mode & 0x0f) + 1;
+            mode = mode % RGB_LED_NUM_COLORS;
+            rgb_led_lockout_mode = mode | (rgb_led_lockout_mode & 0xf0);
+            //save_config();
+        }
+        rgb_led_update(rgb_led_lockout_mode, arg);
+        return MISCHIEF_MANAGED;
+    }
+    // click, click, hold, release: save new color
     else if (event == EV_click3_hold_release) {
         save_config();
         return MISCHIEF_MANAGED;
     }
-    #endif
     #endif
     // 4 clicks: exit
     else if (event == EV_4clicks) {
@@ -1845,10 +1930,13 @@ uint8_t muggle_state(Event event, uint16_t arg) {
         #if 0
         blip();
         #endif
-        // step down proportional to the amount of overheating
-        int16_t new = actual_level - arg;
-        if (new < MUGGLE_FLOOR) { new = MUGGLE_FLOOR; }
-        set_level(new);
+        // ignore warnings while off
+        if (! muggle_off_mode) {
+            // step down proportional to the amount of overheating
+            int16_t new = actual_level - arg;
+            if (new < MUGGLE_FLOOR) { new = MUGGLE_FLOOR; }
+            set_level(new);
+        }
         return MISCHIEF_MANAGED;
     }
     #endif
@@ -2135,6 +2223,9 @@ void blip() {
 #if defined(USE_INDICATOR_LED) && defined(TICK_DURING_STANDBY)
 // beacon-like mode for the indicator LED
 void indicator_blink(uint8_t arg) {
+    // turn off aux LEDs when battery is empty
+    if (voltage < VOLTAGE_LOW) { indicator_led(0); return; }
+
     #ifdef USE_FANCIER_BLINKING_INDICATOR
 
     // fancy blink, set off/low/high levels here:
@@ -2152,6 +2243,81 @@ void indicator_blink(uint8_t arg) {
     }
 
     #endif
+}
+#endif
+
+#if defined(USE_AUX_RGB_LEDS) && defined(TICK_DURING_STANDBY)
+// do fancy stuff with the RGB aux LEDs
+// mode: 0bPPPPCCCC where PPPP is the pattern and CCCC is the color
+// arg: time slice number
+void rgb_led_update(uint8_t mode, uint8_t arg) {
+    static uint8_t rainbow = 0;  // track state of rainbow mode
+    static uint8_t frame = 0;  // track state of animation mode
+
+    // turn off aux LEDs when battery is empty
+    // (but if voltage==0, that means we just booted and don't know yet)
+    uint8_t volts = voltage;  // save a few bytes by caching volatile value
+    if ((volts) && (volts < VOLTAGE_LOW)) { rgb_led_set(0); return; }
+
+    uint8_t pattern = (mode>>4);  // off, low, high, blinking, ... more?
+    uint8_t color = mode & 0x0f;
+
+    // preview in blinking mode is awkward... use high instead
+    if ((! go_to_standby) && (pattern > 2)) { pattern = 2; }
+
+
+    uint8_t colors[] = {
+        0b00000001,  // 0: red
+        0b00000101,  // 1: yellow
+        0b00000100,  // 2: green
+        0b00010100,  // 3: cyan
+        0b00010000,  // 4: blue
+        0b00010001,  // 5: purple
+        0b00010101,  // 6: white
+    };
+    uint8_t actual_color = 0;
+    if (color < 7) {  // normal color
+        actual_color = colors[color];
+    }
+    else if (color == 7) {  // rainbow
+        if (0 == (arg & 0x03)) {
+            rainbow = (rainbow + 1) % 6;
+        }
+        actual_color = colors[rainbow];
+    }
+    else {  // voltage
+        // show actual voltage while asleep...
+        if (go_to_standby) {
+            // choose a color based on battery voltage
+            if (volts >= 38) actual_color = colors[4];
+            else if (volts >= 33) actual_color = colors[2];
+            else actual_color = colors[0];
+        }
+        // ... but during preview, cycle colors quickly
+        else {
+            actual_color = colors[((arg>>1) % 3) << 1];
+        }
+    }
+
+    // pick a brightness from the animation sequence
+    if (pattern == 3) {
+        // uses an odd length to avoid lining up with rainbow loop
+        uint8_t animation[] = {2, 1, 0, 0,  0, 0, 0, 0,  0,
+                               1, 0, 0, 0,  0, 0, 0, 0,  0, 1};
+        frame = (frame + 1) % sizeof(animation);
+        pattern = animation[frame];
+    }
+    switch (pattern) {
+        case 0:  // off
+            rgb_led_set(0);
+            break;
+        case 1:  // low
+            rgb_led_set(actual_color);
+            break;
+        case 2:  // high
+            rgb_led_set(actual_color << 1);
+            break;
+    }
 }
 #endif
 
@@ -2242,6 +2408,10 @@ void load_config() {
         #ifdef USE_INDICATOR_LED
         indicator_led_mode = eeprom[indicator_led_mode_e];
         #endif
+        #ifdef USE_AUX_RGB_LEDS
+        rgb_led_off_mode = eeprom[rgb_led_off_mode_e];
+        rgb_led_lockout_mode = eeprom[rgb_led_lockout_mode_e];
+        #endif
     }
     #ifdef START_AT_MEMORIZED_LEVEL
     if (load_eeprom_wl()) {
@@ -2285,6 +2455,10 @@ void save_config() {
     #endif
     #ifdef USE_INDICATOR_LED
     eeprom[indicator_led_mode_e] = indicator_led_mode;
+    #endif
+    #ifdef USE_AUX_RGB_LEDS
+    eeprom[rgb_led_off_mode_e] = rgb_led_off_mode;
+    eeprom[rgb_led_lockout_mode_e] = rgb_led_lockout_mode;
     #endif
 
     save_eeprom();
@@ -2372,7 +2546,7 @@ void setup() {
         push_state(muggle_state, (MUGGLE_FLOOR+MUGGLE_CEILING)/2);
     else
     #endif
-        push_state(off_state, 0);
+        push_state(off_state, 1);
 
     #endif  // ifdef START_AT_MEMORIZED_LEVEL
 }
