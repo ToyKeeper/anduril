@@ -38,7 +38,7 @@
 #define VOLTAGE_FUDGE_FACTOR 5
 #endif
 #endif
-volatile uint8_t voltage;
+volatile uint8_t voltage = 0;
 volatile uint8_t adcint_enable;  // kludge, because adc auto-retrigger won't turn off
 void low_voltage();
 #ifdef USE_BATTCHECK
@@ -84,6 +84,7 @@ volatile uint8_t reset_thermal_history = 1;
 
 inline void ADC_on();
 inline void ADC_off();
+inline void ADC_start_measurement();
 
 
 #endif

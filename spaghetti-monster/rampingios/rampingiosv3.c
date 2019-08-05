@@ -148,9 +148,6 @@ void blink_confirm(uint8_t num);
 #if defined(USE_INDICATOR_LED) && defined(TICK_DURING_STANDBY)
 void indicator_blink(uint8_t arg);
 #endif
-#ifdef USE_INDICATOR_LED
-uint8_t auxled_next_state(Event event, uint16_t arg);
-#endif
 
 // remember stuff even after battery was changed
 void load_config();
@@ -347,7 +344,18 @@ uint8_t off_state(Event event, uint16_t arg) {
     // 7 clicks: next aux LED mode
     else if (event == EV_7clicks) {
         blink_confirm(1);
-        set_state(auxled_next_state, 0);
+        uint8_t mode = (indicator_led_mode & 3) + 1;
+        #ifdef TICK_DURING_STANDBY
+        mode = mode & 3;
+        #else
+        mode = mode % 3;
+        #endif
+        #ifdef INDICATOR_LED_SKIP_LOW
+        if (mode == 1) { mode ++; }
+        #endif
+        indicator_led_mode = (indicator_led_mode & 0b11111100) | mode;
+        indicator_led(mode);
+        save_config();
         return MISCHIEF_MANAGED;
     }
     #endif
@@ -809,33 +817,6 @@ uint8_t lockout_state(Event event, uint16_t arg) {
 
     return EVENT_NOT_HANDLED;
 }
-
-
-#ifdef USE_INDICATOR_LED
-uint8_t auxled_next_state(Event event, uint16_t arg) {
-    if (event == EV_enter_state) {
-        uint8_t mode = indicator_led_mode & 3;
-        #ifdef TICK_DURING_STANDBY
-        mode = (mode + 1) & 3;
-        #else
-        mode = (mode + 1) % 3;
-        #endif
-        #ifdef INDICATOR_LED_SKIP_LOW
-        if (mode == 1) { mode ++; }
-        #endif
-        indicator_led_mode = mode + (indicator_led_mode & 0b00001100);
-        indicator_led(mode);
-        save_config();
-        return MISCHIEF_MANAGED;
-    }
-    else if (event == EV_tick) {
-        set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
-    }
-
-    return EVENT_NOT_HANDLED;
-}
-#endif
 
 
 uint8_t momentary_state(Event event, uint16_t arg) {

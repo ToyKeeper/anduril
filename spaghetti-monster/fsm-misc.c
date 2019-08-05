@@ -20,6 +20,7 @@
 #ifndef FSM_MISC_C
 #define FSM_MISC_C
 
+
 #ifdef USE_DYNAMIC_UNDERCLOCKING
 void auto_clock_speed() {
     uint8_t level = actual_level;  // volatile, avoid repeat access
@@ -27,14 +28,14 @@ void auto_clock_speed() {
         // run at quarter speed
         // note: this only works when executed as two consecutive instructions
         // (don't try to combine them or put other stuff between)
-        CLKPR = 1<<CLKPCE; CLKPR = 2;
+        clock_prescale_set(clock_div_4);
     }
     else if (level < HALFSPEED_LEVEL) {
         // run at half speed
-        CLKPR = 1<<CLKPCE; CLKPR = 1;
+        clock_prescale_set(clock_div_2);
     } else {
         // run at full speed
-        CLKPR = 1<<CLKPCE; CLKPR = 0;
+        clock_prescale_set(clock_div_1);
     }
 }
 #endif
@@ -145,6 +146,34 @@ void indicator_led_auto() {
 }
 */
 #endif  // USE_INDICATOR_LED
+
+#ifdef USE_AUX_RGB_LEDS
+void rgb_led_set(uint8_t value) {
+    // value: 0b00BBGGRR
+    uint8_t pins[] = { AUXLED_R_PIN, AUXLED_G_PIN, AUXLED_B_PIN };
+    for (uint8_t i=0; i<3; i++) {
+        uint8_t lvl = (value >> (i<<1)) & 0x03;
+        uint8_t pin = pins[i];
+        switch (lvl) {
+            case 0:  // LED off
+                AUXLED_RGB_DDR  &= 0xff ^ (1 << pin);
+                AUXLED_RGB_PUE  &= 0xff ^ (1 << pin);
+                AUXLED_RGB_PORT &= 0xff ^ (1 << pin);
+                break;
+            case 1:  // LED low
+                AUXLED_RGB_DDR  &= 0xff ^ (1 << pin);
+                AUXLED_RGB_PUE  |= (1 << pin);
+                AUXLED_RGB_PORT |= (1 << pin);
+                break;
+            default:  // LED high
+                AUXLED_RGB_DDR  |= (1 << pin);
+                AUXLED_RGB_PUE  |= (1 << pin);
+                AUXLED_RGB_PORT |= (1 << pin);
+                break;
+        }
+    }
+}
+#endif  // ifdef USE_AUX_RGB_LEDS
 
 #ifdef USE_TRIANGLE_WAVE
 uint8_t triangle_wave(uint8_t phase) {

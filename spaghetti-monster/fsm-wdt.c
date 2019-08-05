@@ -25,38 +25,65 @@
 
 void WDT_on()
 {
-    // interrupt every 16ms
-    //cli();                          // Disable interrupts
-    wdt_reset();                    // Reset the WDT
-    WDTCR |= (1<<WDCE) | (1<<WDE);  // Start timed sequence
-    WDTCR = (1<<WDIE);              // Enable interrupt every 16ms
-    //sei();                          // Enable interrupts
+    #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
+        // interrupt every 16ms
+        //cli();                          // Disable interrupts
+        wdt_reset();                    // Reset the WDT
+        WDTCR |= (1<<WDCE) | (1<<WDE);  // Start timed sequence
+        WDTCR = (1<<WDIE);              // Enable interrupt every 16ms
+        //sei();                          // Enable interrupts
+    #elif (ATTINY == 1634)
+        wdt_reset();                    // Reset the WDT
+        WDTCSR = (1<<WDIE);             // Enable interrupt every 16ms
+    #else
+        #error Unrecognized MCU type
+    #endif
 }
 
 #ifdef TICK_DURING_STANDBY
 inline void WDT_slow()
 {
-    // interrupt slower
-    //cli();                          // Disable interrupts
-    wdt_reset();                    // Reset the WDT
-    WDTCR |= (1<<WDCE) | (1<<WDE);  // Start timed sequence
-    WDTCR = (1<<WDIE) | STANDBY_TICK_SPEED; // Enable interrupt every so often
-    //sei();                          // Enable interrupts
+    #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
+        // interrupt slower
+        //cli();                          // Disable interrupts
+        wdt_reset();                    // Reset the WDT
+        WDTCR |= (1<<WDCE) | (1<<WDE);  // Start timed sequence
+        WDTCR = (1<<WDIE) | STANDBY_TICK_SPEED; // Enable interrupt every so often
+        //sei();                          // Enable interrupts
+    #elif (ATTINY == 1634)
+        wdt_reset();                    // Reset the WDT
+        WDTCSR = (1<<WDIE) | STANDBY_TICK_SPEED;
+    #else
+        #error Unrecognized MCU type
+    #endif
 }
 #endif
 
 inline void WDT_off()
 {
-    //cli();                          // Disable interrupts
-    wdt_reset();                    // Reset the WDT
-    MCUSR &= ~(1<<WDRF);            // Clear Watchdog reset flag
-    WDTCR |= (1<<WDCE) | (1<<WDE);  // Start timed sequence
-    WDTCR = 0x00;                   // Disable WDT
-    //sei();                          // Enable interrupts
+    #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
+        //cli();                          // Disable interrupts
+        wdt_reset();                    // Reset the WDT
+        MCUSR &= ~(1<<WDRF);            // Clear Watchdog reset flag
+        WDTCR |= (1<<WDCE) | (1<<WDE);  // Start timed sequence
+        WDTCR = 0x00;                   // Disable WDT
+        //sei();                          // Enable interrupts
+    #elif (ATTINY == 1634)
+        cli();                // needed because CCP, below
+        wdt_reset();          // Reset the WDT
+        MCUSR &= ~(1<<WDRF);  // clear watchdog reset flag
+        CCP = 0xD8;           // enable config changes
+        WDTCSR = 0;           // disable and clear all WDT settings
+        sei();
+    #else
+        #error Unrecognized MCU type
+    #endif
 }
 
 // clock tick -- this runs every 16ms (62.5 fps)
 ISR(WDT_vect) {
+    static uint8_t adc_trigger = 0;
+
     #ifdef TICK_DURING_STANDBY
     f_wdt = 1;  // WDT event happened
 
@@ -68,9 +95,16 @@ ISR(WDT_vect) {
         // wrap around from 65535 to 32768, not 0
         sleep_counter = (sleep_counter + 1) | (sleep_counter & 0x8000);
         process_emissions();
-        return;
+
+        #if defined(USE_SLEEP_LVP)
+        // stop here, usually...  but proceed often enough for sleep LVP to work
+        if (0 != (sleep_counter & 0x7f)) return;
+        adc_trigger = 255;  // make sure a measurement will happen
+        #else
+        return;  // no sleep LVP needed if nothing drains power while off
+        #endif
     }
-    sleep_counter = 0;
+    else { sleep_counter = 0; }
     #endif
 
     // detect and emit button change events
@@ -136,10 +170,14 @@ ISR(WDT_vect) {
 
     #if defined(USE_LVP) || defined(USE_THERMAL_REGULATION)
     // start a new ADC measurement every 4 ticks
-    static uint8_t adc_trigger = 0;
     adc_trigger ++;
     if (0 == (adc_trigger & 3)) {
-        ADCSRA |= (1 << ADSC) | (1 << ADIE);
+        #if defined(TICK_DURING_STANDBY) && defined(USE_SLEEP_LVP)
+        // we shouldn't be here unless it woke up for a LVP check...
+        // so enable ADC voltage measurement functions temporarily
+        if (go_to_standby) ADC_on();
+        #endif
+        ADC_start_measurement();
         adcint_enable = 1;
     }
     #endif
