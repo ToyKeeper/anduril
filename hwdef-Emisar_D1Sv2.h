@@ -58,11 +58,29 @@
 //#define PWM2_LVL OCR1B      // OCR1B is the output compare register for PB1
 
 
+#define USE_VOLTAGE_DIVIDER  // use a dedicated pin, not VCC, because VCC input is flattened
+#define VOLTAGE_PIN PA3      // Pin 4 / PA3 / ADC0
+#define VOLTAGE_ADC_DIDR ADC0D  // digital input disable pin for PA3
+// DS tables 19-3, 19-4
+// Bit   7     6     5      4     3    2    1    0
+//     REFS1 REFS0 REFEN ADC0EN MUX3 MUX2 MUX1 MUX0
+// MUX[3:0] = 0, 0, 0, 0 for ADC0 / PA3
+// divided by ...
+// REFS[1:0] = 1, 0 for internal 1.1V reference
+// other bits reserved
+#define ADMUX_VOLTAGE_DIVIDER 0b10000000
 #define ADC_PRSCL   0x06    // clk/64
 
-// average drop across diode on this hardware
-#ifndef VOLTAGE_FUDGE_FACTOR
-#define VOLTAGE_FUDGE_FACTOR 4  // add 0.20V  (measured 0.22V)
+// Raw ADC readings at 4.4V and 2.2V
+// calibrate the voltage readout here
+// estimated / calculated values are:
+//   (voltage - D1) * (R2/(R2+R1) * 256 / 1.1)
+// D1, R1, R2 = 0, 330, 100
+#ifndef ADC_44
+#define ADC_44 235
+#endif
+#ifndef ADC_22
+#define ADC_22 116
 #endif
 
 #define TEMP_CHANNEL 0b00001111
