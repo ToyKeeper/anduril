@@ -1941,6 +1941,9 @@ uint8_t muggle_state(Event event, uint16_t arg) {
         // turn off, but don't go to the main "off" state
         if (muggle_off_mode) {
             if (arg > TICKS_PER_SECOND*1) {  // sleep after 1 second
+                #ifdef USE_AUX_RGB_LEDS_WHILE_ON
+                rgb_led_set(0);
+                #endif
                 go_to_standby = 1;  // sleep while light is off
             }
         }
