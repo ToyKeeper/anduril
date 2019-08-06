@@ -47,7 +47,10 @@ void gradual_tick();
 #define PWM_GET(x,y) pgm_read_byte(x+y)
 #else
 #define PWM_DATATYPE uint16_t
-#define PWM_GET(x,y) pgm_read_word(x+(2*y))
+// pointer plus 2*y bytes
+//#define PWM_GET(x,y) pgm_read_word(x+(2*y))
+// nope, the compiler was already doing the math correctly
+#define PWM_GET(x,y) pgm_read_word(x+y)
 #endif
 
 // use UI-defined ramp tables if they exist
