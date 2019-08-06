@@ -4,7 +4,10 @@
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
-#define USE_AUX_RGB_LEDS_WHILE_RAMPING
+#define USE_AUX_RGB_LEDS_WHILE_ON
+#define USE_INDICATOR_LED_WHILE_RAMPING
+#define RGB_LED_OFF_DEFAULT 0x18  // low, voltage
+#define RGB_LED_LOCKOUT_DEFAULT 0x37  // blinking, rainbow
 
 // enable blinking aux LEDs
 #define TICK_DURING_STANDBY
@@ -47,5 +50,8 @@
 
 // easier access to thermal config mode, for Emisar
 #define USE_TENCLICK_THERMAL_CONFIG
+
+// slow down party strobe; this driver can't pulse for 1ms or less
+#define PARTY_STROBE_ONTIME 2
 
 #define THERM_CAL_OFFSET 5
