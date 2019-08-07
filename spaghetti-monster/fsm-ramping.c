@@ -146,13 +146,13 @@ void gradual_tick() {
 
     gt --;  // convert 1-based number to 0-based
 
-    uint8_t target;
+    PWM_DATATYPE target;
 
     #if PWM_CHANNELS >= 1
     target = PWM_GET(pwm1_levels, gt);
     if ((gt < actual_level)     // special case for FET-only turbo
             && (PWM1_LVL == 0)  // (bypass adjustment period for first step)
-            && (target == 255)) PWM1_LVL = 255;
+            && (target == PWM_TOP)) PWM1_LVL = PWM_TOP;
     else if (PWM1_LVL < target) PWM1_LVL ++;
     else if (PWM1_LVL > target) PWM1_LVL --;
     #endif

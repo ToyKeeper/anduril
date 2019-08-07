@@ -41,6 +41,7 @@
 
 #define PWM_CHANNELS 1
 #define PWM_BITS 10  // 0 to 1023 at 4 kHz, not 0 to 255 at 16 kHz
+#define PWM_TOP 1023
 
 #define SWITCH_PIN   PA7    // pin 20
 #define SWITCH_PCINT PCINT7 // pin 20 pin change interrupt

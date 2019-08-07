@@ -41,12 +41,15 @@ void gradual_tick();
 // auto-detect the data type for PWM tables
 #ifndef PWM_BITS
 #define PWM_BITS 8
+#define PWM_TOP 255
 #endif
 #if PWM_BITS <= 8
 #define PWM_DATATYPE uint8_t
+#define PWM_TOP 255
 #define PWM_GET(x,y) pgm_read_byte(x+y)
 #else
 #define PWM_DATATYPE uint16_t
+#define PWM_TOP 1023  // 10 bits by default
 // pointer plus 2*y bytes
 //#define PWM_GET(x,y) pgm_read_word(x+(2*y))
 // nope, the compiler was already doing the math correctly
