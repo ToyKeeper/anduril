@@ -1,6 +1,21 @@
 // Emisar D4 config options for Anduril
-#include "hwdef-Emisar_D4.h"
+#include "hwdef-Emisar_D4v2.h"
+// ATTINY: 1634
 
+// this light has three aux LED channels: R, G, B
+#define USE_AUX_RGB_LEDS
+// the aux LEDs are front-facing, so turn them off while main LEDs are on
+#ifdef USE_INDICATOR_LED_WHILE_RAMPING
+#undef USE_INDICATOR_LED_WHILE_RAMPING
+#endif
+// enable blinking aux LEDs
+#define TICK_DURING_STANDBY
+#define STANDBY_TICK_SPEED 3  // every 0.128 s
+//#define STANDBY_TICK_SPEED 4  // every 0.256 s
+//#define STANDBY_TICK_SPEED 5  // every 0.512 s
+
+
+// copied from original D4, since it's also a FET+1 and has the same host
 // ../../bin/level_calc.py 1 65 7135 1 0.8 150
 // ... mixed with this:
 // ../../bin/level_calc.py 2 150 7135 4 0.33 150 FET 1 10 1500
@@ -28,4 +43,9 @@
 #define THERMAL_WARNING_SECONDS 3
 #define THERMAL_UPDATE_SPEED 1
 #define THERM_PREDICTION_STRENGTH 4
+//#define THERM_RESPONSE_MAGNITUDE 128
 
+// easier access to thermal config mode, for Emisar
+#define USE_TENCLICK_THERMAL_CONFIG
+
+#define THERM_CAL_OFFSET 5

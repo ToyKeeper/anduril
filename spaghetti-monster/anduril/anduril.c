@@ -28,10 +28,18 @@
 #define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 45  // try not to get hotter than this
 
+#define USE_FACTORY_RESET
+//#define USE_SOFT_FACTORY_RESET  // only needed on models which can't use hold-button-at-boot
+
+// dual-switch support (second switch is a tail clicky)
+// (currently incompatible with factory reset)
+//#define START_AT_MEMORIZED_LEVEL
+
+
 // short blip when crossing from "click" to "hold" from off
 // (helps the user hit moon mode exactly, instead of holding too long
 //  or too short)
-#define MOON_TIMING_HINT
+#define MOON_TIMING_HINT  // only applies if B_TIMING_ON == B_PRESS_T
 // short blips while ramping
 #define BLINK_AT_RAMP_MIDDLE
 //#define BLINK_AT_RAMP_FLOOR
@@ -41,6 +49,13 @@
 // ramp down via regular button hold if a ramp-up ended <1s ago
 // ("hold, release, hold" ramps down instead of up)
 #define USE_REVERSING
+
+// add a runtime option to switch between automatic memory (default)
+// and manual memory (only available if compiled in)
+// (manual memory makes 1-click-from-off start at the same level each time)
+// (the level can be set explicitly with 5 clicks from on,
+// or the user can go back to automatic with click-click-click-click-hold)
+#define USE_MANUAL_MEMORY
 
 // battery readout style (pick one)
 #define BATTCHECK_VpT
@@ -73,9 +88,6 @@
 //  so don't enable them at the same time as any of the above strobes)
 //#define USE_POLICE_STROBE_MODE
 //#define USE_SOS_MODE
-
-// dual-switch support (second switch is a tail clicky)
-//#define START_AT_MEMORIZED_LEVEL
 
 /***** specific settings for known driver types *****/
 #include "tk.h"
@@ -120,10 +132,12 @@
 
 // full FET strobe can be a bit much...  use max regulated level instead,
 // if there's a bright enough regulated level
+#ifndef STROBE_BRIGHTNESS
 #ifdef MAX_Nx7135
 #define STROBE_BRIGHTNESS MAX_Nx7135
 #else
 #define STROBE_BRIGHTNESS MAX_LEVEL
+#endif
 #endif
 
 #if defined(USE_CANDLE_MODE) || defined(USE_BIKE_FLASHER_MODE) || defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE) || defined(USE_LIGHTNING_MODE)
@@ -144,6 +158,9 @@ typedef enum {
     ramp_discrete_floor_e,
     ramp_discrete_ceil_e,
     ramp_discrete_steps_e,
+    #endif
+    #ifdef USE_MANUAL_MEMORY
+    manual_memory_e,
     #endif
     #ifdef USE_TINT_RAMPING
     tint_e,
@@ -171,6 +188,10 @@ typedef enum {
     #ifdef USE_INDICATOR_LED
     indicator_led_mode_e,
     #endif
+    #ifdef USE_AUX_RGB_LEDS
+    rgb_led_off_mode_e,
+    rgb_led_lockout_mode_e,
+    #endif
     eeprom_indexes_e_END
 } eeprom_indexes_e;
 #define EEPROM_BYTES eeprom_indexes_e_END
@@ -191,7 +212,29 @@ typedef enum {
 #endif
 #endif
 
+#ifdef USE_SOFT_FACTORY_RESET
+#define USE_REBOOT
+#endif
+
 #include "spaghetti-monster.h"
+
+
+// configure the timing of turning on/off in regular ramp mode
+// press: react as soon as the button is pressed
+#define B_PRESS_T 0
+// release: react as soon as the button is released
+#define B_RELEASE_T 1
+// timeout: react as soon as we're sure the user isn't doing a double-click
+#define B_TIMEOUT_T 2
+// defaults are release on, timeout off
+#ifndef B_TIMING_ON
+//#define B_TIMING_ON B_PRESS_T
+#define B_TIMING_ON B_RELEASE_T
+#endif
+#ifndef B_TIMING_OFF
+//#define B_TIMING_OFF B_RELEASE_T
+#define B_TIMING_OFF B_TIMEOUT_T
+#endif
 
 
 // FSM states
@@ -240,10 +283,12 @@ uint8_t beacon_config_state(Event event, uint16_t arg);
 // soft lockout
 #define MOON_DURING_LOCKOUT_MODE
 // if enabled, 2nd lockout click goes to the other ramp's floor level
-//#define LOCKOUT_MOON_FANCY
+#define LOCKOUT_MOON_FANCY
 uint8_t lockout_state(Event event, uint16_t arg);
 // momentary / signalling mode
 uint8_t momentary_state(Event event, uint16_t arg);
+uint8_t momentary_mode = 0;  // 0 = ramping, 1 = strobe
+uint8_t momentary_active = 0;  // boolean, true if active *right now*
 #ifdef USE_MUGGLE_MODE
 // muggle mode, super-simple, hard to exit
 uint8_t muggle_state(Event event, uint16_t arg);
@@ -259,6 +304,35 @@ void blink_confirm(uint8_t num);
 void blip();
 #if defined(USE_INDICATOR_LED) && defined(TICK_DURING_STANDBY)
 void indicator_blink(uint8_t arg);
+#endif
+#if defined(USE_AUX_RGB_LEDS) && defined(TICK_DURING_STANDBY)
+void rgb_led_update(uint8_t mode, uint8_t arg);
+/*
+ * 0: R
+ * 1: RG
+ * 2:  G
+ * 3:  GB
+ * 4:   B
+ * 5: R B
+ * 6: RGB
+ * 7: rainbow
+ * 8: voltage
+ */
+#define RGB_LED_NUM_COLORS 10
+#define RGB_LED_NUM_PATTERNS 4
+#ifndef RGB_LED_OFF_DEFAULT
+//#define RGB_LED_OFF_DEFAULT 0x18  // low, voltage
+#define RGB_LED_OFF_DEFAULT 0x17  // low, rainbow
+#endif
+#ifndef RGB_LED_LOCKOUT_DEFAULT
+#define RGB_LED_LOCKOUT_DEFAULT 0x37  // blinking, rainbow
+#endif
+uint8_t rgb_led_off_mode = RGB_LED_OFF_DEFAULT;
+uint8_t rgb_led_lockout_mode = RGB_LED_LOCKOUT_DEFAULT;
+#endif
+
+#ifdef USE_FACTORY_RESET
+void factory_reset();
 #endif
 
 // remember stuff even after battery was changed
@@ -314,6 +388,9 @@ void save_config_wl();
 #define DEFAULT_LEVEL MAX_1x7135
 #endif
 uint8_t memorized_level = DEFAULT_LEVEL;
+#ifdef USE_MANUAL_MEMORY
+uint8_t manual_memory = 0;
+#endif
 // smooth vs discrete ramping
 volatile uint8_t ramp_style = RAMP_STYLE;  // 0 = smooth, 1 = discrete
 volatile uint8_t ramp_smooth_floor = RAMP_SMOOTH_FLOOR;
@@ -347,6 +424,9 @@ uint8_t nearest_level(int16_t target);
 #ifdef USE_THERMAL_REGULATION
 // brightness before thermal step-down
 uint8_t target_level = 0;
+void set_level_and_therm_target(uint8_t level);
+#else
+#define set_level_and_therm_target(level) set_level(level)
 #endif
 
 // internal numbering for strobe modes
@@ -410,42 +490,57 @@ uint8_t off_state(Event event, uint16_t arg) {
         set_level(0);
         #ifdef USE_INDICATOR_LED
         indicator_led(indicator_led_mode & 0x03);
+        #elif defined(USE_AUX_RGB_LEDS)
+        rgb_led_update(rgb_led_off_mode, 0);
         #endif
         // sleep while off  (lower power use)
-        go_to_standby = 1;
+        // (unless delay requested; give the ADC some time to catch up)
+        if (! arg) { go_to_standby = 1; }
         return MISCHIEF_MANAGED;
     }
     // go back to sleep eventually if we got bumped but didn't leave "off" state
     else if (event == EV_tick) {
-        if (arg > TICKS_PER_SECOND*2) {
+        if (arg > HOLD_TIMEOUT) {
             go_to_standby = 1;
             #ifdef USE_INDICATOR_LED
             indicator_led(indicator_led_mode & 0x03);
+            #elif defined(USE_AUX_RGB_LEDS)
+            rgb_led_update(rgb_led_off_mode, arg);
             #endif
         }
         return MISCHIEF_MANAGED;
     }
-    #if defined(TICK_DURING_STANDBY) && defined(USE_INDICATOR_LED)
+    #if defined(TICK_DURING_STANDBY) && (defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS))
     // blink the indicator LED, maybe
     else if (event == EV_sleep_tick) {
+        #ifdef USE_INDICATOR_LED
         if ((indicator_led_mode & 0b00000011) == 0b00000011) {
             indicator_blink(arg);
         }
+        #elif defined(USE_AUX_RGB_LEDS)
+        rgb_led_update(rgb_led_off_mode, arg);
+        #endif
         return MISCHIEF_MANAGED;
     }
     #endif
+    #if (B_TIMING_ON == B_PRESS_T)
     // hold (initially): go to lowest level (floor), but allow abort for regular click
     else if (event == EV_click1_press) {
         set_level(nearest_level(1));
         return MISCHIEF_MANAGED;
     }
+    #endif  // B_TIMING_ON == B_PRESS_T
     // hold: go to lowest level
     else if (event == EV_click1_hold) {
+        #if (B_TIMING_ON == B_PRESS_T)
         #ifdef MOON_TIMING_HINT
         if (arg == 0) {
             // let the user know they can let go now to stay at moon
             blip();
         } else
+        #endif
+        #else  // B_RELEASE_T or B_TIMEOUT_T
+        set_level(nearest_level(1));
         #endif
         // don't start ramping immediately;
         // give the user time to release at moon level
@@ -460,13 +555,25 @@ uint8_t off_state(Event event, uint16_t arg) {
         set_state(steady_state, 1);
         return MISCHIEF_MANAGED;
     }
+    #if (B_TIMING_ON != B_TIMEOUT_T)
     // 1 click (before timeout): go to memorized level, but allow abort for double click
     else if (event == EV_click1_release) {
+        #ifdef USE_MANUAL_MEMORY
+        if (manual_memory)
+            set_level(nearest_level(manual_memory));
+        else
+        #endif
         set_level(nearest_level(memorized_level));
         return MISCHIEF_MANAGED;
     }
+    #endif  // if (B_TIMING_ON != B_TIMEOUT_T)
     // 1 click: regular mode
     else if (event == EV_1click) {
+        #ifdef USE_MANUAL_MEMORY
+        if (manual_memory)
+            set_state(steady_state, manual_memory);
+        else
+        #endif
         set_state(steady_state, memorized_level);
         return MISCHIEF_MANAGED;
     }
@@ -541,11 +648,44 @@ uint8_t off_state(Event event, uint16_t arg) {
         save_config();
         return MISCHIEF_MANAGED;
     }
-    #endif
+    #elif defined(USE_AUX_RGB_LEDS)
+    // 7 clicks: change RGB aux LED pattern
+    else if (event == EV_7clicks) {
+        uint8_t mode = (rgb_led_off_mode >> 4) + 1;
+        mode = mode % RGB_LED_NUM_PATTERNS;
+        rgb_led_off_mode = (mode << 4) | (rgb_led_off_mode & 0x0f);
+        rgb_led_update(rgb_led_off_mode, 0);
+        save_config();
+        blink_confirm(1);
+        return MISCHIEF_MANAGED;
+    }
+    // 7 clicks (hold last): change RGB aux LED color
+    else if (event == EV_click7_hold) {
+        if (0 == (arg & 0x3f)) {
+            uint8_t mode = (rgb_led_off_mode & 0x0f) + 1;
+            mode = mode % RGB_LED_NUM_COLORS;
+            rgb_led_off_mode = mode | (rgb_led_off_mode & 0xf0);
+            //save_config();
+        }
+        rgb_led_update(rgb_led_off_mode, arg);
+        return MISCHIEF_MANAGED;
+    }
+    else if (event == EV_click7_hold_release) {
+        save_config();
+        return MISCHIEF_MANAGED;
+    }
+    #endif  // end 7 clicks
     #ifdef USE_TENCLICK_THERMAL_CONFIG
     // 10 clicks: thermal config mode
     else if (event == EV_10clicks) {
         push_state(thermal_config_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    #endif
+    #if defined(USE_FACTORY_RESET) && defined(USE_SOFT_FACTORY_RESET)
+    // 13 clicks and hold the last click: invoke factory reset (reboot)
+    else if (event == EV_click13_hold) {
+        reboot();
         return MISCHIEF_MANAGED;
     }
     #endif
@@ -560,6 +700,11 @@ uint8_t steady_state(Event event, uint16_t arg) {
     #ifdef USE_REVERSING
     static int8_t ramp_direction = 1;
     #endif
+    #if (B_TIMING_OFF == B_RELEASE_T)
+    // if the user double clicks, we need to abort turning off,
+    // and this stores the level to return to
+    static uint8_t level_before_off = 0;
+    #endif
     if (ramp_style) {
         mode_min = ramp_discrete_floor;
         mode_max = ramp_discrete_ceil;
@@ -568,6 +713,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
 
     // turn LED on when we first enter the mode
     if ((event == EV_enter_state) || (event == EV_reenter_state)) {
+        momentary_mode = 0;  // 0 = ramping, 1 = strobes
         // if we just got back from config mode, go back to memorized level
         if (event == EV_reenter_state) {
             arg = memorized_level;
@@ -577,15 +723,25 @@ uint8_t steady_state(Event event, uint16_t arg) {
             memorized_level = arg;
         // use the requested level even if not memorized
         arg = nearest_level(arg);
-        #ifdef USE_THERMAL_REGULATION
-        target_level = arg;
-        #endif
-        set_level(arg);
+        set_level_and_therm_target(arg);
         #ifdef USE_REVERSING
         ramp_direction = 1;
         #endif
         return MISCHIEF_MANAGED;
     }
+    #if (B_TIMING_OFF == B_RELEASE_T)
+    // 1 click (early): off, if configured for early response
+    else if (event == EV_click1_release) {
+        level_before_off = actual_level;
+        set_level_and_therm_target(0);
+        return MISCHIEF_MANAGED;
+    }
+    // 2 clicks (early): abort turning off, if configured for early response
+    else if (event == EV_click2_press) {
+        set_level_and_therm_target(level_before_off);
+        return MISCHIEF_MANAGED;
+    }
+    #endif  // if (B_TIMING_OFF == B_RELEASE_T)
     // 1 click: off
     else if (event == EV_1click) {
         set_state(off_state, 0);
@@ -594,36 +750,24 @@ uint8_t steady_state(Event event, uint16_t arg) {
     // 2 clicks: go to/from highest level
     else if (event == EV_2clicks) {
         if (actual_level < MAX_LEVEL) {
-            #ifdef USE_THERMAL_REGULATION
-            target_level = MAX_LEVEL;
-            #endif
             // true turbo, not the mode-specific ceiling
-            set_level(MAX_LEVEL);
+            set_level_and_therm_target(MAX_LEVEL);
         }
         else {
-            #ifdef USE_THERMAL_REGULATION
-            target_level = memorized_level;
-            #endif
-            set_level(memorized_level);
+            set_level_and_therm_target(memorized_level);
         }
         return MISCHIEF_MANAGED;
     }
     // 3 clicks: toggle smooth vs discrete ramping
     else if (event == EV_3clicks) {
         ramp_style = !ramp_style;
-        memorized_level = nearest_level(actual_level);
-        #ifdef USE_THERMAL_REGULATION
-        target_level = memorized_level;
-        #ifdef USE_SET_LEVEL_GRADUALLY
-        //set_level_gradually(lvl);
-        #endif
-        #endif
         save_config();
         #ifdef START_AT_MEMORIZED_LEVEL
         save_config_wl();
         #endif
         blip();
-        set_level(memorized_level);
+        memorized_level = nearest_level(actual_level);
+        set_level_and_therm_target(memorized_level);
         return MISCHIEF_MANAGED;
     }
     #ifdef USE_RAMP_CONFIG
@@ -652,9 +796,6 @@ uint8_t steady_state(Event event, uint16_t arg) {
                           + (ramp_step_size * ramp_direction));
         #else
         memorized_level = nearest_level((int16_t)actual_level + ramp_step_size);
-        #endif
-        #ifdef USE_THERMAL_REGULATION
-        target_level = memorized_level;
         #endif
         #if defined(BLINK_AT_RAMP_CEILING) || defined(BLINK_AT_RAMP_MIDDLE)
         // only blink once for each threshold
@@ -690,7 +831,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
             blip();
         }
         #endif
-        set_level(memorized_level);
+        set_level_and_therm_target(memorized_level);
         return MISCHIEF_MANAGED;
     }
     #if defined(USE_REVERSING) || defined(START_AT_MEMORIZED_LEVEL)
@@ -716,9 +857,6 @@ uint8_t steady_state(Event event, uint16_t arg) {
         }
         // TODO? make it ramp up instead, if already at min?
         memorized_level = nearest_level((int16_t)actual_level - ramp_step_size);
-        #ifdef USE_THERMAL_REGULATION
-        target_level = memorized_level;
-        #endif
         #if defined(BLINK_AT_RAMP_FLOOR) || defined(BLINK_AT_RAMP_MIDDLE)
         // only blink once for each threshold
         if ((memorized_level != actual_level) && (
@@ -750,7 +888,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
             blip();
         }
         #endif
-        set_level(memorized_level);
+        set_level_and_therm_target(memorized_level);
         return MISCHIEF_MANAGED;
     }
     #ifdef START_AT_MEMORIZED_LEVEL
@@ -758,6 +896,20 @@ uint8_t steady_state(Event event, uint16_t arg) {
     else if (event == EV_click2_hold_release) {
         save_config_wl();
         return MISCHIEF_MANAGED;
+    }
+    #endif
+    #ifdef USE_MANUAL_MEMORY
+    else if (event == EV_5clicks) {
+        manual_memory = actual_level;
+        save_config();
+        blip();
+    }
+    else if (event == EV_click5_hold) {
+        if (0 == arg) {
+            manual_memory = 0;
+            save_config();
+            blip();
+        }
     }
     #endif
     #if defined(USE_SET_LEVEL_GRADUALLY) || defined(USE_REVERSING)
@@ -768,7 +920,10 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #endif
         #ifdef USE_SET_LEVEL_GRADUALLY
         // make thermal adjustment speed scale with magnitude
-        if ((arg & 1) && (actual_level < THERM_FASTER_LEVEL)) {
+        // also, adjust slower when going up
+        if ((arg & 1) &&
+            ((actual_level < THERM_FASTER_LEVEL) ||
+             (actual_level < gradual_target))) {
             return MISCHIEF_MANAGED;  // adjust slower when not a high mode
         }
         #ifdef THERM_HARD_TURBO_DROP
@@ -786,31 +941,38 @@ uint8_t steady_state(Event event, uint16_t arg) {
         uint8_t intervals[] = {248, 128, 66, 34, 17, 9, 4, 2};
         uint8_t diff;
         static uint8_t ticks_since_adjust = 0;
-        ticks_since_adjust ++;
-        if (gradual_target > actual_level) diff = gradual_target - actual_level;
-        else {
+        if (gradual_target > actual_level) {
+            // rise at half speed (skip half the frames)
+            if (arg & 2) return MISCHIEF_MANAGED;
+            diff = gradual_target - actual_level;
+        } else {
             diff = actual_level - gradual_target;
         }
-        uint8_t magnitude = 0;
-        #ifndef THERM_HARD_TURBO_DROP
-        // if we're on a really high mode, drop faster
-        if (actual_level >= THERM_FASTER_LEVEL) { magnitude ++; }
-        #endif
-        while (diff) {
-            magnitude ++;
-            diff >>= 1;
+        ticks_since_adjust ++;
+        // if there's any adjustment to be made, make it
+        if (diff) {
+            uint8_t magnitude = 0;
+            #ifndef THERM_HARD_TURBO_DROP
+            // if we're on a really high mode, drop faster
+            if ((actual_level >= THERM_FASTER_LEVEL)
+                && (actual_level > gradual_target)) { magnitude ++; }
+            #endif
+            while (diff) {
+                magnitude ++;
+                diff >>= 1;
+            }
+            uint8_t ticks_per_adjust = intervals[magnitude];
+            if (ticks_since_adjust > ticks_per_adjust)
+            {
+                gradual_tick();
+                ticks_since_adjust = 0;
+            }
+            //if (!(arg % ticks_per_adjust)) gradual_tick();
         }
-        uint8_t ticks_per_adjust = intervals[magnitude];
-        if (ticks_since_adjust > ticks_per_adjust)
-        {
-            gradual_tick();
-            ticks_since_adjust = 0;
-        }
-        //if (!(arg % ticks_per_adjust)) gradual_tick();
         #ifdef THERM_HARD_TURBO_DROP
         }
         #endif
-        #endif
+        #endif  // ifdef USE_SET_LEVEL_GRADUALLY
         return MISCHIEF_MANAGED;
     }
     #endif
@@ -821,13 +983,14 @@ uint8_t steady_state(Event event, uint16_t arg) {
         blip();
         #endif
         #ifdef THERM_HARD_TURBO_DROP
-        if (actual_level > THERM_FASTER_LEVEL) {
+        //if (actual_level > THERM_FASTER_LEVEL) {
+        if (actual_level == MAX_LEVEL) {
             #ifdef USE_SET_LEVEL_GRADUALLY
             set_level_gradually(THERM_FASTER_LEVEL);
-            #else
-            set_level(THERM_FASTER_LEVEL);
-            #endif
             target_level = THERM_FASTER_LEVEL;
+            #else
+            set_level_and_therm_target(THERM_FASTER_LEVEL);
+            #endif
         } else
         #endif
         if (actual_level > MIN_THERM_STEPDOWN) {
@@ -861,7 +1024,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         }
         return MISCHIEF_MANAGED;
     }
-    #endif
+    #endif  // ifdef USE_THERMAL_REGULATION
     return EVENT_NOT_HANDLED;
 }
 
@@ -931,9 +1094,13 @@ uint8_t tint_ramping_state(Event event, uint16_t arg) {
 
 #ifdef USE_STROBE_STATE
 uint8_t strobe_state(Event event, uint16_t arg) {
+    static int8_t ramp_direction = 1;
+
     // 'st' reduces ROM size by avoiding access to a volatile var
     // (maybe I should just make it nonvolatile?)
     strobe_mode_te st = strobe_type;
+
+    momentary_mode = 1;  // 0 = ramping, 1 = strobes
 
     #ifdef USE_CANDLE_MODE
     // pass all events to candle mode, when it's active
@@ -944,11 +1111,11 @@ uint8_t strobe_state(Event event, uint16_t arg) {
     #endif
 
     if (0) {}  // placeholder
-    /* not used any more
+    // init anything which needs to be initialized
     else if (event == EV_enter_state) {
+        ramp_direction = 1;
         return MISCHIEF_MANAGED;
     }
-    */
     // 1 click: off
     else if (event == EV_1click) {
         set_state(off_state, 0);
@@ -973,7 +1140,11 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         else if (st == party_strobe_e) {
         #endif
             if ((arg & 1) == 0) {
-                if (strobe_delays[st] > 8) strobe_delays[st] --;
+                uint8_t d = strobe_delays[st];
+                d -= ramp_direction;
+                if (d < 8) d = 8;
+                else if (d > 254) d = 254;
+                strobe_delays[st] = d;
             }
         }
         #endif
@@ -984,17 +1155,27 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         // biking mode brighter
         #ifdef USE_BIKE_FLASHER_MODE
         else if (st == bike_flasher_e) {
-            if (bike_flasher_brightness < MAX_BIKING_LEVEL)
-                bike_flasher_brightness ++;
+            bike_flasher_brightness += ramp_direction;
+            if (bike_flasher_brightness < 2) bike_flasher_brightness = 2;
+            else if (bike_flasher_brightness > MAX_BIKING_LEVEL) bike_flasher_brightness = MAX_BIKING_LEVEL;
             set_level(bike_flasher_brightness);
         }
         #endif
 
         return MISCHIEF_MANAGED;
     }
+    // reverse ramp direction on hold release
+    // ... and save new strobe settings
+    else if (event == EV_click1_hold_release) {
+        ramp_direction = -ramp_direction;
+        save_config();
+        return MISCHIEF_MANAGED;
+    }
     // click, hold: change speed (go slower)
     //       or change brightness (dimmer)
     else if (event == EV_click2_hold) {
+        ramp_direction = 1;
+
         if (0) {}  // placeholder
 
         // party / tactical strobe slower
@@ -1025,14 +1206,16 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     // release hold: save new strobe settings
-    else if ((event == EV_click1_hold_release)
-          || (event == EV_click2_hold_release)) {
+    else if (event == EV_click2_hold_release) {
         save_config();
         return MISCHIEF_MANAGED;
     }
     #if defined(USE_LIGHTNING_MODE) || defined(USE_CANDLE_MODE)
     // clock tick: bump the random seed
     else if (event == EV_tick) {
+        // un-reverse after 1 second
+        if (arg == TICKS_PER_SECOND) ramp_direction = 1;
+
         pseudo_rand_seed += arg;
         return MISCHIEF_MANAGED;
     }
@@ -1129,6 +1312,7 @@ inline void bike_flasher_iter() {
 
 #ifdef USE_CANDLE_MODE
 uint8_t candle_mode_state(Event event, uint16_t arg) {
+    static int8_t ramp_direction = 1;
     #define MAX_CANDLE_LEVEL (RAMP_LENGTH-CANDLE_AMPLITUDE-15)
     static uint8_t candle_wave1 = 0;
     static uint8_t candle_wave2 = 0;
@@ -1148,6 +1332,7 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
 
     if (event == EV_enter_state) {
         candle_mode_timer = 0;  // in case any time was left over from earlier
+        ramp_direction = 1;
         return MISCHIEF_MANAGED;
     }
     // 2 clicks: cancel timer
@@ -1159,12 +1344,25 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
     }
     // hold: change brightness (brighter)
     else if (event == EV_click1_hold) {
-        if (candle_mode_brightness < MAX_CANDLE_LEVEL)
-            candle_mode_brightness ++;
+        // ramp away from extremes
+        if (! arg) {
+            if (candle_mode_brightness >= MAX_CANDLE_LEVEL) { ramp_direction = -1; }
+            else if (candle_mode_brightness <= 1) { ramp_direction = 1; }
+        }
+        // change brightness, but not too far
+        candle_mode_brightness += ramp_direction;
+        if (candle_mode_brightness < 1) candle_mode_brightness = 1;
+        else if (candle_mode_brightness > MAX_CANDLE_LEVEL) candle_mode_brightness = MAX_CANDLE_LEVEL;
+        return MISCHIEF_MANAGED;
+    }
+    // reverse ramp direction on hold release
+    else if (event == EV_click1_hold_release) {
+        ramp_direction = -ramp_direction;
         return MISCHIEF_MANAGED;
     }
     // click, hold: change brightness (dimmer)
     else if (event == EV_click2_hold) {
+        ramp_direction = 1;
         if (candle_mode_brightness > 1)
             candle_mode_brightness --;
         return MISCHIEF_MANAGED;
@@ -1182,6 +1380,9 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
     }
     // clock tick: animate candle brightness
     else if (event == EV_tick) {
+        // un-reverse after 1 second
+        if (arg == TICKS_PER_SECOND) ramp_direction = 1;
+
         // self-timer dims the light during the final minute
         uint8_t subtract = 0;
         if (candle_mode_timer == 1) {
@@ -1426,6 +1627,10 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     #ifdef MOON_DURING_LOCKOUT_MODE
     // momentary(ish) moon mode during lockout
     // button is being held
+    #ifdef USE_AUX_RGB_LEDS
+    // don't turn on during RGB aux LED configuration
+    if (event == EV_click3_hold) { set_level(0); } else
+    #endif
     if ((event & (B_CLICK | B_PRESS)) == (B_CLICK | B_PRESS)) {
         #ifdef LOCKOUT_MOON_LOWEST
         // Use lowest moon configured
@@ -1459,74 +1664,81 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     if (event == EV_enter_state) {
         indicator_led(indicator_led_mode >> 2);
     } else
+    #elif defined(USE_AUX_RGB_LEDS)
+    if (event == EV_enter_state) {
+        rgb_led_update(rgb_led_lockout_mode, 0);
+    } else
     #endif
     if (event == EV_tick) {
-        if (arg > TICKS_PER_SECOND*2) {
+        if (arg > HOLD_TIMEOUT) {
             go_to_standby = 1;
             #ifdef USE_INDICATOR_LED
             indicator_led(indicator_led_mode >> 2);
+            #elif defined(USE_AUX_RGB_LEDS)
+            rgb_led_update(rgb_led_lockout_mode, arg);
             #endif
         }
         return MISCHIEF_MANAGED;
     }
-    #if defined(TICK_DURING_STANDBY) && defined(USE_INDICATOR_LED)
+    #if defined(TICK_DURING_STANDBY) && (defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS))
     else if (event == EV_sleep_tick) {
+        #if defined(USE_INDICATOR_LED)
         if ((indicator_led_mode & 0b00001100) == 0b00001100) {
             indicator_blink(arg);
         }
+        #elif defined(USE_AUX_RGB_LEDS)
+        rgb_led_update(rgb_led_lockout_mode, arg);
+        #endif
         return MISCHIEF_MANAGED;
     }
     #endif
-    #ifdef USE_INDICATOR_LED
+    #if defined(USE_INDICATOR_LED)
     // 3 clicks: rotate through indicator LED modes (lockout mode)
     else if (event == EV_3clicks) {
-        uint8_t mode = indicator_led_mode >> 2;
-        #ifdef TICK_DURING_STANDBY
-        mode = (mode + 1) & 3;
-        #else
-        mode = (mode + 1) % 3;
+        #if defined(USE_INDICATOR_LED)
+            uint8_t mode = indicator_led_mode >> 2;
+            #ifdef TICK_DURING_STANDBY
+            mode = (mode + 1) & 3;
+            #else
+            mode = (mode + 1) % 3;
+            #endif
+            #ifdef INDICATOR_LED_SKIP_LOW
+            if (mode == 1) { mode ++; }
+            #endif
+            indicator_led_mode = (mode << 2) + (indicator_led_mode & 0x03);
+            indicator_led(mode);
+        #elif defined(USE_AUX_RGB_LEDS)
         #endif
-        #ifdef INDICATOR_LED_SKIP_LOW
-        if (mode == 1) { mode ++; }
-        #endif
-        indicator_led_mode = (mode << 2) + (indicator_led_mode & 0x03);
-        indicator_led(mode);
         save_config();
         return MISCHIEF_MANAGED;
     }
-    #if 0  // old method, deprecated in favor of "7 clicks from off"
-    // click, click, hold: rotate through indicator LED modes (off mode)
-    else if (event == EV_click3_hold) {
-        #ifndef USE_INDICATOR_LED_WHILE_RAMPING
-        // if main LED obscures aux LEDs, turn it off
-        set_level(0);
-        #endif
-        #ifdef TICK_DURING_STANDBY
-        uint8_t mode = (arg >> 5) & 3;
-        #else
-        uint8_t mode = (arg >> 5) % 3;
-        #endif
-        #ifdef INDICATOR_LED_SKIP_LOW
-        if (mode == 1) { mode ++; }
-        #endif
-        indicator_led_mode = (indicator_led_mode & 0b11111100) | mode;
-        #ifdef TICK_DURING_STANDBY
-        if (mode == 3)
-            indicator_led(mode & (arg&3));
-        else
-            indicator_led(mode);
-        #else
-        indicator_led(mode);
-        #endif
-        //save_config();
+    #elif defined(USE_AUX_RGB_LEDS)
+    // 3 clicks: change RGB aux LED pattern
+    else if (event == EV_3clicks) {
+        uint8_t mode = (rgb_led_lockout_mode >> 4) + 1;
+        mode = mode % RGB_LED_NUM_PATTERNS;
+        rgb_led_lockout_mode = (mode << 4) | (rgb_led_lockout_mode & 0x0f);
+        rgb_led_update(rgb_led_lockout_mode, 0);
+        save_config();
+        blink_confirm(1);
         return MISCHIEF_MANAGED;
     }
-    // click, click, hold, release: save indicator LED mode (off mode)
+    // click, click, hold: change RGB aux LED color
+    else if (event == EV_click3_hold) {
+        if (0 == (arg & 0x3f)) {
+            uint8_t mode = (rgb_led_lockout_mode & 0x0f) + 1;
+            mode = mode % RGB_LED_NUM_COLORS;
+            rgb_led_lockout_mode = mode | (rgb_led_lockout_mode & 0xf0);
+            //save_config();
+        }
+        rgb_led_update(rgb_led_lockout_mode, arg);
+        return MISCHIEF_MANAGED;
+    }
+    // click, click, hold, release: save new color
     else if (event == EV_click3_hold_release) {
         save_config();
         return MISCHIEF_MANAGED;
     }
-    #endif
     #endif
     // 4 clicks: exit
     else if (event == EV_4clicks) {
@@ -1542,14 +1754,24 @@ uint8_t lockout_state(Event event, uint16_t arg) {
 uint8_t momentary_state(Event event, uint16_t arg) {
     // TODO: momentary strobe here?  (for light painting)
 
+    // init strobe mode, if relevant
+    if ((event == EV_enter_state) && (momentary_mode == 1)) {
+        strobe_state(event, arg);
+    }
+
     // light up when the button is pressed; go dark otherwise
     // button is being held
     if ((event & (B_CLICK | B_PRESS)) == (B_CLICK | B_PRESS)) {
-        set_level(memorized_level);
+        momentary_active = 1;
+        // 0 = ramping, 1 = strobes
+        if (momentary_mode == 0) {
+            set_level(memorized_level);
+        }
         return MISCHIEF_MANAGED;
     }
     // button was released
     else if ((event & (B_CLICK | B_PRESS)) == (B_CLICK)) {
+        momentary_active = 0;
         set_level(0);
         //go_to_standby = 1;  // sleep while light is off
         return MISCHIEF_MANAGED;
@@ -1560,10 +1782,18 @@ uint8_t momentary_state(Event event, uint16_t arg) {
     //  with exiting via tailcap loosen+tighten unless you leave power
     //  disconnected for several seconds, so we want to be awake when that
     //  happens to speed up the process)
-    else if ((event == EV_tick)  &&  (actual_level == 0)) {
-        if (arg > TICKS_PER_SECOND*15) {  // sleep after 15 seconds
-            go_to_standby = 1;  // sleep while light is off
-            // TODO: lighted button should use lockout config?
+    else if (event == EV_tick) {
+        if (momentary_active) {
+            // 0 = ramping, 1 = strobes
+            if (momentary_mode == 1) {
+                return strobe_state(event, arg);
+            }
+        }
+        else {
+            if (arg > TICKS_PER_SECOND*15) {  // sleep after 15 seconds
+                go_to_standby = 1;  // sleep while light is off
+                // TODO: lighted button should use lockout config?
+            }
         }
         return MISCHIEF_MANAGED;
     }
@@ -1697,12 +1927,16 @@ uint8_t muggle_state(Event event, uint16_t arg) {
     #ifdef USE_THERMAL_REGULATION
     // overheating is handled specially in muggle mode
     else if(event == EV_temperature_high) {
-        // don't even try...
-        // go immediately to the bottom, in case someone put the light on
-        // maximum while wrapped in dark-colored flammable insulation
-        // or something, because muggles are cool like that
-        // memorized_level = MUGGLE_FLOOR;  // override memory?  maybe not
-        set_level(MUGGLE_FLOOR);
+        #if 0
+        blip();
+        #endif
+        // ignore warnings while off
+        if (! muggle_off_mode) {
+            // step down proportional to the amount of overheating
+            int16_t new = actual_level - arg;
+            if (new < MUGGLE_FLOOR) { new = MUGGLE_FLOOR; }
+            set_level(new);
+        }
         return MISCHIEF_MANAGED;
     }
     #endif
@@ -1800,14 +2034,15 @@ void thermal_config_save() {
     // calibrate room temperature
     val = config_state_values[0];
     if (val) {
-        int8_t rawtemp = (temperature >> 1) - therm_cal_offset;
+        int8_t rawtemp = temperature - therm_cal_offset;
         therm_cal_offset = val - rawtemp;
+        reset_thermal_history = 1;  // invalidate all recent temperature data
     }
 
     val = config_state_values[1];
     if (val) {
         // set maximum heat limit
-        therm_ceil = 30 + val;
+        therm_ceil = 30 + val - 1;
     }
     if (therm_ceil > MAX_THERM_CEIL) therm_ceil = MAX_THERM_CEIL;
 }
@@ -1960,6 +2195,12 @@ uint8_t nearest_level(int16_t target) {
     return this_level;
 }
 
+#ifdef USE_THERMAL_REGULATION
+void set_level_and_therm_target(uint8_t level) {
+    target_level = level;
+    set_level(level);
+}
+#endif
 
 void blink_confirm(uint8_t num) {
     for (; num>0; num--) {
@@ -1982,6 +2223,9 @@ void blip() {
 #if defined(USE_INDICATOR_LED) && defined(TICK_DURING_STANDBY)
 // beacon-like mode for the indicator LED
 void indicator_blink(uint8_t arg) {
+    // turn off aux LEDs when battery is empty
+    if (voltage < VOLTAGE_LOW) { indicator_led(0); return; }
+
     #ifdef USE_FANCIER_BLINKING_INDICATOR
 
     // fancy blink, set off/low/high levels here:
@@ -2002,6 +2246,130 @@ void indicator_blink(uint8_t arg) {
 }
 #endif
 
+#if defined(USE_AUX_RGB_LEDS) && defined(TICK_DURING_STANDBY)
+// do fancy stuff with the RGB aux LEDs
+// mode: 0bPPPPCCCC where PPPP is the pattern and CCCC is the color
+// arg: time slice number
+void rgb_led_update(uint8_t mode, uint8_t arg) {
+    static uint8_t rainbow = 0;  // track state of rainbow mode
+    static uint8_t frame = 0;  // track state of animation mode
+
+    // turn off aux LEDs when battery is empty
+    // (but if voltage==0, that means we just booted and don't know yet)
+    uint8_t volts = voltage;  // save a few bytes by caching volatile value
+    if ((volts) && (volts < VOLTAGE_LOW)) { rgb_led_set(0); return; }
+
+    uint8_t pattern = (mode>>4);  // off, low, high, blinking, ... more?
+    uint8_t color = mode & 0x0f;
+
+    // preview in blinking mode is awkward... use high instead
+    if ((! go_to_standby) && (pattern > 2)) { pattern = 2; }
+
+
+    uint8_t colors[] = {
+        0b00000001,  // 0: red
+        0b00000101,  // 1: yellow
+        0b00000100,  // 2: green
+        0b00010100,  // 3: cyan
+        0b00010000,  // 4: blue
+        0b00010001,  // 5: purple
+        0b00010101,  // 6: white
+    };
+    uint8_t actual_color = 0;
+    if (color < 7) {  // normal color
+        actual_color = colors[color];
+    }
+    else if (color == 7) {  // rainbow
+        if (0 == (arg & 0x03)) {
+            rainbow = (rainbow + 1) % 6;
+        }
+        actual_color = colors[rainbow];
+    }
+    else {  // voltage
+        // show actual voltage while asleep...
+        if (go_to_standby) {
+            // choose a color based on battery voltage
+            if (volts >= 38) actual_color = colors[4];
+            else if (volts >= 33) actual_color = colors[2];
+            else actual_color = colors[0];
+        }
+        // ... but during preview, cycle colors quickly
+        else {
+            actual_color = colors[((arg>>1) % 3) << 1];
+        }
+    }
+
+    // pick a brightness from the animation sequence
+    if (pattern == 3) {
+        // uses an odd length to avoid lining up with rainbow loop
+        uint8_t animation[] = {2, 1, 0, 0,  0, 0, 0, 0,  0,
+                               1, 0, 0, 0,  0, 0, 0, 0,  0, 1};
+        frame = (frame + 1) % sizeof(animation);
+        pattern = animation[frame];
+    }
+    switch (pattern) {
+        case 0:  // off
+            rgb_led_set(0);
+            break;
+        case 1:  // low
+            rgb_led_set(actual_color);
+            break;
+        case 2:  // high
+            rgb_led_set(actual_color << 1);
+            break;
+    }
+}
+#endif
+
+
+#ifdef USE_FACTORY_RESET
+void factory_reset() {
+    // display a warning for a few seconds before doing the actual reset,
+    // so the user has time to abort if they want
+    #define SPLODEY_TIME 3000
+    #define SPLODEY_STEPS 64
+    #define SPLODEY_TIME_PER_STEP (SPLODEY_TIME/SPLODEY_STEPS)
+    uint8_t bright;
+    uint8_t reset = 1;
+    // wind up to an explosion
+    for (bright=0; bright<SPLODEY_STEPS; bright++) {
+        set_level(bright);
+        delay_4ms(SPLODEY_TIME_PER_STEP/2/4);
+        set_level(bright>>1);
+        delay_4ms(SPLODEY_TIME_PER_STEP/2/4);
+        if (! button_is_pressed()) {
+            reset = 0;
+            break;
+        }
+    }
+    // explode, if button pressed long enough
+    if (reset) {
+        #ifdef USE_THERMAL_REGULATION
+        // auto-calibrate temperature...  assume current temperature is 21 C
+        config_state_values[0] = 21;
+        config_state_values[1] = 0;
+        thermal_config_save();
+        #endif
+        // save all settings to eeprom
+        // (assuming they're all at default because we haven't loaded them yet)
+        save_config();
+
+        bright = MAX_LEVEL;
+        for (; bright > 0; bright--) {
+            set_level(bright);
+            delay_4ms(SPLODEY_TIME_PER_STEP/6/4);
+        }
+    }
+    // explosion cancelled, fade away
+    else {
+        for (; bright > 0; bright--) {
+            set_level(bright);
+            delay_4ms(SPLODEY_TIME_PER_STEP/3/4);
+        }
+    }
+}
+#endif
+
 
 void load_config() {
     if (load_eeprom()) {
@@ -2012,6 +2380,9 @@ void load_config() {
         ramp_discrete_floor = eeprom[ramp_discrete_floor_e];
         ramp_discrete_ceil = eeprom[ramp_discrete_ceil_e];
         ramp_discrete_steps = eeprom[ramp_discrete_steps_e];
+        #endif
+        #ifdef USE_MANUAL_MEMORY
+        manual_memory = eeprom[manual_memory_e];
         #endif
         #ifdef USE_TINT_RAMPING
         tint = eeprom[tint_e];
@@ -2037,6 +2408,10 @@ void load_config() {
         #ifdef USE_INDICATOR_LED
         indicator_led_mode = eeprom[indicator_led_mode_e];
         #endif
+        #ifdef USE_AUX_RGB_LEDS
+        rgb_led_off_mode = eeprom[rgb_led_off_mode_e];
+        rgb_led_lockout_mode = eeprom[rgb_led_lockout_mode_e];
+        #endif
     }
     #ifdef START_AT_MEMORIZED_LEVEL
     if (load_eeprom_wl()) {
@@ -2053,6 +2428,9 @@ void save_config() {
     eeprom[ramp_discrete_floor_e] = ramp_discrete_floor;
     eeprom[ramp_discrete_ceil_e] = ramp_discrete_ceil;
     eeprom[ramp_discrete_steps_e] = ramp_discrete_steps;
+    #endif
+    #ifdef USE_MANUAL_MEMORY
+    eeprom[manual_memory_e] = manual_memory;
     #endif
     #ifdef USE_TINT_RAMPING
     eeprom[tint_e] = tint;
@@ -2077,6 +2455,10 @@ void save_config() {
     #endif
     #ifdef USE_INDICATOR_LED
     eeprom[indicator_led_mode_e] = indicator_led_mode;
+    #endif
+    #ifdef USE_AUX_RGB_LEDS
+    eeprom[rgb_led_off_mode_e] = rgb_led_off_mode;
+    eeprom[rgb_led_lockout_mode_e] = rgb_led_lockout_mode;
     #endif
 
     save_eeprom();
@@ -2109,14 +2491,7 @@ void low_voltage() {
     else if (state == steady_state) {
         if (actual_level > 1) {
             uint8_t lvl = (actual_level >> 1) + (actual_level >> 2);
-            set_level(lvl);
-            #ifdef USE_THERMAL_REGULATION
-            target_level = lvl;
-            #ifdef USE_SET_LEVEL_GRADUALLY
-            // not needed?
-            //set_level_gradually(lvl);
-            #endif
-            #endif
+            set_level_and_therm_target(lvl);
         }
         else {
             set_state(off_state, 0);
@@ -2154,6 +2529,11 @@ void setup() {
     delay_4ms(3);
     set_level(0);
 
+    #ifdef USE_FACTORY_RESET
+    if (button_is_pressed())
+        factory_reset();
+    #endif
+
     load_config();
 
     #ifdef USE_TINT_RAMPING
@@ -2166,7 +2546,7 @@ void setup() {
         push_state(muggle_state, (MUGGLE_FLOOR+MUGGLE_CEILING)/2);
     else
     #endif
-        push_state(off_state, 0);
+        push_state(off_state, 1);
 
     #endif  // ifdef START_AT_MEMORIZED_LEVEL
 }
@@ -2179,7 +2559,8 @@ void loop() {
     if (0) {}
 
     #ifdef USE_STROBE_STATE
-    else if (state == strobe_state) {
+    else if ((state == strobe_state)
+         ||  ((state == momentary_state) && (momentary_mode == 1) && (momentary_active)) ) {  // also handle momentary strobes
         uint8_t st = strobe_type;
 
         switch(st) {
@@ -2243,7 +2624,7 @@ void loop() {
     #ifdef USE_THERMAL_REGULATION
     // TODO: blink out therm_ceil during thermal_config_state?
     else if (state == tempcheck_state) {
-        blink_num(temperature>>1);
+        blink_num(temperature);
         nice_delay_ms(1000);
     }
     #endif

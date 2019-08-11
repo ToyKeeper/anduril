@@ -36,16 +36,8 @@ ISR(TIMER1_COMPA_vect) {
 }
 #endif
 
-int main() {
-    // Don't allow interrupts while booting
-    cli();
-
-    #ifdef HALFSPEED
-    // run at half speed
-    CLKPR = 1<<CLKPCE;
-    CLKPR = 1;
-    #endif
-
+#if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
+inline void hw_setup() {
     // configure PWM channels
     #if PWM_CHANNELS >= 1
     DDRB |= (1 << PWM1_PIN);
@@ -75,6 +67,45 @@ int main() {
     // configure e-switch
     PORTB = (1 << SWITCH_PIN);  // e-switch is the only input
     PCMSK = (1 << SWITCH_PIN);  // pin change interrupt uses this pin
+}
+#elif (ATTINY == 1634)
+inline void hw_setup() {
+    // this gets tricky with so many pins...
+    // ... so punt it to the hwdef file
+    hwdef_setup();
+}
+#else
+    #error Unrecognized MCU type
+#endif
+
+
+#ifdef USE_REBOOT
+void prevent_reboot_loop() {
+    // prevent WDT from rebooting MCU again
+    MCUSR &= ~(1<<WDRF);  // reset status flag
+    wdt_disable();
+}
+#endif
+
+
+int main() {
+    // Don't allow interrupts while booting
+    cli();
+
+    #ifdef USE_REBOOT
+    prevent_reboot_loop();
+    #endif
+
+    hw_setup();
+
+    #if 0
+    #ifdef HALFSPEED
+    // run at half speed
+    // FIXME: not portable (also not needed)
+    CLKPR = 1<<CLKPCE;
+    CLKPR = 1;
+    #endif
+    #endif
 
     #ifdef USE_DEBUG_BLINK
     //debug_blink(1);

@@ -43,7 +43,7 @@ static volatile uint16_t ticks_since_last_event = 0;
 #define HOLD_TIMEOUT 24
 #endif
 #ifndef RELEASE_TIMEOUT
-#define RELEASE_TIMEOUT 24
+#define RELEASE_TIMEOUT 18
 #endif
 
 /* Event structure

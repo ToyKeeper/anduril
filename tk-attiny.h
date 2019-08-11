@@ -28,24 +28,26 @@
 /******************** hardware-specific values **************************/
 #if (ATTINY == 13)
     #define F_CPU 4800000UL
-    #define EEPSIZE 64
+    //#define EEPSIZE 64
     #define V_REF REFS0
     #define BOGOMIPS 950
     #define ADMUX_VCC 0b00001100
     #define DELAY_ZERO_TIME 252
+    #define SWITCH_PORT  PINB  // PINA or PINB or PINC
 #elif (ATTINY == 25)
     // TODO: Use 6.4 MHz instead of 8 MHz?
     #define F_CPU 8000000UL
-    #define EEPSIZE 128
+    //#define EEPSIZE 128
     #define V_REF REFS1
     #define BOGOMIPS (F_CPU/4000)
     #define ADMUX_VCC 0b00001100
     #define ADMUX_THERM 0b10001111
     #define DELAY_ZERO_TIME 1020
+    #define SWITCH_PORT  PINB  // PINA or PINB or PINC
 #elif (ATTINY == 85)
     // TODO: Use 6.4 MHz instead of 8 MHz?
     #define F_CPU 8000000UL
-    #define EEPSIZE 512
+    //#define EEPSIZE 512
     #define V_REF REFS1
     #define BOGOMIPS (F_CPU/4000)
     // (1 << V_REF) | (0 << ADLAR) | (VCC_CHANNEL)
@@ -53,8 +55,28 @@
     // (1 << V_REF) | (0 << ADLAR) | (THERM_CHANNEL)
     #define ADMUX_THERM 0b10001111
     #define DELAY_ZERO_TIME 1020
+    #define SWITCH_PORT  PINB  // PINA or PINB or PINC
+#elif (ATTINY == 1634)
+    #define F_CPU 8000000UL
+    #define V_REF REFS1
+    #define BOGOMIPS (F_CPU/4000)
+    // (1 << V_REF) | (0 << ADLAR) | (VCC_CHANNEL)
+    #define ADMUX_VCC 0b00001101
+    // (1 << V_REF) | (0 << ADLAR) | (THERM_CHANNEL)
+    #define ADMUX_THERM 0b10001110
+    #define DELAY_ZERO_TIME 1020
+    //#define SWITCH_PORT  PINA  // set this in hwdef
 #else
     #error Hey, you need to define ATTINY.
+#endif
+
+// auto-detect eeprom size from avr-libc headers
+#ifndef EEPSIZE
+#ifdef E2SIZE
+#define EEPSIZE E2SIZE
+#else
+#define EEPSIZE (E2END+1)
+#endif
 #endif
 
 
@@ -84,6 +106,33 @@
 
 #ifndef LAYOUT_DEFINED
 #error Hey, you need to define an I/O pin layout.
+#endif
+
+#if (ATTINY==25) || (ATTINY==45) || (ATTINY==85)
+  // use clock_prescale_set(n) instead; it's safer
+  //#define CLOCK_DIVIDER_SET(n) {CLKPR = 1<<CLKPCE; CLKPR = n;}
+#elif (ATTINY==1634)
+  // make it a NOP for now
+  // FIXME
+  //#define clock_prescale_set(x) ((void)0)
+  //#define clock_prescale_set(n) {cli(); CCP = 0xD8; CLKPR = n; sei();}
+  //#define clock_prescale_set(n) {cli(); CCP = 0xD8; CLKPR = n; sei();}
+  inline void clock_prescale_set(uint8_t n) {cli(); CCP = 0xD8; CLKPR = n; sei();}
+  typedef enum
+  {
+      clock_div_1 = 0,
+      clock_div_2 = 1,
+      clock_div_4 = 2,
+      clock_div_8 = 3,
+      clock_div_16 = 4,
+      clock_div_32 = 5,
+      clock_div_64 = 6,
+      clock_div_128 = 7,
+      clock_div_256 = 8
+  } clock_div_t;
+
+#else
+#error Unable to define MCU macros.
 #endif
 
 #endif  // TK_ATTINY_H

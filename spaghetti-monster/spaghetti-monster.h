@@ -25,6 +25,7 @@
 #include "tk-attiny.h"
 
 #include <avr/eeprom.h>
+#include <avr/power.h>
 
 // include project definitions to help with recognizing symbols
 #include "fsm-events.h"

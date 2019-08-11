@@ -43,11 +43,22 @@ uint8_t blink(uint8_t num, uint8_t speed);
 */
 
 #ifdef USE_INDICATOR_LED
+// lvl: 0=off, 1=low, 2=high
 void indicator_led(uint8_t lvl);
+#endif
+
+#ifdef USE_AUX_RGB_LEDS
+// value: 0b00BBGGRR
+// each pair of bits: 0=off, 1=low, 2=high
+void rgb_led_set(uint8_t value);
 #endif
 
 #ifdef USE_TRIANGLE_WAVE
 uint8_t triangle_wave(uint8_t phase);
+#endif
+
+#ifdef USE_REBOOT
+void reboot();
 #endif
 
 #endif
