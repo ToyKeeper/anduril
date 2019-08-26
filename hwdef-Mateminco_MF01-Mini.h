@@ -26,7 +26,7 @@
 #define PWM1_LVL OCR0A      // OCR0A is the output compare register for PB0
 #endif
 #ifndef PWM2_PIN
-#define PWM2_PIN PB1        // pin 6, FET PWM
+#define PWM2_PIN PB1        // pin 6, 7x7135 PWM
 #define PWM2_LVL OCR0B      // OCR0B is the output compare register for PB1
 #endif
 #ifndef PWM3_PIN

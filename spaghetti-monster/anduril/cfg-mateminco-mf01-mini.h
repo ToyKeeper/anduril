@@ -40,16 +40,10 @@
 #define RAMP_SMOOTH_CEIL 130  // ~??? lm
 // 14/135/6 = 14, 38, 62, 86, [110], 135
 // 20/110/7 = 20, 35, 50, [65], 80, 95, [110]
-// 15/130/7 = 15, 34, 53, 72, 91, [110], 130
-#if 1
+// 15/130/7 = 15, 34, 53, 72, 91, [110], 130  <--
 #define RAMP_DISCRETE_FLOOR 15 // ~?? lm
 #define RAMP_DISCRETE_CEIL 130 // ~??? lm
 #define RAMP_DISCRETE_STEPS 7  // ??, ??, ... lm
-#else  // testing only; for calibrating the ramp in detail
-#define RAMP_DISCRETE_FLOOR 1 // ~?? lm
-#define RAMP_DISCRETE_CEIL 150 // ~??? lm
-#define RAMP_DISCRETE_STEPS 150  // ??, ??, ... lm
-#endif
 
 
 #define USE_TENCLICK_THERMAL_CONFIG  // by request
