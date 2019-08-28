@@ -14,7 +14,7 @@ def main(args):
     """
     # Get parameters from the user
     questions_main = [
-            (str, 'ramp_shape', 'cube', 'Ramp shape? [cube, square, fifth, seventh, ninth, log]'),
+            (str, 'ramp_shape', 'cube', 'Ramp shape? [cube, square, fifth, seventh, ninth, log, N.NN]'),
             (int, 'num_channels', 1, 'How many power channels?'),
             (int, 'num_levels', 4, 'How many total levels do you want?'),
             ]
@@ -179,11 +179,19 @@ shapes = dict(
         )
 
 def power(x):
-    return shapes[ramp_shape][0](x)
+    try:
+        factor = float(ramp_shape)
+        return math.pow(x, factor)
+    except ValueError:
+        return shapes[ramp_shape][0](x)
 
 
 def invpower(x):
-    return shapes[ramp_shape][1](x)
+    try:
+        factor = float(ramp_shape)
+        return math.pow(x, 1.0 / factor)
+    except ValueError:
+        return shapes[ramp_shape][1](x)
 
 
 def input_text():
