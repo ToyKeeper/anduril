@@ -108,7 +108,9 @@
 #error Hey, you need to define an I/O pin layout.
 #endif
 
-#if (ATTINY==25) || (ATTINY==45) || (ATTINY==85)
+#if (ATTINY==13)
+  // no changes needed
+#elif (ATTINY==25) || (ATTINY==45) || (ATTINY==85)
   // use clock_prescale_set(n) instead; it's safer
   //#define CLOCK_DIVIDER_SET(n) {CLKPR = 1<<CLKPCE; CLKPR = n;}
 #elif (ATTINY==1634)

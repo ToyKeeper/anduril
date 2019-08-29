@@ -33,4 +33,6 @@ function run () {
 run $CC $OTHERFLAGS $CFLAGS -o $PROGRAM.o -c $PROGRAM.c
 run $CC $OFLAGS $LDFLAGS -o $PROGRAM.elf $PROGRAM.o
 run $OBJCOPY $OBJCOPYFLAGS $PROGRAM.elf $PROGRAM.hex
-run avr-size -C --mcu=$MCU $PROGRAM.elf | grep Full
+# deprecated
+#run avr-size -C --mcu=$MCU $PROGRAM.elf | grep Full
+run avr-objdump -Pmem-usage $PROGRAM.elf | grep Full
