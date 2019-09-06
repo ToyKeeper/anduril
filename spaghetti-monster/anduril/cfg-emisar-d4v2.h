@@ -4,7 +4,11 @@
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
+// it also has an independent LED in the button
+#define USE_BUTTON_LED
 // the aux LEDs are front-facing, so turn them off while main LEDs are on
+// TODO: the whole "indicator LED" thing needs to be refactored into
+//       "aux LED(s)" and "button LED(s)" since they work a bit differently
 #ifdef USE_INDICATOR_LED_WHILE_RAMPING
 #undef USE_INDICATOR_LED_WHILE_RAMPING
 #endif
