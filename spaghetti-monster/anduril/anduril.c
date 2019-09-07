@@ -792,6 +792,10 @@ uint8_t steady_state(Event event, uint16_t arg) {
             // (off->hold->stepped_min->release causes this state)
             else if (actual_level <= mode_min) { ramp_direction = 1; }
         }
+        // if the button is stuck, err on the side of safety and ramp down
+        else if ((arg > TICKS_PER_SECOND * 5) && (actual_level >= mode_max)) {
+            ramp_direction = -1;
+        }
         memorized_level = nearest_level((int16_t)actual_level \
                           + (ramp_step_size * ramp_direction));
         #else
@@ -2286,7 +2290,9 @@ void rgb_led_update(uint8_t mode, uint8_t arg) {
         actual_color = colors[color];
     }
     else if (color == 7) {  // rainbow
-        if (0 == (arg & 0x03)) {
+        uint8_t speed = 0x03;  // awake speed
+        if (go_to_standby) speed = 0x0f;  // asleep speed
+        if (0 == (arg & speed)) {
             rainbow = (rainbow + 1) % 6;
         }
         actual_color = colors[rainbow];
