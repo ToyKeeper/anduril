@@ -152,6 +152,16 @@ def multi_pwm(answers, channels):
                 (cnum+1,
                  ','.join([str(int(round(i))) for i in channel.modes])))
 
+    # Show highest level for each channel before next channel starts
+    for cnum, channel in enumerate(channels[:-1]):
+        prev = 0
+        i = 1
+        while (i < answers.num_levels) \
+                and (channel.modes[i] >= channel.modes[i-1]) \
+                and (channels[cnum+1].modes[i] == 0):
+            i += 1
+        print('Ch%i max: %i (%.2f/255)' % (cnum, i, channel.modes[i-1]))
+
 
 def get_value(text, default, args):
     """Get input from the user, or from the command line args."""
