@@ -35,6 +35,8 @@
 // (currently incompatible with factory reset)
 //#define START_AT_MEMORIZED_LEVEL
 
+// include a function to blink out the firmware version
+#define USE_VERSION_CHECK
 
 // short blip when crossing from "click" to "hold" from off
 // (helps the user hit moon mode exactly, instead of holding too long
@@ -483,6 +485,11 @@ uint8_t triangle_wave(uint8_t phase);
 volatile uint8_t beacon_seconds = 2;
 #endif
 
+#ifdef USE_VERSION_CHECK
+#include "version.h"
+const PROGMEM uint8_t version_number[] = VERSION_NUMBER;
+uint8_t version_check_state(Event event, uint16_t arg);
+#endif
 
 uint8_t off_state(Event event, uint16_t arg) {
     // turn emitter off when entering state
@@ -682,6 +689,13 @@ uint8_t off_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif
+    #ifdef USE_VERSION_CHECK
+    // 15+ clicks: show the version number
+    else if (event == EV_15clicks) {
+        set_state(version_check_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    #endif
     #if defined(USE_FACTORY_RESET) && defined(USE_SOFT_FACTORY_RESET)
     // 13 clicks and hold the last click: invoke factory reset (reboot)
     else if (event == EV_click13_hold) {
@@ -791,6 +805,10 @@ uint8_t steady_state(Event event, uint16_t arg) {
             // make it ramp up if already at min
             // (off->hold->stepped_min->release causes this state)
             else if (actual_level <= mode_min) { ramp_direction = 1; }
+        }
+        // if the button is stuck, err on the side of safety and ramp down
+        else if ((arg > TICKS_PER_SECOND * 5) && (actual_level >= mode_max)) {
+            ramp_direction = -1;
         }
         memorized_level = nearest_level((int16_t)actual_level \
                           + (ramp_step_size * ramp_direction));
@@ -1956,6 +1974,13 @@ uint8_t muggle_state(Event event, uint16_t arg) {
 #endif
 
 
+#ifdef USE_VERSION_CHECK
+uint8_t version_check_state(Event event, uint16_t arg) {
+    return EVENT_NOT_HANDLED;
+}
+#endif
+
+
 // ask the user for a sequence of numbers, then save them and return to caller
 uint8_t config_state_base(Event event, uint16_t arg,
                           uint8_t num_config_steps,
@@ -2557,6 +2582,19 @@ void loop() {
     StatePtr state = current_state;
 
     if (0) {}
+
+    #ifdef USE_VERSION_CHECK
+    else if (state == version_check_state) {
+        for (uint8_t i=0; i<sizeof(version_number)-1; i++) {
+            blink_digit(pgm_read_byte(version_number + i) - '0');
+            nice_delay_ms(300);
+        }
+        set_state(off_state, 0);
+        // FIXME: when user interrupts with button, "off" takes an extra click
+        //  before it'll turn back on, because the click to cancel gets sent
+        //  to the "off" state instead of version_check_state
+    }
+    #endif  // #ifdef USE_VERSION_CHECK
 
     #ifdef USE_STROBE_STATE
     else if ((state == strobe_state)

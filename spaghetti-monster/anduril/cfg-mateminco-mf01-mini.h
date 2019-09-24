@@ -15,6 +15,12 @@
 #define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
 
 
+// doesn't quite fit
+#ifdef USE_MUGGLE_MODE
+#undef USE_MUGGLE_MODE
+#endif
+
+
 // don't blink during ramp, it's irrelevant and annoying on this light
 #define BLINK_AT_RAMP_CEILING
 #undef BLINK_AT_RAMP_MIDDLE

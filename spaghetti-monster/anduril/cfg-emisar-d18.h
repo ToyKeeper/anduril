@@ -16,6 +16,12 @@
 #define USE_TENCLICK_THERMAL_CONFIG
 
 
+// save space, and remove a mode which doesn't make much sense on this light
+#ifdef USE_MUGGLE_MODE
+#undef USE_MUGGLE_MODE
+#endif
+
+
 // level_calc.py seventh 3 150 7135 1 1.4 117.99 7135 6 1 1706.86 FET 3 10 13000
 // (designed to make 1x hit at level 50, and Nx hit at level 100)
 #define RAMP_LENGTH 150
