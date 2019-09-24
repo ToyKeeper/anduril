@@ -42,7 +42,7 @@ uint8_t push_event(uint8_t ev_type) {
         // set press flag
         current_event |= B_PRESS;
         // increase click counter
-        if ((current_event & B_COUNT) < (B_COUNT-1)) {
+        if ((current_event & B_COUNT) < (B_COUNT)) {
             current_event ++;
         }
         return 1;  // event pushed, even if max clicks already reached
