@@ -14,9 +14,9 @@ export PROGRAM=$1 ; shift
 export MCU=attiny$ATTINY
 export CC=avr-gcc
 export OBJCOPY=avr-objcopy
-export CFLAGS="-Wall -g -Os -mmcu=$MCU -c -std=gnu99 -DATTINY=$ATTINY -I.. -I../.. -I../../.. -fshort-enums"
+export CFLAGS="-Wall -g -Os -mmcu=$MCU -c -std=gnu99 -fgnu89-inline -DATTINY=$ATTINY -I.. -I../.. -I../../.. -fshort-enums"
 export OFLAGS="-Wall -g -Os -mmcu=$MCU"
-export LDFLAGS=
+export LDFLAGS="-fgnu89-inline"
 export OBJCOPYFLAGS='--set-section-flags=.eeprom=alloc,load --change-section-lma .eeprom=0 --no-change-warnings -O ihex'
 export OBJS=$PROGRAM.o
 
@@ -33,4 +33,6 @@ function run () {
 run $CC $OTHERFLAGS $CFLAGS -o $PROGRAM.o -c $PROGRAM.c
 run $CC $OFLAGS $LDFLAGS -o $PROGRAM.elf $PROGRAM.o
 run $OBJCOPY $OBJCOPYFLAGS $PROGRAM.elf $PROGRAM.hex
-run avr-size -C --mcu=$MCU $PROGRAM.elf | grep Full
+# deprecated
+#run avr-size -C --mcu=$MCU $PROGRAM.elf | grep Full
+run avr-objdump -Pmem-usage $PROGRAM.elf | grep Full
