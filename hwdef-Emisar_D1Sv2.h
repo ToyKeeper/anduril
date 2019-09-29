@@ -4,11 +4,11 @@
 /* Emisar D1Sv2 driver layout (attiny1634)
  *
  * Pin / Name / Function
- *   1    PA6   red aux LED (PWM1B)
- *   2    PA5   green aux LED (PWM0B)
- *   3    PA4   blue aux LED
- *   4    PA3   battery voltage (ADC0)
- *   5    PA2   (none)
+ *   1    PA6   (none) (PWM1B) (reserved for DD drivers)
+ *   2    PA5   R: red aux LED (PWM0B)
+ *   3    PA4   G: green aux LED
+ *   4    PA3   B: blue aux LED
+ *   5    PA2   (none) (reserved for L: button LED (on some models))
  *   6    PA1   (none)
  *   7    PA0   (none)
  *   8    GND   GND
@@ -21,7 +21,7 @@
  *  15    PC0   (none) PWM0A
  *  16    PB3   main LED PWM (PWM1A)
  *  17    PB2   MISO
- *  18    PB1   MOSI
+ *  18    PB1   MOSI / battery voltage (ADC6)
  *  19    PB0   Opamp power
  *  20    PA7   e-switch  (PCINT7)
  *      ADC12   thermal sensor
@@ -54,22 +54,22 @@
 
 #define LED_ENABLE_PIN  PB0    // pin 19, Opamp power
 #define LED_ENABLE_PORT PORTB  // control port for PB0
-//#define PWM2_PIN PB0        // pin 19, Opamp power
-// FIXME:
-//#define PWM2_LVL OCR1B      // OCR1B is the output compare register for PB1
 
 
 #define USE_VOLTAGE_DIVIDER  // use a dedicated pin, not VCC, because VCC input is flattened
-#define VOLTAGE_PIN PA3      // Pin 4 / PA3 / ADC0
-#define VOLTAGE_ADC_DIDR ADC0D  // digital input disable pin for PA3
+#define VOLTAGE_PIN PB1      // Pin 18 / PB1 / ADC6
+// pin to ADC mappings are in DS table 19-4
+#define VOLTAGE_ADC      ADC6D  // digital input disable pin for PB1
+// DIDR0/DIDR1 mappings are in DS section 19.13.5, 19.13.6
+#define VOLTAGE_ADC_DIDR DIDR1  // DIDR channel for ADC6D
 // DS tables 19-3, 19-4
 // Bit   7     6     5      4     3    2    1    0
 //     REFS1 REFS0 REFEN ADC0EN MUX3 MUX2 MUX1 MUX0
-// MUX[3:0] = 0, 0, 0, 0 for ADC0 / PA3
+// MUX[3:0] = 0, 1, 1, 0 for ADC6 / PB1
 // divided by ...
 // REFS[1:0] = 1, 0 for internal 1.1V reference
 // other bits reserved
-#define ADMUX_VOLTAGE_DIVIDER 0b10000000
+#define ADMUX_VOLTAGE_DIVIDER 0b10000110
 #define ADC_PRSCL   0x06    // clk/64
 
 // Raw ADC readings at 4.4V and 2.2V
@@ -87,9 +87,9 @@
 #define TEMP_CHANNEL 0b00001111
 
 // this light has aux LEDs under the optic
-#define AUXLED_R_PIN    PA6    // pin 1
-#define AUXLED_G_PIN    PA5    // pin 2
-#define AUXLED_B_PIN    PA4    // pin 3
+#define AUXLED_R_PIN    PA5    // pin 2
+#define AUXLED_G_PIN    PA4    // pin 3
+#define AUXLED_B_PIN    PA3    // pin 4
 #define AUXLED_RGB_PORT PORTA  // PORTA or PORTB or PORTC
 #define AUXLED_RGB_DDR  DDRA   // DDRA or DDRB or DDRC
 #define AUXLED_RGB_PUE  PUEA   // PUEA or PUEB or PUEC

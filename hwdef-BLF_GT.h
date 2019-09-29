@@ -34,7 +34,9 @@
 #ifndef VOLTAGE_PIN
 #define VOLTAGE_PIN PB2     // pin 7, voltage ADC
 #define VOLTAGE_CHANNEL 0x01 // MUX 01 corresponds with PB2
-#define VOLTAGE_ADC_DIDR ADC1D  // Digital input disable bit corresponding with PB2
+#define VOLTAGE_ADC ADC1D  // Digital input disable bit corresponding with PB2
+// inherited from tk-attiny.h
+//#define VOLTAGE_ADC_DIDR DIDR0  // DIDR for ADC1
 // 1.1V reference, left-adjust, ADC1/PB2
 //#define ADMUX_VOLTAGE_DIVIDER ((1 << V_REF) | (1 << ADLAR) | VOLTAGE_CHANNEL)
 // 1.1V reference, no left-adjust, ADC1/PB2
