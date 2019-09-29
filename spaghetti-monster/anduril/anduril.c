@@ -810,6 +810,11 @@ uint8_t steady_state(Event event, uint16_t arg) {
         else if ((arg > TICKS_PER_SECOND * 5) && (actual_level >= mode_max)) {
             ramp_direction = -1;
         }
+        // if the button is still stuck, lock the light
+        else if ((arg > TICKS_PER_SECOND * 10) && (actual_level <= mode_min)) {
+            blip();
+            set_state(lockout_state, 0);
+        }
         memorized_level = nearest_level((int16_t)actual_level \
                           + (ramp_step_size * ramp_direction));
         #else
@@ -2589,10 +2594,13 @@ void loop() {
             blink_digit(pgm_read_byte(version_number + i) - '0');
             nice_delay_ms(300);
         }
-        set_state(off_state, 0);
         // FIXME: when user interrupts with button, "off" takes an extra click
         //  before it'll turn back on, because the click to cancel gets sent
         //  to the "off" state instead of version_check_state
+        //while (button_is_pressed()) {}
+        //empty_event_sequence();
+
+        set_state(off_state, 0);
     }
     #endif  // #ifdef USE_VERSION_CHECK
 
