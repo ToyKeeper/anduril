@@ -14,7 +14,7 @@ def main(args):
     """
     # Get parameters from the user
     questions_main = [
-            (str, 'ramp_shape', 'cube', 'Ramp shape? [cube, square, fifth, seventh, ninth, log]'),
+            (str, 'ramp_shape', 'cube', 'Ramp shape? [cube, square, fifth, seventh, ninth, log, N.NN]'),
             (int, 'num_channels', 1, 'How many power channels?'),
             (int, 'num_levels', 4, 'How many total levels do you want?'),
             ]
@@ -152,6 +152,16 @@ def multi_pwm(answers, channels):
                 (cnum+1,
                  ','.join([str(int(round(i))) for i in channel.modes])))
 
+    # Show highest level for each channel before next channel starts
+    for cnum, channel in enumerate(channels[:-1]):
+        prev = 0
+        i = 1
+        while (i < answers.num_levels) \
+                and (channel.modes[i] >= channel.modes[i-1]) \
+                and (channels[cnum+1].modes[i] == 0):
+            i += 1
+        print('Ch%i max: %i (%.2f/255)' % (cnum, i, channel.modes[i-1]))
+
 
 def get_value(text, default, args):
     """Get input from the user, or from the command line args."""
@@ -179,11 +189,19 @@ shapes = dict(
         )
 
 def power(x):
-    return shapes[ramp_shape][0](x)
+    try:
+        factor = float(ramp_shape)
+        return math.pow(x, factor)
+    except ValueError:
+        return shapes[ramp_shape][0](x)
 
 
 def invpower(x):
-    return shapes[ramp_shape][1](x)
+    try:
+        factor = float(ramp_shape)
+        return math.pow(x, 1.0 / factor)
+    except ValueError:
+        return shapes[ramp_shape][1](x)
 
 
 def input_text():
