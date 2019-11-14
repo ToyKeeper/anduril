@@ -145,6 +145,9 @@ uint8_t nice_delay_ms(uint16_t ms) {
         _delay_loop_2(BOGOMIPS*98/100);
         #endif  // ifdef USE_DYNAMIC_UNDERCLOCKING
 
+        // run pending system processes while we wait
+        handle_deferred_interrupts();
+
         if ((nice_delay_interrupt) || (old_state != current_state)) {
             return 0;  // state changed; abort
         }

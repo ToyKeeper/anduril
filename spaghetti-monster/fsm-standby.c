@@ -42,13 +42,15 @@ void sleep_until_eswitch_pressed()
     // make sure switch isn't currently pressed
     while (button_is_pressed()) {}
     empty_event_sequence();  // cancel pending input on suspend
-    //PCINT_since_WDT = 0;  // ensure PCINT won't ignore itself
 
     PCINT_on();  // wake on e-switch event
 
     #ifdef TICK_DURING_STANDBY
+    // detect which type of event caused a wake-up
+    irq_adc = 0;
+    irq_wdt = 0;
+    irq_pcint = 0;
     while (go_to_standby) {
-        f_wdt = 0;  // detect if WDT was what caused a wake-up
     #else
         go_to_standby = 0;
     #endif
@@ -65,9 +67,18 @@ void sleep_until_eswitch_pressed()
         sleep_disable();
 
     #ifdef TICK_DURING_STANDBY
-        // determine what woke us up... WDT or PCINT
-        if (! f_wdt) {  // PCINT went off; wake up
+        // determine what woke us up...
+        if (irq_pcint) {  // button pressed; wake up
             go_to_standby = 0;
+        }
+        if (irq_adc) {  // ADC done measuring
+            adcint_enable = 1;
+            ADC_inner();
+            //ADC_off();  // takes care of itself
+            //irq_adc = 0;  // takes care of itself
+        }
+        if (irq_wdt) {  // generate a sleep tick
+            WDT_inner();
         }
     }
     #endif

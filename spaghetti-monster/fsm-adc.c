@@ -113,15 +113,44 @@ static inline uint8_t calc_voltage_divider(uint16_t value) {
 #else
 #define ADC_CYCLES_PER_SECOND 8
 #endif
-// TODO: is this better done in main() or WDT()?
+
+// save the measurement result, set a flag to show something happened,
+// and count how many times we've triggered since last counter reset
 ISR(ADC_vect) {
-    // For some reason, the ADC interrupt is getting called a *lot*
-    // more often than it should be, like it's auto-triggering after each
-    // measurement, but I don't know why, or how to turn that off...
-    // So, skip every call except when explicitly requested.
+    #if 0  // the fancy method is probably not even needed
+    // count up but wrap around from 255 to 128; not 255 to 0
+    // TODO: find a way to do this faster if possible
+    uint8_t val = irq_adc;  // cache volatile value
+    irq_adc = (val + 1) | (val & 0b10000000);
+    #else
+    irq_adc ++;
+    #endif
+    adc_value = ADC;  // save this for later use
+}
+
+void ADC_inner() {
+    // ignore the first measurement; the docs say it's junk
+    if (irq_adc < 2) {
+        ADC_start_measurement();  // start a second measurement
+        return;
+    }
+
+    // the ADC triggers repeatedly when it's on, but we only want one value
+    // (so ignore everything after the first value, until it's manually reset)
     if (! adcint_enable) return;
+
+    // if we're actually runnning, reset the status flags / counters
+    irq_adc = 0;
     adcint_enable = 0;
 
+    #ifdef TICK_DURING_STANDBY
+        // in sleep mode, turn off after just one measurement
+        // (having the ADC on raises standby power by about 250 uA)
+        // (and the usual standby level is only ~20 uA)
+        if (go_to_standby) ADC_off();
+    #endif
+
+    // what is being measured? 0/1 = battery voltage, 2/3 = temperature
     static uint8_t adc_step = 0;
 
     // LVP declarations
@@ -155,7 +184,7 @@ ISR(ADC_vect) {
     #define ADC_STEPS 2
     #endif
 
-    uint16_t measurement = ADC;  // latest 10-bit ADC reading
+    uint16_t measurement = adc_value;  // latest 10-bit ADC reading
 
     #ifdef USE_PSEUDO_RAND
     // real-world entropy makes this a true random, not pseudo
@@ -376,10 +405,6 @@ ISR(ADC_vect) {
         #endif
     #endif
 
-    #ifdef TICK_DURING_STANDBY
-        // if we were asleep, go back to sleep
-        if (go_to_standby) ADC_off();
-    #endif
 }
 
 #ifdef USE_BATTCHECK

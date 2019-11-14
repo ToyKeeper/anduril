@@ -38,9 +38,15 @@
 #define VOLTAGE_FUDGE_FACTOR 5
 #endif
 #endif
+
+volatile uint8_t irq_adc = 0;  // ADC interrupt happened?
+uint16_t adc_value;  // last ADC measurement
+uint8_t adcint_enable = 0;  // is the current ADC result needed?
+void ADC_inner();  // do the actual ADC-related calculations
+
 volatile uint8_t voltage = 0;
-volatile uint8_t adcint_enable;  // kludge, because adc auto-retrigger won't turn off
 void low_voltage();
+
 #ifdef USE_BATTCHECK
 void battcheck();
 #ifdef BATTCHECK_VpT

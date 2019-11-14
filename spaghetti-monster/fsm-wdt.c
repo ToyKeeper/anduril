@@ -82,11 +82,23 @@ inline void WDT_off()
 
 // clock tick -- this runs every 16ms (62.5 fps)
 ISR(WDT_vect) {
+    irq_wdt = 1;  // WDT event happened
+}
+
+void WDT_inner() {
+    irq_wdt = 0;  // WDT event handled; reset flag
+
     static uint8_t adc_trigger = 0;
 
-    #ifdef TICK_DURING_STANDBY
-    f_wdt = 1;  // WDT event happened
+    // detect and emit button change events (even during standby)
+    uint8_t was_pressed = button_last_state;
+    uint8_t pressed = button_is_pressed();
+    if (was_pressed != pressed) {
+        go_to_standby = 0;
+        PCINT_inner(pressed);
+    }
 
+    #ifdef TICK_DURING_STANDBY
     static uint16_t sleep_counter = 0;
     // handle standby mode specially
     if (go_to_standby) {
@@ -106,11 +118,6 @@ ISR(WDT_vect) {
     }
     else { sleep_counter = 0; }
     #endif
-
-    // detect and emit button change events
-    uint8_t was_pressed = button_last_state;
-    uint8_t pressed = button_is_pressed();
-    if (was_pressed != pressed) PCINT_inner(pressed);
 
     // cache this here to reduce ROM size, because it's volatile
     uint16_t ticks_since_last = ticks_since_last_event;
@@ -178,6 +185,7 @@ ISR(WDT_vect) {
         if (go_to_standby) ADC_on();
         #endif
         ADC_start_measurement();
+        irq_adc = 0;
         adcint_enable = 1;
     }
     #endif
