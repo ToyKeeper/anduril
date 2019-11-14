@@ -20,6 +20,8 @@
 #ifndef FSM_EVENTS_C
 #define FSM_EVENTS_C
 
+#include <util/delay_basic.h>
+
 
 void empty_event_sequence() {
     current_event = EV_none;
