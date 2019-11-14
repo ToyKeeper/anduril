@@ -44,6 +44,7 @@ uint16_t adc_value;  // last ADC measurement
 uint8_t adcint_enable = 0;  // is the current ADC result needed?
 void ADC_inner();  // do the actual ADC-related calculations
 
+static inline void ADC_voltage_handler();
 volatile uint8_t voltage = 0;
 void low_voltage();
 
@@ -56,7 +57,7 @@ void battcheck();
 #define USE_BLINK_DIGIT
 #endif
 #endif
-#endif
+#endif  // ifdef USE_LVP
 
 
 #ifdef USE_THERMAL_REGULATION
@@ -85,7 +86,8 @@ int8_t therm_cal_offset = 0;
 //void low_temperature();
 //void high_temperature();
 volatile uint8_t reset_thermal_history = 1;
-#endif
+static inline void ADC_temperature_handler();
+#endif  // ifdef USE_THERMAL_REGULATION
 
 
 inline void ADC_on();
