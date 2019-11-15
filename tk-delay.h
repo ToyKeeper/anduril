@@ -48,11 +48,13 @@ void _delay_zero() {
 }
 #endif
 #ifdef USE_DELAY_4MS
+#ifndef delay_4ms
 #define delay_4ms _delay_4ms
 void _delay_4ms(uint8_t n)  // because it saves a bit of ROM space to do it this way
 {
     while(n-- > 0) _delay_loop_2(BOGOMIPS*4);
 }
+#endif
 #endif
 #ifdef USE_DELAY_S
 #define delay_s _delay_s

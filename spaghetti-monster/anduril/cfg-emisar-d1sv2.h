@@ -59,3 +59,8 @@
 #define PARTY_STROBE_ONTIME 2
 
 #define THERM_CAL_OFFSET 5
+
+// attiny1634 has enough space to smooth out voltage readings
+// (prevent the button from blinking during use)
+#define USE_VOLTAGE_LOWPASS
+

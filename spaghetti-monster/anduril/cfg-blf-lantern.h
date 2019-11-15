@@ -51,6 +51,9 @@
 #define RAMP_DISCRETE_CEIL RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 5
 
+#define MUGGLE_FLOOR    15  // about  20 lm
+#define MUGGLE_CEILING 115  // about 350 lm
+
 // the sensor (attiny85) is nowhere near the emitters
 // so thermal regulation can't work
 #ifdef USE_THERMAL_REGULATION

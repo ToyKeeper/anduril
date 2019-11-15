@@ -123,7 +123,6 @@ int main() {
     #else
     delay_4ms(1);
     #endif
-    empty_event_sequence();
 
     // fallback for handling a few things
     #ifndef DONT_USE_DEFAULT_STATE
@@ -160,11 +159,32 @@ int main() {
             standby_mode();
         }
 
+        // catch up on interrupts
+        handle_deferred_interrupts();
+
         // give the recipe some time slices
         loop();
 
         // in case we fell through, turn delays back on
         nice_delay_interrupt = 0;
+    }
+}
+
+
+void handle_deferred_interrupts() {
+    /*
+    if (irq_pcint) {  // button pressed or released
+        // nothing to do here
+        // (PCINT only matters during standby)
+    }
+    */
+    if (irq_adc) {  // ADC done measuring
+        ADC_inner();
+        // irq_adc = 0;  // takes care of itself
+    }
+    if (irq_wdt) {  // the clock ticked
+        WDT_inner();
+        // irq_wdt = 0;  // takes care of itself
     }
 }
 

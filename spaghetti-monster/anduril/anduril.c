@@ -2403,7 +2403,7 @@ void rgb_led_voltage_readout(uint8_t bright) {
 void factory_reset() {
     // display a warning for a few seconds before doing the actual reset,
     // so the user has time to abort if they want
-    #define SPLODEY_TIME 3000
+    #define SPLODEY_TIME 2500
     #define SPLODEY_STEPS 64
     #define SPLODEY_TIME_PER_STEP (SPLODEY_TIME/SPLODEY_STEPS)
     uint8_t bright;
@@ -2411,9 +2411,9 @@ void factory_reset() {
     // wind up to an explosion
     for (bright=0; bright<SPLODEY_STEPS; bright++) {
         set_level(bright);
-        delay_4ms(SPLODEY_TIME_PER_STEP/2/4);
+        nice_delay_ms(SPLODEY_TIME_PER_STEP/2);
         set_level(bright>>1);
-        delay_4ms(SPLODEY_TIME_PER_STEP/2/4);
+        nice_delay_ms(SPLODEY_TIME_PER_STEP/2);
         if (! button_is_pressed()) {
             reset = 0;
             break;
@@ -2434,14 +2434,14 @@ void factory_reset() {
         bright = MAX_LEVEL;
         for (; bright > 0; bright--) {
             set_level(bright);
-            delay_4ms(SPLODEY_TIME_PER_STEP/6/4);
+            nice_delay_ms(SPLODEY_TIME_PER_STEP/8);
         }
     }
     // explosion cancelled, fade away
     else {
         for (; bright > 0; bright--) {
             set_level(bright);
-            delay_4ms(SPLODEY_TIME_PER_STEP/3/4);
+            nice_delay_ms(SPLODEY_TIME_PER_STEP/3);
         }
     }
 }
