@@ -201,11 +201,6 @@ void ADC_inner() {
 
 #ifdef USE_LVP
 static inline void ADC_voltage_handler() {
-    // LVP declarations
-    #ifdef USE_LVP_AVG
-    #define NUM_VOLTAGE_VALUES 4
-    static int16_t voltage_values[NUM_VOLTAGE_VALUES];
-    #endif
     static uint8_t lvp_timer = 0;
     static uint8_t lvp_lowpass = 0;
     #define LVP_TIMER_START (VOLTAGE_WARNING_SECONDS*ADC_CYCLES_PER_SECOND)  // N seconds between LVP warnings
@@ -213,40 +208,30 @@ static inline void ADC_voltage_handler() {
 
     uint16_t measurement = adc_values[0];  // latest 10-bit ADC reading
 
-    #ifdef USE_LVP_AVG
-    // prime on first execution
-    if (voltage == 0) {
-        for(uint8_t i=0; i<NUM_VOLTAGE_VALUES; i++)
-            voltage_values[i] = measurement;
-        voltage = 42;  // the answer to life, the universe, and the voltage of a full li-ion cell
-    } else {
-        uint16_t total = 0;
-        uint8_t i;
-        for(i=0; i<NUM_VOLTAGE_VALUES-1; i++) {
-            voltage_values[i] = voltage_values[i+1];
-            total += voltage_values[i];
-        }
-        voltage_values[i] = measurement;
-        total += measurement;
-        total = total >> 2;
+    #ifdef USE_VOLTAGE_LOWPASS
+        static uint16_t prev_measurement = 0;
 
-        #ifdef USE_VOLTAGE_DIVIDER
-        voltage = calc_voltage_divider(total);
-        #else
-        voltage = (uint16_t)(1.1*1024*10)/total + VOLTAGE_FUDGE_FACTOR;
-        #endif
-    }
-    #else  // no USE_LVP_AVG
-        #ifdef USE_VOLTAGE_DIVIDER
-        voltage = calc_voltage_divider(measurement);
-        #else
-        // calculate actual voltage: volts * 10
-        // ADC = 1.1 * 1024 / volts
-        // volts = 1.1 * 1024 / ADC
-        //voltage = (uint16_t)(1.1*1024*10)/measurement + VOLTAGE_FUDGE_FACTOR;
-        voltage = ((uint16_t)(2*1.1*1024*10)/measurement + VOLTAGE_FUDGE_FACTOR) >> 1;
-        #endif
+        // prime on first execution, or while asleep
+        if (go_to_standby || (! prev_measurement)) prev_measurement = measurement;
+
+        // only allow raw value to go up or down by 1 per iteration
+        if (measurement > prev_measurement) measurement = prev_measurement + 1;
+        else if (measurement < prev_measurement) measurement = prev_measurement - 1;
+
+        // remember for later
+        prev_measurement = measurement;
+    #endif  // no USE_VOLTAGE_LOWPASS
+
+    #ifdef USE_VOLTAGE_DIVIDER
+    voltage = calc_voltage_divider(measurement);
+    #else
+    // calculate actual voltage: volts * 10
+    // ADC = 1.1 * 1024 / volts
+    // volts = 1.1 * 1024 / ADC
+    //voltage = (uint16_t)(1.1*1024*10)/measurement + VOLTAGE_FUDGE_FACTOR;
+    voltage = ((uint16_t)(2*1.1*1024*10)/measurement + VOLTAGE_FUDGE_FACTOR) >> 1;
     #endif
+
     // if low, callback EV_voltage_low / EV_voltage_critical
     //         (but only if it has been more than N ticks since last call)
     if (lvp_timer) {
