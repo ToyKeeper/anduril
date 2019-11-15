@@ -47,6 +47,3 @@
 #define THERMAL_UPDATE_SPEED 2
 #define THERM_PREDICTION_STRENGTH 4
 
-// attiny1634 has enough space to smooth out voltage readings
-#define USE_VOLTAGE_LOWPASS
-
