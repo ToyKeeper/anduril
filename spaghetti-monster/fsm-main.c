@@ -123,7 +123,6 @@ int main() {
     #else
     delay_4ms(1);
     #endif
-    empty_event_sequence();
 
     // fallback for handling a few things
     #ifndef DONT_USE_DEFAULT_STATE
