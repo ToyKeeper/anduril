@@ -49,3 +49,6 @@
 #define USE_TENCLICK_THERMAL_CONFIG
 
 #define THERM_CAL_OFFSET 5
+
+// attiny1634 has enough space to smooth out voltage readings
+#define USE_VOLTAGE_LOWPASS
