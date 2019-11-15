@@ -185,7 +185,7 @@ void WDT_inner() {
         if (go_to_standby) ADC_on();
         #endif
         ADC_start_measurement();
-        irq_adc = 0;
+        irq_adc_stable = 0;
         adcint_enable = 1;
     }
     #endif

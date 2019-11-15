@@ -40,7 +40,9 @@
 #endif
 
 volatile uint8_t irq_adc = 0;  // ADC interrupt happened?
-uint16_t adc_value;  // last ADC measurement
+volatile uint8_t irq_adc_stable = 0;  // have we passed the 1st junk value yet?
+uint8_t adc_channel = 0;  // 0=voltage, 1=temperature
+uint16_t adc_values[2];  // last ADC measurements (0=voltage, 1=temperature)
 uint8_t adcint_enable = 0;  // is the current ADC result needed?
 void ADC_inner();  // do the actual ADC-related calculations
 

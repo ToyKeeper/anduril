@@ -30,6 +30,7 @@ inline void set_admux_therm() {
     #else
         #error Unrecognized MCU type
     #endif
+    adc_channel = 1;
 }
 
 inline void set_admux_voltage() {
@@ -52,6 +53,7 @@ inline void set_admux_voltage() {
     #else
         #error Unrecognized MCU type
     #endif
+    adc_channel = 0;
 }
 
 inline void ADC_start_measurement() {
@@ -115,38 +117,37 @@ static inline uint8_t calc_voltage_divider(uint16_t value) {
 #endif
 
 #ifdef USE_THERMAL_REGULATION
-#define ADC_STEPS 4
-#else
 #define ADC_STEPS 2
+#else
+#define ADC_STEPS 1
 #endif
 
-// save the measurement result, set a flag to show something happened,
-// and count how many times we've triggered since last counter reset
+// happens every time the ADC sampler finishes a measurement
 ISR(ADC_vect) {
-    #if 0  // the fancy method is probably not even needed
-    // count up but wrap around from 255 to 128; not 255 to 0
-    // TODO: find a way to do this faster if possible
-    uint8_t val = irq_adc;  // cache volatile value
-    irq_adc = (val + 1) | (val & 0b10000000);
-    #else
-    irq_adc ++;
+    #ifdef USE_PSEUDO_RAND
+    // real-world entropy makes this a true random, not pseudo
+    pseudo_rand_seed += ADCL;
     #endif
-    adc_value = ADC;  // save this for later use
+
+    if (irq_adc_stable) {  // skip first result; it's junk
+        adc_values[adc_channel] = ADC;  // save this for later use
+        irq_adc = 1;  // a value was saved, so trigger deferred logic
+    }
+    irq_adc_stable = 1;
+
+    // start another measurement
+    // (is explicit because it otherwise doesn't seem to happen during standby mode)
+    ADC_start_measurement();
 }
 
 void ADC_inner() {
-    // ignore the first measurement; the docs say it's junk
-    if (irq_adc < 2) {
-        ADC_start_measurement();  // start a second measurement
-        return;
-    }
+    irq_adc = 0;  // event handled
 
     // the ADC triggers repeatedly when it's on, but we only want one value
     // (so ignore everything after the first value, until it's manually reset)
     if (! adcint_enable) return;
 
-    // if we're actually runnning, reset the status flags / counters
-    irq_adc = 0;
+    // disable after one iteration
     adcint_enable = 0;
 
     #ifdef TICK_DURING_STANDBY
@@ -156,41 +157,37 @@ void ADC_inner() {
         if (go_to_standby) ADC_off();
     #endif
 
-    // what is being measured? 0/1 = battery voltage, 2/3 = temperature
+    // what is being measured? 0 = battery voltage, 1 = temperature
     static uint8_t adc_step = 0;
 
-    #ifdef USE_PSEUDO_RAND
-    // real-world entropy makes this a true random, not pseudo
-    pseudo_rand_seed += adc_value;
-    #endif
-
-    #if defined(TICK_DURING_STANDBY) && defined(USE_SLEEP_LVP)
-    // only measure battery voltage while asleep
-    if (go_to_standby) adc_step = 1;
-    else
-    #endif
-
-    adc_step = (adc_step + 1) & (ADC_STEPS-1);
-
     #ifdef USE_LVP
-    if (adc_step == 1) {  // voltage
+    if (0 == adc_step) {  // voltage
         ADC_voltage_handler();
     }
     #endif
 
     #ifdef USE_THERMAL_REGULATION
-    else if (adc_step == 3) {  // temperature
+    else if (1 == adc_step) {  // temperature
         ADC_temperature_handler();
     }
     #endif
 
+    #if defined(TICK_DURING_STANDBY) && defined(USE_SLEEP_LVP)
+    // only measure battery voltage while asleep
+    if (go_to_standby) adc_step = 0;
+    else
+    #endif
+
+    adc_step = (adc_step + 1) & (ADC_STEPS-1);
+
     // set the correct type of measurement for next time
     #ifdef USE_THERMAL_REGULATION
         #ifdef USE_LVP
-        if (adc_step < 2) set_admux_voltage();
+        if (0 == adc_step) set_admux_voltage();
         else set_admux_therm();
         #else
-        set_admux_therm();
+        //set_admux_therm();
+        #error "USE_THERMAL_REGULATION set without USE_LVP"
         #endif
     #else
         #ifdef USE_LVP
@@ -198,6 +195,7 @@ void ADC_inner() {
         #endif
     #endif
 
+    irq_adc_stable = 0;  // first result is unstable
 }
 
 
@@ -213,7 +211,7 @@ static inline void ADC_voltage_handler() {
     #define LVP_TIMER_START (VOLTAGE_WARNING_SECONDS*ADC_CYCLES_PER_SECOND)  // N seconds between LVP warnings
     #define LVP_LOWPASS_STRENGTH ADC_CYCLES_PER_SECOND  // lowpass for one second
 
-    uint16_t measurement = adc_value;  // latest 10-bit ADC reading
+    uint16_t measurement = adc_values[0];  // latest 10-bit ADC reading
 
     #ifdef USE_LVP_AVG
     // prime on first execution
@@ -293,7 +291,7 @@ static inline void ADC_temperature_handler() {
     #define OVERHEAT_LOWPASS_STRENGTH (ADC_CYCLES_PER_SECOND*2)  // lowpass for 2 seconds
     #define UNDERHEAT_LOWPASS_STRENGTH (ADC_CYCLES_PER_SECOND*2)  // lowpass for 2 seconds
 
-    uint16_t measurement = adc_value;  // latest 10-bit ADC reading
+    uint16_t measurement = adc_values[1];  // latest 10-bit ADC reading
 
     // Convert ADC units to Celsius (ish)
     int16_t temp = measurement - 275 + THERM_CAL_OFFSET + (int16_t)therm_cal_offset;
