@@ -79,22 +79,24 @@ inline void hw_setup() {
 #endif
 
 
-#ifdef USE_REBOOT
-void prevent_reboot_loop() {
+//#ifdef USE_REBOOT
+static inline void prevent_reboot_loop() {
     // prevent WDT from rebooting MCU again
     MCUSR &= ~(1<<WDRF);  // reset status flag
     wdt_disable();
 }
-#endif
+//#endif
 
 
 int main() {
     // Don't allow interrupts while booting
     cli();
 
-    #ifdef USE_REBOOT
+    //#ifdef USE_REBOOT
+    // prevents cycling after a crash,
+    // whether intentional (like factory reset) or not (bugs)
     prevent_reboot_loop();
-    #endif
+    //#endif
 
     hw_setup();
 
