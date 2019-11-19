@@ -90,6 +90,14 @@ void WDT_inner() {
 
     static uint8_t adc_trigger = 0;
 
+    // cache this here to reduce ROM size, because it's volatile
+    uint16_t ticks_since_last = ticks_since_last_event;
+    // increment, but loop from max back to half
+    ticks_since_last = (ticks_since_last + 1) \
+                     | (ticks_since_last & 0x8000);
+    // copy back to the original
+    ticks_since_last_event = ticks_since_last;
+
     // detect and emit button change events (even during standby)
     uint8_t was_pressed = button_last_state;
     uint8_t pressed = button_is_pressed();
@@ -97,37 +105,28 @@ void WDT_inner() {
         go_to_standby = 0;
         PCINT_inner(pressed);
     }
+    // cache again, in case the value changed
+    ticks_since_last = ticks_since_last_event;
 
     #ifdef TICK_DURING_STANDBY
-    static uint16_t sleep_counter = 0;
     // handle standby mode specially
     if (go_to_standby) {
         // emit a halfsleep tick, and process it
-        emit(EV_sleep_tick, sleep_counter);
-        // wrap around from 65535 to 32768, not 0
-        sleep_counter = (sleep_counter + 1) | (sleep_counter & 0x8000);
+        emit(EV_sleep_tick, ticks_since_last);
         process_emissions();
 
-        #if defined(USE_SLEEP_LVP)
-        // stop here, usually...  but proceed often enough for sleep LVP to work
-        if (0 != (sleep_counter & 0x7f)) return;
-        adc_trigger = 255;  // make sure a measurement will happen
-        #else
+        #ifndef USE_SLEEP_LVP
         return;  // no sleep LVP needed if nothing drains power while off
+        #else
+        // stop here, usually...  but proceed often enough for sleep LVP to work
+        if (0 != (ticks_since_last & 0x7f)) return;
+
+        adc_trigger = 255;  // make sure a measurement will happen
+        ADC_on();  // enable ADC voltage measurement functions temporarily
         #endif
     }
-    else { sleep_counter = 0; }
+    else {  // button handling should only happen while awake
     #endif
-
-    // cache this here to reduce ROM size, because it's volatile
-    uint16_t ticks_since_last = ticks_since_last_event;
- 
-    // increment, but loop from max back to half
-    //if (ticks_since_last < 0xff) ticks_since_last ++;
-    ticks_since_last = (ticks_since_last + 1) \
-                     | (ticks_since_last & 0x8000);
-    // copy back to the original
-    ticks_since_last_event = ticks_since_last;
 
     // if time since last event exceeds timeout,
     // append timeout to current event sequence, then
@@ -148,9 +147,9 @@ void WDT_inner() {
             emit_current_event(ticks_since_last);
         }
         // has button been down long enough to become a "hold"?
+        // (first frame of a "hold" event)
         else {
             if (ticks_since_last >= HOLD_TIMEOUT) {
-                //ticks_since_last_event = 0;
                 current_event |= B_HOLD;
                 emit_current_event(0);
             }
@@ -163,27 +162,25 @@ void WDT_inner() {
         // no timeout required when releasing a long-press
         // TODO? move this logic to PCINT() and simplify things here?
         if (current_event & B_HOLD) {
-            //emit_current_event(0);  // should have been emitted by PCINT
+            //emit_current_event(0);  // should have been emitted by PCINT_inner()
             empty_event_sequence();
         }
         // end and clear event after release timeout
         else if (ticks_since_last >= RELEASE_TIMEOUT) {
             current_event |= B_TIMEOUT;
-            //ticks_since_last_event = 0;
             emit_current_event(0);
             empty_event_sequence();
         }
     }
 
+    #ifdef TICK_DURING_STANDBY
+    }
+    #endif
+
     #if defined(USE_LVP) || defined(USE_THERMAL_REGULATION)
     // start a new ADC measurement every 4 ticks
     adc_trigger ++;
     if (0 == (adc_trigger & 3)) {
-        #if defined(TICK_DURING_STANDBY) && defined(USE_SLEEP_LVP)
-        // we shouldn't be here unless it woke up for a LVP check...
-        // so enable ADC voltage measurement functions temporarily
-        if (go_to_standby) ADC_on();
-        #endif
         ADC_start_measurement();
         irq_adc_stable = 0;
         adcint_enable = 1;
