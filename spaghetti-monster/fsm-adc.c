@@ -108,12 +108,12 @@ static inline uint8_t calc_voltage_divider(uint16_t value) {
 }
 #endif
 
-// Each full cycle runs 7.8X per second with just voltage enabled,
-// or 3.9X per second with voltage and temperature.
+// Each full cycle runs 15.6X per second with just voltage enabled,
+// or 7.8X per second with voltage and temperature.
 #if defined(USE_LVP) && defined(USE_THERMAL_REGULATION)
-#define ADC_CYCLES_PER_SECOND 4
-#else
 #define ADC_CYCLES_PER_SECOND 8
+#else
+#define ADC_CYCLES_PER_SECOND 16
 #endif
 
 #ifdef USE_THERMAL_REGULATION
@@ -322,13 +322,13 @@ static inline void ADC_temperature_handler() {
         // if it's time to rotate the thermal history, do it
         history_step ++;
         #if (THERMAL_UPDATE_SPEED == 4)  // new value every 4s
-        #define THERM_HISTORY_STEP_MAX 15
+        #define THERM_HISTORY_STEP_MAX ((2*ADC_CYCLES_PER_SECOND)-1)
         #elif (THERMAL_UPDATE_SPEED == 2)  // new value every 2s
-        #define THERM_HISTORY_STEP_MAX 7
+        #define THERM_HISTORY_STEP_MAX (ADC_CYCLES_PER_SECOND-1)
         #elif (THERMAL_UPDATE_SPEED == 1)  // new value every 1s
-        #define THERM_HISTORY_STEP_MAX 3
+        #define THERM_HISTORY_STEP_MAX ((ADC_CYCLES_PER_SECOND/2)-1)
         #elif (THERMAL_UPDATE_SPEED == 0)  // new value every 0.5s
-        #define THERM_HISTORY_STEP_MAX 1
+        #define THERM_HISTORY_STEP_MAX ((ADC_CYCLES_PER_SECOND/4)-1)
         #endif
         if (0 == (history_step & THERM_HISTORY_STEP_MAX)) {
             // rotate measurements and add a new one
