@@ -21,5 +21,7 @@
 #define FSM_MAIN_H
 
 int main();
+// needs to run frequently to execute the logic for WDT and ADC and stuff
+void handle_deferred_interrupts();
 
 #endif

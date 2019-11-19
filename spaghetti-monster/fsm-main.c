@@ -37,7 +37,7 @@ ISR(TIMER1_COMPA_vect) {
 #endif
 
 #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
-inline void hw_setup() {
+static inline void hw_setup() {
     // configure PWM channels
     #if PWM_CHANNELS >= 1
     DDRB |= (1 << PWM1_PIN);
@@ -69,7 +69,7 @@ inline void hw_setup() {
     PCMSK = (1 << SWITCH_PIN);  // pin change interrupt uses this pin
 }
 #elif (ATTINY == 1634)
-inline void hw_setup() {
+static inline void hw_setup() {
     // this gets tricky with so many pins...
     // ... so punt it to the hwdef file
     hwdef_setup();
@@ -79,22 +79,24 @@ inline void hw_setup() {
 #endif
 
 
-#ifdef USE_REBOOT
-void prevent_reboot_loop() {
+//#ifdef USE_REBOOT
+static inline void prevent_reboot_loop() {
     // prevent WDT from rebooting MCU again
     MCUSR &= ~(1<<WDRF);  // reset status flag
     wdt_disable();
 }
-#endif
+//#endif
 
 
 int main() {
     // Don't allow interrupts while booting
     cli();
 
-    #ifdef USE_REBOOT
+    //#ifdef USE_REBOOT
+    // prevents cycling after a crash,
+    // whether intentional (like factory reset) or not (bugs)
     prevent_reboot_loop();
-    #endif
+    //#endif
 
     hw_setup();
 
@@ -123,7 +125,6 @@ int main() {
     #else
     delay_4ms(1);
     #endif
-    empty_event_sequence();
 
     // fallback for handling a few things
     #ifndef DONT_USE_DEFAULT_STATE
@@ -160,11 +161,32 @@ int main() {
             standby_mode();
         }
 
+        // catch up on interrupts
+        handle_deferred_interrupts();
+
         // give the recipe some time slices
         loop();
 
         // in case we fell through, turn delays back on
         nice_delay_interrupt = 0;
+    }
+}
+
+
+void handle_deferred_interrupts() {
+    /*
+    if (irq_pcint) {  // button pressed or released
+        // nothing to do here
+        // (PCINT only matters during standby)
+    }
+    */
+    if (irq_adc) {  // ADC done measuring
+        ADC_inner();
+        // irq_adc = 0;  // takes care of itself
+    }
+    if (irq_wdt) {  // the clock ticked
+        WDT_inner();
+        // irq_wdt = 0;  // takes care of itself
     }
 }
 
