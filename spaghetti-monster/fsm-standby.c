@@ -43,8 +43,6 @@ void sleep_until_eswitch_pressed()
     while (button_is_pressed()) {}
     empty_event_sequence();  // cancel pending input on suspend
 
-    PCINT_on();  // wake on e-switch event
-
     #ifdef TICK_DURING_STANDBY
     // detect which type of event caused a wake-up
     irq_adc = 0;
@@ -54,6 +52,9 @@ void sleep_until_eswitch_pressed()
     #else
         go_to_standby = 0;
     #endif
+
+        PCINT_on();  // wake on e-switch event
+
         // configure sleep mode
         set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 
@@ -89,7 +90,10 @@ void sleep_until_eswitch_pressed()
     #endif
 
     // go back to normal running mode
-    //PCINT_on();  // should be on already
+    // PCINT not needed any more, and can cause problems if on
+    // (occasional reboots on wakeup-by-button-press)
+    PCINT_off();
+    // restore normal awake-mode interrupts
     ADC_on();
     WDT_on();
 }
