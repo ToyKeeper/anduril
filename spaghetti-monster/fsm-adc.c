@@ -21,7 +21,7 @@
 #define FSM_ADC_C
 
 
-inline void set_admux_therm() {
+static inline void set_admux_therm() {
     #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85) || (ATTINY == 1634)
         ADMUX = ADMUX_THERM;
     #elif (ATTINY == 841)

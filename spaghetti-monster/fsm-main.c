@@ -37,7 +37,7 @@ ISR(TIMER1_COMPA_vect) {
 #endif
 
 #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
-inline void hw_setup() {
+static inline void hw_setup() {
     // configure PWM channels
     #if PWM_CHANNELS >= 1
     DDRB |= (1 << PWM1_PIN);
@@ -69,7 +69,7 @@ inline void hw_setup() {
     PCMSK = (1 << SWITCH_PIN);  // pin change interrupt uses this pin
 }
 #elif (ATTINY == 1634)
-inline void hw_setup() {
+static inline void hw_setup() {
     // this gets tricky with so many pins...
     // ... so punt it to the hwdef file
     hwdef_setup();
