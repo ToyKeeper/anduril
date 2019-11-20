@@ -90,6 +90,8 @@
 //  so don't enable them at the same time as any of the above strobes)
 //#define USE_POLICE_STROBE_MODE
 //#define USE_SOS_MODE
+//#define USE_SOS_MODE_IN_FF_GROUP  // put SOS in the "boring strobes" mode
+//#define USE_SOS_MODE_IN_BLINKY_GROUP  // put SOS in the blinkies mode group
 
 // cut clock speed at very low modes for better efficiency
 // (defined here so config files can override it)
@@ -149,7 +151,7 @@
 #define USE_STROBE_STATE
 #endif
 
-#if defined(USE_POLICE_STROBE_MODE) || defined(USE_SOS_MODE)
+#if defined(USE_POLICE_STROBE_MODE) || defined(USE_SOS_MODE_IN_FF_GROUP)
 #define USE_BORING_STROBE_STATE
 #endif
 
@@ -284,6 +286,10 @@ uint8_t goodnight_state(Event event, uint16_t arg);
 // beacon mode and its related config mode
 uint8_t beacon_state(Event event, uint16_t arg);
 uint8_t beacon_config_state(Event event, uint16_t arg);
+#endif
+#ifdef USE_SOS_MODE_IN_BLINKY_GROUP
+// automatic SOS emergency signal
+uint8_t sos_state(Event event, uint16_t arg);
 #endif
 // soft lockout
 #define MOON_DURING_LOCKOUT_MODE
@@ -1527,8 +1533,29 @@ inline void police_strobe_iter() {
     }
 }
 #endif
+#endif  // #ifdef USE_BORING_STROBE_STATE
 
 #ifdef USE_SOS_MODE
+#ifdef USE_SOS_MODE_IN_BLINKY_GROUP
+uint8_t sos_state(Event event, uint16_t arg) {
+    // 1 click: off
+    if (event == EV_1click) {
+        set_state(off_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    // 2 clicks: next mode
+    else if (event == EV_2clicks) {
+        #ifdef USE_THERMAL_REGULATION
+        set_state(tempcheck_state, 0);
+        #else
+        set_state(battcheck_state, 0);
+        #endif
+        return MISCHIEF_MANAGED;
+    }
+    return EVENT_NOT_HANDLED;
+}
+#endif
+
 void sos_blink(uint8_t num, uint8_t dah) {
     #define DIT_LENGTH 200
     for (; num > 0; num--) {
@@ -1547,14 +1574,13 @@ void sos_blink(uint8_t num, uint8_t dah) {
 
 inline void sos_mode_iter() {
     // one iteration of main loop()
-    nice_delay_ms(1000);
+    //nice_delay_ms(1000);
     sos_blink(3, 0);  // S
     sos_blink(3, 1);  // O
     sos_blink(3, 0);  // S
-    nice_delay_ms(1000);
+    nice_delay_ms(2000);
 }
 #endif  // #ifdef USE_SOS_MODE
-#endif  // #ifdef USE_BORING_STROBE_STATE
 
 
 #ifdef USE_BATTCHECK
@@ -1605,9 +1631,11 @@ uint8_t beacon_state(Event event, uint16_t arg) {
     }
     // TODO: use sleep ticks to measure time between pulses,
     //       to save power
-    // 2 clicks: tempcheck mode
+    // 2 clicks: next mode
     else if (event == EV_2clicks) {
-        #ifdef USE_THERMAL_REGULATION
+        #ifdef USE_SOS_MODE_IN_BLINKY_GROUP
+        set_state(sos_state, 0);
+        #elif defined(USE_THERMAL_REGULATION)
         set_state(tempcheck_state, 0);
         #else
         set_state(battcheck_state, 0);
@@ -2697,7 +2725,7 @@ void loop() {
                 break;
             #endif
 
-            #ifdef USE_SOS_MODE
+            #ifdef USE_SOS_MODE_IN_FF_GROUP
             default: // SOS
                 sos_mode_iter();
                 break;
@@ -2715,6 +2743,12 @@ void loop() {
     #ifdef USE_BEACON_MODE
     else if (state == beacon_state) {
         beacon_mode_iter();
+    }
+    #endif
+
+    #ifdef USE_SOS_MODE_IN_BLINKY_GROUP
+    else if (state == sos_state) {
+        sos_mode_iter();
     }
     #endif
 

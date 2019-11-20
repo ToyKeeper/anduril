@@ -14,9 +14,9 @@
 #define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 2)
 
 // doesn't quite fit
-#ifdef USE_MUGGLE_MODE
-#undef USE_MUGGLE_MODE
-#endif
+//#ifdef USE_MUGGLE_MODE
+//#undef USE_MUGGLE_MODE
+//#endif
 
 // copied from Emisar D4 ramp
 // ../../bin/level_calc.py 1 65 7135 1 0.8 150

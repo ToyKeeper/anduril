@@ -97,8 +97,7 @@ void PCINT_inner(uint8_t pressed) {
         pushed = push_event(B_RELEASE);
     }
 
-    // check if sequence matches any defined sequences
-    // if so, send event to current state callback
+    // send event to the current state callback
     if (pushed) {
         button_last_state = pressed;
         emit_current_event(0);

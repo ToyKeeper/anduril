@@ -37,7 +37,7 @@ ISR(TIMER1_COMPA_vect) {
 #endif
 
 #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
-inline void hw_setup() {
+static inline void hw_setup() {
     // configure PWM channels
     #if PWM_CHANNELS >= 1
     DDRB |= (1 << PWM1_PIN);
@@ -69,7 +69,7 @@ inline void hw_setup() {
     PCMSK = (1 << SWITCH_PIN);  // pin change interrupt uses this pin
 }
 #elif (ATTINY == 1634)
-inline void hw_setup() {
+static inline void hw_setup() {
     // this gets tricky with so many pins...
     // ... so punt it to the hwdef file
     hwdef_setup();
@@ -79,22 +79,24 @@ inline void hw_setup() {
 #endif
 
 
-#ifdef USE_REBOOT
-void prevent_reboot_loop() {
+//#ifdef USE_REBOOT
+static inline void prevent_reboot_loop() {
     // prevent WDT from rebooting MCU again
     MCUSR &= ~(1<<WDRF);  // reset status flag
     wdt_disable();
 }
-#endif
+//#endif
 
 
 int main() {
     // Don't allow interrupts while booting
     cli();
 
-    #ifdef USE_REBOOT
+    //#ifdef USE_REBOOT
+    // prevents cycling after a crash,
+    // whether intentional (like factory reset) or not (bugs)
     prevent_reboot_loop();
-    #endif
+    //#endif
 
     hw_setup();
 

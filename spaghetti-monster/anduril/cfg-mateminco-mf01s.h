@@ -15,9 +15,9 @@
 
 
 // doesn't quite fit
-#ifdef USE_MUGGLE_MODE
-#undef USE_MUGGLE_MODE
-#endif
+//#ifdef USE_MUGGLE_MODE
+//#undef USE_MUGGLE_MODE
+//#endif
 
 
 // don't blink during ramp, it's irrelevant and annoying on this light

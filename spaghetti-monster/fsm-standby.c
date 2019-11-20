@@ -54,6 +54,7 @@ void sleep_until_eswitch_pressed()
     #else
         go_to_standby = 0;
     #endif
+
         // configure sleep mode
         set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 
@@ -89,7 +90,10 @@ void sleep_until_eswitch_pressed()
     #endif
 
     // go back to normal running mode
-    //PCINT_on();  // should be on already
+    // PCINT not needed any more, and can cause problems if on
+    // (occasional reboots on wakeup-by-button-press)
+    PCINT_off();
+    // restore normal awake-mode interrupts
     ADC_on();
     WDT_on();
 }
