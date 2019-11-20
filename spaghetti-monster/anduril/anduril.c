@@ -1863,9 +1863,14 @@ uint8_t momentary_state(Event event, uint16_t arg) {
             }
         }
         else {
-            if (arg > TICKS_PER_SECOND*15) {  // sleep after 15 seconds
+            if (arg > TICKS_PER_SECOND*5) {  // sleep after 5 seconds
                 go_to_standby = 1;  // sleep while light is off
-                // TODO: lighted button should use lockout config?
+                // turn off lighted button
+                #ifdef USE_INDICATOR_LED
+                indicator_led(0);
+                #elif defined(USE_AUX_RGB_LEDS)
+                rgb_led_update(0, 0);
+                #endif
             }
         }
         return MISCHIEF_MANAGED;
