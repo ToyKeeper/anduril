@@ -38,9 +38,18 @@
 #define VOLTAGE_FUDGE_FACTOR 5
 #endif
 #endif
+
+volatile uint8_t irq_adc = 0;  // ADC interrupt happened?
+volatile uint8_t irq_adc_stable = 0;  // have we passed the 1st junk value yet?
+uint8_t adc_channel = 0;  // 0=voltage, 1=temperature
+uint16_t adc_values[2];  // last ADC measurements (0=voltage, 1=temperature)
+uint8_t adcint_enable = 0;  // is the current ADC result needed?
+void ADC_inner();  // do the actual ADC-related calculations
+
+static inline void ADC_voltage_handler();
 volatile uint8_t voltage = 0;
-volatile uint8_t adcint_enable;  // kludge, because adc auto-retrigger won't turn off
 void low_voltage();
+
 #ifdef USE_BATTCHECK
 void battcheck();
 #ifdef BATTCHECK_VpT
@@ -50,7 +59,7 @@ void battcheck();
 #define USE_BLINK_DIGIT
 #endif
 #endif
-#endif
+#endif  // ifdef USE_LVP
 
 
 #ifdef USE_THERMAL_REGULATION
@@ -79,7 +88,8 @@ int8_t therm_cal_offset = 0;
 //void low_temperature();
 //void high_temperature();
 volatile uint8_t reset_thermal_history = 1;
-#endif
+static inline void ADC_temperature_handler();
+#endif  // ifdef USE_THERMAL_REGULATION
 
 
 inline void ADC_on();

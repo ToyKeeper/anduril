@@ -24,19 +24,9 @@
 #include <util/delay_basic.h>
 
 uint8_t button_is_pressed() {
-    // remember the past 32 measurements
-    static uint32_t readings = 0;
-    // take at least one new measurement,
-    // and wait for measurements to settle to all zeroes or all ones
-    do {
-        // shift past readings and add current value
-        readings = (readings << 1) | ((SWITCH_PORT & (1<<SWITCH_PIN)) == 0);
-        // wait a moment
-        _delay_loop_2(BOGOMIPS/16);  // up to 2ms to stabilize
-    }
-    while ((readings != 0) && (readings != 0xFFFFFFFF));
-    button_last_state = readings;
-    return readings;
+    uint8_t value = ((SWITCH_PORT & (1<<SWITCH_PIN)) == 0);
+    button_last_state = value;
+    return value;
 }
 
 inline void PCINT_on() {
@@ -75,7 +65,10 @@ inline void PCINT_off() {
 
 //void button_change_interrupt() {
 #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85) || (ATTINY == 1634)
-EMPTY_INTERRUPT(PCINT0_vect);
+//EMPTY_INTERRUPT(PCINT0_vect);
+ISR(PCINT0_vect) {
+    irq_pcint = 1;
+}
 #else
     #error Unrecognized MCU type
 #endif
@@ -104,8 +97,7 @@ void PCINT_inner(uint8_t pressed) {
         pushed = push_event(B_RELEASE);
     }
 
-    // check if sequence matches any defined sequences
-    // if so, send event to current state callback
+    // send event to the current state callback
     if (pushed) {
         button_last_state = pressed;
         emit_current_event(0);

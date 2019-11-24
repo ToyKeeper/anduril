@@ -90,6 +90,8 @@
 //  so don't enable them at the same time as any of the above strobes)
 //#define USE_POLICE_STROBE_MODE
 //#define USE_SOS_MODE
+//#define USE_SOS_MODE_IN_FF_GROUP  // put SOS in the "boring strobes" mode
+//#define USE_SOS_MODE_IN_BLINKY_GROUP  // put SOS in the blinkies mode group
 
 /***** specific settings for known driver types *****/
 #include "tk.h"
@@ -146,7 +148,7 @@
 #define USE_STROBE_STATE
 #endif
 
-#if defined(USE_POLICE_STROBE_MODE) || defined(USE_SOS_MODE)
+#if defined(USE_POLICE_STROBE_MODE) || defined(USE_SOS_MODE_IN_FF_GROUP)
 #define USE_BORING_STROBE_STATE
 #endif
 
@@ -281,6 +283,10 @@ uint8_t goodnight_state(Event event, uint16_t arg);
 // beacon mode and its related config mode
 uint8_t beacon_state(Event event, uint16_t arg);
 uint8_t beacon_config_state(Event event, uint16_t arg);
+#endif
+#ifdef USE_SOS_MODE_IN_BLINKY_GROUP
+// automatic SOS emergency signal
+uint8_t sos_state(Event event, uint16_t arg);
 #endif
 // soft lockout
 #define MOON_DURING_LOCKOUT_MODE
@@ -1507,8 +1513,29 @@ inline void police_strobe_iter() {
     }
 }
 #endif
+#endif  // #ifdef USE_BORING_STROBE_STATE
 
 #ifdef USE_SOS_MODE
+#ifdef USE_SOS_MODE_IN_BLINKY_GROUP
+uint8_t sos_state(Event event, uint16_t arg) {
+    // 1 click: off
+    if (event == EV_1click) {
+        set_state(off_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    // 2 clicks: next mode
+    else if (event == EV_2clicks) {
+        #ifdef USE_THERMAL_REGULATION
+        set_state(tempcheck_state, 0);
+        #else
+        set_state(battcheck_state, 0);
+        #endif
+        return MISCHIEF_MANAGED;
+    }
+    return EVENT_NOT_HANDLED;
+}
+#endif
+
 void sos_blink(uint8_t num, uint8_t dah) {
     #define DIT_LENGTH 200
     for (; num > 0; num--) {
@@ -1527,14 +1554,13 @@ void sos_blink(uint8_t num, uint8_t dah) {
 
 inline void sos_mode_iter() {
     // one iteration of main loop()
-    nice_delay_ms(1000);
+    //nice_delay_ms(1000);
     sos_blink(3, 0);  // S
     sos_blink(3, 1);  // O
     sos_blink(3, 0);  // S
-    nice_delay_ms(1000);
+    nice_delay_ms(2000);
 }
 #endif  // #ifdef USE_SOS_MODE
-#endif  // #ifdef USE_BORING_STROBE_STATE
 
 
 #ifdef USE_BATTCHECK
@@ -1585,9 +1611,11 @@ uint8_t beacon_state(Event event, uint16_t arg) {
     }
     // TODO: use sleep ticks to measure time between pulses,
     //       to save power
-    // 2 clicks: tempcheck mode
+    // 2 clicks: next mode
     else if (event == EV_2clicks) {
-        #ifdef USE_THERMAL_REGULATION
+        #ifdef USE_SOS_MODE_IN_BLINKY_GROUP
+        set_state(sos_state, 0);
+        #elif defined(USE_THERMAL_REGULATION)
         set_state(tempcheck_state, 0);
         #else
         set_state(battcheck_state, 0);
@@ -2381,7 +2409,7 @@ void rgb_led_update(uint8_t mode, uint8_t arg) {
 void factory_reset() {
     // display a warning for a few seconds before doing the actual reset,
     // so the user has time to abort if they want
-    #define SPLODEY_TIME 3000
+    #define SPLODEY_TIME 2500
     #define SPLODEY_STEPS 64
     #define SPLODEY_TIME_PER_STEP (SPLODEY_TIME/SPLODEY_STEPS)
     uint8_t bright;
@@ -2389,9 +2417,9 @@ void factory_reset() {
     // wind up to an explosion
     for (bright=0; bright<SPLODEY_STEPS; bright++) {
         set_level(bright);
-        delay_4ms(SPLODEY_TIME_PER_STEP/2/4);
+        nice_delay_ms(SPLODEY_TIME_PER_STEP/2);
         set_level(bright>>1);
-        delay_4ms(SPLODEY_TIME_PER_STEP/2/4);
+        nice_delay_ms(SPLODEY_TIME_PER_STEP/2);
         if (! button_is_pressed()) {
             reset = 0;
             break;
@@ -2412,14 +2440,14 @@ void factory_reset() {
         bright = MAX_LEVEL;
         for (; bright > 0; bright--) {
             set_level(bright);
-            delay_4ms(SPLODEY_TIME_PER_STEP/6/4);
+            nice_delay_ms(SPLODEY_TIME_PER_STEP/8);
         }
     }
     // explosion cancelled, fade away
     else {
         for (; bright > 0; bright--) {
             set_level(bright);
-            delay_4ms(SPLODEY_TIME_PER_STEP/3/4);
+            nice_delay_ms(SPLODEY_TIME_PER_STEP/3);
         }
     }
 }
@@ -2671,7 +2699,7 @@ void loop() {
                 break;
             #endif
 
-            #ifdef USE_SOS_MODE
+            #ifdef USE_SOS_MODE_IN_FF_GROUP
             default: // SOS
                 sos_mode_iter();
                 break;
@@ -2689,6 +2717,12 @@ void loop() {
     #ifdef USE_BEACON_MODE
     else if (state == beacon_state) {
         beacon_mode_iter();
+    }
+    #endif
+
+    #ifdef USE_SOS_MODE_IN_BLINKY_GROUP
+    else if (state == sos_state) {
+        sos_mode_iter();
     }
     #endif
 
