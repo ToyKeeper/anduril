@@ -9,7 +9,7 @@
  *   3    PA4   green aux LED
  *   4    PA3   blue aux LED
  *   5    PA2   e-switch
- *   6    PA1   (none)
+ *   6    PA1   button LED
  *   7    PA0   (none)
  *   8    GND   GND
  *   9    VCC   VCC
@@ -65,17 +65,23 @@
 #define AUXLED_RGB_DDR DDRA   // DDRA or DDRB or DDRC
 #define AUXLED_RGB_PUE PUEA   // PUEA or PUEB or PUEC
 
+#define BUTTON_LED_PIN  PA1    // pin 6
+#define BUTTON_LED_PORT PORTA  // for all "PA" pins
+#define BUTTON_LED_DDR  DDRA   // for all "PA" pins
+#define BUTTON_LED_PUE  PUEA   // for all "PA" pins
+
 // with so many pins, doing this all with #ifdefs gets awkward...
 // ... so just hardcode it in each hwdef file instead
 inline void hwdef_setup() {
   // enable output ports
   // 7135
   DDRB = (1 << PWM1_PIN);
-  // FET, aux R/G/B
+  // FET, aux R/G/B, button LED
   DDRA = (1 << PWM2_PIN)
        | (1 << AUXLED_R_PIN)
        | (1 << AUXLED_G_PIN)
        | (1 << AUXLED_B_PIN)
+       | (1 << BUTTON_LED_PIN)
        ;
 
   // configure PWM

@@ -43,8 +43,14 @@ uint8_t blink(uint8_t num, uint8_t speed);
 */
 
 #ifdef USE_INDICATOR_LED
+// FIXME: Remove this, replace with button_led()
 // lvl: 0=off, 1=low, 2=high
 void indicator_led(uint8_t lvl);
+#endif
+
+#ifdef USE_BUTTON_LED
+// lvl: 0=off, 1=low, 2=high
+void button_led_set(uint8_t lvl);
 #endif
 
 #ifdef USE_AUX_RGB_LEDS

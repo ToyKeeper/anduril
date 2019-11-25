@@ -2315,7 +2315,13 @@ void rgb_led_update(uint8_t mode, uint8_t arg) {
     // turn off aux LEDs when battery is empty
     // (but if voltage==0, that means we just booted and don't know yet)
     uint8_t volts = voltage;  // save a few bytes by caching volatile value
-    if ((volts) && (volts < VOLTAGE_LOW)) { rgb_led_set(0); return; }
+    if ((volts) && (volts < VOLTAGE_LOW)) {
+        rgb_led_set(0);
+        #ifdef USE_BUTTON_LED
+        button_led_set(0);
+        #endif
+        return;
+    }
 
     uint8_t pattern = (mode>>4);  // off, low, high, blinking, ... more?
     uint8_t color = mode & 0x0f;
@@ -2338,7 +2344,9 @@ void rgb_led_update(uint8_t mode, uint8_t arg) {
         actual_color = colors[color];
     }
     else if (color == 7) {  // rainbow
-        if (0 == (arg & 0x03)) {
+        uint8_t speed = 0x03;  // awake speed
+        if (go_to_standby) speed = 0x0f;  // asleep speed
+        if (0 == (arg & speed)) {
             rainbow = (rainbow + 1) % 6;
         }
         actual_color = colors[rainbow];
@@ -2365,17 +2373,34 @@ void rgb_led_update(uint8_t mode, uint8_t arg) {
         frame = (frame + 1) % sizeof(animation);
         pattern = animation[frame];
     }
+    uint8_t result;
+    #ifdef USE_BUTTON_LED
+    uint8_t button_led_result;
+    #endif
     switch (pattern) {
         case 0:  // off
-            rgb_led_set(0);
+            result = 0;
+            #ifdef USE_BUTTON_LED
+            button_led_result = 0;
+            #endif
             break;
         case 1:  // low
-            rgb_led_set(actual_color);
+            result = actual_color;
+            #ifdef USE_BUTTON_LED
+            button_led_result = 1;
+            #endif
             break;
-        case 2:  // high
-            rgb_led_set(actual_color << 1);
+        default:  // high
+            result = (actual_color << 1);
+            #ifdef USE_BUTTON_LED
+            button_led_result = 2;
+            #endif
             break;
     }
+    rgb_led_set(result);
+    #ifdef USE_BUTTON_LED
+    button_led_set(button_led_result);
+    #endif
 }
 #endif
 
