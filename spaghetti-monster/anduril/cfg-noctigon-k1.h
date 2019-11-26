@@ -1,5 +1,6 @@
-// Emisar D1S v2 config options for Anduril
-#include "hwdef-Emisar_D1Sv2.h"
+// Noctigon K1 config options for Anduril
+// (originally known as Emisar D1S v2)
+#include "hwdef-Noctigon_K1.h"
 // ATTINY: 1634
 
 // this light can safely run a bit hotter than most
@@ -56,7 +57,7 @@
 #define THERMAL_UPDATE_SPEED 1
 #define THERM_PREDICTION_STRENGTH 4
 
-// easier access to thermal config mode, for Emisar
+// easier access to thermal config mode, for Noctigon
 #define USE_TENCLICK_THERMAL_CONFIG
 
 // slow down party strobe; this driver can't pulse for 1ms or less

@@ -1,7 +1,8 @@
-#ifndef HWDEF_EMISAR_D1SV2_H
-#define HWDEF_EMISAR_D1SV2_H
+#ifndef HWDEF_NOCTIGON_K1_H
+#define HWDEF_NOCTIGON_K1_H
 
-/* Emisar D1Sv2 driver layout (attiny1634)
+/* Noctigon K1 driver layout (attiny1634)
+ * (originally known as Emisar D1S V2)
  *
  * Pin / Name / Function
  *   1    PA6   (none) (PWM1B) (reserved for DD drivers)
