@@ -2,6 +2,10 @@
 #include "hwdef-Emisar_D1Sv2.h"
 // ATTINY: 1634
 
+// this light can safely run a bit hotter than most
+#undef DEFAULT_THERM_CEIL
+#define DEFAULT_THERM_CEIL 55
+
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
 #define USE_AUX_RGB_LEDS_WHILE_ON
