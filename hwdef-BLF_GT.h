@@ -46,10 +46,10 @@
 
 // Raw ADC readings at 4.4V and 2.2V (in-between, we assume values form a straight line)
 #ifndef ADC_44
-#define ADC_44 184
+#define ADC_44 (184*4)
 #endif
 #ifndef ADC_22
-#define ADC_22 92
+#define ADC_22 (92*4)
 #endif
 
 #define TEMP_CHANNEL 0b00001111

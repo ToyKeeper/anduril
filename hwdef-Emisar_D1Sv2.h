@@ -78,10 +78,12 @@
 //   (voltage - D1) * (R2/(R2+R1) * 256 / 1.1)
 // D1, R1, R2 = 0, 330, 100
 #ifndef ADC_44
-#define ADC_44 235
+//#define ADC_44 981  // raw value at 4.40V
+#define ADC_44 967  // manually tweaked so 4.16V will blink out 4.2
 #endif
 #ifndef ADC_22
-#define ADC_22 116
+//#define ADC_22 489  // raw value at 2.20V
+#define ADC_22 482  // manually tweaked so 4.16V will blink out 4.2
 #endif
 
 #define TEMP_CHANNEL 0b00001111
