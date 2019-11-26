@@ -46,6 +46,9 @@ void set_level(uint8_t level) {
             #endif
             #ifdef USE_AUX_RGB_LEDS
                 rgb_led_set(0);
+                #ifdef USE_BUTTON_LED
+                    button_led_set((level > 0) + (level > MAX_1x7135));
+                #endif
             #endif
         }
         #endif

@@ -148,6 +148,29 @@ void indicator_led_auto() {
 */
 #endif  // USE_INDICATOR_LED
 
+#ifdef USE_BUTTON_LED
+// TODO: Refactor this and RGB LED function to merge code and save space
+void button_led_set(uint8_t lvl) {
+    switch (lvl) {
+        case 0:  // LED off
+            BUTTON_LED_DDR  &= 0xff ^ (1 << BUTTON_LED_PIN);
+            BUTTON_LED_PUE  &= 0xff ^ (1 << BUTTON_LED_PIN);
+            BUTTON_LED_PORT &= 0xff ^ (1 << BUTTON_LED_PIN);
+            break;
+        case 1:  // LED low
+            BUTTON_LED_DDR  &= 0xff ^ (1 << BUTTON_LED_PIN);
+            BUTTON_LED_PUE  |= (1 << BUTTON_LED_PIN);
+            BUTTON_LED_PORT |= (1 << BUTTON_LED_PIN);
+            break;
+        default:  // LED high
+            BUTTON_LED_DDR  |= (1 << BUTTON_LED_PIN);
+            BUTTON_LED_PUE  |= (1 << BUTTON_LED_PIN);
+            BUTTON_LED_PORT |= (1 << BUTTON_LED_PIN);
+            break;
+    }
+}
+#endif
+
 #ifdef USE_AUX_RGB_LEDS
 void rgb_led_set(uint8_t value) {
     // value: 0b00BBGGRR
