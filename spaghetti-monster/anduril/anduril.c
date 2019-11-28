@@ -2341,10 +2341,10 @@ uint8_t voltage_to_rgb() {
           0, 0, // 0, R
          33, 1, // 1, R+G
          35, 2, // 2,   G
-    //    0, 3, // 3,   G+B  // skip; looks too similar to R+G+B
-         38, 4, // 4,     B
-         40, 5, // 5, R + B
-         42, 6, // 6, R+G+B
+         37, 3, // 3,   G+B
+         39, 4, // 4,     B
+         41, 5, // 5, R + B
+         44, 6, // 6, R+G+B  // skip; looks too similar to G+B
         255, 6, // 7, R+G+B
     };
     uint8_t volts = voltage;

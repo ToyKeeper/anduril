@@ -50,7 +50,7 @@
 // the D4 runs very very hot, so be extra careful
 //#define THERM_HARD_TURBO_DROP
 
-// stop panicking at ~70% power or ~900 lm
+// stop panicking at ~70% power or ~600 lm
 #define THERM_FASTER_LEVEL 130
 // respond to thermal changes faster
 #define THERMAL_WARNING_SECONDS 3
