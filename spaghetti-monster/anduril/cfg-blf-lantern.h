@@ -30,7 +30,7 @@
 // how much to increase total brightness at middle tint
 // (0 = 100% brightness, 64 = 200% brightness)
 //#define TINT_RAMPING_CORRECTION 26  // prototype, 140%
-#define TINT_RAMPING_CORRECTION 6  // production model, 109%
+#define TINT_RAMPING_CORRECTION 10  // production model, 115%
 
 #ifdef RAMP_LENGTH
 #undef RAMP_LENGTH
