@@ -688,7 +688,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif  // end 7 clicks
-    #ifdef USE_TENCLICK_THERMAL_CONFIG
+    #if defined(USE_TENCLICK_THERMAL_CONFIG) && defined(USE_THERMAL_REGULATION)
     // 10 clicks: thermal config mode
     else if (event == EV_10clicks) {
         push_state(thermal_config_state, 0);
@@ -1648,9 +1648,15 @@ uint8_t goodnight_state(Event event, uint16_t arg) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
-    // 2 clicks: beacon mode
+    // 2 clicks: next mode
     else if (event == EV_2clicks) {
+        #ifdef USE_BEACON_MODE
         set_state(beacon_state, 0);
+        #elif defined(USE_SOS_MODE_IN_BLINKY_GROUP)
+        set_state(sos_state, 0);
+        #elif defined(USE_THERMAL_REGULATION)
+        set_state(tempcheck_state, 0);
+        #endif
         return MISCHIEF_MANAGED;
     }
     // tick: step down (maybe) or off (maybe)
