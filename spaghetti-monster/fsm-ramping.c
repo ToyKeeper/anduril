@@ -81,6 +81,9 @@ void set_level(uint8_t level) {
         #endif
 
         #ifdef USE_TINT_RAMPING
+        #ifndef TINT_RAMPING_CORRECTION
+        #define TINT_RAMPING_CORRECTION 26  // 140% brightness at middle tint
+        #endif
         // calculate actual PWM levels based on a single-channel ramp
         // and a global tint value
         uint8_t brightness = PWM_GET(pwm1_levels, level);
@@ -105,7 +108,7 @@ void set_level(uint8_t level) {
         // correction is only necessary when PWM is fast
         if (level > HALFSPEED_LEVEL) {
             base_PWM = brightness
-                     + ((((uint16_t)brightness) * 26 / 64) * triangle_wave(mytint) / 255);
+                     + ((((uint16_t)brightness) * TINT_RAMPING_CORRECTION / 64) * triangle_wave(mytint) / 255);
         }
 
         cool_PWM = (((uint16_t)mytint * (uint16_t)base_PWM) + 127) / 255;

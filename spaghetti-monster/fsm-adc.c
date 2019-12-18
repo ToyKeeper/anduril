@@ -276,6 +276,8 @@ static inline void ADC_temperature_handler() {
     #define OVERHEAT_LOWPASS_STRENGTH (ADC_CYCLES_PER_SECOND*2)  // lowpass for 2 seconds
     #define UNDERHEAT_LOWPASS_STRENGTH (ADC_CYCLES_PER_SECOND*2)  // lowpass for 2 seconds
 
+    // TODO: left-shift this so the lowpass can get higher resolution
+    // TODO: increase the sampling rate, to keep the lowpass from lagging
     uint16_t measurement = adc_values[1];  // latest 10-bit ADC reading
 
     // Convert ADC units to Celsius (ish)
@@ -322,15 +324,16 @@ static inline void ADC_temperature_handler() {
         // if it's time to rotate the thermal history, do it
         history_step ++;
         #if (THERMAL_UPDATE_SPEED == 4)  // new value every 4s
-        #define THERM_HISTORY_STEP_MAX ((2*ADC_CYCLES_PER_SECOND)-1)
+        #define THERM_HISTORY_STEP_MAX (4*ADC_CYCLES_PER_SECOND)
         #elif (THERMAL_UPDATE_SPEED == 2)  // new value every 2s
-        #define THERM_HISTORY_STEP_MAX (ADC_CYCLES_PER_SECOND-1)
+        #define THERM_HISTORY_STEP_MAX (2*ADC_CYCLES_PER_SECOND)
         #elif (THERMAL_UPDATE_SPEED == 1)  // new value every 1s
-        #define THERM_HISTORY_STEP_MAX ((ADC_CYCLES_PER_SECOND/2)-1)
+        #define THERM_HISTORY_STEP_MAX (ADC_CYCLES_PER_SECOND)
         #elif (THERMAL_UPDATE_SPEED == 0)  // new value every 0.5s
-        #define THERM_HISTORY_STEP_MAX ((ADC_CYCLES_PER_SECOND/4)-1)
+        #define THERM_HISTORY_STEP_MAX (ADC_CYCLES_PER_SECOND/2)
         #endif
-        if (0 == (history_step & THERM_HISTORY_STEP_MAX)) {
+        if (THERM_HISTORY_STEP_MAX == history_step) {
+            history_step = 0;
             // rotate measurements and add a new one
             for (uint8_t i=0; i<NUM_THERMAL_VALUES_HISTORY-1; i++) {
                 temperature_history[i] = temperature_history[i+1];
