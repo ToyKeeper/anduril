@@ -136,8 +136,6 @@ static inline uint8_t calc_voltage_divider(uint16_t value) {
 // happens every time the ADC sampler finishes a measurement
 ISR(ADC_vect) {
 
-    // skip the first measurement; it's junk
-    //if (adc_sample_count) {
     // slow down even more than ADC_PRSCL
     // (result is about 600 Hz or a maximum of ~9 ADC units per second)
     // (8 MHz / 128 prescale / 13.5 ticks per measurement / 8 = ~578 Hz)
@@ -170,17 +168,6 @@ ISR(ADC_vect) {
     //adc_sample_count = 1;
     adc_sample_count ++;
 
-    /*
-    if (adc_sample_count) {  // skip first result; it's junk
-        adc_values[adc_channel] = ADC;  // save this for later use
-        irq_adc = 1;  // a value was saved, so trigger deferred logic
-    }
-    adc_sample_count = 1;
-
-    // start another measurement
-    // (is explicit because it otherwise doesn't seem to happen during standby mode)
-    ADC_start_measurement();
-    */
 }
 
 void adc_deferred() {
@@ -263,6 +250,14 @@ static inline void ADC_voltage_handler() {
         adc_smooth[0] = measurement;
     }
 
+    // values stair-step between intervals of 64, with random variations
+    // of 1 or 2 in either direction, so if we chop off the last 6 bits
+    // it'll flap between N and N-1...  but if we add half an interval,
+    // the values should be really stable after right-alignment
+    // (instead of 99.98, 100.00, and 100.02, it'll hit values like
+    //  100.48, 100.50, and 100.52...  which are stable when truncated)
+    measurement += 32;
+
     #ifdef USE_VOLTAGE_DIVIDER
     voltage = calc_voltage_divider(measurement);
     #else
@@ -283,14 +278,10 @@ static inline void ADC_voltage_handler() {
                 lvp_lowpass ++;
             } else {
                 // try to send out a warning
-                //uint8_t err = emit(EV_voltage_low, 0);
-                //uint8_t err = emit_now(EV_voltage_low, 0);
                 emit(EV_voltage_low, 0);
-                //if (!err) {
-                    // on successful warning, reset counters
-                    lvp_timer = LVP_TIMER_START;
-                    lvp_lowpass = 0;
-                //}
+                // reset counters
+                lvp_timer = LVP_TIMER_START;
+                lvp_lowpass = 0;
             }
         } else {
             // voltage not low?  reset count
@@ -320,7 +311,9 @@ static inline void ADC_temperature_handler() {
     // latest 16-bit ADC reading (left-adjusted, lowpassed)
     uint16_t measurement;
 
-    if (reset_thermal_history) {
+    if (! reset_thermal_history) {
+        measurement = adc_smooth[1];  // average of recent samples
+    } else {  // wipe out old data
         // don't keep resetting
         reset_thermal_history = 0;
 
@@ -334,9 +327,14 @@ static inline void ADC_temperature_handler() {
         for(uint8_t i=0; i<NUM_THERMAL_VALUES_HISTORY; i++)
             temperature_history[i] = measurement;
     }
-    else {
-        measurement = adc_smooth[1];  // average of recent samples
-    }
+
+    // values stair-step between intervals of 64, with random variations
+    // of 1 or 2 in either direction, so if we chop off the last 6 bits
+    // it'll flap between N and N-1...  but if we add half an interval,
+    // the values should be really stable after right-alignment
+    // (instead of 99.98, 100.00, and 100.02, it'll hit values like
+    //  100.48, 100.50, and 100.52...  which are stable when truncated)
+    measurement += 32;
 
     {  // rotate the temperature history
         // if it's time to rotate the thermal history, do it
