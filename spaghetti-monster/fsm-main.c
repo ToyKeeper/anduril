@@ -181,7 +181,7 @@ void handle_deferred_interrupts() {
     }
     */
     if (irq_adc) {  // ADC done measuring
-        ADC_inner();
+        adc_deferred();
         // irq_adc = 0;  // takes care of itself
     }
     if (irq_wdt) {  // the clock ticked

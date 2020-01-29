@@ -40,11 +40,15 @@
 #endif
 
 volatile uint8_t irq_adc = 0;  // ADC interrupt happened?
-volatile uint8_t irq_adc_stable = 0;  // have we passed the 1st junk value yet?
+uint8_t adc_sample_count = 0;  // skip the first sample; it's junk
 uint8_t adc_channel = 0;  // 0=voltage, 1=temperature
-uint16_t adc_values[2];  // last ADC measurements (0=voltage, 1=temperature)
-uint8_t adcint_enable = 0;  // is the current ADC result needed?
-void ADC_inner();  // do the actual ADC-related calculations
+uint16_t adc_raw[2];  // last ADC measurements (0=voltage, 1=temperature)
+uint16_t adc_smooth[2];  // lowpassed ADC measurements (0=voltage, 1=temperature)
+// ADC code is split into two parts:
+// - ISR: runs immediately at each interrupt, does the bare minimum because time is critical here
+// - deferred: the bulk of the logic runs later when time isn't so critical
+uint8_t adc_deferred_enable = 0;  // stop waiting and run the deferred code
+void adc_deferred();  // do the actual ADC-related calculations
 
 static inline void ADC_voltage_handler();
 volatile uint8_t voltage = 0;

@@ -181,9 +181,11 @@ void WDT_inner() {
     // start a new ADC measurement every 4 ticks
     adc_trigger ++;
     if (0 == (adc_trigger & 3)) {
+        // in case we're in standby mode and auto-retrigger is turned off
         ADC_start_measurement();
-        irq_adc_stable = 0;
-        adcint_enable = 1;
+        adc_sample_count = 0;
+        // allow regulation logic to run
+        adc_deferred_enable = 1;
     }
     #endif
 }

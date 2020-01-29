@@ -22,38 +22,48 @@
 
 
 static inline void set_admux_therm() {
-    #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85) || (ATTINY == 1634)
+    #if (ATTINY == 1634)
         ADMUX = ADMUX_THERM;
-    #elif (ATTINY == 841)
+    #elif (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
+        ADMUX = ADMUX_THERM | (1 << ADLAR);
+    #elif (ATTINY == 841)  // FIXME: not tested
         ADMUXA = ADMUXA_THERM;
         ADMUXB = ADMUXB_THERM;
     #else
         #error Unrecognized MCU type
     #endif
     adc_channel = 1;
+    adc_sample_count = 0;  // first result is unstable
+    ADC_start_measurement();
 }
 
 inline void set_admux_voltage() {
-    #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85) || (ATTINY == 1634)
-        #ifdef USE_VOLTAGE_DIVIDER
-        // 1.1V / pin7
-        ADMUX = ADMUX_VOLTAGE_DIVIDER;
-        #else
-        // VCC / 1.1V reference
-        ADMUX = ADMUX_VCC;
+    #if (ATTINY == 1634)
+        #ifdef USE_VOLTAGE_DIVIDER // 1.1V / pin7
+            ADMUX = ADMUX_VOLTAGE_DIVIDER;
+        #else  // VCC / 1.1V reference
+            ADMUX = ADMUX_VCC;
         #endif
-    #elif (ATTINY == 841)
-        #ifdef USE_VOLTAGE_DIVIDER
-        ADMUXA = ADMUXA_VOLTAGE_DIVIDER;
-        ADMUXB = ADMUXB_VOLTAGE_DIVIDER;
-        #else
-        ADMUXA = ADMUXA_VCC;
-        ADMUXB = ADMUXB_VCC;
+    #elif (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
+        #ifdef USE_VOLTAGE_DIVIDER  // 1.1V / pin7
+            ADMUX = ADMUX_VOLTAGE_DIVIDER | (1 << ADLAR);
+        #else  // VCC / 1.1V reference
+            ADMUX = ADMUX_VCC | (1 << ADLAR);
+        #endif
+    #elif (ATTINY == 841)  // FIXME: not tested
+        #ifdef USE_VOLTAGE_DIVIDER  // 1.1V / pin7
+            ADMUXA = ADMUXA_VOLTAGE_DIVIDER;
+            ADMUXB = ADMUXB_VOLTAGE_DIVIDER;
+        #else  // VCC / 1.1V reference
+            ADMUXA = ADMUXA_VCC;
+            ADMUXB = ADMUXB_VCC;
         #endif
     #else
         #error Unrecognized MCU type
     #endif
     adc_channel = 0;
+    adc_sample_count = 0;  // first result is unstable
+    ADC_start_measurement();
 }
 
 inline void ADC_start_measurement() {
@@ -70,24 +80,25 @@ inline void ADC_on()
     #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85) || (ATTINY == 1634)
         set_admux_voltage();
         #ifdef USE_VOLTAGE_DIVIDER
-        // disable digital input on divider pin to reduce power consumption
-        DIDR0 |= (1 << VOLTAGE_ADC_DIDR);
+            // disable digital input on divider pin to reduce power consumption
+            DIDR0 |= (1 << VOLTAGE_ADC_DIDR);
         #else
-        // disable digital input on VCC pin to reduce power consumption
-        //DIDR0 |= (1 << ADC_DIDR);  // FIXME: unsure how to handle for VCC pin
+            // disable digital input on VCC pin to reduce power consumption
+            //DIDR0 |= (1 << ADC_DIDR);  // FIXME: unsure how to handle for VCC pin
         #endif
         #if (ATTINY == 1634)
             ACSRA |= (1 << ACD);  // turn off analog comparator to save power
+            ADCSRB |= (1 << ADLAR);  // left-adjust flag is here instead of ADMUX
         #endif
-        // enable, start, prescale
-        ADCSRA = (1 << ADEN) | (1 << ADSC) | ADC_PRSCL;
+        // enable, start, auto-retrigger, prescale
+        ADCSRA = (1 << ADEN) | (1 << ADSC) | (1 << ADATE) | ADC_PRSCL;
         // end tiny25/45/85
-    #elif (ATTINY == 841)
+    #elif (ATTINY == 841)  // FIXME: not tested, missing left-adjust
         ADCSRB = 0;  // Right adjusted, auto trigger bits cleared.
         //ADCSRA = (1 << ADEN ) | 0b011;  // ADC on, prescaler division factor 8.
         set_admux_voltage();
-        // enable, start, prescale
-        ADCSRA = (1 << ADEN) | (1 << ADSC) | ADC_PRSCL;
+        // enable, start, auto-retrigger, prescale
+        ADCSRA = (1 << ADEN) | (1 << ADSC) | (1 << ADATE) | ADC_PRSCL;
         //ADCSRA |= (1 << ADSC);  // start measuring
     #else
         #error Unrecognized MCU type
@@ -102,8 +113,8 @@ inline void ADC_off() {
 static inline uint8_t calc_voltage_divider(uint16_t value) {
     // use 9.7 fixed-point to get sufficient precision
     uint16_t adc_per_volt = ((ADC_44<<7) - (ADC_22<<7)) / (44-22);
-    // incoming value is 8.2 fixed-point, so shift it 2 bits less
-    uint8_t result = ((value<<5) / adc_per_volt) + VOLTAGE_FUDGE_FACTOR;
+    // incoming value is left-adjusted, so shift it into a matching position
+    uint8_t result = ((value>>1) / adc_per_volt) + VOLTAGE_FUDGE_FACTOR;
     return result;
 }
 #endif
@@ -124,78 +135,115 @@ static inline uint8_t calc_voltage_divider(uint16_t value) {
 
 // happens every time the ADC sampler finishes a measurement
 ISR(ADC_vect) {
-    #ifdef USE_PSEUDO_RAND
-    // real-world entropy makes this a true random, not pseudo
-    pseudo_rand_seed += ADCL;
-    #endif
 
-    if (irq_adc_stable) {  // skip first result; it's junk
+    // skip the first measurement; it's junk
+    //if (adc_sample_count) {
+    // slow down even more than ADC_PRSCL
+    // (result is about 600 Hz or a maximum of ~9 ADC units per second)
+    // (8 MHz / 128 prescale / 13.5 ticks per measurement / 8 = ~578 Hz)
+    // (~578 Hz / 64X resolution = ~9 original-resolution units per second)
+    if (1 == (adc_sample_count & 7)) {
+
+        uint16_t m;  // latest measurement
+        uint16_t s;  // smoothed measurement
+        uint8_t channel = adc_channel;
+
+        // update the latest value
+        m = ADC;
+        adc_raw[channel] = m;
+
+        // lowpass the value
+        //s = adc_smooth[channel];  // easier to read
+        uint16_t *v = adc_smooth + channel;  // compiles smaller
+        s = *v;
+        if (m > s) { s++; }
+        if (m < s) { s--; }
+        //adc_smooth[channel] = s;
+        *v = s;
+
+        // track what woke us up, and enable deferred logic
+        irq_adc = 1;
+
+    }
+
+    // the next measurement isn't the first
+    //adc_sample_count = 1;
+    adc_sample_count ++;
+
+    /*
+    if (adc_sample_count) {  // skip first result; it's junk
         adc_values[adc_channel] = ADC;  // save this for later use
         irq_adc = 1;  // a value was saved, so trigger deferred logic
     }
-    irq_adc_stable = 1;
+    adc_sample_count = 1;
 
     // start another measurement
     // (is explicit because it otherwise doesn't seem to happen during standby mode)
     ADC_start_measurement();
+    */
 }
 
-void ADC_inner() {
+void adc_deferred() {
     irq_adc = 0;  // event handled
 
-    // the ADC triggers repeatedly when it's on, but we only want one value
-    // (so ignore everything after the first value, until it's manually reset)
-    if (! adcint_enable) return;
+    #ifdef USE_PSEUDO_RAND
+    // real-world entropy makes this a true random, not pseudo
+    // Why here instead of the ISR?  Because it makes the time-critical ISR
+    // code a few cycles faster and we don't need crypto-grade randomness.
+    pseudo_rand_seed += (ADCL >> 6) + (ADCH << 2);
+    #endif
+
+    // the ADC triggers repeatedly when it's on, but we only need to run the
+    // voltage and temperature regulation stuff once in a while...so disable
+    // this after each activation, until it's manually enabled again
+    if (! adc_deferred_enable) return;
 
     // disable after one iteration
-    adcint_enable = 0;
+    adc_deferred_enable = 0;
 
-    #ifdef TICK_DURING_STANDBY
+    // what is being measured? 0 = battery voltage, 1 = temperature
+    uint8_t adc_step;
+
+    #if defined(USE_LVP) && defined(USE_THERMAL_REGULATION)
+    // do whichever one is currently active
+    adc_step = adc_channel;
+    #else
+    // unless there's no temperature sensor...  then just do voltage
+    adc_step = 0;
+    #endif
+
+    #if defined(TICK_DURING_STANDBY) && defined(USE_SLEEP_LVP)
         // in sleep mode, turn off after just one measurement
         // (having the ADC on raises standby power by about 250 uA)
         // (and the usual standby level is only ~20 uA)
-        if (go_to_standby) ADC_off();
+        if (go_to_standby) {
+            ADC_off();
+            // also, only check the battery while asleep, not the temperature
+            adc_channel = 0;
+        }
     #endif
 
-    // what is being measured? 0 = battery voltage, 1 = temperature
-    static uint8_t adc_step = 0;
+    if (0) {} // placeholder for easier syntax
 
     #ifdef USE_LVP
-    if (0 == adc_step) {  // voltage
+    else if (0 == adc_step) {  // voltage
         ADC_voltage_handler();
+        #ifdef USE_THERMAL_REGULATION
+        // set the correct type of measurement for next time
+        if (! go_to_standby) set_admux_therm();
+        #endif
     }
     #endif
 
     #ifdef USE_THERMAL_REGULATION
     else if (1 == adc_step) {  // temperature
         ADC_temperature_handler();
-    }
-    #endif
-
-    #if defined(TICK_DURING_STANDBY) && defined(USE_SLEEP_LVP)
-    // only measure battery voltage while asleep
-    if (go_to_standby) adc_step = 0;
-    else
-    #endif
-
-    adc_step = (adc_step + 1) & (ADC_STEPS-1);
-
-    // set the correct type of measurement for next time
-    #ifdef USE_THERMAL_REGULATION
         #ifdef USE_LVP
-        if (0 == adc_step) set_admux_voltage();
-        else set_admux_therm();
-        #else
-        //set_admux_therm();
-        #error "USE_THERMAL_REGULATION set without USE_LVP"
-        #endif
-    #else
-        #ifdef USE_LVP
+        // set the correct type of measurement for next time
         set_admux_voltage();
         #endif
+    }
     #endif
-
-    irq_adc_stable = 0;  // first result is unstable
 }
 
 
@@ -206,21 +254,14 @@ static inline void ADC_voltage_handler() {
     #define LVP_TIMER_START (VOLTAGE_WARNING_SECONDS*ADC_CYCLES_PER_SECOND)  // N seconds between LVP warnings
     #define LVP_LOWPASS_STRENGTH ADC_CYCLES_PER_SECOND  // lowpass for one second
 
-    uint16_t measurement = adc_values[0];  // latest 10-bit ADC reading
+    uint16_t measurement = adc_smooth[0];  // latest 16-bit ADC value
 
-    #ifdef USE_VOLTAGE_LOWPASS
-        static uint16_t prev_measurement = 0;
-
-        // prime on first execution, or while asleep
-        if (go_to_standby || (! prev_measurement)) prev_measurement = measurement;
-
-        // only allow raw value to go up or down by 1 per iteration
-        if (measurement > prev_measurement) measurement = prev_measurement + 1;
-        else if (measurement < prev_measurement) measurement = prev_measurement - 1;
-
-        // remember for later
-        prev_measurement = measurement;
-    #endif  // no USE_VOLTAGE_LOWPASS
+    // jump-start the lowpass seed at boot
+    // (otherwise it takes a while to rise from zero)
+    if (measurement < 255) {
+        measurement = adc_raw[0];
+        adc_smooth[0] = measurement;
+    }
 
     #ifdef USE_VOLTAGE_DIVIDER
     voltage = calc_voltage_divider(measurement);
@@ -229,7 +270,7 @@ static inline void ADC_voltage_handler() {
     // ADC = 1.1 * 1024 / volts
     // volts = 1.1 * 1024 / ADC
     //voltage = (uint16_t)(1.1*1024*10)/measurement + VOLTAGE_FUDGE_FACTOR;
-    voltage = ((uint16_t)(2*1.1*1024*10)/measurement + VOLTAGE_FUDGE_FACTOR) >> 1;
+    voltage = ((uint16_t)(2*1.1*1024*10)/(measurement>>6) + VOLTAGE_FUDGE_FACTOR) >> 1;
     #endif
 
     // if low, callback EV_voltage_low / EV_voltage_critical
@@ -268,7 +309,7 @@ static inline void ADC_temperature_handler() {
     #endif
     #define NUM_THERMAL_VALUES_HISTORY 8
     static uint8_t history_step = 0;  // don't update history as often
-    static int16_t temperature_history[NUM_THERMAL_VALUES_HISTORY];
+    static uint16_t temperature_history[NUM_THERMAL_VALUES_HISTORY];
     static uint8_t temperature_timer = 0;
     static uint8_t overheat_lowpass = 0;
     static uint8_t underheat_lowpass = 0;
@@ -276,34 +317,61 @@ static inline void ADC_temperature_handler() {
     #define OVERHEAT_LOWPASS_STRENGTH (ADC_CYCLES_PER_SECOND*2)  // lowpass for 2 seconds
     #define UNDERHEAT_LOWPASS_STRENGTH (ADC_CYCLES_PER_SECOND*2)  // lowpass for 2 seconds
 
-    // TODO: left-shift this so the lowpass can get higher resolution
-    // TODO: increase the sampling rate, to keep the lowpass from lagging
-    uint16_t measurement = adc_values[1];  // latest 10-bit ADC reading
+    // latest 16-bit ADC reading (left-adjusted, lowpassed)
+    uint16_t measurement;
 
-    // Convert ADC units to Celsius (ish)
-    int16_t temp = measurement - 275 + THERM_CAL_OFFSET + (int16_t)therm_cal_offset;
-
-    // prime on first execution
     if (reset_thermal_history) {
+        // don't keep resetting
         reset_thermal_history = 0;
-        temperature = temp;
+
+        // ignore lowpass, use latest sample
+        measurement = adc_raw[1];
+
+        // reset lowpass to latest sample
+        adc_smooth[1] = measurement;
+
+        // forget any past measurements
         for(uint8_t i=0; i<NUM_THERMAL_VALUES_HISTORY; i++)
-            temperature_history[i] = temp;
-    } else {  // update our current temperature estimate
-        // crude lowpass filter
-        // (limit rate of change to 1 degree per measurement)
-        if (temp > temperature) {
-            temperature ++;
-        } else if (temp < temperature) {
-            temperature --;
+            temperature_history[i] = measurement;
+    }
+    else {
+        measurement = adc_smooth[1];  // average of recent samples
+    }
+
+    {  // rotate the temperature history
+        // if it's time to rotate the thermal history, do it
+        // FIXME? allow more than 255 frames per step
+        //        (that's only about 8 seconds maximum)
+        history_step ++;
+        #if (THERMAL_UPDATE_SPEED == 4)  // new value every 4s
+        #define THERM_HISTORY_STEP_MAX (4*ADC_CYCLES_PER_SECOND)
+        #elif (THERMAL_UPDATE_SPEED == 2)  // new value every 2s
+        #define THERM_HISTORY_STEP_MAX (2*ADC_CYCLES_PER_SECOND)
+        #elif (THERMAL_UPDATE_SPEED == 1)  // new value every 1s
+        #define THERM_HISTORY_STEP_MAX (ADC_CYCLES_PER_SECOND)
+        #elif (THERMAL_UPDATE_SPEED == 0)  // new value every 0.5s
+        #define THERM_HISTORY_STEP_MAX (ADC_CYCLES_PER_SECOND/2)
+        #endif
+        // FIXME: rotate the index instead of moving the values
+        if (THERM_HISTORY_STEP_MAX == history_step) {
+            history_step = 0;
+            // rotate measurements and add a new one
+            for (uint8_t i=0; i<NUM_THERMAL_VALUES_HISTORY-1; i++) {
+                temperature_history[i] = temperature_history[i+1];
+            }
+            temperature_history[NUM_THERMAL_VALUES_HISTORY-1] = measurement;
         }
     }
+
+    // let the UI see the current temperature in C
+    // Convert ADC units to Celsius (ish)
+    temperature = (measurement>>6) - 275 + THERM_CAL_OFFSET + (int16_t)therm_cal_offset;
 
     // guess what the temperature will be in a few seconds
     int16_t pt;
     {
         int16_t diff;
-        int16_t t = temperature;
+        uint16_t t = measurement;
 
         // algorithm tweaking; not really intended to be modified
         // how far ahead should we predict?
@@ -315,44 +383,28 @@ static inline void ADC_temperature_handler() {
         #define THERM_RESPONSE_MAGNITUDE 128
         #endif
         // acceptable temperature window size in C
-        #define THERM_WINDOW_SIZE 5
+        #define THERM_WINDOW_SIZE (3<<6)
         // highest temperature allowed
-        #define THERM_CEIL ((int16_t)therm_ceil)
+        #define THERM_CEIL (((int16_t)therm_ceil)<<6)
         // bottom of target temperature window
         #define THERM_FLOOR (THERM_CEIL - THERM_WINDOW_SIZE)
-
-        // if it's time to rotate the thermal history, do it
-        history_step ++;
-        #if (THERMAL_UPDATE_SPEED == 4)  // new value every 4s
-        #define THERM_HISTORY_STEP_MAX (4*ADC_CYCLES_PER_SECOND)
-        #elif (THERMAL_UPDATE_SPEED == 2)  // new value every 2s
-        #define THERM_HISTORY_STEP_MAX (2*ADC_CYCLES_PER_SECOND)
-        #elif (THERMAL_UPDATE_SPEED == 1)  // new value every 1s
-        #define THERM_HISTORY_STEP_MAX (ADC_CYCLES_PER_SECOND)
-        #elif (THERMAL_UPDATE_SPEED == 0)  // new value every 0.5s
-        #define THERM_HISTORY_STEP_MAX (ADC_CYCLES_PER_SECOND/2)
-        #endif
-        if (THERM_HISTORY_STEP_MAX == history_step) {
-            history_step = 0;
-            // rotate measurements and add a new one
-            for (uint8_t i=0; i<NUM_THERMAL_VALUES_HISTORY-1; i++) {
-                temperature_history[i] = temperature_history[i+1];
-            }
-            temperature_history[NUM_THERMAL_VALUES_HISTORY-1] = t;
-        }
 
         // guess what the temp will be several seconds in the future
         // diff = rate of temperature change
         //diff = temperature_history[NUM_THERMAL_VALUES_HISTORY-1] - temperature_history[0];
         diff = t - temperature_history[0];
         // slight bias toward zero; ignore very small changes (noise)
+        // FIXME: this is way too small for left-adjusted values
+        /*
         for (uint8_t z=0; z<3; z++) {
             if (diff < 0) diff ++;
             if (diff > 0) diff --;
         }
+        */
         // projected_temperature = current temp extended forward by amplified rate of change
         //projected_temperature = temperature_history[NUM_THERMAL_VALUES_HISTORY-1] + (diff<<THERM_PREDICTION_STRENGTH);
         pt = projected_temperature = t + (diff<<THERM_PREDICTION_STRENGTH);
+        //pt = projected_temperature = temp + (diff<<THERM_PREDICTION_STRENGTH);
     }
 
     // cancel counters if appropriate
@@ -400,6 +452,8 @@ static inline void ADC_temperature_handler() {
                     emit(EV_temperature_low, howmuch);
             }
         }
+
+        // TODO: add EV_temperature_okay signal
     }
 }
 #endif
