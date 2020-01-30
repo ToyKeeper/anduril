@@ -34,7 +34,7 @@
 //#define VOLTAGE_PIN PB2     // pin 7, voltage ADC
 //#define ADC_CHANNEL 0x01    // MUX 01 corresponds with PB2
 //#define ADC_DIDR    ADC1D   // Digital input disable bit corresponding with PB2
-#define ADC_PRSCL   0x07    // clk/128
+#define ADC_PRSCL   0x06    // clk/64
 
 // average drop across diode on this hardware
 #ifndef VOLTAGE_FUDGE_FACTOR

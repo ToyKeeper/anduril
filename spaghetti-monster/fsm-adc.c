@@ -87,7 +87,7 @@ inline void ADC_on()
             //DIDR0 |= (1 << ADC_DIDR);  // FIXME: unsure how to handle for VCC pin
         #endif
         #if (ATTINY == 1634)
-            ACSRA |= (1 << ACD);  // turn off analog comparator to save power
+            //ACSRA |= (1 << ACD);  // turn off analog comparator to save power
             //ADCSRB |= (1 << ADLAR);  // left-adjust flag is here instead of ADMUX
         #endif
         // enable, start, auto-retrigger, prescale
@@ -134,11 +134,11 @@ static inline uint8_t calc_voltage_divider(uint16_t value) {
 #endif
 
 // happens every time the ADC sampler finishes a measurement
-// collects an average of 64 samples, which increases effective number of
-// bits from 10 to about 16 (ish, probably more like 14 really)
-// (64 was chosen because it's the largest sample size which allows the
-// sum to still fit into a 16-bit integer, and for speed and size reasons,
-// we want to avoid doing 32-bit math)
+// collects a rolling average of 64+ samples, which increases effective number
+// of bits from 10 to about 16 (ish, probably more like 14 really) (64 was
+// chosen because it's the largest sample size which allows the sum to still
+// fit into a 16-bit integer, and for speed and size reasons, we want to avoid
+// doing 32-bit math)
 ISR(ADC_vect) {
 
     static uint16_t adc_sum;
@@ -153,8 +153,15 @@ ISR(ADC_vect) {
         return;
     }
     // 64 samples collected, save the result
+    // (actually triggers at 64 and every 32 afterward)
     else if (66 == adc_sample_count) {
+        // save the latest result
         adc_smooth[adc_channel] = adc_sum;
+        // cut sum in half and set up another half-window of samples
+        // (for sort of a continuous average)
+        // (this seems to significantly reduce noise)
+        adc_sum >>= 1;
+        adc_sample_count = 33;
     }
     // add the latest measurement to the pile
     else {
@@ -164,8 +171,6 @@ ISR(ADC_vect) {
         // update the latest value
         adc_raw[adc_channel] = m;
     }
-    // don't worry about the running total overflowing after sample 64...
-    // it doesn't matter
 
     // track what woke us up, and enable deferred logic
     irq_adc = 1;

@@ -52,7 +52,7 @@
 #define PWM3_LVL OCR1B      // OCR1B is the output compare register for PB1
 
 
-#define ADC_PRSCL   0x07    // clk/128
+#define ADC_PRSCL   0x06    // clk/64
 
 // average drop across diode on this hardware
 #ifndef VOLTAGE_FUDGE_FACTOR
