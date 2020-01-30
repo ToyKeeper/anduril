@@ -25,7 +25,7 @@ static inline void set_admux_therm() {
     #if (ATTINY == 1634)
         ADMUX = ADMUX_THERM;
     #elif (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
-        ADMUX = ADMUX_THERM | (1 << ADLAR);
+        ADMUX = ADMUX_THERM;
     #elif (ATTINY == 841)  // FIXME: not tested
         ADMUXA = ADMUXA_THERM;
         ADMUXB = ADMUXB_THERM;
@@ -46,9 +46,9 @@ inline void set_admux_voltage() {
         #endif
     #elif (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
         #ifdef USE_VOLTAGE_DIVIDER  // 1.1V / pin7
-            ADMUX = ADMUX_VOLTAGE_DIVIDER | (1 << ADLAR);
+            ADMUX = ADMUX_VOLTAGE_DIVIDER;
         #else  // VCC / 1.1V reference
-            ADMUX = ADMUX_VCC | (1 << ADLAR);
+            ADMUX = ADMUX_VCC;
         #endif
     #elif (ATTINY == 841)  // FIXME: not tested
         #ifdef USE_VOLTAGE_DIVIDER  // 1.1V / pin7
@@ -88,7 +88,7 @@ inline void ADC_on()
         #endif
         #if (ATTINY == 1634)
             ACSRA |= (1 << ACD);  // turn off analog comparator to save power
-            ADCSRB |= (1 << ADLAR);  // left-adjust flag is here instead of ADMUX
+            //ADCSRB |= (1 << ADLAR);  // left-adjust flag is here instead of ADMUX
         #endif
         // enable, start, auto-retrigger, prescale
         ADCSRA = (1 << ADEN) | (1 << ADSC) | (1 << ADATE) | ADC_PRSCL;
@@ -113,7 +113,7 @@ inline void ADC_off() {
 static inline uint8_t calc_voltage_divider(uint16_t value) {
     // use 9.7 fixed-point to get sufficient precision
     uint16_t adc_per_volt = ((ADC_44<<7) - (ADC_22<<7)) / (44-22);
-    // incoming value is left-adjusted, so shift it into a matching position
+    // shift incoming value into a matching position
     uint8_t result = ((value>>1) / adc_per_volt) + VOLTAGE_FUDGE_FACTOR;
     return result;
 }
@@ -134,40 +134,41 @@ static inline uint8_t calc_voltage_divider(uint16_t value) {
 #endif
 
 // happens every time the ADC sampler finishes a measurement
+// collects an average of 64 samples, which increases effective number of
+// bits from 10 to about 16 (ish, probably more like 14 really)
+// (64 was chosen because it's the largest sample size which allows the
+// sum to still fit into a 16-bit integer, and for speed and size reasons,
+// we want to avoid doing 32-bit math)
 ISR(ADC_vect) {
 
-    // slow down even more than ADC_PRSCL
-    // (result is about 600 Hz or a maximum of ~9 ADC units per second)
-    // (8 MHz / 128 prescale / 13.5 ticks per measurement / 8 = ~578 Hz)
-    // (~578 Hz / 64X resolution = ~9 original-resolution units per second)
-    if (1 == (adc_sample_count & 7)) {
+    static uint16_t adc_sum;
 
-        uint16_t m;  // latest measurement
-        uint16_t s;  // smoothed measurement
-        uint8_t channel = adc_channel;
-
-        // update the latest value
-        m = ADC;
-        adc_raw[channel] = m;
-
-        // lowpass the value
-        //s = adc_smooth[channel];  // easier to read
-        uint16_t *v = adc_smooth + channel;  // compiles smaller
-        s = *v;
-        if (m > s) { s++; }
-        if (m < s) { s--; }
-        //adc_smooth[channel] = s;
-        *v = s;
-
-        // track what woke us up, and enable deferred logic
-        irq_adc = 1;
-
-    }
-
-    // the next measurement isn't the first
-    //adc_sample_count = 1;
+    // keep this moving along
     adc_sample_count ++;
 
+    // reset on first sample
+    // also, ignore first value since it's probably junk
+    if (1 == adc_sample_count) {
+        adc_sum = 0;
+        return;
+    }
+    // 64 samples collected, save the result
+    else if (66 == adc_sample_count) {
+        adc_smooth[adc_channel] = adc_sum;
+    }
+    // add the latest measurement to the pile
+    else {
+        uint16_t m = ADC;
+        // add to the running total
+        adc_sum += m;
+        // update the latest value
+        adc_raw[adc_channel] = m;
+    }
+    // don't worry about the running total overflowing after sample 64...
+    // it doesn't matter
+
+    // track what woke us up, and enable deferred logic
+    irq_adc = 1;
 }
 
 void adc_deferred() {
@@ -177,7 +178,7 @@ void adc_deferred() {
     // real-world entropy makes this a true random, not pseudo
     // Why here instead of the ISR?  Because it makes the time-critical ISR
     // code a few cycles faster and we don't need crypto-grade randomness.
-    pseudo_rand_seed += (ADCL >> 6) + (ADCH << 2);
+    pseudo_rand_seed += ADCL;
     #endif
 
     // the ADC triggers repeatedly when it's on, but we only need to run the
@@ -241,22 +242,11 @@ static inline void ADC_voltage_handler() {
     #define LVP_TIMER_START (VOLTAGE_WARNING_SECONDS*ADC_CYCLES_PER_SECOND)  // N seconds between LVP warnings
     #define LVP_LOWPASS_STRENGTH ADC_CYCLES_PER_SECOND  // lowpass for one second
 
-    uint16_t measurement = adc_smooth[0];  // latest 16-bit ADC value
+    uint16_t measurement;
 
-    // jump-start the lowpass seed at boot
-    // (otherwise it takes a while to rise from zero)
-    if (measurement < 255) {
-        measurement = adc_raw[0];
-        adc_smooth[0] = measurement;
-    }
-
-    // values stair-step between intervals of 64, with random variations
-    // of 1 or 2 in either direction, so if we chop off the last 6 bits
-    // it'll flap between N and N-1...  but if we add half an interval,
-    // the values should be really stable after right-alignment
-    // (instead of 99.98, 100.00, and 100.02, it'll hit values like
-    //  100.48, 100.50, and 100.52...  which are stable when truncated)
-    measurement += 32;
+    // latest ADC value
+    if (go_to_standby) measurement = adc_raw[0] << 6;
+    else measurement = adc_smooth[0];
 
     #ifdef USE_VOLTAGE_DIVIDER
     voltage = calc_voltage_divider(measurement);
@@ -264,7 +254,6 @@ static inline void ADC_voltage_handler() {
     // calculate actual voltage: volts * 10
     // ADC = 1.1 * 1024 / volts
     // volts = 1.1 * 1024 / ADC
-    //voltage = (uint16_t)(1.1*1024*10)/measurement + VOLTAGE_FUDGE_FACTOR;
     voltage = ((uint16_t)(2*1.1*1024*10)/(measurement>>6) + VOLTAGE_FUDGE_FACTOR) >> 1;
     #endif
 
@@ -308,33 +297,23 @@ static inline void ADC_temperature_handler() {
     #define OVERHEAT_LOWPASS_STRENGTH (ADC_CYCLES_PER_SECOND*2)  // lowpass for 2 seconds
     #define UNDERHEAT_LOWPASS_STRENGTH (ADC_CYCLES_PER_SECOND*2)  // lowpass for 2 seconds
 
-    // latest 16-bit ADC reading (left-adjusted, lowpassed)
+    // latest 16-bit ADC reading
     uint16_t measurement;
 
     if (! reset_thermal_history) {
-        measurement = adc_smooth[1];  // average of recent samples
+        // average of recent samples
+        measurement = adc_smooth[1];
     } else {  // wipe out old data
         // don't keep resetting
         reset_thermal_history = 0;
 
-        // ignore lowpass, use latest sample
-        measurement = adc_raw[1];
-
-        // reset lowpass to latest sample
-        adc_smooth[1] = measurement;
+        // ignore average, use latest sample
+        measurement = adc_raw[1] << 6;
 
         // forget any past measurements
         for(uint8_t i=0; i<NUM_THERMAL_VALUES_HISTORY; i++)
             temperature_history[i] = measurement;
     }
-
-    // values stair-step between intervals of 64, with random variations
-    // of 1 or 2 in either direction, so if we chop off the last 6 bits
-    // it'll flap between N and N-1...  but if we add half an interval,
-    // the values should be really stable after right-alignment
-    // (instead of 99.98, 100.00, and 100.02, it'll hit values like
-    //  100.48, 100.50, and 100.52...  which are stable when truncated)
-    measurement += 32;
 
     {  // rotate the temperature history
         // if it's time to rotate the thermal history, do it
