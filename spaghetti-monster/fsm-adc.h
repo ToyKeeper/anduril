@@ -67,9 +67,9 @@ void battcheck();
 
 
 #ifdef USE_THERMAL_REGULATION
-// default 5 seconds between thermal regulation events
+// default 1 seconds between thermal regulation events
 #ifndef THERMAL_WARNING_SECONDS
-#define THERMAL_WARNING_SECONDS 5
+#define THERMAL_WARNING_SECONDS 1
 #endif
 // try to keep temperature below 45 C
 #ifndef DEFAULT_THERM_CEIL

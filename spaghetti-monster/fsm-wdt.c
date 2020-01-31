@@ -119,7 +119,7 @@ void WDT_inner() {
         return;  // no sleep LVP needed if nothing drains power while off
         #else
         // stop here, usually...  but proceed often enough for sleep LVP to work
-        if (0 != (ticks_since_last & 0x7f)) return;
+        if (0 != (ticks_since_last & 0x3f)) return;
 
         adc_trigger = 255;  // make sure a measurement will happen
         ADC_on();  // enable ADC voltage measurement functions temporarily
@@ -178,12 +178,15 @@ void WDT_inner() {
     #endif
 
     #if defined(USE_LVP) || defined(USE_THERMAL_REGULATION)
-    // start a new ADC measurement every 4 ticks
+    // start a new ADC measurement every 16 ticks
     adc_trigger ++;
-    if (0 == (adc_trigger & 3)) {
-        // in case we're in standby mode and auto-retrigger is turned off
+    if (0 == (adc_trigger & 15)) {
+        // in case we're in standby mode and the ADC is turned off
+        if (go_to_standby) {
+            //set_admux_voltage();
+            ADC_on();
+        }
         ADC_start_measurement();
-        adc_sample_count = 0;
         // allow regulation logic to run
         adc_deferred_enable = 1;
     }

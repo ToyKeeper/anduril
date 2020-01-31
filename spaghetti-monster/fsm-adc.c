@@ -119,18 +119,12 @@ static inline uint8_t calc_voltage_divider(uint16_t value) {
 }
 #endif
 
-// Each full cycle runs 15.6X per second with just voltage enabled,
-// or 7.8X per second with voltage and temperature.
+// Each full cycle runs ~4X per second with just voltage enabled,
+// or ~2X per second with voltage and temperature.
 #if defined(USE_LVP) && defined(USE_THERMAL_REGULATION)
-#define ADC_CYCLES_PER_SECOND 8
+#define ADC_CYCLES_PER_SECOND 2
 #else
-#define ADC_CYCLES_PER_SECOND 16
-#endif
-
-#ifdef USE_THERMAL_REGULATION
-#define ADC_STEPS 2
-#else
-#define ADC_STEPS 1
+#define ADC_CYCLES_PER_SECOND 4
 #endif
 
 // happens every time the ADC sampler finishes a measurement
@@ -242,10 +236,9 @@ void adc_deferred() {
 
 #ifdef USE_LVP
 static inline void ADC_voltage_handler() {
+    // rate-limit low-voltage warnings to a max of 1 per N seconds
     static uint8_t lvp_timer = 0;
-    static uint8_t lvp_lowpass = 0;
     #define LVP_TIMER_START (VOLTAGE_WARNING_SECONDS*ADC_CYCLES_PER_SECOND)  // N seconds between LVP warnings
-    #define LVP_LOWPASS_STRENGTH ADC_CYCLES_PER_SECOND  // lowpass for one second
 
     uint16_t measurement;
 
@@ -263,23 +256,15 @@ static inline void ADC_voltage_handler() {
     #endif
 
     // if low, callback EV_voltage_low / EV_voltage_critical
-    //         (but only if it has been more than N ticks since last call)
+    //         (but only if it has been more than N seconds since last call)
     if (lvp_timer) {
         lvp_timer --;
     } else {  // it has been long enough since the last warning
         if (voltage < VOLTAGE_LOW) {
-            if (lvp_lowpass < LVP_LOWPASS_STRENGTH) {
-                lvp_lowpass ++;
-            } else {
-                // try to send out a warning
-                emit(EV_voltage_low, 0);
-                // reset counters
-                lvp_timer = LVP_TIMER_START;
-                lvp_lowpass = 0;
-            }
-        } else {
-            // voltage not low?  reset count
-            lvp_lowpass = 0;
+            // send out a warning
+            emit(EV_voltage_low, 0);
+            // reset rate-limit counter
+            lvp_timer = LVP_TIMER_START;
         }
     }
 }
@@ -296,11 +281,7 @@ static inline void ADC_temperature_handler() {
     static uint8_t history_step = 0;  // don't update history as often
     static uint16_t temperature_history[NUM_THERMAL_VALUES_HISTORY];
     static uint8_t temperature_timer = 0;
-    static uint8_t overheat_lowpass = 0;
-    static uint8_t underheat_lowpass = 0;
-    #define TEMPERATURE_TIMER_START ((THERMAL_WARNING_SECONDS-2)*ADC_CYCLES_PER_SECOND)  // N seconds between thermal regulation events
-    #define OVERHEAT_LOWPASS_STRENGTH (ADC_CYCLES_PER_SECOND*2)  // lowpass for 2 seconds
-    #define UNDERHEAT_LOWPASS_STRENGTH (ADC_CYCLES_PER_SECOND*2)  // lowpass for 2 seconds
+    #define TEMPERATURE_TIMER_START (THERMAL_WARNING_SECONDS*ADC_CYCLES_PER_SECOND)  // N seconds between thermal regulation events
 
     // latest 16-bit ADC reading
     uint16_t measurement;
@@ -373,28 +354,17 @@ static inline void ADC_temperature_handler() {
 
         // guess what the temp will be several seconds in the future
         // diff = rate of temperature change
-        //diff = temperature_history[NUM_THERMAL_VALUES_HISTORY-1] - temperature_history[0];
         diff = t - temperature_history[0];
         // slight bias toward zero; ignore very small changes (noise)
-        // FIXME: this is way too small for left-adjusted values
         /*
+        // FIXME: this is way too small for 16-bit values
         for (uint8_t z=0; z<3; z++) {
             if (diff < 0) diff ++;
             if (diff > 0) diff --;
         }
         */
         // projected_temperature = current temp extended forward by amplified rate of change
-        //projected_temperature = temperature_history[NUM_THERMAL_VALUES_HISTORY-1] + (diff<<THERM_PREDICTION_STRENGTH);
         pt = projected_temperature = t + (diff<<THERM_PREDICTION_STRENGTH);
-        //pt = projected_temperature = temp + (diff<<THERM_PREDICTION_STRENGTH);
-    }
-
-    // cancel counters if appropriate
-    if (pt > THERM_FLOOR) {
-        underheat_lowpass = 0;  // we're probably not too cold
-    }
-    if (pt < THERM_CEIL) {
-        overheat_lowpass = 0;  // we're probably not too hot
     }
 
     if (temperature_timer) {
@@ -403,39 +373,38 @@ static inline void ADC_temperature_handler() {
 
         // Too hot?
         if (pt > THERM_CEIL) {
-            if (overheat_lowpass < OVERHEAT_LOWPASS_STRENGTH) {
-                overheat_lowpass ++;
-            } else {
-                // reset counters
-                overheat_lowpass = 0;
-                temperature_timer = TEMPERATURE_TIMER_START;
-                // how far above the ceiling?
-                //int16_t howmuch = (pt - THERM_CEIL) * THERM_RESPONSE_MAGNITUDE / 128;
-                int16_t howmuch = pt - THERM_CEIL;
-                // try to send out a warning
-                emit(EV_temperature_high, howmuch);
-            }
+            // reset counters
+            temperature_timer = TEMPERATURE_TIMER_START;
+            // how far above the ceiling?
+            //int16_t howmuch = (pt - THERM_CEIL) * THERM_RESPONSE_MAGNITUDE / 128;
+            int16_t howmuch = (pt - THERM_CEIL) >> 6;
+            // send a warning
+            emit(EV_temperature_high, howmuch);
         }
 
         // Too cold?
         else if (pt < THERM_FLOOR) {
-            if (underheat_lowpass < UNDERHEAT_LOWPASS_STRENGTH) {
-                underheat_lowpass ++;
-            } else {
-                // reset counters
-                underheat_lowpass = 0;
-                temperature_timer = TEMPERATURE_TIMER_START;
-                // how far below the floor?
-                //int16_t howmuch = (THERM_FLOOR - pt) * THERM_RESPONSE_MAGNITUDE / 128;
-                int16_t howmuch = THERM_FLOOR - pt;
-                // try to send out a warning (unless voltage is low)
-                // (LVP and underheat warnings fight each other)
-                if (voltage > VOLTAGE_LOW)
-                    emit(EV_temperature_low, howmuch);
-            }
+            // reset counters
+            temperature_timer = TEMPERATURE_TIMER_START;
+            // how far below the floor?
+            //int16_t howmuch = (THERM_FLOOR - pt) * THERM_RESPONSE_MAGNITUDE / 128;
+            int16_t howmuch = (THERM_FLOOR - pt) >> 6;
+            // send a notification (unless voltage is low)
+            // (LVP and underheat warnings fight each other)
+            if (voltage > VOLTAGE_LOW)
+                emit(EV_temperature_low, howmuch);
         }
 
-        // TODO: add EV_temperature_okay signal
+        // Goldilocks?  (temperature is within target window)
+        else {
+            // reset counters
+            temperature_timer = TEMPERATURE_TIMER_START;
+            // send a notification (unless voltage is low)
+            // (LVP and temp-okay events fight each other)
+            if (voltage > VOLTAGE_LOW)
+                emit(EV_temperature_okay, 0);
+        }
+
     }
 }
 #endif

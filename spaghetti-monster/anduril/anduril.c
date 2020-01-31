@@ -1062,6 +1062,16 @@ uint8_t steady_state(Event event, uint16_t arg) {
         }
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_SET_LEVEL_GRADUALLY
+    // temperature is within target window
+    // (so stop trying to adjust output)
+    else if (event == EV_temperature_okay) {
+        // if we're still adjusting output...  stop
+        gradual_target = actual_level;
+        //set_level_gradually(actual_level);
+        return MISCHIEF_MANAGED;
+    }
+    #endif  // ifdef USE_SET_LEVEL_GRADUALLY
     #endif  // ifdef USE_THERMAL_REGULATION
     return EVENT_NOT_HANDLED;
 }
