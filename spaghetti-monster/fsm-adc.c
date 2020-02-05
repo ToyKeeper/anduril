@@ -273,15 +273,24 @@ static inline void ADC_voltage_handler() {
 
 #ifdef USE_THERMAL_REGULATION
 static inline void ADC_temperature_handler() {
-    // thermal declarations
-    #ifndef THERMAL_UPDATE_SPEED
-    #define THERMAL_UPDATE_SPEED 2
+    // coarse adjustment
+    #ifndef THERM_LOOKAHEAD
+    #define THERM_LOOKAHEAD 5  // can be tweaked per build target
     #endif
-    #define NUM_THERMAL_VALUES_HISTORY 8
-    static uint8_t history_step = 0;  // don't update history as often
-    static uint16_t temperature_history[NUM_THERMAL_VALUES_HISTORY];
+    // fine-grained adjustment
+    // how proportional should the adjustments be?  (not used yet)
+    #ifndef THERM_RESPONSE_MAGNITUDE
+    #define THERM_RESPONSE_MAGNITUDE 128
+    #endif
+    // acceptable temperature window size in C
+    #define THERM_WINDOW_SIZE 3
+
+    #define NUM_TEMP_HISTORY_STEPS 8  // don't change; it'll break stuff
+    static uint8_t history_step = 0;
+    static uint16_t temperature_history[NUM_TEMP_HISTORY_STEPS];
     static uint8_t temperature_timer = 0;
-    #define TEMPERATURE_TIMER_START (THERMAL_WARNING_SECONDS*ADC_CYCLES_PER_SECOND)  // N seconds between thermal regulation events
+    // N seconds between thermal regulation events
+    #define TEMPERATURE_TIMER_START (THERMAL_WARNING_SECONDS*ADC_CYCLES_PER_SECOND)
 
     // latest 16-bit ADC reading
     uint16_t measurement;
@@ -297,105 +306,73 @@ static inline void ADC_temperature_handler() {
         measurement = adc_raw[1] << 6;
 
         // forget any past measurements
-        for(uint8_t i=0; i<NUM_THERMAL_VALUES_HISTORY; i++)
+        for(uint8_t i=0; i<NUM_TEMP_HISTORY_STEPS; i++)
             temperature_history[i] = measurement;
-    }
-
-    {  // rotate the temperature history
-        // if it's time to rotate the thermal history, do it
-        // FIXME? allow more than 255 frames per step
-        //        (that's only about 8 seconds maximum)
-        history_step ++;
-        #if (THERMAL_UPDATE_SPEED == 4)  // new value every 4s
-        #define THERM_HISTORY_STEP_MAX (4*ADC_CYCLES_PER_SECOND)
-        #elif (THERMAL_UPDATE_SPEED == 2)  // new value every 2s
-        #define THERM_HISTORY_STEP_MAX (2*ADC_CYCLES_PER_SECOND)
-        #elif (THERMAL_UPDATE_SPEED == 1)  // new value every 1s
-        #define THERM_HISTORY_STEP_MAX (ADC_CYCLES_PER_SECOND)
-        #elif (THERMAL_UPDATE_SPEED == 0)  // new value every 0.5s
-        #define THERM_HISTORY_STEP_MAX (ADC_CYCLES_PER_SECOND/2)
-        #endif
-        // FIXME: rotate the index instead of moving the values
-        if (THERM_HISTORY_STEP_MAX == history_step) {
-            history_step = 0;
-            // rotate measurements and add a new one
-            for (uint8_t i=0; i<NUM_THERMAL_VALUES_HISTORY-1; i++) {
-                temperature_history[i] = temperature_history[i+1];
-            }
-            temperature_history[NUM_THERMAL_VALUES_HISTORY-1] = measurement;
-        }
     }
 
     // let the UI see the current temperature in C
     // Convert ADC units to Celsius (ish)
     temperature = (measurement>>6) - 275 + THERM_CAL_OFFSET + (int16_t)therm_cal_offset;
 
-    // guess what the temperature will be in a few seconds
-    int16_t pt;
-    {
-        int16_t diff;
-        uint16_t t = measurement;
+    // how much has the temperature changed between now and a few seconds ago?
+    int16_t diff;
+    diff = measurement - temperature_history[history_step];
 
-        // algorithm tweaking; not really intended to be modified
-        // how far ahead should we predict?
-        #ifndef THERM_PREDICTION_STRENGTH
-        #define THERM_PREDICTION_STRENGTH 4
-        #endif
-        // how proportional should the adjustments be?  (not used yet)
-        #ifndef THERM_RESPONSE_MAGNITUDE
-        #define THERM_RESPONSE_MAGNITUDE 128
-        #endif
-        // acceptable temperature window size in C
-        #define THERM_WINDOW_SIZE (3<<6)
-        // highest temperature allowed
-        #define THERM_CEIL (((int16_t)therm_ceil)<<6)
-        // bottom of target temperature window
-        #define THERM_FLOOR (THERM_CEIL - THERM_WINDOW_SIZE)
+    // update / rotate the temperature history
+    temperature_history[history_step] = measurement;
+    history_step = (history_step + 1) & (NUM_TEMP_HISTORY_STEPS-1);
 
-        // guess what the temp will be several seconds in the future
-        // diff = rate of temperature change
-        diff = t - temperature_history[0];
-        // slight bias toward zero; ignore very small changes (noise)
-        /*
-        // FIXME: this is way too small for 16-bit values
-        for (uint8_t z=0; z<3; z++) {
-            if (diff < 0) diff ++;
-            if (diff > 0) diff --;
-        }
-        */
-        // projected_temperature = current temp extended forward by amplified rate of change
-        pt = projected_temperature = t + (diff<<THERM_PREDICTION_STRENGTH);
-    }
+    // PI[D]: guess what the temperature will be in a few seconds
+    int16_t pt;  // predicted temperature
+    pt = measurement + (diff * THERM_LOOKAHEAD);
+
+    // P[I]D: average of recent measurements
+    uint16_t avg = 0;
+    for(uint8_t i=0; i<NUM_TEMP_HISTORY_STEPS; i++)
+        avg += (temperature_history[i]>>3);
+
+    uint16_t ceil = therm_ceil << 6;
+    //uint16_t floor = ceil - (THERM_WINDOW_SIZE << 6);
+    int16_t offset_pt, offset_avg;
+    offset_pt = pt - ceil;
+    offset_avg = avg - ceil;
+    int16_t offset = offset_pt + offset_avg;
+    //int16_t offset = (pt - ceil) + (avg - ceil);
+
 
     if (temperature_timer) {
         temperature_timer --;
     } else {  // it has been long enough since the last warning
 
         // Too hot?
-        if (pt > THERM_CEIL) {
+        // (if it's too hot and not getting colder...)
+        if ((offset > 0) && (diff > (-1 << 5))) {
             // reset counters
             temperature_timer = TEMPERATURE_TIMER_START;
             // how far above the ceiling?
-            //int16_t howmuch = (pt - THERM_CEIL) * THERM_RESPONSE_MAGNITUDE / 128;
-            int16_t howmuch = (pt - THERM_CEIL) >> 6;
+            //int16_t howmuch = (offset >> 6) * THERM_RESPONSE_MAGNITUDE / 128;
+            int16_t howmuch = (offset >> 6);
             // send a warning
             emit(EV_temperature_high, howmuch);
         }
 
         // Too cold?
-        else if (pt < THERM_FLOOR) {
+        // (if it's too cold and not getting warmer...)
+        else if ((offset < -(THERM_WINDOW_SIZE << 6))
+              && (diff < (1 << 5))) {
             // reset counters
             temperature_timer = TEMPERATURE_TIMER_START;
             // how far below the floor?
-            //int16_t howmuch = (THERM_FLOOR - pt) * THERM_RESPONSE_MAGNITUDE / 128;
-            int16_t howmuch = (THERM_FLOOR - pt) >> 6;
+            //int16_t howmuch = (((-offset) - (THERM_WINDOW_SIZE<<6)) >> 7) * THERM_WINDOW_SIZE / 128;
+            int16_t howmuch = ((-offset) - (THERM_WINDOW_SIZE<<6)) >> 7;
             // send a notification (unless voltage is low)
             // (LVP and underheat warnings fight each other)
             if (voltage > VOLTAGE_LOW)
                 emit(EV_temperature_low, howmuch);
         }
 
-        // Goldilocks?  (temperature is within target window)
+        // Goldilocks?
+        // (temperature is within target window, or at least heading toward it)
         else {
             // reset counters
             temperature_timer = TEMPERATURE_TIMER_START;
