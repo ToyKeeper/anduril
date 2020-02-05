@@ -957,59 +957,33 @@ uint8_t steady_state(Event event, uint16_t arg) {
         if (arg == TICKS_PER_SECOND) ramp_direction = 1;
         #endif
         #ifdef USE_SET_LEVEL_GRADUALLY
-        // make thermal adjustment speed scale with magnitude
-        // also, adjust slower when going up
-        if ((arg & 1) &&
-            ((actual_level < THERM_FASTER_LEVEL) ||
-             (actual_level < gradual_target))) {
-            return MISCHIEF_MANAGED;  // adjust slower when not a high mode
-        }
-        #ifdef THERM_HARD_TURBO_DROP
-        else if ((! (actual_level < THERM_FASTER_LEVEL))
-                && (actual_level > gradual_target)) {
-            gradual_tick();
-        }
-        else {
-        #endif
-        // [int(62*4 / (x**0.8)) for x in (1,2,4,8,16,32,64,128)]
-        //uint8_t intervals[] = {248, 142, 81, 46, 26, 15, 8, 5};
-        // [int(62*4 / (x**0.9)) for x in (1,2,4,8,16,32,64,128)]
-        //uint8_t intervals[] = {248, 132, 71, 38, 20, 10, 5, 3};
-        // [int(62*4 / (x**0.95)) for x in (1,2,4,8,16,32,64,128)]
-        uint8_t intervals[] = {248, 128, 66, 34, 17, 9, 4, 2};
-        uint8_t diff;
-        static uint8_t ticks_since_adjust = 0;
-        if (gradual_target > actual_level) {
-            // rise at half speed (skip half the frames)
-            if (arg & 2) return MISCHIEF_MANAGED;
-            diff = gradual_target - actual_level;
-        } else {
-            diff = actual_level - gradual_target;
-        }
-        ticks_since_adjust ++;
-        // if there's any adjustment to be made, make it
+        int16_t diff = gradual_target - actual_level;
+        static uint16_t ticks_since_adjust = 0;
+        ticks_since_adjust++;
         if (diff) {
-            uint8_t magnitude = 0;
-            #ifndef THERM_HARD_TURBO_DROP
-            // if we're on a really high mode, drop faster
-            if ((actual_level >= THERM_FASTER_LEVEL)
-                && (actual_level > gradual_target)) { magnitude ++; }
-            #endif
+            uint16_t ticks_per_adjust = 256;
+            if (diff < 0) {
+                diff = -diff;
+                if (actual_level > THERM_FASTER_LEVEL) {
+                    #ifdef THERM_HARD_TURBO_DROP
+                    ticks_per_adjust >>= 2;
+                    #endif
+                    ticks_per_adjust >>= 2;
+                }
+            } else {
+                // rise at half speed
+                ticks_per_adjust <<= 1;
+            }
             while (diff) {
-                magnitude ++;
+                ticks_per_adjust >>= 1;
                 diff >>= 1;
             }
-            uint8_t ticks_per_adjust = intervals[magnitude];
             if (ticks_since_adjust > ticks_per_adjust)
             {
                 gradual_tick();
                 ticks_since_adjust = 0;
             }
-            //if (!(arg % ticks_per_adjust)) gradual_tick();
         }
-        #ifdef THERM_HARD_TURBO_DROP
-        }
-        #endif
         #endif  // ifdef USE_SET_LEVEL_GRADUALLY
         return MISCHIEF_MANAGED;
     }
