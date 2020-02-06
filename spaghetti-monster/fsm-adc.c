@@ -275,7 +275,7 @@ static inline void ADC_voltage_handler() {
 static inline void ADC_temperature_handler() {
     // coarse adjustment
     #ifndef THERM_LOOKAHEAD
-    #define THERM_LOOKAHEAD 5  // can be tweaked per build target
+    #define THERM_LOOKAHEAD 3  // can be tweaked per build target
     #endif
     // fine-grained adjustment
     // how proportional should the adjustments be?  (not used yet)
@@ -323,7 +323,7 @@ static inline void ADC_temperature_handler() {
     history_step = (history_step + 1) & (NUM_TEMP_HISTORY_STEPS-1);
 
     // PI[D]: guess what the temperature will be in a few seconds
-    int16_t pt;  // predicted temperature
+    uint16_t pt;  // predicted temperature
     pt = measurement + (diff * THERM_LOOKAHEAD);
 
     // P[I]D: average of recent measurements
@@ -331,11 +331,15 @@ static inline void ADC_temperature_handler() {
     for(uint8_t i=0; i<NUM_TEMP_HISTORY_STEPS; i++)
         avg += (temperature_history[i]>>3);
 
-    uint16_t ceil = therm_ceil << 6;
+    // convert temperature limit from C to raw 16-bit ADC units
+    // C = (ADC>>6) - 275 + THERM_CAL_OFFSET + therm_cal_offset;
+    // ... so ...
+    // (C + 275 - THERM_CAL_OFFSET - therm_cal_offset) << 6 = ADC;
+    uint16_t ceil = (therm_ceil + 275 - therm_cal_offset - THERM_CAL_OFFSET) << 6;
     //uint16_t floor = ceil - (THERM_WINDOW_SIZE << 6);
     int16_t offset_pt, offset_avg;
-    offset_pt = pt - ceil;
-    offset_avg = avg - ceil;
+    offset_pt = (pt - ceil) >> 1;
+    offset_avg = (avg - ceil) >> 1;
     int16_t offset = offset_pt + offset_avg;
     //int16_t offset = (pt - ceil) + (avg - ceil);
 
@@ -351,7 +355,7 @@ static inline void ADC_temperature_handler() {
             temperature_timer = TEMPERATURE_TIMER_START;
             // how far above the ceiling?
             //int16_t howmuch = (offset >> 6) * THERM_RESPONSE_MAGNITUDE / 128;
-            int16_t howmuch = (offset >> 6);
+            int16_t howmuch = (offset >> 8);
             // send a warning
             emit(EV_temperature_high, howmuch);
         }
@@ -359,12 +363,12 @@ static inline void ADC_temperature_handler() {
         // Too cold?
         // (if it's too cold and not getting warmer...)
         else if ((offset < -(THERM_WINDOW_SIZE << 6))
-              && (diff < (1 << 5))) {
+              && (diff < (1 << 4))) {
             // reset counters
             temperature_timer = TEMPERATURE_TIMER_START;
             // how far below the floor?
             //int16_t howmuch = (((-offset) - (THERM_WINDOW_SIZE<<6)) >> 7) * THERM_WINDOW_SIZE / 128;
-            int16_t howmuch = ((-offset) - (THERM_WINDOW_SIZE<<6)) >> 7;
+            int16_t howmuch = ((-offset) - (THERM_WINDOW_SIZE<<6)) >> 9;
             // send a notification (unless voltage is low)
             // (LVP and underheat warnings fight each other)
             if (voltage > VOLTAGE_LOW)
