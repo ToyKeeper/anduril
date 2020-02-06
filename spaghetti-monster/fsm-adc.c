@@ -135,7 +135,7 @@ static inline uint8_t calc_voltage_divider(uint16_t value) {
 // doing 32-bit math)
 ISR(ADC_vect) {
 
-    static uint16_t adc_sum;
+    static uint32_t adc_sum;
 
     // keep this moving along
     adc_sample_count ++;
@@ -146,16 +146,10 @@ ISR(ADC_vect) {
         adc_sum = 0;
         return;
     }
-    // 64 samples collected, save the result
-    // (actually triggers at 64 and every 32 afterward)
-    else if (66 == adc_sample_count) {
+    // 2048 samples collected, save the result
+    else if (2050 == adc_sample_count) {
         // save the latest result
-        adc_smooth[adc_channel] = adc_sum;
-        // cut sum in half and set up another half-window of samples
-        // (for sort of a continuous average)
-        // (this seems to significantly reduce noise)
-        adc_sum >>= 1;
-        adc_sample_count = 33;
+        adc_smooth[adc_channel] = adc_sum >> 5;
     }
     // add the latest measurement to the pile
     else {
@@ -275,7 +269,7 @@ static inline void ADC_voltage_handler() {
 static inline void ADC_temperature_handler() {
     // coarse adjustment
     #ifndef THERM_LOOKAHEAD
-    #define THERM_LOOKAHEAD 3  // can be tweaked per build target
+    #define THERM_LOOKAHEAD 4  // can be tweaked per build target
     #endif
     // fine-grained adjustment
     // how proportional should the adjustments be?  (not used yet)
@@ -297,13 +291,13 @@ static inline void ADC_temperature_handler() {
 
     if (! reset_thermal_history) {
         // average of recent samples
-        measurement = adc_smooth[1];
+        measurement = adc_smooth[1] >> 1;
     } else {  // wipe out old data
         // don't keep resetting
         reset_thermal_history = 0;
 
         // ignore average, use latest sample
-        measurement = adc_raw[1] << 6;
+        measurement = adc_raw[1] << 5;
 
         // forget any past measurements
         for(uint8_t i=0; i<NUM_TEMP_HISTORY_STEPS; i++)
@@ -312,7 +306,7 @@ static inline void ADC_temperature_handler() {
 
     // let the UI see the current temperature in C
     // Convert ADC units to Celsius (ish)
-    temperature = (measurement>>6) - 275 + THERM_CAL_OFFSET + (int16_t)therm_cal_offset;
+    temperature = (measurement>>5) - 275 + THERM_CAL_OFFSET + (int16_t)therm_cal_offset;
 
     // how much has the temperature changed between now and a few seconds ago?
     int16_t diff;
@@ -335,7 +329,7 @@ static inline void ADC_temperature_handler() {
     // C = (ADC>>6) - 275 + THERM_CAL_OFFSET + therm_cal_offset;
     // ... so ...
     // (C + 275 - THERM_CAL_OFFSET - therm_cal_offset) << 6 = ADC;
-    uint16_t ceil = (therm_ceil + 275 - therm_cal_offset - THERM_CAL_OFFSET) << 6;
+    uint16_t ceil = (therm_ceil + 275 - therm_cal_offset - THERM_CAL_OFFSET) << 5;
     //uint16_t floor = ceil - (THERM_WINDOW_SIZE << 6);
     int16_t offset_pt, offset_avg;
     offset_pt = (pt - ceil) >> 1;
@@ -350,7 +344,7 @@ static inline void ADC_temperature_handler() {
 
         // Too hot?
         // (if it's too hot and not getting colder...)
-        if ((offset > 0) && (diff > (-1 << 5))) {
+        if ((offset > 0) && (diff > (-1 << 4))) {
             // reset counters
             temperature_timer = TEMPERATURE_TIMER_START;
             // how far above the ceiling?
@@ -362,13 +356,13 @@ static inline void ADC_temperature_handler() {
 
         // Too cold?
         // (if it's too cold and not getting warmer...)
-        else if ((offset < -(THERM_WINDOW_SIZE << 6))
-              && (diff < (1 << 4))) {
+        else if ((offset < -(THERM_WINDOW_SIZE << 5))
+              && (diff < (1 << 3))) {
             // reset counters
             temperature_timer = TEMPERATURE_TIMER_START;
             // how far below the floor?
             //int16_t howmuch = (((-offset) - (THERM_WINDOW_SIZE<<6)) >> 7) * THERM_WINDOW_SIZE / 128;
-            int16_t howmuch = ((-offset) - (THERM_WINDOW_SIZE<<6)) >> 9;
+            int16_t howmuch = ((-offset) - (THERM_WINDOW_SIZE<<5)) >> 8;
             // send a notification (unless voltage is low)
             // (LVP and underheat warnings fight each other)
             if (voltage > VOLTAGE_LOW)

@@ -40,7 +40,7 @@
 #endif
 
 volatile uint8_t irq_adc = 0;  // ADC interrupt happened?
-uint8_t adc_sample_count = 0;  // skip the first sample; it's junk
+uint16_t adc_sample_count = 0;  // skip the first sample; it's junk
 uint8_t adc_channel = 0;  // 0=voltage, 1=temperature
 uint16_t adc_raw[2];  // last ADC measurements (0=voltage, 1=temperature)
 uint16_t adc_smooth[2];  // lowpassed ADC measurements (0=voltage, 1=temperature)
