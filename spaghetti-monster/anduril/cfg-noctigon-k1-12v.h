@@ -1,0 +1,70 @@
+// Noctigon K1 12V config options for Anduril
+#include "hwdef-Noctigon_K1-12V.h"
+// ATTINY: 1634
+
+// this light can safely run a bit hotter than most
+#undef DEFAULT_THERM_CEIL
+#define DEFAULT_THERM_CEIL 55
+
+// this light has three aux LED channels: R, G, B
+#define USE_AUX_RGB_LEDS
+#define USE_AUX_RGB_LEDS_WHILE_ON
+#define USE_INDICATOR_LED_WHILE_RAMPING
+#define RGB_LED_OFF_DEFAULT 0x18  // low, voltage
+#define RGB_LED_LOCKOUT_DEFAULT 0x37  // blinking, rainbow
+
+// enable blinking aux LEDs
+#define TICK_DURING_STANDBY
+#define STANDBY_TICK_SPEED 3  // every 0.128 s
+
+
+// ../../bin/level_calc.py cube 1 150 7135 1 4 1300
+// (with max_pwm set to 1023)
+#define RAMP_LENGTH 150
+#define PWM1_LEVELS 1,1,2,2,3,3,4,4,5,6,6,7,8,9,10,11,12,13,14,15,16,17,18,20,21,23,24,26,27,29,31,32,34,36,38,40,43,45,47,49,52,54,57,60,62,65,68,71,74,77,81,84,87,91,95,98,102,106,110,114,118,122,127,131,136,141,145,150,155,160,166,171,176,182,188,193,199,205,211,218,224,231,237,244,251,258,265,272,280,287,295,303,310,319,327,335,344,352,361,370,379,388,397,407,416,426,436,446,457,467,477,488,499,510,521,533,544,556,568,580,592,604,617,629,642,655,668,682,695,709,723,737,751,766,781,795,810,826,841,857,872,888,904,921,937,954,971,988,1005,1023
+#define MAX_1x7135 50
+
+// the entire ramp is regulated; don't blink halfway up
+#ifdef BLINK_AT_RAMP_MIDDLE
+#undef BLINK_AT_RAMP_MIDDLE
+#endif
+
+// don't slow down at low levels; this isn't that sort of light
+// (it needs to stay at full speed for the 10-bit PWM to work)
+#ifdef USE_DYNAMIC_UNDERCLOCKING
+#undef USE_DYNAMIC_UNDERCLOCKING
+#endif
+
+#define RAMP_SMOOTH_FLOOR 1
+#define RAMP_SMOOTH_CEIL 130
+// 10, 30, [50], 70, 90, 110, 130
+#define RAMP_DISCRETE_FLOOR 10
+#define RAMP_DISCRETE_CEIL RAMP_SMOOTH_CEIL
+#define RAMP_DISCRETE_STEPS 7
+
+#define MUGGLE_FLOOR RAMP_DISCRETE_FLOOR
+#define MUGGLE_CEILING 70
+
+// optional, makes initial turbo step-down faster so first peak isn't as hot
+// the D4 runs very very hot, so be extra careful
+//#define THERM_HARD_TURBO_DROP
+
+// stop panicking at ~70% power or ~600 lm
+#define THERM_FASTER_LEVEL 130
+// respond to thermal changes faster
+#define THERMAL_WARNING_SECONDS 3
+#define THERMAL_UPDATE_SPEED 1
+#define THERM_PREDICTION_STRENGTH 4
+
+// easier access to thermal config mode, for Noctigon
+#define USE_TENCLICK_THERMAL_CONFIG
+
+// slow down party strobe; this driver can't pulse for 1ms or less
+#define PARTY_STROBE_ONTIME 2
+
+#define THERM_CAL_OFFSET 5
+
+// attiny1634 has enough space to smooth out voltage readings
+// (prevent the button from blinking during use)
+#define USE_VOLTAGE_LOWPASS
+
