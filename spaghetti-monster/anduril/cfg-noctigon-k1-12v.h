@@ -60,7 +60,7 @@
 #define USE_TENCLICK_THERMAL_CONFIG
 
 // slow down party strobe; this driver can't pulse for 1ms or less
-#define PARTY_STROBE_ONTIME 2
+#define PARTY_STROBE_ONTIME 4
 
 #define THERM_CAL_OFFSET 5
 
