@@ -180,7 +180,7 @@ void WDT_inner() {
     #if defined(USE_LVP) || defined(USE_THERMAL_REGULATION)
     // start a new ADC measurement every 16 ticks
     adc_trigger ++;
-    if (0 == (adc_trigger & 15)) {
+    if (0 == (adc_trigger & 31)) {
         // in case we're in standby mode and the ADC is turned off
         if (go_to_standby) {
             //set_admux_voltage();

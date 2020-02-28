@@ -25,7 +25,7 @@ static inline void set_admux_therm() {
     #if (ATTINY == 1634)
         ADMUX = ADMUX_THERM;
     #elif (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
-        ADMUX = ADMUX_THERM;
+        ADMUX = ADMUX_THERM | (1 << ADLAR);
     #elif (ATTINY == 841)  // FIXME: not tested
         ADMUXA = ADMUXA_THERM;
         ADMUXB = ADMUXB_THERM;
@@ -46,9 +46,9 @@ inline void set_admux_voltage() {
         #endif
     #elif (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
         #ifdef USE_VOLTAGE_DIVIDER  // 1.1V / pin7
-            ADMUX = ADMUX_VOLTAGE_DIVIDER;
+            ADMUX = ADMUX_VOLTAGE_DIVIDER | (1 << ADLAR);
         #else  // VCC / 1.1V reference
-            ADMUX = ADMUX_VCC;
+            ADMUX = ADMUX_VCC | (1 << ADLAR);
         #endif
     #elif (ATTINY == 841)  // FIXME: not tested
         #ifdef USE_VOLTAGE_DIVIDER  // 1.1V / pin7
@@ -88,7 +88,7 @@ inline void ADC_on()
         #endif
         #if (ATTINY == 1634)
             //ACSRA |= (1 << ACD);  // turn off analog comparator to save power
-            //ADCSRB |= (1 << ADLAR);  // left-adjust flag is here instead of ADMUX
+            ADCSRB |= (1 << ADLAR);  // left-adjust flag is here instead of ADMUX
         #endif
         // enable, start, auto-retrigger, prescale
         ADCSRA = (1 << ADEN) | (1 << ADSC) | (1 << ADATE) | ADC_PRSCL;
@@ -122,46 +122,42 @@ static inline uint8_t calc_voltage_divider(uint16_t value) {
 // Each full cycle runs ~4X per second with just voltage enabled,
 // or ~2X per second with voltage and temperature.
 #if defined(USE_LVP) && defined(USE_THERMAL_REGULATION)
-#define ADC_CYCLES_PER_SECOND 2
+#define ADC_CYCLES_PER_SECOND 1
 #else
-#define ADC_CYCLES_PER_SECOND 4
+#define ADC_CYCLES_PER_SECOND 2
 #endif
 
 // happens every time the ADC sampler finishes a measurement
-// collects a rolling average of 64+ samples, which increases effective number
-// of bits from 10 to about 16 (ish, probably more like 14 really) (64 was
-// chosen because it's the largest sample size which allows the sum to still
-// fit into a 16-bit integer, and for speed and size reasons, we want to avoid
-// doing 32-bit math)
 ISR(ADC_vect) {
 
-    static uint32_t adc_sum;
+    if (adc_sample_count) {
 
-    // keep this moving along
+        uint16_t m;  // latest measurement
+        uint16_t s;  // smoothed measurement
+        uint8_t channel = adc_channel;
+
+        // update the latest value
+        m = ADC;
+        adc_raw[channel] = m;
+
+        // lowpass the value
+        //s = adc_smooth[channel];  // easier to read
+        uint16_t *v = adc_smooth + channel;  // compiles smaller
+        s = *v;
+        if (m > s) { s++; }
+        if (m < s) { s--; }
+        //adc_smooth[channel] = s;
+        *v = s;
+
+        // track what woke us up, and enable deferred logic
+        irq_adc = 1;
+
+    }
+
+    // the next measurement isn't the first
+    //adc_sample_count = 1;
     adc_sample_count ++;
 
-    // reset on first sample
-    // also, ignore first value since it's probably junk
-    if (1 == adc_sample_count) {
-        adc_sum = 0;
-        return;
-    }
-    // 2048 samples collected, save the result
-    else if (2050 == adc_sample_count) {
-        // save the latest result
-        adc_smooth[adc_channel] = adc_sum >> 5;
-    }
-    // add the latest measurement to the pile
-    else {
-        uint16_t m = ADC;
-        // add to the running total
-        adc_sum += m;
-        // update the latest value
-        adc_raw[adc_channel] = m;
-    }
-
-    // track what woke us up, and enable deferred logic
-    irq_adc = 1;
 }
 
 void adc_deferred() {
@@ -171,7 +167,7 @@ void adc_deferred() {
     // real-world entropy makes this a true random, not pseudo
     // Why here instead of the ISR?  Because it makes the time-critical ISR
     // code a few cycles faster and we don't need crypto-grade randomness.
-    pseudo_rand_seed += ADCL;
+    pseudo_rand_seed += (ADCL >> 6) + (ADCH << 2);
     #endif
 
     // the ADC triggers repeatedly when it's on, but we only need to run the
@@ -237,8 +233,21 @@ static inline void ADC_voltage_handler() {
     uint16_t measurement;
 
     // latest ADC value
-    if (go_to_standby) measurement = adc_raw[0] << 6;
+    if (go_to_standby || (adc_smooth[0] < 255)) {
+        measurement = adc_raw[0];
+        adc_smooth[0] = measurement;  // no lowpass while asleep
+    }
     else measurement = adc_smooth[0];
+
+    // values stair-step between intervals of 64, with random variations
+    // of 1 or 2 in either direction, so if we chop off the last 6 bits
+    // it'll flap between N and N-1...  but if we add half an interval,
+    // the values should be really stable after right-alignment
+    // (instead of 99.98, 100.00, and 100.02, it'll hit values like
+    //  100.48, 100.50, and 100.52...  which are stable when truncated)
+    //measurement += 32;
+    //measurement = (measurement + 16) >> 5;
+    measurement = (measurement + 16) & 0xffe0;  // 1111 1111 1110 0000
 
     #ifdef USE_VOLTAGE_DIVIDER
     voltage = calc_voltage_divider(measurement);
@@ -286,27 +295,35 @@ static inline void ADC_temperature_handler() {
     // N seconds between thermal regulation events
     #define TEMPERATURE_TIMER_START (THERMAL_WARNING_SECONDS*ADC_CYCLES_PER_SECOND)
 
-    // latest 16-bit ADC reading
-    uint16_t measurement;
-
-    if (! reset_thermal_history) {
-        // average of recent samples
-        measurement = adc_smooth[1] >> 1;
-    } else {  // wipe out old data
+    if (reset_thermal_history) { // wipe out old data
         // don't keep resetting
         reset_thermal_history = 0;
 
         // ignore average, use latest sample
-        measurement = adc_raw[1] << 5;
+        uint16_t foo = adc_raw[1];
+        adc_smooth[1] = foo;
 
         // forget any past measurements
         for(uint8_t i=0; i<NUM_TEMP_HISTORY_STEPS; i++)
-            temperature_history[i] = measurement;
+            temperature_history[i] = (foo + 16) >> 5;
     }
+
+    // latest 16-bit ADC reading
+    uint16_t measurement = adc_smooth[1];
+
+    // values stair-step between intervals of 64, with random variations
+    // of 1 or 2 in either direction, so if we chop off the last 6 bits
+    // it'll flap between N and N-1...  but if we add half an interval,
+    // the values should be really stable after right-alignment
+    // (instead of 99.98, 100.00, and 100.02, it'll hit values like
+    //  100.48, 100.50, and 100.52...  which are stable when truncated)
+    //measurement += 32;
+    measurement = (measurement + 16) >> 5;
+    //measurement = (measurement + 16) & 0xffe0;  // 1111 1111 1110 0000
 
     // let the UI see the current temperature in C
     // Convert ADC units to Celsius (ish)
-    temperature = (measurement>>5) - 275 + THERM_CAL_OFFSET + (int16_t)therm_cal_offset;
+    temperature = (measurement>>1) + THERM_CAL_OFFSET + (int16_t)therm_cal_offset - 275;
 
     // how much has the temperature changed between now and a few seconds ago?
     int16_t diff;
@@ -320,22 +337,27 @@ static inline void ADC_temperature_handler() {
     uint16_t pt;  // predicted temperature
     pt = measurement + (diff * THERM_LOOKAHEAD);
 
+    /* seems unnecessary; simply sending repeated warnings has a similar effect
     // P[I]D: average of recent measurements
     uint16_t avg = 0;
     for(uint8_t i=0; i<NUM_TEMP_HISTORY_STEPS; i++)
         avg += (temperature_history[i]>>3);
+    */
 
     // convert temperature limit from C to raw 16-bit ADC units
     // C = (ADC>>6) - 275 + THERM_CAL_OFFSET + therm_cal_offset;
     // ... so ...
     // (C + 275 - THERM_CAL_OFFSET - therm_cal_offset) << 6 = ADC;
-    uint16_t ceil = (therm_ceil + 275 - therm_cal_offset - THERM_CAL_OFFSET) << 5;
+    uint16_t ceil = (therm_ceil + 275 - therm_cal_offset - THERM_CAL_OFFSET) << 1;
     //uint16_t floor = ceil - (THERM_WINDOW_SIZE << 6);
+    /* average of I and D terms
     int16_t offset_pt, offset_avg;
     offset_pt = (pt - ceil) >> 1;
     offset_avg = (avg - ceil) >> 1;
     int16_t offset = offset_pt + offset_avg;
     //int16_t offset = (pt - ceil) + (avg - ceil);
+    */
+    int16_t offset = pt - ceil;
 
 
     if (temperature_timer) {
@@ -344,25 +366,25 @@ static inline void ADC_temperature_handler() {
 
         // Too hot?
         // (if it's too hot and not getting colder...)
-        if ((offset > 0) && (diff > (-1 << 4))) {
+        if ((offset > 0) && (diff > (-1))) {
             // reset counters
             temperature_timer = TEMPERATURE_TIMER_START;
             // how far above the ceiling?
             //int16_t howmuch = (offset >> 6) * THERM_RESPONSE_MAGNITUDE / 128;
-            int16_t howmuch = (offset >> 8);
+            int16_t howmuch = (offset >> 1);
             // send a warning
             emit(EV_temperature_high, howmuch);
         }
 
         // Too cold?
         // (if it's too cold and not getting warmer...)
-        else if ((offset < -(THERM_WINDOW_SIZE << 5))
-              && (diff < (1 << 3))) {
+        else if ((offset < -(THERM_WINDOW_SIZE << 1))
+              && (diff < (1))) {
             // reset counters
             temperature_timer = TEMPERATURE_TIMER_START;
             // how far below the floor?
             //int16_t howmuch = (((-offset) - (THERM_WINDOW_SIZE<<6)) >> 7) * THERM_WINDOW_SIZE / 128;
-            int16_t howmuch = ((-offset) - (THERM_WINDOW_SIZE<<5)) >> 8;
+            int16_t howmuch = ((-offset) - (THERM_WINDOW_SIZE<<1)) >> 1;
             // send a notification (unless voltage is low)
             // (LVP and underheat warnings fight each other)
             if (voltage > VOLTAGE_LOW)
