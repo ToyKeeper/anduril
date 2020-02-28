@@ -30,6 +30,10 @@ uint8_t eeprom[EEPROM_BYTES];
 #endif
 
 uint8_t load_eeprom() {
+    #ifdef LED_ENABLE_PIN
+    delay_4ms(2);  // wait for power to stabilize
+    #endif
+
     cli();
     // check if eeprom has been initialized; abort if it hasn't
     uint8_t marker = eeprom_read_byte((uint8_t *)EEP_START);
@@ -44,6 +48,10 @@ uint8_t load_eeprom() {
 }
 
 void save_eeprom() {
+    #ifdef LED_ENABLE_PIN
+    delay_4ms(2);  // wait for power to stabilize
+    #endif
+
     cli();
 
     // save the actual data
@@ -62,6 +70,10 @@ uint8_t eeprom_wl[EEPROM_WL_BYTES];
 EEP_OFFSET_T eep_wl_prev_offset;
 
 uint8_t load_eeprom_wl() {
+    #ifdef LED_ENABLE_PIN
+    delay_4ms(2);  // wait for power to stabilize
+    #endif
+
     cli();
     // check if eeprom has been initialized; abort if it hasn't
     uint8_t found = 0;
@@ -87,6 +99,10 @@ uint8_t load_eeprom_wl() {
 }
 
 void save_eeprom_wl() {
+    #ifdef LED_ENABLE_PIN
+    delay_4ms(2);  // wait for power to stabilize
+    #endif
+
     cli();
     // erase old state
     EEP_OFFSET_T offset = eep_wl_prev_offset;
