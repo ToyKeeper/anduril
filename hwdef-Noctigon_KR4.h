@@ -53,7 +53,7 @@
 
 // the button tends to short out the voltage divider,
 // so ignore voltage while the button is being held
-#define NO_LVP_WHILE_BUTTON_PRESSED
+//#define NO_LVP_WHILE_BUTTON_PRESSED
 
 
 #define PWM1_PIN PB3        // pin 16, Opamp reference
@@ -79,7 +79,7 @@
 // divided by ...
 // REFS[1:0] = 1, 0 for internal 1.1V reference
 // other bits reserved
-#define ADMUX_VOLTAGE_DIVIDER 0b10000111
+#define ADMUX_VOLTAGE_DIVIDER 0b10000110
 #define ADC_PRSCL   0x06    // clk/64
 
 // TODO: calibrate this
