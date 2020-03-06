@@ -66,7 +66,11 @@ inline void PCINT_off() {
 //void button_change_interrupt() {
 #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85) || (ATTINY == 1634)
 //EMPTY_INTERRUPT(PCINT0_vect);
+#ifdef PCINT_vect
+ISR(PCINT_vect) {
+#else
 ISR(PCINT0_vect) {
+#endif
     irq_pcint = 1;
 }
 #else

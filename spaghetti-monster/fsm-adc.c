@@ -206,6 +206,12 @@ static inline void ADC_voltage_handler() {
     #define LVP_TIMER_START (VOLTAGE_WARNING_SECONDS*ADC_CYCLES_PER_SECOND)  // N seconds between LVP warnings
     #define LVP_LOWPASS_STRENGTH ADC_CYCLES_PER_SECOND  // lowpass for one second
 
+    #ifdef NO_LVP_WHILE_BUTTON_PRESSED
+    // don't run if button is currently being held
+    // (because the button causes a reading of zero volts)
+    if (button_last_state) return;
+    #endif
+
     uint16_t measurement = adc_values[0];  // latest 10-bit ADC reading
 
     #ifdef USE_VOLTAGE_LOWPASS
