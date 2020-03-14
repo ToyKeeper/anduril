@@ -178,7 +178,7 @@ void WDT_inner() {
     #endif
 
     #if defined(USE_LVP) || defined(USE_THERMAL_REGULATION)
-    // start a new ADC measurement every 16 ticks
+    // enable the deferred ADC handler every 32 ticks
     adc_trigger ++;
     if (0 == (adc_trigger & 31)) {
         // in case we're in standby mode and the ADC is turned off

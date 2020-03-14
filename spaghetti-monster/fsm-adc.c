@@ -288,6 +288,9 @@ static inline void ADC_temperature_handler() {
     // acceptable temperature window size in C
     #define THERM_WINDOW_SIZE 3
 
+    // TODO: make this configurable per build target?
+    //       (shorter time for hosts with a lower power-to-mass ratio)
+    //       (because then it'll have smaller responses)
     #define NUM_TEMP_HISTORY_STEPS 8  // don't change; it'll break stuff
     static uint8_t history_step = 0;
     static uint16_t temperature_history[NUM_TEMP_HISTORY_STEPS];
@@ -365,21 +368,21 @@ static inline void ADC_temperature_handler() {
     } else {  // it has been long enough since the last warning
 
         // Too hot?
-        // (if it's too hot and not getting colder...)
-        if ((offset > 0) && (diff > (-1))) {
+        // (if it's too hot and still getting warmer...)
+        if ((offset > 0) && (diff > 0)) {
             // reset counters
             temperature_timer = TEMPERATURE_TIMER_START;
             // how far above the ceiling?
             //int16_t howmuch = (offset >> 6) * THERM_RESPONSE_MAGNITUDE / 128;
-            int16_t howmuch = (offset >> 1);
+            //int16_t howmuch = (offset >> 1);
+            int16_t howmuch = offset;
             // send a warning
             emit(EV_temperature_high, howmuch);
         }
 
         // Too cold?
-        // (if it's too cold and not getting warmer...)
-        else if ((offset < -(THERM_WINDOW_SIZE << 1))
-              && (diff < (1))) {
+        // (if it's too cold and still getting colder...)
+        else if ((offset < -(THERM_WINDOW_SIZE << 1)) && (diff < 0)) {
             // reset counters
             temperature_timer = TEMPERATURE_TIMER_START;
             // how far below the floor?
@@ -387,7 +390,7 @@ static inline void ADC_temperature_handler() {
             int16_t howmuch = ((-offset) - (THERM_WINDOW_SIZE<<1)) >> 1;
             // send a notification (unless voltage is low)
             // (LVP and underheat warnings fight each other)
-            if (voltage > VOLTAGE_LOW)
+            if (voltage > (VOLTAGE_LOW + 1))
                 emit(EV_temperature_low, howmuch);
         }
 

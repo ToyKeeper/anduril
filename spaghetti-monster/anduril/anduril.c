@@ -963,7 +963,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         if (diff) {
             uint16_t ticks_per_adjust = 256;
             if (diff < 0) {
-                diff = -diff;
+                //diff = -diff;
                 if (actual_level > THERM_FASTER_LEVEL) {
                     #ifdef THERM_HARD_TURBO_DROP
                     ticks_per_adjust >>= 2;
@@ -976,7 +976,8 @@ uint8_t steady_state(Event event, uint16_t arg) {
             }
             while (diff) {
                 ticks_per_adjust >>= 1;
-                diff >>= 1;
+                //diff >>= 1;
+                diff /= 2;  // because shifting produces weird behavior
             }
             if (ticks_since_adjust > ticks_per_adjust)
             {
@@ -1040,9 +1041,11 @@ uint8_t steady_state(Event event, uint16_t arg) {
     // temperature is within target window
     // (so stop trying to adjust output)
     else if (event == EV_temperature_okay) {
-        // if we're still adjusting output...  stop
-        gradual_target = actual_level;
-        //set_level_gradually(actual_level);
+        // if we're still adjusting output...  stop after the current step
+        if (gradual_target > actual_level)
+            gradual_target = actual_level + 1;
+        else if (gradual_target < actual_level)
+            gradual_target = actual_level - 1;
         return MISCHIEF_MANAGED;
     }
     #endif  // ifdef USE_SET_LEVEL_GRADUALLY
