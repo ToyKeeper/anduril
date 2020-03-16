@@ -280,6 +280,10 @@ static inline void ADC_temperature_handler() {
     #ifndef THERM_LOOKAHEAD
     #define THERM_LOOKAHEAD 4  // can be tweaked per build target
     #endif
+    // reduce frequency of minor warnings
+    #ifndef THERM_NEXT_WARNING_THRESHOLD
+    #define THERM_NEXT_WARNING_THRESHOLD 24
+    #endif
     // fine-grained adjustment
     // how proportional should the adjustments be?  (not used yet)
     #ifndef THERM_RESPONSE_MAGNITUDE
@@ -294,7 +298,7 @@ static inline void ADC_temperature_handler() {
     #define NUM_TEMP_HISTORY_STEPS 8  // don't change; it'll break stuff
     static uint8_t history_step = 0;
     static uint16_t temperature_history[NUM_TEMP_HISTORY_STEPS];
-    static uint8_t temperature_timer = 0;
+    static int8_t warning_threshold = 0;
     // N seconds between thermal regulation events
     #define TEMPERATURE_TIMER_START (THERMAL_WARNING_SECONDS*ADC_CYCLES_PER_SECOND)
 
@@ -363,15 +367,17 @@ static inline void ADC_temperature_handler() {
     int16_t offset = pt - ceil;
 
 
-    if (temperature_timer) {
-        temperature_timer --;
-    } else {  // it has been long enough since the last warning
+    //int16_t below = offset + (THERM_WINDOW_SIZE<<1);
 
-        // Too hot?
-        // (if it's too hot and still getting warmer...)
-        if ((offset > 0) && (diff > 0)) {
-            // reset counters
-            temperature_timer = TEMPERATURE_TIMER_START;
+    // Too hot?
+    // (if it's too hot and still getting warmer...)
+    if ((offset > 0) && (diff > 0)) {
+        // accumulated error isn't big enough yet to send a warning
+        if (warning_threshold > 0) {
+            warning_threshold -= offset;
+        } else {  // error is big enough; send a warning
+            warning_threshold = THERM_NEXT_WARNING_THRESHOLD - offset;
+
             // how far above the ceiling?
             //int16_t howmuch = (offset >> 6) * THERM_RESPONSE_MAGNITUDE / 128;
             //int16_t howmuch = (offset >> 1);
@@ -379,32 +385,42 @@ static inline void ADC_temperature_handler() {
             // send a warning
             emit(EV_temperature_high, howmuch);
         }
+    }
 
-        // Too cold?
-        // (if it's too cold and still getting colder...)
-        else if ((offset < -(THERM_WINDOW_SIZE << 1)) && (diff < 0)) {
-            // reset counters
-            temperature_timer = TEMPERATURE_TIMER_START;
+    // Too cold?
+    // (if it's too cold and still getting colder...)
+    // the temperature is this far below the floor:
+    #define BELOW (offset + (THERM_WINDOW_SIZE<<1))
+    //else if ((offset < -(THERM_WINDOW_SIZE << 1)) && (diff < 0)) {
+    else if ((BELOW < 0) && (diff < 0)) {
+        // accumulated error isn't big enough yet to send a warning
+        if (warning_threshold < 0) {
+            //warning_threshold += ((THERM_WINDOW_SIZE<<1) - offset);
+            //warning_threshold -= (offset + (THERM_WINDOW_SIZE<<1));
+            warning_threshold -= BELOW;
+        } else {  // error is big enough; send a warning
+            //warning_threshold = (-THERM_NEXT_WARNING_THRESHOLD) - (offset + (THERM_WINDOW_SIZE<<1));
+            warning_threshold = (-THERM_NEXT_WARNING_THRESHOLD) - BELOW;
+
             // how far below the floor?
             //int16_t howmuch = (((-offset) - (THERM_WINDOW_SIZE<<6)) >> 7) * THERM_WINDOW_SIZE / 128;
-            int16_t howmuch = ((-offset) - (THERM_WINDOW_SIZE<<1)) >> 1;
+            //int16_t howmuch = ((-offset) - (THERM_WINDOW_SIZE<<1)) >> 1;
+            int16_t howmuch = (-BELOW) >> 1;
             // send a notification (unless voltage is low)
             // (LVP and underheat warnings fight each other)
             if (voltage > (VOLTAGE_LOW + 1))
                 emit(EV_temperature_low, howmuch);
         }
+    }
+    #undef BELOW
 
-        // Goldilocks?
-        // (temperature is within target window, or at least heading toward it)
-        else {
-            // reset counters
-            temperature_timer = TEMPERATURE_TIMER_START;
-            // send a notification (unless voltage is low)
-            // (LVP and temp-okay events fight each other)
-            if (voltage > VOLTAGE_LOW)
-                emit(EV_temperature_okay, 0);
-        }
-
+    // Goldilocks?
+    // (temperature is within target window, or at least heading toward it)
+    else {
+        // send a notification (unless voltage is low)
+        // (LVP and temp-okay events fight each other)
+        if (voltage > VOLTAGE_LOW)
+            emit(EV_temperature_okay, 0);
     }
 }
 #endif
