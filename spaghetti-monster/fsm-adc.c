@@ -155,8 +155,9 @@ ISR(ADC_vect) {
     }
 
     // the next measurement isn't the first
-    //adc_sample_count = 1;
-    adc_sample_count ++;
+    adc_sample_count = 1;
+    // rollover doesn't really matter
+    //adc_sample_count ++;
 
 }
 
