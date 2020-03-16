@@ -8,8 +8,3 @@
 #undef THERM_FASTER_LEVEL
 #endif
 #define THERM_FASTER_LEVEL 144  // throttle back faster when high
-
-// no need to be extra-careful on this light
-#ifdef THERM_HARD_TURBO_DROP
-#undef THERM_HARD_TURBO_DROP
-#endif
