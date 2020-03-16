@@ -299,8 +299,6 @@ static inline void ADC_temperature_handler() {
     static uint8_t history_step = 0;
     static uint16_t temperature_history[NUM_TEMP_HISTORY_STEPS];
     static int8_t warning_threshold = 0;
-    // N seconds between thermal regulation events
-    #define TEMPERATURE_TIMER_START (THERMAL_WARNING_SECONDS*ADC_CYCLES_PER_SECOND)
 
     if (reset_thermal_history) { // wipe out old data
         // don't keep resetting
@@ -344,30 +342,12 @@ static inline void ADC_temperature_handler() {
     uint16_t pt;  // predicted temperature
     pt = measurement + (diff * THERM_LOOKAHEAD);
 
-    /* seems unnecessary; simply sending repeated warnings has a similar effect
-    // P[I]D: average of recent measurements
-    uint16_t avg = 0;
-    for(uint8_t i=0; i<NUM_TEMP_HISTORY_STEPS; i++)
-        avg += (temperature_history[i]>>3);
-    */
-
     // convert temperature limit from C to raw 16-bit ADC units
     // C = (ADC>>6) - 275 + THERM_CAL_OFFSET + therm_cal_offset;
     // ... so ...
     // (C + 275 - THERM_CAL_OFFSET - therm_cal_offset) << 6 = ADC;
     uint16_t ceil = (therm_ceil + 275 - therm_cal_offset - THERM_CAL_OFFSET) << 1;
-    //uint16_t floor = ceil - (THERM_WINDOW_SIZE << 6);
-    /* average of I and D terms
-    int16_t offset_pt, offset_avg;
-    offset_pt = (pt - ceil) >> 1;
-    offset_avg = (avg - ceil) >> 1;
-    int16_t offset = offset_pt + offset_avg;
-    //int16_t offset = (pt - ceil) + (avg - ceil);
-    */
     int16_t offset = pt - ceil;
-
-
-    //int16_t below = offset + (THERM_WINDOW_SIZE<<1);
 
     // Too hot?
     // (if it's too hot and still getting warmer...)
@@ -379,8 +359,7 @@ static inline void ADC_temperature_handler() {
             warning_threshold = THERM_NEXT_WARNING_THRESHOLD - offset;
 
             // how far above the ceiling?
-            //int16_t howmuch = (offset >> 6) * THERM_RESPONSE_MAGNITUDE / 128;
-            //int16_t howmuch = (offset >> 1);
+            //int16_t howmuch = offset * THERM_RESPONSE_MAGNITUDE / 128;
             int16_t howmuch = offset;
             // send a warning
             emit(EV_temperature_high, howmuch);
@@ -391,20 +370,15 @@ static inline void ADC_temperature_handler() {
     // (if it's too cold and still getting colder...)
     // the temperature is this far below the floor:
     #define BELOW (offset + (THERM_WINDOW_SIZE<<1))
-    //else if ((offset < -(THERM_WINDOW_SIZE << 1)) && (diff < 0)) {
     else if ((BELOW < 0) && (diff < 0)) {
         // accumulated error isn't big enough yet to send a warning
         if (warning_threshold < 0) {
-            //warning_threshold += ((THERM_WINDOW_SIZE<<1) - offset);
-            //warning_threshold -= (offset + (THERM_WINDOW_SIZE<<1));
             warning_threshold -= BELOW;
         } else {  // error is big enough; send a warning
-            //warning_threshold = (-THERM_NEXT_WARNING_THRESHOLD) - (offset + (THERM_WINDOW_SIZE<<1));
             warning_threshold = (-THERM_NEXT_WARNING_THRESHOLD) - BELOW;
 
             // how far below the floor?
-            //int16_t howmuch = (((-offset) - (THERM_WINDOW_SIZE<<6)) >> 7) * THERM_WINDOW_SIZE / 128;
-            //int16_t howmuch = ((-offset) - (THERM_WINDOW_SIZE<<1)) >> 1;
+            // int16_t howmuch = ((-BELOW) >> 1) * THERM_RESPONSE_MAGNITUDE / 128;
             int16_t howmuch = (-BELOW) >> 1;
             // send a notification (unless voltage is low)
             // (LVP and underheat warnings fight each other)
