@@ -33,7 +33,7 @@
 #ifndef AUXLED_PIN
 #define AUXLED_PIN PB2      // pin 7
 #endif
-#define ADC_PRSCL   0x06    // clk/64
+#define ADC_PRSCL   0x07    // clk/128
 
 // average drop across diode on this hardware
 #ifndef VOLTAGE_FUDGE_FACTOR

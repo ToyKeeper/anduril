@@ -46,19 +46,41 @@ uint8_t blink_digit(uint8_t num) {
     //StatePtr old_state = current_state;
 
     // "zero" digit gets a single short blink
-    uint8_t ontime = BLINK_SPEED * 2 / 10;
+    uint8_t ontime = BLINK_SPEED * 2 / 12;
     if (!num) { ontime = 8; num ++; }
 
     for (; num>0; num--) {
         set_level(BLINK_BRIGHTNESS);
         nice_delay_ms(ontime);
         set_level(0);
-        nice_delay_ms(BLINK_SPEED * 3 / 10);
+        nice_delay_ms(BLINK_SPEED * 3 / 12);
     }
-    return nice_delay_ms(BLINK_SPEED * 5 / 10);
+    return nice_delay_ms(BLINK_SPEED * 8 / 12);
 }
 #endif
 
+#ifdef USE_BLINK_BIG_NUM
+uint8_t blink_big_num(uint16_t num) {
+    uint16_t digits[] = { 10000, 1000, 100, 10, 1 };
+    uint8_t started = 0;
+    for (uint8_t digit=0; digit<sizeof(digits)/sizeof(uint16_t); digit++) {
+        uint16_t scale = digits[digit];
+        if (num >= scale) {
+            started = 1;
+        }
+        if (started) {
+            uint8_t digit = 0;
+            while (num >= scale) {
+                num -= scale;
+                digit ++;
+            }
+            if (! blink_digit(digit)) return 0;
+        }
+    }
+
+    return nice_delay_ms(1000);
+}
+#endif
 #ifdef USE_BLINK_NUM
 uint8_t blink_num(uint8_t num) {
     //StatePtr old_state = current_state;

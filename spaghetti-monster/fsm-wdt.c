@@ -111,7 +111,7 @@ void WDT_inner() {
     #ifdef TICK_DURING_STANDBY
     // handle standby mode specially
     if (go_to_standby) {
-        // emit a halfsleep tick, and process it
+        // emit a sleep tick, and process it
         emit(EV_sleep_tick, ticks_since_last);
         process_emissions();
 
@@ -119,9 +119,9 @@ void WDT_inner() {
         return;  // no sleep LVP needed if nothing drains power while off
         #else
         // stop here, usually...  but proceed often enough for sleep LVP to work
-        if (0 != (ticks_since_last & 0x7f)) return;
+        if (0 != (ticks_since_last & 0x3f)) return;
 
-        adc_trigger = 255;  // make sure a measurement will happen
+        adc_trigger = 0;  // make sure a measurement will happen
         ADC_on();  // enable ADC voltage measurement functions temporarily
         #endif
     }
@@ -178,13 +178,13 @@ void WDT_inner() {
     #endif
 
     #if defined(USE_LVP) || defined(USE_THERMAL_REGULATION)
-    // start a new ADC measurement every 4 ticks
-    adc_trigger ++;
-    if (0 == (adc_trigger & 3)) {
+    // enable the deferred ADC handler once in a while
+    if (! adc_trigger) {
         ADC_start_measurement();
-        irq_adc_stable = 0;
-        adcint_enable = 1;
+        adc_deferred_enable = 1;
     }
+    // timing for the ADC handler is every 32 ticks (~2Hz)
+    adc_trigger = (adc_trigger + 1) & 31;
     #endif
 }
 
