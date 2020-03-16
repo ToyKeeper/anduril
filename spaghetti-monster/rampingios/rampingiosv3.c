@@ -123,6 +123,7 @@ uint8_t ramp_config_state(Event event, uint16_t arg);
 uint8_t battcheck_state(Event event, uint16_t arg);
 #endif
 #ifdef USE_THERMAL_REGULATION
+#define USE_BLINK_NUM
 uint8_t tempcheck_state(Event event, uint16_t arg);
 uint8_t thermal_config_state(Event event, uint16_t arg);
 #endif
@@ -930,14 +931,15 @@ void thermal_config_save() {
     // calibrate room temperature
     val = config_state_values[0];
     if (val) {
-        int8_t rawtemp = (temperature >> 1) - therm_cal_offset;
+        int8_t rawtemp = temperature - therm_cal_offset;
         therm_cal_offset = val - rawtemp;
+        reset_thermal_history = 1;  // invalidate all recent temperature data
     }
 
     val = config_state_values[1];
     if (val) {
         // set maximum heat limit
-        therm_ceil = 30 + val;
+        therm_ceil = 30 + val - 1;
     }
     if (therm_ceil > MAX_THERM_CEIL) therm_ceil = MAX_THERM_CEIL;
 }
@@ -966,9 +968,9 @@ uint8_t beacon_config_state(Event event, uint16_t arg) {
 inline void beacon_mode_iter() {
     // one iteration of main loop()
     set_level(memorized_level);
-    nice_delay_ms(500);
+    nice_delay_ms(100);
     set_level(0);
-    nice_delay_ms(((beacon_seconds) * 1000) - 500);
+    nice_delay_ms(((beacon_seconds) * 1000) - 100);
 }
 #endif  // #ifdef USE_BEACON_MODE
 
@@ -1235,7 +1237,7 @@ void loop() {
     #ifdef USE_THERMAL_REGULATION
     // TODO: blink out therm_ceil during thermal_config_state?
     else if (state == tempcheck_state) {
-        blink_num(temperature>>1);
+        blink_num(temperature);
         nice_delay_ms(1000);
     }
     #endif
