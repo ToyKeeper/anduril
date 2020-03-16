@@ -52,8 +52,8 @@
 // the KR4 runs very very hot on turbo, so be extra careful
 //#define THERM_HARD_TURBO_DROP
 
-// stop panicking at ~70% power or ~600 lm
-#define THERM_FASTER_LEVEL 120
+// stop panicking at ~25% power or ~1000 lm
+#define THERM_FASTER_LEVEL 100
 // respond to thermal changes faster
 #define THERMAL_WARNING_SECONDS 3
 #define THERMAL_UPDATE_SPEED 1
