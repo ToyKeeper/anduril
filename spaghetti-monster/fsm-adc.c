@@ -291,7 +291,7 @@ static inline void ADC_temperature_handler() {
     #define THERM_RESPONSE_MAGNITUDE 128
     #endif
     // acceptable temperature window size in C
-    #define THERM_WINDOW_SIZE 3
+    #define THERM_WINDOW_SIZE 2
 
     // TODO: make this configurable per build target?
     //       (shorter time for hosts with a lower power-to-mass ratio)
@@ -349,6 +349,19 @@ static inline void ADC_temperature_handler() {
     // (C + 275 - THERM_CAL_OFFSET - therm_cal_offset) << 6 = ADC;
     uint16_t ceil = (therm_ceil + 275 - therm_cal_offset - THERM_CAL_OFFSET) << 1;
     int16_t offset = pt - ceil;
+
+    // bias small errors toward zero, while leaving large errors mostly unaffected
+    // (a diff of 1 C is 2 ADC units, * 4 for therm lookahead, so it becomes 8)
+    // (but a diff of 1 C should only send a warning of magnitude 1)
+    // (this also makes it only respond to small errors at the time the error
+    // happened, not after the temperature has stabilized)
+    for(uint8_t foo=0; foo<5; foo++) {
+        if (offset > 0) {
+            offset --;
+        } else if (offset < 0) {
+            offset ++;
+        }
+    }
 
     // Too hot?
     // (if it's too hot and still getting warmer...)
