@@ -73,8 +73,8 @@ void sleep_until_eswitch_pressed()
             go_to_standby = 0;
         }
         if (irq_adc) {  // ADC done measuring
-            adcint_enable = 1;
-            ADC_inner();
+            adc_deferred_enable = 1;
+            adc_deferred();
             //ADC_off();  // takes care of itself
             //irq_adc = 0;  // takes care of itself
         }

@@ -24,8 +24,4 @@
 
 // stop panicking at ~30% power or ~1200 lm
 #define THERM_FASTER_LEVEL 105
-// respond to thermal changes faster
-#define THERMAL_WARNING_SECONDS 3
-#define THERMAL_UPDATE_SPEED 1
-#define THERM_PREDICTION_STRENGTH 4
 
