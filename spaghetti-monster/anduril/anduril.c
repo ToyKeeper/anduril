@@ -22,7 +22,7 @@
 // Anduril config file name (set it here or define it at the gcc command line)
 //#define CONFIGFILE cfg-blf-q8.h
 
-#define USE_LVP  // FIXME: won't build when this option is turned off
+#define USE_LVP
 
 // parameters for this defined below or per-driver
 #define USE_THERMAL_REGULATION
@@ -275,6 +275,7 @@ void sos_blink(uint8_t num, uint8_t dah);
 uint8_t battcheck_state(Event event, uint16_t arg);
 #endif
 #ifdef USE_THERMAL_REGULATION
+#define USE_BLINK_NUM
 uint8_t tempcheck_state(Event event, uint16_t arg);
 uint8_t thermal_config_state(Event event, uint16_t arg);
 #endif
@@ -497,6 +498,7 @@ volatile uint8_t beacon_seconds = 2;
 #endif
 
 #ifdef USE_VERSION_CHECK
+#define USE_BLINK_DIGIT
 #include "version.h"
 const PROGMEM uint8_t version_number[] = VERSION_NUMBER;
 uint8_t version_check_state(Event event, uint16_t arg);
@@ -1585,11 +1587,13 @@ uint8_t tempcheck_state(Event event, uint16_t arg) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_BATTCHECK
     // 2 clicks: battcheck mode
     else if (event == EV_2clicks) {
         set_state(battcheck_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #endif
     // 4 clicks: thermal config mode
     else if (event == EV_4clicks) {
         push_state(thermal_config_state, 0);
@@ -1615,7 +1619,7 @@ uint8_t beacon_state(Event event, uint16_t arg) {
         set_state(sos_state, 0);
         #elif defined(USE_THERMAL_REGULATION)
         set_state(tempcheck_state, 0);
-        #else
+        #elif defined(USE_BATTCHECK)
         set_state(battcheck_state, 0);
         #endif
         return MISCHIEF_MANAGED;
@@ -1997,6 +2001,7 @@ uint8_t muggle_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif
+    #ifdef USE_LVP
     // low voltage is handled specially in muggle mode
     else if(event == EV_voltage_low) {
         uint8_t lvl = (actual_level >> 1) + (actual_level >> 2);
@@ -2007,6 +2012,7 @@ uint8_t muggle_state(Event event, uint16_t arg) {
         }
         return MISCHIEF_MANAGED;
     }
+    #endif
 
     return EVENT_NOT_HANDLED;
 }

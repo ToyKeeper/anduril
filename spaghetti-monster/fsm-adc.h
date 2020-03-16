@@ -52,7 +52,9 @@ void adc_deferred();  // do the actual ADC-related calculations
 
 static inline void ADC_voltage_handler();
 volatile uint8_t voltage = 0;
+#ifdef USE_LVP
 void low_voltage();
+#endif
 
 #ifdef USE_BATTCHECK
 void battcheck();
@@ -67,10 +69,6 @@ void battcheck();
 
 
 #ifdef USE_THERMAL_REGULATION
-// default 1 seconds between thermal regulation events
-#ifndef THERMAL_WARNING_SECONDS
-#define THERMAL_WARNING_SECONDS 1
-#endif
 // try to keep temperature below 45 C
 #ifndef DEFAULT_THERM_CEIL
 #define DEFAULT_THERM_CEIL 45
@@ -83,14 +81,10 @@ void battcheck();
 #ifndef THERM_CAL_OFFSET
 #define THERM_CAL_OFFSET 0
 #endif
-// temperature now, in C (ish) * 2  (14.1 fixed-point)
+// temperature now, in C (ish)
 volatile int16_t temperature;
-// temperature in a few seconds, in C (ish) * 2  (14.1 fixed-point)
-volatile int16_t projected_temperature;  // Fight the future!
 uint8_t therm_ceil = DEFAULT_THERM_CEIL;
 int8_t therm_cal_offset = 0;
-//void low_temperature();
-//void high_temperature();
 volatile uint8_t reset_thermal_history = 1;
 static inline void ADC_temperature_handler();
 #endif  // ifdef USE_THERMAL_REGULATION

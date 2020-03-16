@@ -119,8 +119,8 @@ static inline uint8_t calc_voltage_divider(uint16_t value) {
 }
 #endif
 
-// Each full cycle runs ~4X per second with just voltage enabled,
-// or ~2X per second with voltage and temperature.
+// Each full cycle runs ~2X per second with just voltage enabled,
+// or ~1X per second with voltage and temperature.
 #if defined(USE_LVP) && defined(USE_THERMAL_REGULATION)
 #define ADC_CYCLES_PER_SECOND 1
 #else
@@ -276,6 +276,7 @@ static inline void ADC_voltage_handler() {
 
 
 #ifdef USE_THERMAL_REGULATION
+// generally happens once per second while awake
 static inline void ADC_temperature_handler() {
     // coarse adjustment
     #ifndef THERM_LOOKAHEAD

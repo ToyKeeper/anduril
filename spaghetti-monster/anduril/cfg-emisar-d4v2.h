@@ -37,22 +37,10 @@
 #define RAMP_DISCRETE_CEIL RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 7
 
-// optional, makes initial turbo step-down faster so first peak isn't as hot
-// the D4 runs very very hot, so be extra careful
-//#define THERM_HARD_TURBO_DROP
-
 // stop panicking at ~30% power or ~1200 lm
 #define THERM_FASTER_LEVEL 105
-// respond to thermal changes faster
-#define THERMAL_WARNING_SECONDS 3
-#define THERMAL_UPDATE_SPEED 1
-#define THERM_PREDICTION_STRENGTH 4
-//#define THERM_RESPONSE_MAGNITUDE 128
 
 // easier access to thermal config mode, for Emisar
 #define USE_TENCLICK_THERMAL_CONFIG
 
 #define THERM_CAL_OFFSET 5
-
-// attiny1634 has enough space to smooth out voltage readings
-#define USE_VOLTAGE_LOWPASS

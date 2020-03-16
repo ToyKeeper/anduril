@@ -87,10 +87,6 @@ void sleep_until_eswitch_pressed()
     #ifdef USE_THERMAL_REGULATION
     // forget what the temperature was last time we were on
     reset_thermal_history = 1;
-    // FIXME: not sure if this should be here
-    // (the intent is to make sure temperature gets measured before
-    //  thermal logic gets executed)
-    //set_admux_therm();
     #endif
 
     // go back to normal running mode
