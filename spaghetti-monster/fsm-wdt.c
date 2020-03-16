@@ -180,13 +180,6 @@ void WDT_inner() {
     #if defined(USE_LVP) || defined(USE_THERMAL_REGULATION)
     // enable the deferred ADC handler once in a while
     if (! adc_trigger) {
-        /* redundant; it was already turned on earlier in this function
-        // in case we're in standby mode and the ADC is turned off
-        if (go_to_standby) {
-            //set_admux_voltage();
-            ADC_on();
-        }
-        */
         ADC_start_measurement();
         adc_deferred_enable = 1;
     }
