@@ -22,7 +22,6 @@
 #define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 32
 #define USE_DELAY_MS
-#define USE_DELAY_4MS
 #define USE_DELAY_ZERO
 #define USE_RAMPING
 #define USE_BATTCHECK
@@ -353,7 +352,7 @@ void loop() {
         battcheck();
     }
     else if (current_state == tempcheck_state) {
-        blink_num(projected_temperature>>2);
+        blink_num(temperature);
         nice_delay_ms(1000);
     }
     #endif

@@ -147,7 +147,7 @@ In more detail, this is what each blinky / utility mode does:
        can reach before it will start doing thermal regulation to keep 
        itself from overheating.  Click once per degree C above 30.  For 
        example, to set the limit to 50 C, click 20 times.  The default 
-       is 45 C.
+       is 45 C, and the highest value it will allow is 70 C.
 
 
 Strobe / Mood Modes
