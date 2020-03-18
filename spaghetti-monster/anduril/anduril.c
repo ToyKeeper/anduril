@@ -96,6 +96,10 @@
 //#define USE_SOS_MODE_IN_FF_GROUP  // put SOS in the "boring strobes" mode
 //#define USE_SOS_MODE_IN_BLINKY_GROUP  // put SOS in the blinkies mode group
 
+// cut clock speed at very low modes for better efficiency
+// (defined here so config files can override it)
+#define USE_DYNAMIC_UNDERCLOCKING
+
 /***** specific settings for known driver types *****/
 #include "tk.h"
 #include incfile(CONFIGFILE)
@@ -135,7 +139,6 @@
 #endif
 #endif
 #define USE_IDLE_MODE  // reduce power use while awake and no tasks are pending
-#define USE_DYNAMIC_UNDERCLOCKING  // cut clock speed at very low modes for better efficiency
 
 // full FET strobe can be a bit much...  use max regulated level instead,
 // if there's a bright enough regulated level
@@ -320,7 +323,9 @@ void blip();
 void indicator_blink(uint8_t arg);
 #endif
 #if defined(USE_AUX_RGB_LEDS) && defined(TICK_DURING_STANDBY)
+uint8_t setting_rgb_mode_now = 0;
 void rgb_led_update(uint8_t mode, uint8_t arg);
+void rgb_led_voltage_readout(uint8_t bright);
 /*
  * 0: R
  * 1: RG
@@ -332,6 +337,15 @@ void rgb_led_update(uint8_t mode, uint8_t arg);
  * 7: rainbow
  * 8: voltage
  */
+const PROGMEM uint8_t rgb_led_colors[] = {
+    0b00000001,  // 0: red
+    0b00000101,  // 1: yellow
+    0b00000100,  // 2: green
+    0b00010100,  // 3: cyan
+    0b00010000,  // 4: blue
+    0b00010001,  // 5: purple
+    0b00010101,  // 6: white
+};
 #define RGB_LED_NUM_COLORS 10
 #define RGB_LED_NUM_PATTERNS 4
 #ifndef RGB_LED_OFF_DEFAULT
@@ -683,6 +697,7 @@ uint8_t off_state(Event event, uint16_t arg) {
     }
     // 7 clicks (hold last): change RGB aux LED color
     else if (event == EV_click7_hold) {
+        setting_rgb_mode_now = 1;
         if (0 == (arg & 0x3f)) {
             uint8_t mode = (rgb_led_off_mode & 0x0f) + 1;
             mode = mode % RGB_LED_NUM_COLORS;
@@ -693,6 +708,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     else if (event == EV_click7_hold_release) {
+        setting_rgb_mode_now = 0;
         save_config();
         return MISCHIEF_MANAGED;
     }
@@ -1261,8 +1277,12 @@ inline void party_tactical_strobe_mode_iter(uint8_t st) {
     if (0) {}  // placeholde0
     #ifdef USE_PARTY_STROBE_MODE
     else if (st == party_strobe_e) {  // party strobe
+        #ifdef PARTY_STROBE_ONTIME
+        nice_delay_ms(PARTY_STROBE_ONTIME);
+        #else
         if (del < 42) delay_zero();
         else nice_delay_ms(1);
+        #endif
     }
     #endif
     #ifdef USE_TACTICAL_STROBE_MODE
@@ -1784,6 +1804,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     }
     // click, click, hold: change RGB aux LED color
     else if (event == EV_click3_hold) {
+        setting_rgb_mode_now = 1;
         if (0 == (arg & 0x3f)) {
             uint8_t mode = (rgb_led_lockout_mode & 0x0f) + 1;
             mode = mode % RGB_LED_NUM_COLORS;
@@ -1795,6 +1816,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     }
     // click, click, hold, release: save new color
     else if (event == EV_click3_hold_release) {
+        setting_rgb_mode_now = 0;
         save_config();
         return MISCHIEF_MANAGED;
     }
@@ -1850,9 +1872,14 @@ uint8_t momentary_state(Event event, uint16_t arg) {
             }
         }
         else {
-            if (arg > TICKS_PER_SECOND*15) {  // sleep after 15 seconds
+            if (arg > TICKS_PER_SECOND*5) {  // sleep after 5 seconds
                 go_to_standby = 1;  // sleep while light is off
-                // TODO: lighted button should use lockout config?
+                // turn off lighted button
+                #ifdef USE_INDICATOR_LED
+                indicator_led(0);
+                #elif defined(USE_AUX_RGB_LEDS)
+                rgb_led_update(0, 0);
+                #endif
             }
         }
         return MISCHIEF_MANAGED;
@@ -1980,6 +2007,9 @@ uint8_t muggle_state(Event event, uint16_t arg) {
         // turn off, but don't go to the main "off" state
         if (muggle_off_mode) {
             if (arg > TICKS_PER_SECOND*1) {  // sleep after 1 second
+                #ifdef USE_AUX_RGB_LEDS_WHILE_ON
+                rgb_led_set(0);
+                #endif
                 go_to_standby = 1;  // sleep while light is off
             }
         }
@@ -2317,6 +2347,27 @@ void indicator_blink(uint8_t arg) {
 #endif
 
 #if defined(USE_AUX_RGB_LEDS) && defined(TICK_DURING_STANDBY)
+uint8_t voltage_to_rgb() {
+    uint8_t levels[] = {
+    // voltage, color
+          0, 0, // 0, R
+         33, 1, // 1, R+G
+         35, 2, // 2,   G
+         37, 3, // 3,   G+B
+         39, 4, // 4,     B
+         41, 5, // 5, R + B
+         44, 6, // 6, R+G+B  // skip; looks too similar to G+B
+        255, 6, // 7, R+G+B
+    };
+    uint8_t volts = voltage;
+    if (volts < 29) return 0;
+
+    uint8_t i;
+    for (i = 0;  volts >= levels[i];  i += 2) {}
+    uint8_t color_num = levels[(i - 2) + 1];
+    return pgm_read_byte(rgb_led_colors + color_num);
+}
+
 // do fancy stuff with the RGB aux LEDs
 // mode: 0bPPPPCCCC where PPPP is the pattern and CCCC is the color
 // arg: time slice number
@@ -2342,18 +2393,10 @@ void rgb_led_update(uint8_t mode, uint8_t arg) {
     if ((! go_to_standby) && (pattern > 2)) { pattern = 2; }
 
 
-    uint8_t colors[] = {
-        0b00000001,  // 0: red
-        0b00000101,  // 1: yellow
-        0b00000100,  // 2: green
-        0b00010100,  // 3: cyan
-        0b00010000,  // 4: blue
-        0b00010001,  // 5: purple
-        0b00010101,  // 6: white
-    };
+    const uint8_t *colors = rgb_led_colors;
     uint8_t actual_color = 0;
     if (color < 7) {  // normal color
-        actual_color = colors[color];
+        actual_color = pgm_read_byte(colors + color);
     }
     else if (color == 7) {  // rainbow
         uint8_t speed = 0x03;  // awake speed
@@ -2361,19 +2404,20 @@ void rgb_led_update(uint8_t mode, uint8_t arg) {
         if (0 == (arg & speed)) {
             rainbow = (rainbow + 1) % 6;
         }
-        actual_color = colors[rainbow];
+        actual_color = pgm_read_byte(colors + rainbow);
     }
     else {  // voltage
         // show actual voltage while asleep...
         if (go_to_standby) {
+            actual_color = voltage_to_rgb();
             // choose a color based on battery voltage
-            if (volts >= 38) actual_color = colors[4];
-            else if (volts >= 33) actual_color = colors[2];
-            else actual_color = colors[0];
+            //if (volts >= 38) actual_color = pgm_read_byte(colors + 4);
+            //else if (volts >= 33) actual_color = pgm_read_byte(colors + 2);
+            //else actual_color = pgm_read_byte(colors + 0);
         }
         // ... but during preview, cycle colors quickly
         else {
-            actual_color = colors[((arg>>1) % 3) << 1];
+            actual_color = pgm_read_byte(colors + (((arg>>1) % 3) << 1));
         }
     }
 
@@ -2413,6 +2457,12 @@ void rgb_led_update(uint8_t mode, uint8_t arg) {
     #ifdef USE_BUTTON_LED
     button_led_set(button_led_result);
     #endif
+}
+
+void rgb_led_voltage_readout(uint8_t bright) {
+    uint8_t color = voltage_to_rgb();
+    if (bright) color = color << 1;
+    rgb_led_set(color);
 }
 #endif
 
@@ -2650,6 +2700,10 @@ void setup() {
 void loop() {
 
     StatePtr state = current_state;
+
+    #ifdef USE_AUX_RGB_LEDS_WHILE_ON
+        if (! setting_rgb_mode_now) rgb_led_voltage_readout(1);
+    #endif
 
     if (0) {}
 

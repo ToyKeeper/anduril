@@ -81,10 +81,10 @@ inline void ADC_on()
         set_admux_voltage();
         #ifdef USE_VOLTAGE_DIVIDER
             // disable digital input on divider pin to reduce power consumption
-            DIDR0 |= (1 << VOLTAGE_ADC_DIDR);
+            VOLTAGE_ADC_DIDR |= (1 << VOLTAGE_ADC);
         #else
             // disable digital input on VCC pin to reduce power consumption
-            //DIDR0 |= (1 << ADC_DIDR);  // FIXME: unsure how to handle for VCC pin
+            //VOLTAGE_ADC_DIDR |= (1 << VOLTAGE_ADC);  // FIXME: unsure how to handle for VCC pin
         #endif
         #if (ATTINY == 1634)
             //ACSRA |= (1 << ACD);  // turn off analog comparator to save power
@@ -111,8 +111,8 @@ inline void ADC_off() {
 
 #ifdef USE_VOLTAGE_DIVIDER
 static inline uint8_t calc_voltage_divider(uint16_t value) {
-    // use 9.7 fixed-point to get sufficient precision
-    uint16_t adc_per_volt = ((ADC_44<<7) - (ADC_22<<7)) / (44-22);
+    // use fixed-point to get sufficient precision
+    uint16_t adc_per_volt = ((ADC_44<<5) - (ADC_22<<5)) / (44-22);
     // shift incoming value into a matching position
     uint8_t result = ((value>>1) / adc_per_volt) + VOLTAGE_FUDGE_FACTOR;
     return result;
