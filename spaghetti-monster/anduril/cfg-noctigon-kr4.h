@@ -38,7 +38,7 @@
 #undef USE_DYNAMIC_UNDERCLOCKING
 #endif
 
-#define RAMP_SMOOTH_FLOOR 1
+#define RAMP_SMOOTH_FLOOR 3  // level 1 is unreliable
 #define RAMP_SMOOTH_CEIL 120
 // 10, 28, [46], 65, 83, 101, [120]
 #define RAMP_DISCRETE_FLOOR 10
@@ -59,3 +59,5 @@
 
 #define THERM_CAL_OFFSET 5
 
+// can't reset the normal way because power is connected before the button
+#define USE_SOFT_FACTORY_RESET
