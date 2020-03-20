@@ -231,18 +231,20 @@ uint8_t triangle_wave(uint8_t phase) {
 
 #ifdef USE_REBOOT
 void reboot() {
-    #if 1  // WDT method, safer but larger
+    // put the WDT in hard reset mode, then trigger it
     cli();
-    WDTCR = 0xD8 | WDTO_15MS;
+    #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
+        WDTCR = 0xD8 | WDTO_15MS;
+    #elif (ATTINY == 1634)
+        // allow protected configuration changes for next 4 clock cycles
+        CCP = 0xD8;  // magic number
+        // reset (WDIF + WDE), no WDIE, fastest (16ms) timing (0000)
+        // (DS section 8.5.2 and table 8-4)
+        WDTCSR = 0b10001000;
+    #endif
     sei();
     wdt_reset();
     while (1) {}
-    #else  // raw assembly method, doesn't reset registers or anything
-    __asm__ __volatile__ (
-            "cli" "\n\t"
-            "rjmp 0x00" "\n\t"
-            );
-    #endif
 }
 #endif
 
