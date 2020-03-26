@@ -6,7 +6,7 @@
 #define USE_AUX_RGB_LEDS
 //#define USE_AUX_RGB_LEDS_WHILE_ON
 //#define USE_INDICATOR_LED_WHILE_RAMPING
-#define RGB_LED_OFF_DEFAULT 0x18  // low, voltage
+#define RGB_LED_OFF_DEFAULT 0x17  // low, rainbow
 #define RGB_LED_LOCKOUT_DEFAULT 0x37  // blinking, rainbow
 
 // enable blinking aux LEDs
@@ -42,6 +42,8 @@
 // stop panicking at ~25% power or ~1000 lm
 #define THERM_FASTER_LEVEL 100
 #define MIN_THERM_STEPDOWN DEFAULT_LEVEL
+#define THERM_LOOKAHEAD 6
+#define THERM_NEXT_WARNING_THRESHOLD 12
 
 // easier access to thermal config mode, for Noctigon
 #define USE_TENCLICK_THERMAL_CONFIG
