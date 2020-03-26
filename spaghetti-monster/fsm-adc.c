@@ -362,7 +362,7 @@ static inline void ADC_temperature_handler() {
     // (but a diff of 1 C should only send a warning of magnitude 1)
     // (this also makes it only respond to small errors at the time the error
     // happened, not after the temperature has stabilized)
-    for(uint8_t foo=0; foo<5; foo++) {
+    for(uint8_t foo=0; foo<3; foo++) {
         if (offset > 0) {
             offset --;
         } else if (offset < 0) {
@@ -371,8 +371,8 @@ static inline void ADC_temperature_handler() {
     }
 
     // Too hot?
-    // (if it's too hot and still getting warmer...)
-    if ((offset > 0) && (diff > 0)) {
+    // (if it's too hot and not getting cooler...)
+    if ((offset > 0) && (diff > -1)) {
         // accumulated error isn't big enough yet to send a warning
         if (warning_threshold > 0) {
             warning_threshold -= offset;
