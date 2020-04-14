@@ -490,7 +490,7 @@ volatile strobe_mode_te strobe_type = 0;
 
 #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
 // party / tactical strobe timing
-volatile uint8_t strobe_delays[] = { 40, 67 };  // party strobe, tactical strobe
+volatile uint8_t strobe_delays[] = { 41, 67 };  // party strobe 24 Hz, tactical strobe 10 Hz
 #endif
 
 // bike mode config options
