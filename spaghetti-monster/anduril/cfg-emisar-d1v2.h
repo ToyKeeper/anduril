@@ -3,7 +3,7 @@
 // same as Emisar D4v2, mostly
 #include "cfg-emisar-d4v2.h"
 
-// there are no aux LED on a D1
+// there are no aux LEDs on a D1
 #undef USE_AUX_RGB_LEDS
 // ... and no button LED
 #undef USE_BUTTON_LED
