@@ -377,11 +377,17 @@ static inline void ADC_temperature_handler() {
         if (warning_threshold > 0) {
             warning_threshold -= offset;
         } else {  // error is big enough; send a warning
-            warning_threshold = THERM_NEXT_WARNING_THRESHOLD - offset;
+            //warning_threshold = THERM_NEXT_WARNING_THRESHOLD - offset;
 
             // how far above the ceiling?
             //int16_t howmuch = offset * THERM_RESPONSE_MAGNITUDE / 128;
-            int16_t howmuch = offset;
+            //int16_t howmuch = offset;
+            // increase the amount, except for small values
+            // 1:1, 2:1, 3:3, 4:5, 6:9, 8:13, 10:17, 40:77
+            int16_t howmuch = offset + offset - 3;
+            if (howmuch < 1) howmuch = 1;
+            warning_threshold = THERM_NEXT_WARNING_THRESHOLD - (uint8_t)howmuch;
+
             // send a warning
             emit(EV_temperature_high, howmuch);
         }
