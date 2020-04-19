@@ -286,21 +286,21 @@ static inline void ADC_voltage_handler() {
 static inline void ADC_temperature_handler() {
     // coarse adjustment
     #ifndef THERM_LOOKAHEAD
-    #define THERM_LOOKAHEAD 4  // can be tweaked per build target
+    #define THERM_LOOKAHEAD 4
     #endif
     // reduce frequency of minor warnings
     #ifndef THERM_NEXT_WARNING_THRESHOLD
     #define THERM_NEXT_WARNING_THRESHOLD 24
     #endif
     // fine-grained adjustment
-    // how proportional should the adjustments be?  (not used yet)
+    // how proportional should the adjustments be?
     #ifndef THERM_RESPONSE_MAGNITUDE
     #define THERM_RESPONSE_MAGNITUDE 128
     #endif
     // acceptable temperature window size in C
     #define THERM_WINDOW_SIZE 2
 
-    // TODO: make this configurable per build target?
+    // TODO? make this configurable per build target?
     //       (shorter time for hosts with a lower power-to-mass ratio)
     //       (because then it'll have smaller responses)
     #define NUM_TEMP_HISTORY_STEPS 8  // don't change; it'll break stuff
@@ -377,14 +377,14 @@ static inline void ADC_temperature_handler() {
         if (warning_threshold > 0) {
             warning_threshold -= offset;
         } else {  // error is big enough; send a warning
-            //warning_threshold = THERM_NEXT_WARNING_THRESHOLD - offset;
-
             // how far above the ceiling?
-            //int16_t howmuch = offset * THERM_RESPONSE_MAGNITUDE / 128;
-            //int16_t howmuch = offset;
-            // increase the amount, except for small values
-            // 1:1, 2:1, 3:3, 4:5, 6:9, 8:13, 10:17, 40:77
-            int16_t howmuch = offset + offset - 3;
+            // original method works, but is too slow on some small hosts:
+            // (and typically has a minimum response magnitude of 2 instead of 1)
+            //   int16_t howmuch = offset;
+            // ... so increase the amount, except for small values
+            // (for example, 1:1, 2:1, 3:3, 4:5, 6:9, 8:13, 10:17, 40:77)
+            // ... and let us tune the response per build target if desired
+            int16_t howmuch = (offset + offset - 3) * THERM_RESPONSE_MAGNITUDE / 128;
             if (howmuch < 1) howmuch = 1;
             warning_threshold = THERM_NEXT_WARNING_THRESHOLD - (uint8_t)howmuch;
 
