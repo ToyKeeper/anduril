@@ -36,9 +36,12 @@
 #define MUGGLE_FLOOR RAMP_DISCRETE_FLOOR
 #define MUGGLE_CEILING 70
 
-// stop panicking at ~70% power or ~1200 lm
+// make candle mode wobble more
+#define CANDLE_AMPLITUDE 32
+
+// stop panicking at ~90% power or ~1600 lm
 #undef THERM_FASTER_LEVEL
-#define THERM_FASTER_LEVEL 130
+#define THERM_FASTER_LEVEL 143
 #undef MIN_THERM_STEPDOWN
 #define MIN_THERM_STEPDOWN DEFAULT_LEVEL
 
