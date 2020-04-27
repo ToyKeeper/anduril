@@ -43,7 +43,8 @@
 // stop panicking at ~25% power or ~1000 lm
 #define THERM_FASTER_LEVEL 100
 #define MIN_THERM_STEPDOWN DEFAULT_LEVEL
-#define THERM_NEXT_WARNING_THRESHOLD 16
+#define THERM_NEXT_WARNING_THRESHOLD 16  // accumulate less error before adjusting
+#define THERM_RESPONSE_MAGNITUDE 128  // bigger adjustments
 
 // easier access to thermal config mode, for Noctigon
 #define USE_TENCLICK_THERMAL_CONFIG

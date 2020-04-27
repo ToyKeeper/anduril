@@ -295,7 +295,7 @@ static inline void ADC_temperature_handler() {
     // fine-grained adjustment
     // how proportional should the adjustments be?
     #ifndef THERM_RESPONSE_MAGNITUDE
-    #define THERM_RESPONSE_MAGNITUDE 128
+    #define THERM_RESPONSE_MAGNITUDE 64
     #endif
     // acceptable temperature window size in C
     #define THERM_WINDOW_SIZE 2
