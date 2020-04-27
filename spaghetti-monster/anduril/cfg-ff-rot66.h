@@ -38,9 +38,6 @@
 // regulate down faster when the FET is active, slower otherwise
 #define THERM_FASTER_LEVEL 130  // throttle back faster when high
 
-// play it safe, don't try to regulate above the recommended safe level
-//#define THERM_HARD_TURBO_DROP
-
 // don't do this
 #undef BLINK_AT_RAMP_MIDDLE
 #undef BLINK_AT_RAMP_CEILING

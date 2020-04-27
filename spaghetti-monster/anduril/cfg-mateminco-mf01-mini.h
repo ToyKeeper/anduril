@@ -48,8 +48,3 @@
 
 #define USE_TENCLICK_THERMAL_CONFIG  // by request
 #define THERM_FASTER_LEVEL 130  // throttle back faster when high
-//#define THERM_HARD_TURBO_DROP  // this light is massively overpowered
-#define THERMAL_WARNING_SECONDS 1  // FIXME: increase by 2 after merging newer code
-//#define THERMAL_UPDATE_SPEED 1
-//#define THERM_PREDICTION_STRENGTH 4
-

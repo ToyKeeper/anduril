@@ -42,5 +42,3 @@
 
 // stop panicking at about ~40% power or ~5000 lm
 #define THERM_FASTER_LEVEL 125
-// optional, makes initial turbo step-down faster so first peak isn't as hot
-//#define THERM_HARD_TURBO_DROP
