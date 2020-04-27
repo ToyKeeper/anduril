@@ -71,7 +71,7 @@
 // REFS[1:0] = 1, 0 for internal 1.1V reference
 // other bits reserved
 #define ADMUX_VOLTAGE_DIVIDER 0b10000110
-#define ADC_PRSCL   0x06    // clk/64
+#define ADC_PRSCL   0x07    // clk/128
 
 // Raw ADC readings at 4.4V and 2.2V
 // calibrate the voltage readout here
