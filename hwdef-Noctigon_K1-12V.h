@@ -1,5 +1,5 @@
-#ifndef HWDEF_NOCTIGON_K1_H
-#define HWDEF_NOCTIGON_K1_H
+#ifndef HWDEF_NOCTIGON_K1_12V_H
+#define HWDEF_NOCTIGON_K1_12V_H
 
 /* Noctigon K1 driver layout (attiny1634)
  * (originally known as Emisar D1S V2)
@@ -19,7 +19,7 @@
  *  12    PC3   RESET
  *  13    PC2   (none)
  *  14    PC1   SCK
- *  15    PC0   (none) PWM0A
+ *  15    PC0   boost PMIC enable (PWM0A not used)
  *  16    PB3   main LED PWM (PWM1A)
  *  17    PB2   MISO
  *  18    PB1   MOSI / battery voltage (ADC6)
@@ -55,6 +55,9 @@
 
 #define LED_ENABLE_PIN  PB0    // pin 19, Opamp power
 #define LED_ENABLE_PORT PORTB  // control port for PB0
+
+#define LED_ENABLE2_PIN  PC0    // pin 15, boost PMIC enable
+#define LED_ENABLE2_PORT PORTC  // control port for PC0
 
 
 #define USE_VOLTAGE_DIVIDER  // use a dedicated pin, not VCC, because VCC input is flattened
@@ -101,6 +104,8 @@
 // ... so just hardcode it in each hwdef file instead
 inline void hwdef_setup() {
   // enable output ports
+  // boost PMIC on/off
+  DDRC = (1 << LED_ENABLE2_PIN);
   // Opamp level and Opamp on/off
   DDRB = (1 << PWM1_PIN)
        | (1 << LED_ENABLE_PIN);
@@ -126,7 +131,6 @@ inline void hwdef_setup() {
           ;
 
   // set up e-switch
-  //PORTA = (1 << SWITCH_PIN);  // TODO: configure PORTA / PORTB / PORTC?
   PUEA = (1 << SWITCH_PIN);  // pull-up for e-switch
   SWITCH_PCMSK = (1 << SWITCH_PCINT);  // enable pin change interrupt
 }

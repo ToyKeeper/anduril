@@ -1,6 +1,5 @@
-// Noctigon K1 config options for Anduril
-// (originally known as Emisar D1S v2)
-#include "hwdef-Noctigon_K1.h"
+// Noctigon K1 12V config options for Anduril
+#include "hwdef-Noctigon_K1-12V.h"
 // ATTINY: 1634
 
 // this light can safely run a bit hotter than most
@@ -19,11 +18,11 @@
 #define STANDBY_TICK_SPEED 3  // every 0.128 s
 
 
-// ../../bin/level_calc.py cube 1 150 7135 1 4 1300
+// level_calc.py cube 1 150 7135 0 4 1300
 // (with max_pwm set to 1023)
-// (level 0 flickers and isn't relevant on a thrower, so it's omitted)
+// (level 0 is usable on this light)
 #define RAMP_LENGTH 150
-#define PWM1_LEVELS 1,1,2,2,3,3,4,4,5,6,6,7,8,9,10,11,12,13,14,15,16,17,18,20,21,23,24,26,27,29,31,32,34,36,38,40,43,45,47,49,52,54,57,60,62,65,68,71,74,77,81,84,87,91,95,98,102,106,110,114,118,122,127,131,136,141,145,150,155,160,166,171,176,182,188,193,199,205,211,218,224,231,237,244,251,258,265,272,280,287,295,303,310,319,327,335,344,352,361,370,379,388,397,407,416,426,436,446,457,467,477,488,499,510,521,533,544,556,568,580,592,604,617,629,642,655,668,682,695,709,723,737,751,766,781,795,810,826,841,857,872,888,904,921,937,954,971,988,1005,1023
+#define PWM1_LEVELS 0,0,1,1,2,2,3,3,4,5,5,6,7,8,9,10,11,12,13,14,15,16,17,19,20,22,23,25,26,28,30,31,33,35,37,39,42,44,46,48,51,53,56,59,61,64,67,70,73,76,80,83,86,90,94,97,101,105,109,113,117,122,126,130,135,140,144,149,154,159,165,170,175,181,187,193,198,204,211,217,223,230,236,243,250,257,264,271,279,286,294,302,310,318,326,334,343,351,360,369,378,387,397,406,416,426,436,446,456,466,477,488,499,510,521,532,544,555,567,579,591,604,616,629,642,655,668,682,695,709,723,737,751,766,780,795,810,825,841,856,872,888,904,921,937,954,971,988,1005,1023
 #define MAX_1x7135 50
 
 // the entire ramp is regulated; don't blink halfway up
@@ -60,7 +59,7 @@
 #define USE_TENCLICK_THERMAL_CONFIG
 
 // slow down party strobe; this driver can't pulse for 1ms or less
-#define PARTY_STROBE_ONTIME 2
+#define PARTY_STROBE_ONTIME 4
 
 #define THERM_CAL_OFFSET 5
 

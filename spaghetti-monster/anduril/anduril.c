@@ -355,6 +355,9 @@ const PROGMEM uint8_t rgb_led_colors[] = {
 #ifndef RGB_LED_LOCKOUT_DEFAULT
 #define RGB_LED_LOCKOUT_DEFAULT 0x37  // blinking, rainbow
 #endif
+#ifndef RGB_RAINBOW_SPEED
+#define RGB_RAINBOW_SPEED 0x0f  // change color every 16 frames
+#endif
 uint8_t rgb_led_off_mode = RGB_LED_OFF_DEFAULT;
 uint8_t rgb_led_lockout_mode = RGB_LED_LOCKOUT_DEFAULT;
 #endif
@@ -2400,7 +2403,7 @@ void rgb_led_update(uint8_t mode, uint8_t arg) {
     }
     else if (color == 7) {  // rainbow
         uint8_t speed = 0x03;  // awake speed
-        if (go_to_standby) speed = 0x0f;  // asleep speed
+        if (go_to_standby) speed = RGB_RAINBOW_SPEED;  // asleep speed
         if (0 == (arg & speed)) {
             rainbow = (rainbow + 1) % 6;
         }
