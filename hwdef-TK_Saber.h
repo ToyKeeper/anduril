@@ -28,9 +28,6 @@
 // average drop across diode on this hardware
 #define VOLTAGE_FUDGE_FACTOR 5  // add 0.25V
 
-//#define TEMP_DIDR   ADC4D
-#define TEMP_CHANNEL 0b00001111
-
 #define FAST        0xA3    // fast PWM both channels
 #define PHASE       0xA1    // phase-correct PWM both channels
 

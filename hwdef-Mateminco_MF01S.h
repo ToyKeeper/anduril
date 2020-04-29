@@ -52,8 +52,6 @@
 #define ADC_22 (117*4)
 #endif
 
-#define TEMP_CHANNEL 0b00001111
-
 #define FAST 0xA3           // fast PWM both channels
 #define PHASE 0xA1          // phase-correct PWM both channels
 
