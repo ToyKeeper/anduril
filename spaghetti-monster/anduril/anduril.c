@@ -1854,9 +1854,11 @@ uint8_t momentary_state(Event event, uint16_t arg) {
     // TODO: momentary strobe here?  (for light painting)
 
     // init strobe mode, if relevant
+    #ifdef USE_STROBE_STATE
     if ((event == EV_enter_state) && (momentary_mode == 1)) {
         strobe_state(event, arg);
     }
+    #endif
 
     // light up when the button is pressed; go dark otherwise
     // button is being held
@@ -1882,6 +1884,7 @@ uint8_t momentary_state(Event event, uint16_t arg) {
     //  disconnected for several seconds, so we want to be awake when that
     //  happens to speed up the process)
     else if (event == EV_tick) {
+        #ifdef USE_STROBE_STATE
         if (momentary_active) {
             // 0 = ramping, 1 = strobes
             if (momentary_mode == 1) {
@@ -1889,6 +1892,7 @@ uint8_t momentary_state(Event event, uint16_t arg) {
             }
         }
         else {
+        #endif
             if (arg > TICKS_PER_SECOND*5) {  // sleep after 5 seconds
                 go_to_standby = 1;  // sleep while light is off
                 // turn off lighted button
@@ -1898,7 +1902,9 @@ uint8_t momentary_state(Event event, uint16_t arg) {
                 rgb_led_update(0, 0);
                 #endif
             }
+        #ifdef USE_STROBE_STATE
         }
+        #endif
         return MISCHIEF_MANAGED;
     }
 
