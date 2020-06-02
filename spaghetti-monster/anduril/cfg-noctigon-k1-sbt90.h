@@ -3,6 +3,10 @@
 #include "hwdef-Noctigon_K1-SBT90.h"
 // ATTINY: 1634
 
+// this light can safely run a bit hotter than most
+#undef DEFAULT_THERM_CEIL
+#define DEFAULT_THERM_CEIL 55
+
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
 #define USE_AUX_RGB_LEDS_WHILE_ON
@@ -51,7 +55,7 @@
 #define USE_TENCLICK_THERMAL_CONFIG
 
 // slow down party strobe; this driver can't pulse for 1ms or less
-#define PARTY_STROBE_ONTIME 2
+//#define PARTY_STROBE_ONTIME 2
 
 #define THERM_CAL_OFFSET 5
 
