@@ -59,8 +59,6 @@
 #define VOLTAGE_FUDGE_FACTOR 4  // add 0.20V  (measured 0.22V)
 #endif
 
-#define TEMP_CHANNEL 0b00001111
-
 // this light has aux LEDs under the optic
 #define AUXLED_R_PIN   PA5    // pin 2
 #define AUXLED_G_PIN   PA4    // pin 3

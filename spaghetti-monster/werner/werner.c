@@ -33,6 +33,10 @@
 //#define BATTCHECK_8bars  // FIXME: breaks build
 //#define BATTCHECK_4bars  // FIXME: breaks build
 
+// cut clock speed at very low modes for better efficiency
+// (defined here so config files can override it)
+#define USE_DYNAMIC_UNDERCLOCKING
+
 /***** specific settings for known driver types *****/
 #ifdef CONFIGFILE
 #include "tk.h"
@@ -63,7 +67,6 @@
 #define RAMP_LENGTH 150  // default, if not overridden in a driver cfg file
 #define USE_BATTCHECK
 #define USE_IDLE_MODE  // reduce power use while awake and no tasks are pending
-#define USE_DYNAMIC_UNDERCLOCKING  // cut clock speed at very low modes for better efficiency
 
 // auto-detect how many eeprom bytes
 #define USE_EEPROM
@@ -369,12 +372,14 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_THERMAL_REGULATION
     // 2 clicks: tempcheck mode
     else if (event == EV_2clicks) {
         blink_confirm(2);
         set_state(tempcheck_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #endif
     return EVENT_NOT_HANDLED;
 }
 #endif

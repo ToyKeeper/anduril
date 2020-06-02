@@ -493,7 +493,7 @@ volatile strobe_mode_te strobe_type = 0;
 
 #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
 // party / tactical strobe timing
-volatile uint8_t strobe_delays[] = { 40, 67 };  // party strobe, tactical strobe
+volatile uint8_t strobe_delays[] = { 41, 67 };  // party strobe 24 Hz, tactical strobe 10 Hz
 #endif
 
 // bike mode config options
@@ -1572,7 +1572,8 @@ void sos_blink(uint8_t num, uint8_t dah) {
         nice_delay_ms(DIT_LENGTH);
     }
     // three "off" dits (or one "dah") between letters
-    nice_delay_ms(DIT_LENGTH*2);
+    // (except for SOS, which is collectively treated as a single "letter")
+    //nice_delay_ms(DIT_LENGTH*2);
 }
 
 inline void sos_mode_iter() {
@@ -1593,11 +1594,25 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_GOODNIGHT_MODE
     // 2 clicks: goodnight mode
     else if (event == EV_2clicks) {
         set_state(goodnight_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #elif defined(USE_BEACON_MODE)
+    // 2 clicks: beacon mode
+    else if (event == EV_2clicks) {
+        set_state(beacon_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    #elif defined(USE_THERMAL_REGULATION)
+    // 2 clicks: tempcheck mode
+    else if (event == EV_2clicks) {
+        set_state(tempcheck_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    #endif
     return EVENT_NOT_HANDLED;
 }
 #endif
@@ -1840,9 +1855,11 @@ uint8_t momentary_state(Event event, uint16_t arg) {
     // TODO: momentary strobe here?  (for light painting)
 
     // init strobe mode, if relevant
+    #ifdef USE_STROBE_STATE
     if ((event == EV_enter_state) && (momentary_mode == 1)) {
         strobe_state(event, arg);
     }
+    #endif
 
     // light up when the button is pressed; go dark otherwise
     // button is being held
@@ -1868,6 +1885,7 @@ uint8_t momentary_state(Event event, uint16_t arg) {
     //  disconnected for several seconds, so we want to be awake when that
     //  happens to speed up the process)
     else if (event == EV_tick) {
+        #ifdef USE_STROBE_STATE
         if (momentary_active) {
             // 0 = ramping, 1 = strobes
             if (momentary_mode == 1) {
@@ -1875,6 +1893,7 @@ uint8_t momentary_state(Event event, uint16_t arg) {
             }
         }
         else {
+        #endif
             if (arg > TICKS_PER_SECOND*5) {  // sleep after 5 seconds
                 go_to_standby = 1;  // sleep while light is off
                 // turn off lighted button
@@ -1884,7 +1903,9 @@ uint8_t momentary_state(Event event, uint16_t arg) {
                 rgb_led_update(0, 0);
                 #endif
             }
+        #ifdef USE_STROBE_STATE
         }
+        #endif
         return MISCHIEF_MANAGED;
     }
 
