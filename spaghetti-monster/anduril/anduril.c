@@ -1572,7 +1572,8 @@ void sos_blink(uint8_t num, uint8_t dah) {
         nice_delay_ms(DIT_LENGTH);
     }
     // three "off" dits (or one "dah") between letters
-    nice_delay_ms(DIT_LENGTH*2);
+    // (except for SOS, which is collectively treated as a single "letter")
+    //nice_delay_ms(DIT_LENGTH*2);
 }
 
 inline void sos_mode_iter() {
