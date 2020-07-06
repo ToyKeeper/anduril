@@ -34,6 +34,7 @@
     #define ADMUX_VCC 0b00001100
     #define DELAY_ZERO_TIME 252
     #define SWITCH_PORT  PINB  // PINA or PINB or PINC
+    #define VOLTAGE_ADC_DIDR DIDR0  // this MCU only has one DIDR
 #elif (ATTINY == 25)
     // TODO: Use 6.4 MHz instead of 8 MHz?
     #define F_CPU 8000000UL
@@ -44,6 +45,7 @@
     #define ADMUX_THERM 0b10001111
     #define DELAY_ZERO_TIME 1020
     #define SWITCH_PORT  PINB  // PINA or PINB or PINC
+    #define VOLTAGE_ADC_DIDR DIDR0  // this MCU only has one DIDR
 #elif (ATTINY == 85)
     // TODO: Use 6.4 MHz instead of 8 MHz?
     #define F_CPU 8000000UL
@@ -56,16 +58,19 @@
     #define ADMUX_THERM 0b10001111
     #define DELAY_ZERO_TIME 1020
     #define SWITCH_PORT  PINB  // PINA or PINB or PINC
+    #define VOLTAGE_ADC_DIDR DIDR0  // this MCU only has one DIDR
 #elif (ATTINY == 1634)
     #define F_CPU 8000000UL
     #define V_REF REFS1
     #define BOGOMIPS (F_CPU/4000)
-    // (1 << V_REF) | (0 << ADLAR) | (VCC_CHANNEL)
+    // DS table 19-3, 19-4, 1.1V ref / VCC
     #define ADMUX_VCC 0b00001101
-    // (1 << V_REF) | (0 << ADLAR) | (THERM_CHANNEL)
+    // (1 << V_REF) | (THERM_CHANNEL)
+    // DS table 19-3, 19-4, internal sensor / 1.1V ref
     #define ADMUX_THERM 0b10001110
     #define DELAY_ZERO_TIME 1020
     //#define SWITCH_PORT  PINA  // set this in hwdef
+    //#define VOLTAGE_ADC_DIDR DIDR0  // set this in hwdef
 #else
     #error Hey, you need to define ATTINY.
 #endif

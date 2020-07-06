@@ -28,10 +28,3 @@
 #undef THERM_FASTER_LEVEL
 #endif
 #define THERM_FASTER_LEVEL 130
-
-// be extra-careful at high levels
-// (or not... this host seems to heat up pretty slowly)
-//#ifndef THERM_HARD_TURBO_DROP
-//#define THERM_HARD_TURBO_DROP
-//#endif
-

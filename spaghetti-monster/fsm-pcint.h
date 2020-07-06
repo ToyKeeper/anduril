@@ -20,6 +20,7 @@
 #ifndef FSM_PCINT_H
 #define FSM_PCINT_H
 
+volatile uint8_t irq_pcint = 0;  // pin change interrupt happened?
 //static volatile uint8_t button_was_pressed;
 #define BP_SAMPLES 32
 volatile uint8_t button_last_state;

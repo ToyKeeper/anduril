@@ -4,7 +4,11 @@
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
+// it also has an independent LED in the button
+#define USE_BUTTON_LED
 // the aux LEDs are front-facing, so turn them off while main LEDs are on
+// TODO: the whole "indicator LED" thing needs to be refactored into
+//       "aux LED(s)" and "button LED(s)" since they work a bit differently
 #ifdef USE_INDICATOR_LED_WHILE_RAMPING
 #undef USE_INDICATOR_LED_WHILE_RAMPING
 #endif
@@ -33,17 +37,8 @@
 #define RAMP_DISCRETE_CEIL RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 7
 
-// optional, makes initial turbo step-down faster so first peak isn't as hot
-// the D4 runs very very hot, so be extra careful
-//#define THERM_HARD_TURBO_DROP
-
 // stop panicking at ~30% power or ~1200 lm
 #define THERM_FASTER_LEVEL 105
-// respond to thermal changes faster
-#define THERMAL_WARNING_SECONDS 3
-#define THERMAL_UPDATE_SPEED 1
-#define THERM_PREDICTION_STRENGTH 4
-//#define THERM_RESPONSE_MAGNITUDE 128
 
 // easier access to thermal config mode, for Emisar
 #define USE_TENCLICK_THERMAL_CONFIG

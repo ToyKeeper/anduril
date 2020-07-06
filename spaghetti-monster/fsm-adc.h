@@ -38,9 +38,24 @@
 #define VOLTAGE_FUDGE_FACTOR 5
 #endif
 #endif
+
+volatile uint8_t irq_adc = 0;  // ADC interrupt happened?
+uint8_t adc_sample_count = 0;  // skip the first sample; it's junk
+uint8_t adc_channel = 0;  // 0=voltage, 1=temperature
+uint16_t adc_raw[2];  // last ADC measurements (0=voltage, 1=temperature)
+uint16_t adc_smooth[2];  // lowpassed ADC measurements (0=voltage, 1=temperature)
+// ADC code is split into two parts:
+// - ISR: runs immediately at each interrupt, does the bare minimum because time is critical here
+// - deferred: the bulk of the logic runs later when time isn't so critical
+uint8_t adc_deferred_enable = 0;  // stop waiting and run the deferred code
+void adc_deferred();  // do the actual ADC-related calculations
+
+static inline void ADC_voltage_handler();
 volatile uint8_t voltage = 0;
-volatile uint8_t adcint_enable;  // kludge, because adc auto-retrigger won't turn off
+#ifdef USE_LVP
 void low_voltage();
+#endif
+
 #ifdef USE_BATTCHECK
 void battcheck();
 #ifdef BATTCHECK_VpT
@@ -50,14 +65,10 @@ void battcheck();
 #define USE_BLINK_DIGIT
 #endif
 #endif
-#endif
+#endif  // ifdef USE_LVP
 
 
 #ifdef USE_THERMAL_REGULATION
-// default 5 seconds between thermal regulation events
-#ifndef THERMAL_WARNING_SECONDS
-#define THERMAL_WARNING_SECONDS 5
-#endif
 // try to keep temperature below 45 C
 #ifndef DEFAULT_THERM_CEIL
 #define DEFAULT_THERM_CEIL 45
@@ -70,16 +81,13 @@ void battcheck();
 #ifndef THERM_CAL_OFFSET
 #define THERM_CAL_OFFSET 0
 #endif
-// temperature now, in C (ish) * 2  (14.1 fixed-point)
+// temperature now, in C (ish)
 volatile int16_t temperature;
-// temperature in a few seconds, in C (ish) * 2  (14.1 fixed-point)
-volatile int16_t projected_temperature;  // Fight the future!
 uint8_t therm_ceil = DEFAULT_THERM_CEIL;
 int8_t therm_cal_offset = 0;
-//void low_temperature();
-//void high_temperature();
 volatile uint8_t reset_thermal_history = 1;
-#endif
+static inline void ADC_temperature_handler();
+#endif  // ifdef USE_THERMAL_REGULATION
 
 
 inline void ADC_on();

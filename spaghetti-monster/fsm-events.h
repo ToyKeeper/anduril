@@ -85,6 +85,7 @@ static volatile uint16_t ticks_since_last_event = 0;
 #ifdef USE_THERMAL_REGULATION
 #define EV_temperature_high    (B_SYSTEM|0b00000101)
 #define EV_temperature_low     (B_SYSTEM|0b00000110)
+#define EV_temperature_okay    (B_SYSTEM|0b00000111)
 #endif
 
 // Button press events
@@ -217,8 +218,8 @@ void emit(Event event, uint16_t arg);
 void emit_current_event(uint16_t arg);
 
 uint8_t nice_delay_ms(uint16_t ms);
-//uint8_t nice_delay_4ms(uint8_t ms);
 //uint8_t nice_delay_s();
 inline void interrupt_nice_delays();
+void delay_4ms(uint8_t ms);
 
 #endif

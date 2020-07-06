@@ -33,6 +33,10 @@
 //#define BATTCHECK_8bars  // FIXME: breaks build
 //#define BATTCHECK_4bars  // FIXME: breaks build
 
+// cut clock speed at very low modes for better efficiency
+// (defined here so config files can override it)
+#define USE_DYNAMIC_UNDERCLOCKING
+
 /***** specific settings for known driver types *****/
 #ifdef CONFIGFILE
 #include "tk.h"
@@ -63,7 +67,6 @@
 #define RAMP_LENGTH 150  // default, if not overridden in a driver cfg file
 #define USE_BATTCHECK
 #define USE_IDLE_MODE  // reduce power use while awake and no tasks are pending
-#define USE_DYNAMIC_UNDERCLOCKING  // cut clock speed at very low modes for better efficiency
 
 // auto-detect how many eeprom bytes
 #define USE_EEPROM
@@ -369,12 +372,14 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_THERMAL_REGULATION
     // 2 clicks: tempcheck mode
     else if (event == EV_2clicks) {
         blink_confirm(2);
         set_state(tempcheck_state, 0);
         return MISCHIEF_MANAGED;
     }
+    #endif
     return EVENT_NOT_HANDLED;
 }
 #endif
@@ -467,14 +472,15 @@ void thermal_config_save() {
     // calibrate room temperature
     val = config_state_values[0];
     if (val) {
-        int8_t rawtemp = (temperature >> 1) - therm_cal_offset;
+        int8_t rawtemp = temperature - therm_cal_offset;
         therm_cal_offset = val - rawtemp;
+        reset_thermal_history = 1;  // invalidate all recent temperature data
     }
 
     val = config_state_values[1];
     if (val) {
         // set maximum heat limit
-        therm_ceil = 30 + val;
+        therm_ceil = 30 + val - 1;
     }
     if (therm_ceil > MAX_THERM_CEIL) therm_ceil = MAX_THERM_CEIL;
 }
@@ -589,7 +595,7 @@ uint8_t nearest_level(int16_t target) {
 
     for(uint8_t i=0; i<ramp_discrete_steps; i++) {
         this_level = ramp_discrete_floor + (i * (uint16_t)ramp_range / (ramp_discrete_steps-1));
-        int8_t diff = target - this_level;
+        int16_t diff = target - this_level;
         if (diff < 0) diff = -diff;
         if (diff <= (ramp_discrete_step_size>>1))
             return this_level;
@@ -684,9 +690,6 @@ void loop() {
 
     StatePtr state = current_state;
 
-    #ifdef USE_DYNAMIC_UNDERCLOCKING
-    auto_clock_speed();
-    #endif
     if (0) {}
 
     #ifdef USE_BATTCHECK
@@ -697,7 +700,7 @@ void loop() {
     #ifdef USE_THERMAL_REGULATION
     // TODO: blink out therm_ceil during thermal_config_state
     else if (state == tempcheck_state) {
-        blink_num(temperature>>1);
+        blink_num(temperature);
         nice_delay_ms(1000);
     }
     #endif

@@ -162,6 +162,12 @@ Indicator LED / aux LED support:
 
 
 TODO:
+  - change 6C to 6H for exiting muggle mode?
+  - move muggle mode from 6C to ... 8C or something?
+  - add 4H from lockout to turn light on and start ramping up?
+  - move config modes to 5C instead of 4C, and move manual memory to 4C?
+  - remove beacon config mode, and use a hold to set timing instead?
+  - rewrite muggle mode to split it into on and off states
   * save settings in eeprom
   * decide on "hold until hot" or "click N times" for thermal config mode
   * test thermal regulation on an actual light

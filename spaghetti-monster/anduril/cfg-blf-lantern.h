@@ -27,6 +27,10 @@
 // (one channel for warm emitters, one channel for cold)
 // so enable a special ramping mode which changes tint instead of brightness
 #define USE_TINT_RAMPING
+// how much to increase total brightness at middle tint
+// (0 = 100% brightness, 64 = 200% brightness)
+//#define TINT_RAMPING_CORRECTION 26  // prototype, 140%
+#define TINT_RAMPING_CORRECTION 10  // production model, 115%
 
 #ifdef RAMP_LENGTH
 #undef RAMP_LENGTH
@@ -50,6 +54,12 @@
 #define RAMP_DISCRETE_FLOOR 10
 #define RAMP_DISCRETE_CEIL RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 5
+
+#define MUGGLE_FLOOR    15  // about  20 lm
+#define MUGGLE_CEILING 115  // about 350 lm
+
+#define USE_SOS_MODE
+#define USE_SOS_MODE_IN_BLINKY_GROUP
 
 // the sensor (attiny85) is nowhere near the emitters
 // so thermal regulation can't work

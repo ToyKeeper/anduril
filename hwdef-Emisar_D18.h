@@ -33,15 +33,12 @@
 #ifndef AUXLED_PIN
 #define AUXLED_PIN PB2      // pin 7
 #endif
-#define ADC_PRSCL   0x06    // clk/64
+#define ADC_PRSCL   0x07    // clk/128
 
 // average drop across diode on this hardware
 #ifndef VOLTAGE_FUDGE_FACTOR
 #define VOLTAGE_FUDGE_FACTOR 5  // add 0.25V
 #endif
-
-//#define TEMP_DIDR   ADC4D
-#define TEMP_CHANNEL 0b00001111
 
 #define FAST 0xA3           // fast PWM both channels
 #define PHASE 0xA1          // phase-correct PWM both channels

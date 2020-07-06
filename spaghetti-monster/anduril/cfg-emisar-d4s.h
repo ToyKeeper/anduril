@@ -37,12 +37,3 @@
 #endif
 #define MIN_THERM_STEPDOWN 60  // lowest value it'll step down to
 #define THERM_FASTER_LEVEL (RAMP_SIZE-20)  // don't throttle back faster when high
-
-// no need to be extra-careful on this light
-#ifdef THERM_HARD_TURBO_DROP
-#undef THERM_HARD_TURBO_DROP
-#endif
-
-#define THERMAL_WARNING_SECONDS 3
-#define THERMAL_UPDATE_SPEED 2
-#define THERM_PREDICTION_STRENGTH 4

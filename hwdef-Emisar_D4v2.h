@@ -9,7 +9,7 @@
  *   3    PA4   green aux LED
  *   4    PA3   blue aux LED
  *   5    PA2   e-switch
- *   6    PA1   (none)
+ *   6    PA1   button LED
  *   7    PA0   (none)
  *   8    GND   GND
  *   9    VCC   VCC
@@ -48,14 +48,12 @@
 #define PWM2_LVL OCR1B      // OCR1B is the output compare register for PB1
 
 
-#define ADC_PRSCL   0x06    // clk/64
+#define ADC_PRSCL   0x07    // clk/128
 
 // average drop across diode on this hardware
 #ifndef VOLTAGE_FUDGE_FACTOR
 #define VOLTAGE_FUDGE_FACTOR 4  // add 0.20V  (measured 0.22V)
 #endif
-
-#define TEMP_CHANNEL 0b00001111
 
 // this light has aux LEDs under the optic
 #define AUXLED_R_PIN   PA5    // pin 2
@@ -65,17 +63,23 @@
 #define AUXLED_RGB_DDR DDRA   // DDRA or DDRB or DDRC
 #define AUXLED_RGB_PUE PUEA   // PUEA or PUEB or PUEC
 
+#define BUTTON_LED_PIN  PA1    // pin 6
+#define BUTTON_LED_PORT PORTA  // for all "PA" pins
+#define BUTTON_LED_DDR  DDRA   // for all "PA" pins
+#define BUTTON_LED_PUE  PUEA   // for all "PA" pins
+
 // with so many pins, doing this all with #ifdefs gets awkward...
 // ... so just hardcode it in each hwdef file instead
 inline void hwdef_setup() {
   // enable output ports
   // 7135
   DDRB = (1 << PWM1_PIN);
-  // FET, aux R/G/B
+  // FET, aux R/G/B, button LED
   DDRA = (1 << PWM2_PIN)
        | (1 << AUXLED_R_PIN)
        | (1 << AUXLED_G_PIN)
        | (1 << AUXLED_B_PIN)
+       | (1 << BUTTON_LED_PIN)
        ;
 
   // configure PWM

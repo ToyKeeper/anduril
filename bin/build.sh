@@ -14,7 +14,7 @@ export PROGRAM=$1 ; shift
 export MCU=attiny$ATTINY
 export CC=avr-gcc
 export OBJCOPY=avr-objcopy
-export CFLAGS="-Wall -g -Os -mmcu=$MCU -c -std=gnu99 -fgnu89-inline -DATTINY=$ATTINY -I.. -I../.. -I../../.. -fshort-enums"
+export CFLAGS="-Wall -g -Os -mmcu=$MCU -c -std=gnu99 -fgnu89-inline -fwhole-program -DATTINY=$ATTINY -I.. -I../.. -I../../.. -fshort-enums"
 export OFLAGS="-Wall -g -Os -mmcu=$MCU"
 export LDFLAGS="-fgnu89-inline"
 export OBJCOPYFLAGS='--set-section-flags=.eeprom=alloc,load --change-section-lma .eeprom=0 --no-change-warnings -O ihex'

@@ -34,23 +34,23 @@
 #ifndef VOLTAGE_PIN
 #define VOLTAGE_PIN PB2     // pin 7, voltage ADC
 #define VOLTAGE_CHANNEL 0x01 // MUX 01 corresponds with PB2
-#define VOLTAGE_ADC_DIDR ADC1D  // Digital input disable bit corresponding with PB2
+#define VOLTAGE_ADC ADC1D  // Digital input disable bit corresponding with PB2
+// inherited from tk-attiny.h
+//#define VOLTAGE_ADC_DIDR DIDR0  // DIDR for ADC1
 // 1.1V reference, left-adjust, ADC1/PB2
 //#define ADMUX_VOLTAGE_DIVIDER ((1 << V_REF) | (1 << ADLAR) | VOLTAGE_CHANNEL)
 // 1.1V reference, no left-adjust, ADC1/PB2
 #define ADMUX_VOLTAGE_DIVIDER ((1 << V_REF) | VOLTAGE_CHANNEL)
 #endif
-#define ADC_PRSCL   0x06    // clk/64
+#define ADC_PRSCL   0x07    // clk/128
 
 // Raw ADC readings at 4.4V and 2.2V (in-between, we assume values form a straight line)
 #ifndef ADC_44
-#define ADC_44 234
+#define ADC_44 (234*4)
 #endif
 #ifndef ADC_22
-#define ADC_22 117
+#define ADC_22 (117*4)
 #endif
-
-#define TEMP_CHANNEL 0b00001111
 
 #define FAST 0xA3           // fast PWM both channels
 #define PHASE 0xA1          // phase-correct PWM both channels

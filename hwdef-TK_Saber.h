@@ -23,13 +23,10 @@
 #define SWITCH_PIN   PB2    // pin 7
 #define SWITCH_PCINT PCINT2 // pin 7 pin change interrupt
 
-#define ADC_PRSCL   0x06    // clk/64 (no need to be super fast)
+#define ADC_PRSCL   0x07    // clk/128
 
 // average drop across diode on this hardware
 #define VOLTAGE_FUDGE_FACTOR 5  // add 0.25V
-
-//#define TEMP_DIDR   ADC4D
-#define TEMP_CHANNEL 0b00001111
 
 #define FAST        0xA3    // fast PWM both channels
 #define PHASE       0xA1    // phase-correct PWM both channels

@@ -8,6 +8,8 @@ interactive = False
 # supported shapes: ninth, seventh, fifth, cube, square, log
 #ramp_shape = 'cube'
 
+max_pwm = 255
+
 
 def main(args):
     """Calculates PWM levels for visually-linear steps.
@@ -22,7 +24,7 @@ def main(args):
             (str, 'type', '7135', 'Type of channel - 7135 or FET:'),
             (int, 'pwm_min', 6, 'Lowest visible PWM level:'),
             (float, 'lm_min', 0.25, 'How bright is the lowest level, in lumens?'),
-            #(int, 'pwm_max', 255, 'Highest PWM level:'),
+            #(int, 'pwm_max', max_pwm, 'Highest PWM level:'),
             (float, 'lm_max', 1000, 'How bright is the highest level, in lumens?'),
             ]
 
@@ -48,7 +50,7 @@ def main(args):
         if not args:
             print('===== Channel %s =====' % (chan_num+1))
         chan = Empty()
-        chan.pwm_max = 255
+        chan.pwm_max = max_pwm
         ask(questions_per_channel, chan)
         chan.type = chan.type.upper()
         if chan.type not in ('7135', 'FET'):
@@ -151,6 +153,16 @@ def multi_pwm(answers, channels):
         print('PWM%s values: %s' % 
                 (cnum+1,
                  ','.join([str(int(round(i))) for i in channel.modes])))
+
+    # Show highest level for each channel before next channel starts
+    for cnum, channel in enumerate(channels[:-1]):
+        prev = 0
+        i = 1
+        while (i < answers.num_levels) \
+                and (channel.modes[i] >= channel.modes[i-1]) \
+                and (channels[cnum+1].modes[i] == 0):
+            i += 1
+        print('Ch%i max: %i (%.2f/%s)' % (cnum, i, channel.modes[i-1], max_pwm))
 
 
 def get_value(text, default, args):

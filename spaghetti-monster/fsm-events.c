@@ -20,6 +20,8 @@
 #ifndef FSM_EVENTS_C
 #define FSM_EVENTS_C
 
+#include <util/delay_basic.h>
+
 
 void empty_event_sequence() {
     current_event = EV_none;
@@ -42,7 +44,7 @@ uint8_t push_event(uint8_t ev_type) {
         // set press flag
         current_event |= B_PRESS;
         // increase click counter
-        if ((current_event & B_COUNT) < (B_COUNT-1)) {
+        if ((current_event & B_COUNT) < (B_COUNT)) {
             current_event ++;
         }
         return 1;  // event pushed, even if max clicks already reached
@@ -108,7 +110,7 @@ uint8_t nice_delay_ms(uint16_t ms) {
     /*  // delay_zero() implementation
     if (ms == 0) {
         CLKPR = 1<<CLKPCE; CLKPR = 0;  // full speed
-        _delay_loop_2(BOGOMIPS*98/100/3);
+        _delay_loop_2(BOGOMIPS*95/100/3);
         return 1;
     }
     */
@@ -118,15 +120,15 @@ uint8_t nice_delay_ms(uint16_t ms) {
         uint8_t level = actual_level;  // volatile, avoid repeat access
         if (level < QUARTERSPEED_LEVEL) {
             clock_prescale_set(clock_div_4);
-            _delay_loop_2(BOGOMIPS*98/100/4);
+            _delay_loop_2(BOGOMIPS*90/100/4);
         }
         //else if (level < HALFSPEED_LEVEL) {
         //    clock_prescale_set(clock_div_2);
-        //    _delay_loop_2(BOGOMIPS*98/100/2);
+        //    _delay_loop_2(BOGOMIPS*95/100/2);
         //}
         else {
             clock_prescale_set(clock_div_1);
-            _delay_loop_2(BOGOMIPS*98/100);
+            _delay_loop_2(BOGOMIPS*90/100);
         }
         // restore regular clock speed
         clock_prescale_set(clock_div_1);
@@ -134,14 +136,17 @@ uint8_t nice_delay_ms(uint16_t ms) {
         // underclock MCU to save power
         clock_prescale_set(clock_div_4);
         // wait
-        _delay_loop_2(BOGOMIPS*98/100/4);
+        _delay_loop_2(BOGOMIPS*90/100/4);
         // restore regular clock speed
         clock_prescale_set(clock_div_1);
         #endif  // ifdef USE_RAMPING
         #else
         // wait
-        _delay_loop_2(BOGOMIPS*98/100);
+        _delay_loop_2(BOGOMIPS*90/100);
         #endif  // ifdef USE_DYNAMIC_UNDERCLOCKING
+
+        // run pending system processes while we wait
+        handle_deferred_interrupts();
 
         if ((nice_delay_interrupt) || (old_state != current_state)) {
             return 0;  // state changed; abort

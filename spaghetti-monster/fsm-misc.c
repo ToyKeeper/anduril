@@ -41,23 +41,46 @@ void auto_clock_speed() {
 #endif
 
 #if defined(USE_BLINK_NUM) || defined(USE_BLINK_DIGIT)
+#define BLINK_SPEED 1000
 uint8_t blink_digit(uint8_t num) {
     //StatePtr old_state = current_state;
 
     // "zero" digit gets a single short blink
-    uint8_t ontime = 200;
+    uint8_t ontime = BLINK_SPEED * 2 / 12;
     if (!num) { ontime = 8; num ++; }
 
     for (; num>0; num--) {
         set_level(BLINK_BRIGHTNESS);
         nice_delay_ms(ontime);
         set_level(0);
-        nice_delay_ms(400);
+        nice_delay_ms(BLINK_SPEED * 3 / 12);
     }
-    return nice_delay_ms(600);
+    return nice_delay_ms(BLINK_SPEED * 8 / 12);
 }
 #endif
 
+#ifdef USE_BLINK_BIG_NUM
+uint8_t blink_big_num(uint16_t num) {
+    uint16_t digits[] = { 10000, 1000, 100, 10, 1 };
+    uint8_t started = 0;
+    for (uint8_t digit=0; digit<sizeof(digits)/sizeof(uint16_t); digit++) {
+        uint16_t scale = digits[digit];
+        if (num >= scale) {
+            started = 1;
+        }
+        if (started) {
+            uint8_t digit = 0;
+            while (num >= scale) {
+                num -= scale;
+                digit ++;
+            }
+            if (! blink_digit(digit)) return 0;
+        }
+    }
+
+    return nice_delay_ms(1000);
+}
+#endif
 #ifdef USE_BLINK_NUM
 uint8_t blink_num(uint8_t num) {
     //StatePtr old_state = current_state;
@@ -147,6 +170,29 @@ void indicator_led_auto() {
 */
 #endif  // USE_INDICATOR_LED
 
+#ifdef USE_BUTTON_LED
+// TODO: Refactor this and RGB LED function to merge code and save space
+void button_led_set(uint8_t lvl) {
+    switch (lvl) {
+        case 0:  // LED off
+            BUTTON_LED_DDR  &= 0xff ^ (1 << BUTTON_LED_PIN);
+            BUTTON_LED_PUE  &= 0xff ^ (1 << BUTTON_LED_PIN);
+            BUTTON_LED_PORT &= 0xff ^ (1 << BUTTON_LED_PIN);
+            break;
+        case 1:  // LED low
+            BUTTON_LED_DDR  &= 0xff ^ (1 << BUTTON_LED_PIN);
+            BUTTON_LED_PUE  |= (1 << BUTTON_LED_PIN);
+            BUTTON_LED_PORT |= (1 << BUTTON_LED_PIN);
+            break;
+        default:  // LED high
+            BUTTON_LED_DDR  |= (1 << BUTTON_LED_PIN);
+            BUTTON_LED_PUE  |= (1 << BUTTON_LED_PIN);
+            BUTTON_LED_PORT |= (1 << BUTTON_LED_PIN);
+            break;
+    }
+}
+#endif
+
 #ifdef USE_AUX_RGB_LEDS
 void rgb_led_set(uint8_t value) {
     // value: 0b00BBGGRR
@@ -185,18 +231,20 @@ uint8_t triangle_wave(uint8_t phase) {
 
 #ifdef USE_REBOOT
 void reboot() {
-    #if 1  // WDT method, safer but larger
+    // put the WDT in hard reset mode, then trigger it
     cli();
-    WDTCR = 0xD8 | WDTO_15MS;
+    #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
+        WDTCR = 0xD8 | WDTO_15MS;
+    #elif (ATTINY == 1634)
+        // allow protected configuration changes for next 4 clock cycles
+        CCP = 0xD8;  // magic number
+        // reset (WDIF + WDE), no WDIE, fastest (16ms) timing (0000)
+        // (DS section 8.5.2 and table 8-4)
+        WDTCSR = 0b10001000;
+    #endif
     sei();
     wdt_reset();
     while (1) {}
-    #else  // raw assembly method, doesn't reset registers or anything
-    __asm__ __volatile__ (
-            "cli" "\n\t"
-            "rjmp 0x00" "\n\t"
-            );
-    #endif
 }
 #endif
 
