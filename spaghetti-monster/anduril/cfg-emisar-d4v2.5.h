@@ -11,11 +11,9 @@
 // TODO: the whole "indicator LED" thing needs to be refactored into
 //       "aux LED(s)" and "button LED(s)" since they work a bit differently
 //#define USE_AUX_RGB_LEDS_WHILE_ON
-// allow button to be on while main LEDs are on
-#define USE_INDICATOR_LED_WHILE_RAMPING
-//#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-//#undef USE_INDICATOR_LED_WHILE_RAMPING
-//#endif
+#ifdef USE_INDICATOR_LED_WHILE_RAMPING
+#undef USE_INDICATOR_LED_WHILE_RAMPING
+#endif
 #define RGB_LED_OFF_DEFAULT 0x17  // low, rainbow
 #define RGB_LED_LOCKOUT_DEFAULT 0x37  // blinking, rainbow
 #define RGB_RAINBOW_SPEED 0x03  // half a second per color
