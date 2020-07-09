@@ -1,14 +1,14 @@
 #ifndef HWDEF_NOCTIGON_KR4_H
 #define HWDEF_NOCTIGON_KR4_H
 
-/* Noctigon KR4 driver layout (attiny1634)
+/* Noctigon KR4 / D4V2.5 driver layout (attiny1634)
  *
  * Pin / Name / Function
  *   1    PA6   FET PWM (direct drive) (PWM1B)
  *   2    PA5   R: red aux LED (PWM0B)
  *   3    PA4   G: green aux LED
  *   4    PA3   B: blue aux LED
- *   5    PA2   (none)
+ *   5    PA2   button LED (D4V2.5 only)
  *   6    PA1   (none)
  *   7    PA0   (none)
  *   8    GND   GND
@@ -105,6 +105,11 @@
 #define AUXLED_RGB_DDR  DDRA   // DDRA or DDRB or DDRC
 #define AUXLED_RGB_PUE  PUEA   // PUEA or PUEB or PUEC
 
+#define BUTTON_LED_PIN  PA2    // pin 5
+#define BUTTON_LED_PORT PORTA  // for all "PA" pins
+#define BUTTON_LED_DDR  DDRA   // for all "PA" pins
+#define BUTTON_LED_PUE  PUEA   // for all "PA" pins
+
 // with so many pins, doing this all with #ifdefs gets awkward...
 // ... so just hardcode it in each hwdef file instead
 inline void hwdef_setup() {
@@ -112,11 +117,12 @@ inline void hwdef_setup() {
   // Opamp level and Opamp on/off
   DDRB = (1 << PWM1_PIN)
        | (1 << LED_ENABLE_PIN);
-  // DD FET PWM, aux R/G/B
+  // DD FET PWM, aux R/G/B, button LED
   DDRA = (1 << PWM2_PIN)
        | (1 << AUXLED_R_PIN)
        | (1 << AUXLED_G_PIN)
        | (1 << AUXLED_B_PIN)
+       | (1 << BUTTON_LED_PIN)
        ;
 
   // configure PWM
