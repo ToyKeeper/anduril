@@ -82,11 +82,10 @@
 #define ADMUX_VOLTAGE_DIVIDER 0b10000110
 #define ADC_PRSCL   0x07    // clk/128
 
-// TODO: calibrate this
 // Raw ADC readings at 4.4V and 2.2V
 // calibrate the voltage readout here
 // estimated / calculated values are:
-//   (voltage - D1) * (R2/(R2+R1) * 256 / 1.1)
+//   (voltage - D1) * (R2/(R2+R1) * 1024 / 1.1)
 // D1, R1, R2 = 0, 330, 100
 #ifndef ADC_44
 //#define ADC_44 981  // raw value at 4.40V
