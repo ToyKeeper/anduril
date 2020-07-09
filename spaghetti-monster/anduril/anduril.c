@@ -105,6 +105,11 @@
 #include incfile(CONFIGFILE)
 
 
+// brightness to use when no memory is set
+#ifndef DEFAULT_LEVEL
+#define DEFAULT_LEVEL MAX_1x7135
+#endif
+
 // thermal properties, if not defined per-driver
 #ifndef MIN_THERM_STEPDOWN
 #define MIN_THERM_STEPDOWN MAX_1x7135  // lowest value it'll step down to
@@ -415,9 +420,6 @@ void save_config_wl();
 #endif
 
 // brightness control
-#ifndef DEFAULT_LEVEL
-#define DEFAULT_LEVEL MAX_1x7135
-#endif
 uint8_t memorized_level = DEFAULT_LEVEL;
 #ifdef USE_MANUAL_MEMORY
 uint8_t manual_memory = 0;

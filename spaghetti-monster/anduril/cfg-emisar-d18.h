@@ -28,7 +28,7 @@
 #define QUARTERSPEED_LEVEL 6
 
 // start at ~2000 lm after battery change, not ~150 lm (at Emisar's request)
-#define DEFAULT_LEVEL MAX_Nx7135
+//#define DEFAULT_LEVEL MAX_Nx7135
 
 // higher floor than default, and stop at highest regulated level
 #define RAMP_DISCRETE_FLOOR 25

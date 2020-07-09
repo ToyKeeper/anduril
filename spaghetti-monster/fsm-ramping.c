@@ -33,7 +33,7 @@ void set_level(uint8_t level) {
     #ifdef USE_INDICATOR_LED_WHILE_RAMPING
         #ifdef USE_INDICATOR_LED
         if (! go_to_standby)
-            indicator_led((level > 0) + (level > MAX_1x7135));
+            indicator_led((level > 0) + (level > DEFAULT_LEVEL));
         #endif
         //if (level > MAX_1x7135) indicator_led(2);
         //else if (level > 0) indicator_led(1);
@@ -47,7 +47,7 @@ void set_level(uint8_t level) {
             #ifdef USE_AUX_RGB_LEDS
                 rgb_led_set(0);
                 #ifdef USE_BUTTON_LED
-                    button_led_set((level > 0) + (level > MAX_1x7135));
+                    button_led_set((level > 0) + (level > DEFAULT_LEVEL));
                 #endif
             #endif
         }
