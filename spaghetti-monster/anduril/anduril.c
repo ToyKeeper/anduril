@@ -1310,6 +1310,14 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         save_config();
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_MOMENTARY_MODE
+    // 5 clicks: go to momentary mode (momentary strobe)
+    else if (event == EV_5clicks) {
+        set_state(momentary_state, 0);
+        set_level(0);
+        return MISCHIEF_MANAGED;
+    }
+    #endif
     #if defined(USE_LIGHTNING_MODE) || defined(USE_CANDLE_MODE)
     // clock tick: bump the random seed
     else if (event == EV_tick) {
@@ -1848,10 +1856,16 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif
-    // 4 clicks: exit
+    // 4 clicks: exit and turn on
     else if (event == EV_4clicks) {
         blink_confirm(1);
-        set_state(off_state, 0);
+        set_state(steady_state, memorized_level);
+        return MISCHIEF_MANAGED;
+    }
+    // 4 clicks, but hold last: exit and start at floor
+    else if (event == EV_click4_hold) {
+        blink_confirm(1);
+        set_state(steady_state, 1);
         return MISCHIEF_MANAGED;
     }
 
