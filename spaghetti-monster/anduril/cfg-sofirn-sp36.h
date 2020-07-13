@@ -19,8 +19,8 @@
 #ifdef BLINK_AT_RAMP_MIDDLE
 #undef BLINK_AT_RAMP_MIDDLE
 #endif
-#ifdef BLINK_AT_RAMP_CEILING
-#undef BLINK_AT_RAMP_CEILING
+#ifdef BLINK_AT_RAMP_CEIL
+#undef BLINK_AT_RAMP_CEIL
 #endif
 
 // stop panicking at ~60% power or ~3000 lm

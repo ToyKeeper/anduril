@@ -48,20 +48,20 @@
 
 // 10, 28, 46, 65, 83, 101, 120  (83 is highest regulated)
 #define RAMP_DISCRETE_FLOOR 10
-#define RAMP_DISCRETE_CEIL 120
+#define RAMP_DISCRETE_CEIL  120
 #define RAMP_DISCRETE_STEPS 7
 
 // ~25 lm to ~300 lm
-#define MUGGLE_FLOOR 30
-#define MUGGLE_CEILING MAX_1x7135
+#define SIMPLE_UI_FLOOR 30
+#define SIMPLE_UI_CEIL  MAX_1x7135
 // ~50 lm to ~500 lm
-//#define MUGGLE_FLOOR 40
-//#define MUGGLE_CEILING 90
+//#define SIMPLE_UI_FLOOR 40
+//#define SIMPLE_UI_CEIL  90
 
 // regulate down faster when the FET is active, slower otherwise
 #define THERM_FASTER_LEVEL 135  // throttle back faster when high
 
 // don't do this
 #undef BLINK_AT_RAMP_MIDDLE
-#undef BLINK_AT_RAMP_CEILING
+#undef BLINK_AT_RAMP_CEIL
 

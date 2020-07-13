@@ -15,7 +15,7 @@
 
 
 // don't blink during ramp, it's irrelevant and annoying on this light
-#define BLINK_AT_RAMP_CEILING
+#define BLINK_AT_RAMP_CEIL
 #undef BLINK_AT_RAMP_MIDDLE
 #undef BLINK_AT_RAMP_FLOOR
 
@@ -33,10 +33,10 @@
 #define QUARTERSPEED_LEVEL 6
 
 #define RAMP_SMOOTH_FLOOR 1   // ~2.5 lm
-#define RAMP_SMOOTH_CEIL 120  // ~5400 lm
+#define RAMP_SMOOTH_CEIL  120  // ~5400 lm
 // 20, 36, 53, [70], 86, 103, 120
 #define RAMP_DISCRETE_FLOOR 20 // 35 lm
-#define RAMP_DISCRETE_CEIL 120 // ~5400 lm
+#define RAMP_DISCRETE_CEIL  120 // ~5400 lm
 #define RAMP_DISCRETE_STEPS 7  // 35, 108, 280, 626, 1500, 2930, 5400 lm
 
 #define USE_TENCLICK_THERMAL_CONFIG  // by request

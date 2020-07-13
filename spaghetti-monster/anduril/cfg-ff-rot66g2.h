@@ -40,10 +40,10 @@
 
 // higher floor than default, and stop at highest regulated level
 #define RAMP_SMOOTH_FLOOR 1   // ~0.3 lm
-#define RAMP_SMOOTH_CEIL MAX_Nx7135  // ~1200 lm
+#define RAMP_SMOOTH_CEIL  MAX_Nx7135  // ~1200 lm
 // 10, 28, 46, [65], 83, 101, [120]
 #define RAMP_DISCRETE_FLOOR 10
-#define RAMP_DISCRETE_CEIL MAX_Nx7135
+#define RAMP_DISCRETE_CEIL  MAX_Nx7135
 #define RAMP_DISCRETE_STEPS 7
 
 

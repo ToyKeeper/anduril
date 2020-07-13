@@ -32,13 +32,13 @@
 
 // higher floor than default, and stop at highest regulated level
 #define RAMP_DISCRETE_FLOOR 25
-#define RAMP_DISCRETE_CEIL MAX_Nx7135
+#define RAMP_DISCRETE_CEIL  MAX_Nx7135
 #define RAMP_DISCRETE_STEPS 7
 
 // only blink at max regulated level and ceiling
 #define BLINK_AT_RAMP_MIDDLE
 #define BLINK_AT_RAMP_MIDDLE_1 MAX_Nx7135
-#define BLINK_AT_RAMP_CEILING
+#define BLINK_AT_RAMP_CEIL
 
 // stop panicking at about ~40% power or ~5000 lm
 #define THERM_FASTER_LEVEL 125

@@ -50,13 +50,13 @@
 // because this lantern isn't overpowered
 #define RAMP_STYLE 1  // 0 = smooth, 1 = stepped
 #define RAMP_SMOOTH_FLOOR 1
-#define RAMP_SMOOTH_CEIL 150
+#define RAMP_SMOOTH_CEIL  150
 #define RAMP_DISCRETE_FLOOR 10
-#define RAMP_DISCRETE_CEIL RAMP_SMOOTH_CEIL
+#define RAMP_DISCRETE_CEIL  RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 5
 
-#define MUGGLE_FLOOR    15  // about  20 lm
-#define MUGGLE_CEILING 115  // about 350 lm
+#define SIMPLE_UI_FLOOR    15  // about  20 lm
+#define SIMPLE_UI_CEIL    115  // about 350 lm
 
 #define USE_SOS_MODE
 #define USE_SOS_MODE_IN_BLINKY_GROUP
@@ -83,6 +83,6 @@
 #undef BLINK_AT_RAMP_FLOOR
 #endif
 // except the top... blink at the top
-#ifndef BLINK_AT_RAMP_CEILING
-#define BLINK_AT_RAMP_CEILING
+#ifndef BLINK_AT_RAMP_CEIL
+#define BLINK_AT_RAMP_CEIL
 #endif

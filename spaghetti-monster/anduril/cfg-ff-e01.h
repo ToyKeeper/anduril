@@ -2,8 +2,8 @@
 // most of the good stuff is in the FFUI config; just copy it
 #include "../fireflies-ui/cfg-ff-e01.h"
 
-#ifndef BLINK_AT_RAMP_CEILING
-#define BLINK_AT_RAMP_CEILING
+#ifndef BLINK_AT_RAMP_CEIL
+#define BLINK_AT_RAMP_CEIL
 #endif
 
 // 20, 38, 56, 75, [93], 111, 130 (93 is highest regulated)

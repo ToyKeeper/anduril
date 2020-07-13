@@ -16,7 +16,7 @@
 
 
 // don't blink during ramp, it's irrelevant and annoying on this light
-#define BLINK_AT_RAMP_CEILING
+#define BLINK_AT_RAMP_CEIL
 #undef BLINK_AT_RAMP_MIDDLE
 #undef BLINK_AT_RAMP_FLOOR
 
@@ -37,12 +37,12 @@
 #define QUARTERSPEED_LEVEL 8
 
 #define RAMP_SMOOTH_FLOOR 1   // ~0.3 lm
-#define RAMP_SMOOTH_CEIL 130  // ~??? lm
+#define RAMP_SMOOTH_CEIL  130  // ~??? lm
 // 14/135/6 = 14, 38, 62, 86, [110], 135
 // 20/110/7 = 20, 35, 50, [65], 80, 95, [110]
 // 15/130/7 = 15, 34, 53, 72, 91, [110], 130  <--
 #define RAMP_DISCRETE_FLOOR 15 // ~?? lm
-#define RAMP_DISCRETE_CEIL 130 // ~??? lm
+#define RAMP_DISCRETE_CEIL  130 // ~??? lm
 #define RAMP_DISCRETE_STEPS 7  // ??, ??, ... lm
 
 
