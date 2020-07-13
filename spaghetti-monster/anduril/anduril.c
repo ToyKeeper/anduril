@@ -1116,19 +1116,13 @@ uint8_t steady_state(Event event, uint16_t arg) {
         set_level_and_therm_target(memorized_level);
         return MISCHIEF_MANAGED;
     }
-    #ifdef USE_RAMP_CONFIG
-    // 4 clicks: configure this ramp mode
-    else if (event == EV_4clicks) {
-        push_state(ramp_config_state, 0);
-        return MISCHIEF_MANAGED;
-    }
-    #endif
 
     #ifdef USE_MANUAL_MEMORY
     else if (event == EV_5clicks) {
         manual_memory = actual_level;
         save_config();
         blip();
+        return MISCHIEF_MANAGED;
     }
     else if (event == EV_click5_hold) {
         if (0 == arg) {
@@ -1136,6 +1130,15 @@ uint8_t steady_state(Event event, uint16_t arg) {
             save_config();
             blip();
         }
+        return MISCHIEF_MANAGED;
+    }
+    #endif
+
+    #ifdef USE_RAMP_CONFIG
+    // 7 clicks: configure this ramp mode
+    else if (event == EV_7clicks) {
+        push_state(ramp_config_state, 0);
+        return MISCHIEF_MANAGED;
     }
     #endif
     return EVENT_NOT_HANDLED;
@@ -1714,8 +1717,8 @@ uint8_t tempcheck_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif
-    // 4 clicks: thermal config mode
-    else if (event == EV_4clicks) {
+    // 7 clicks: thermal config mode
+    else if (event == EV_7clicks) {
         push_state(thermal_config_state, 0);
         return MISCHIEF_MANAGED;
     }
@@ -1744,8 +1747,8 @@ uint8_t beacon_state(Event event, uint16_t arg) {
         #endif
         return MISCHIEF_MANAGED;
     }
-    // 4 clicks: beacon config mode
-    else if (event == EV_4clicks) {
+    // 7 clicks: beacon config mode
+    else if (event == EV_7clicks) {
         push_state(beacon_config_state, 0);
         return MISCHIEF_MANAGED;
     }
@@ -1891,8 +1894,8 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     #endif
 
     #if defined(USE_INDICATOR_LED)
-    // 3 clicks: rotate through indicator LED modes (lockout mode)
-    else if (event == EV_3clicks) {
+    // 7 clicks: rotate through indicator LED modes (lockout mode)
+    else if (event == EV_7clicks) {
         #if defined(USE_INDICATOR_LED)
             uint8_t mode = indicator_led_mode >> 2;
             #ifdef TICK_DURING_STANDBY
@@ -1911,8 +1914,8 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #elif defined(USE_AUX_RGB_LEDS)
-    // 3 clicks: change RGB aux LED pattern
-    else if (event == EV_3clicks) {
+    // 7 clicks: change RGB aux LED pattern
+    else if (event == EV_7clicks) {
         uint8_t mode = (rgb_led_lockout_mode >> 4) + 1;
         mode = mode % RGB_LED_NUM_PATTERNS;
         rgb_led_lockout_mode = (mode << 4) | (rgb_led_lockout_mode & 0x0f);
@@ -1921,8 +1924,8 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         blink_confirm(1);
         return MISCHIEF_MANAGED;
     }
-    // click, click, hold: change RGB aux LED color
-    else if (event == EV_click3_hold) {
+    // 7H: change RGB aux LED color
+    else if (event == EV_click7_hold) {
         setting_rgb_mode_now = 1;
         if (0 == (arg & 0x3f)) {
             uint8_t mode = (rgb_led_lockout_mode & 0x0f) + 1;
@@ -1933,8 +1936,8 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         rgb_led_update(rgb_led_lockout_mode, arg);
         return MISCHIEF_MANAGED;
     }
-    // click, click, hold, release: save new color
-    else if (event == EV_click3_hold_release) {
+    // 7H, release: save new color
+    else if (event == EV_click7_hold_release) {
         setting_rgb_mode_now = 0;
         save_config();
         return MISCHIEF_MANAGED;
