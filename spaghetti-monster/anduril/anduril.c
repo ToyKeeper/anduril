@@ -45,7 +45,7 @@
 // short blips while ramping
 #define BLINK_AT_RAMP_MIDDLE
 //#define BLINK_AT_RAMP_FLOOR
-#define BLINK_AT_RAMP_CEILING
+#define BLINK_AT_RAMP_CEIL
 //#define BLINK_AT_STEPS  // whenever a discrete ramp mode is passed in smooth mode
 
 // ramp down via regular button hold if a ramp-up ended <1s ago
@@ -140,11 +140,11 @@
 #ifndef DEFAULT_SIMPLE_UI_ACTIVE
 #define DEFAULT_SIMPLE_UI_ACTIVE 1
 #endif
-#ifndef MUGGLE_FLOOR
-#define MUGGLE_FLOOR 22
+#ifndef DEFAULT_SIMPLE_UI_FLOOR
+#define DEFAULT_SIMPLE_UI_FLOOR 22
 #endif
-#ifndef MUGGLE_CEILING
-#define MUGGLE_CEILING (MAX_1x7135+20)
+#ifndef DEFAULT_SIMPLE_UI_CEIL
+#define DEFAULT_SIMPLE_UI_CEIL (MAX_1x7135+20)
 #endif
 #endif
 
@@ -199,7 +199,9 @@ typedef enum {
     beacon_seconds_e,
     #endif
     #ifdef USE_SIMPLE_UI
-    simple_mode_active_e,
+    simple_ui_active_e,
+    simple_ui_floor_e,
+    simple_ui_ceil_e,
     #endif
     #ifdef USE_THERMAL_REGULATION
     therm_ceil_e,
@@ -317,7 +319,9 @@ uint8_t momentary_mode = 0;  // 0 = ramping, 1 = strobe
 uint8_t momentary_active = 0;  // boolean, true if active *right now*
 #endif
 #ifdef USE_SIMPLE_UI
-uint8_t simple_mode_active = DEFAULT_SIMPLE_UI_ACTIVE;
+uint8_t simple_ui_active = DEFAULT_SIMPLE_UI_ACTIVE;
+uint8_t simple_ui_floor = DEFAULT_SIMPLE_UI_FLOOR;
+uint8_t simple_ui_ceil = DEFAULT_SIMPLE_UI_CEIL;
 #endif
 
 // general helper function for config modes
@@ -428,12 +432,16 @@ uint8_t memorized_level = DEFAULT_LEVEL;
 uint8_t manual_memory = 0;
 #endif
 // smooth vs discrete ramping
-volatile uint8_t ramp_style = RAMP_STYLE;  // 0 = smooth, 1 = discrete
-volatile uint8_t ramp_smooth_floor = RAMP_SMOOTH_FLOOR;
-volatile uint8_t ramp_smooth_ceil = RAMP_SMOOTH_CEIL;
-volatile uint8_t ramp_discrete_floor = RAMP_DISCRETE_FLOOR;
-volatile uint8_t ramp_discrete_ceil = RAMP_DISCRETE_CEIL;
-volatile uint8_t ramp_discrete_steps = RAMP_DISCRETE_STEPS;
+uint8_t ramp_style = RAMP_STYLE;  // 0 = smooth, 1 = discrete
+// current values, regardless of style
+uint8_t ramp_floor = RAMP_SMOOTH_FLOOR;
+uint8_t ramp_ceil = RAMP_SMOOTH_CEIL;
+// per style
+uint8_t ramp_smooth_floor = RAMP_SMOOTH_FLOOR;
+uint8_t ramp_smooth_ceil = RAMP_SMOOTH_CEIL;
+uint8_t ramp_discrete_floor = RAMP_DISCRETE_FLOOR;
+uint8_t ramp_discrete_ceil = RAMP_DISCRETE_CEIL;
+uint8_t ramp_discrete_steps = RAMP_DISCRETE_STEPS;
 uint8_t ramp_discrete_step_size;  // don't set this
 
 #ifdef USE_INDICATOR_LED
@@ -666,18 +674,18 @@ uint8_t off_state(Event event, uint16_t arg) {
     // 8 clicks, but hold last click: turn simple UI off
     else if ((event == EV_click8_hold) && (!arg)) {
         blink_confirm(1);
-        simple_mode_active = 0;
+        simple_ui_active = 0;
         return MISCHIEF_MANAGED;
     }
 
     ////////// Every action below here is blocked in the simple UI //////////
-    if (simple_mode_active) {
+    if (simple_ui_active) {
         return EVENT_NOT_HANDLED;
     }
     // 8 clicks: enable simple UI
     else if (event == EV_8clicks) {
         blink_confirm(1);
-        simple_mode_active = 1;
+        simple_ui_active = 1;
         return MISCHIEF_MANAGED;
     }
     #endif
@@ -760,9 +768,6 @@ uint8_t off_state(Event event, uint16_t arg) {
 
 
 uint8_t steady_state(Event event, uint16_t arg) {
-    uint8_t mode_min = ramp_smooth_floor;
-    uint8_t mode_max = ramp_smooth_ceil;
-    uint8_t ramp_step_size = 1;
     #ifdef USE_REVERSING
     static int8_t ramp_direction = 1;
     #endif
@@ -771,12 +776,23 @@ uint8_t steady_state(Event event, uint16_t arg) {
     // and this stores the level to return to
     static uint8_t level_before_off = 0;
     #endif
+
+    uint8_t ramp_step_size = 1;
+    ramp_floor = ramp_smooth_floor;
+    ramp_ceil = ramp_smooth_ceil;
+
     if (ramp_style) {
-        mode_min = ramp_discrete_floor;
-        mode_max = ramp_discrete_ceil;
+        ramp_floor = ramp_discrete_floor;
+        ramp_ceil = ramp_discrete_ceil;
         ramp_step_size = ramp_discrete_step_size;
     }
-    // TODO: if (simple_mode_active) { mode_min / max = simple floor/ceil }
+    if (simple_ui_active) {
+        ramp_floor = simple_ui_floor;
+        ramp_ceil = simple_ui_ceil;
+    }
+
+    uint8_t mode_min = ramp_floor;
+    uint8_t mode_max = ramp_ceil;
 
     // turn LED on when we first enter the mode
     if ((event == EV_enter_state) || (event == EV_reenter_state)) {
@@ -820,7 +836,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
     else if (event == EV_2clicks) {
         uint8_t turbo_level;
         #ifdef USE_SIMPLE_UI
-        if (simple_mode_active) { turbo_level = mode_max; }
+        if (simple_ui_active) { turbo_level = mode_max; }
         else
         #endif
             turbo_level = MAX_LEVEL;
@@ -863,7 +879,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #else
         memorized_level = nearest_level((int16_t)actual_level + ramp_step_size);
         #endif
-        #if defined(BLINK_AT_RAMP_CEILING) || defined(BLINK_AT_RAMP_MIDDLE)
+        #if defined(BLINK_AT_RAMP_CEIL) || defined(BLINK_AT_RAMP_MIDDLE)
         // only blink once for each threshold
         if ((memorized_level != actual_level) && (
                 0  // for easier syntax below
@@ -873,7 +889,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
                 #ifdef BLINK_AT_RAMP_MIDDLE_2
                 || (memorized_level == BLINK_AT_RAMP_MIDDLE_2)
                 #endif
-                #ifdef BLINK_AT_RAMP_CEILING
+                #ifdef BLINK_AT_RAMP_CEIL
                 || (memorized_level == mode_max)
                 #endif
                 #if defined(USE_REVERSING) && defined(BLINK_AT_RAMP_FLOOR)
@@ -1068,7 +1084,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
 
     ////////// Every action below here is blocked in the simple UI //////////
     #ifdef USE_SIMPLE_UI
-    if (simple_mode_active) {
+    if (simple_ui_active) {
         return EVENT_NOT_HANDLED;
     }
     #endif
@@ -1627,7 +1643,7 @@ inline void sos_mode_iter() {
 uint8_t battcheck_state(Event event, uint16_t arg) {
     ////////// Every action below here is blocked in the simple UI //////////
     #ifdef USE_SIMPLE_UI
-    if (simple_mode_active) {
+    if (simple_ui_active) {
         return EVENT_NOT_HANDLED;
     }
     #endif
@@ -1841,7 +1857,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
 
     ////////// Every action below here is blocked in the simple UI //////////
     #ifdef USE_SIMPLE_UI
-    if (simple_mode_active) {
+    if (simple_ui_active) {
         return EVENT_NOT_HANDLED;
     }
     #endif
@@ -2011,24 +2027,27 @@ uint8_t config_state_base(Event event, uint16_t arg,
 void ramp_config_save() {
     // parse values
     uint8_t val;
+    uint8_t floor = ramp_floor;
+    uint8_t ceil = ramp_ceil;
+
+    val = config_state_values[0];
+    if (val) { floor = val; }
+
+    val = config_state_values[1];
+    if (val) { ceil = MAX_LEVEL + 1 - val; }
+
     if (ramp_style) {  // discrete / stepped ramp
 
-        val = config_state_values[0];
-        if (val) { ramp_discrete_floor = val; }
-
-        val = config_state_values[1];
-        if (val) { ramp_discrete_ceil = MAX_LEVEL + 1 - val; }
+        ramp_discrete_floor = floor;
+        ramp_discrete_ceil = ceil;
 
         val = config_state_values[2];
         if (val) ramp_discrete_steps = val;
 
     } else {  // smooth ramp
 
-        val = config_state_values[0];
-        if (val) { ramp_smooth_floor = val; }
-
-        val = config_state_values[1];
-        if (val) { ramp_smooth_ceil = MAX_LEVEL + 1 - val; }
+        ramp_smooth_floor = floor;
+        ramp_smooth_ceil = ceil;
 
     }
 }
@@ -2186,23 +2205,19 @@ uint8_t nearest_level(int16_t target) {
     // bounds check
     // using int16_t here saves us a bunch of logic elsewhere,
     // by allowing us to correct for numbers < 0 or > 255 in one central place
-    uint8_t mode_min = ramp_smooth_floor;
-    uint8_t mode_max = ramp_smooth_ceil;
-    if (ramp_style) {
-        mode_min = ramp_discrete_floor;
-        mode_max = ramp_discrete_ceil;
-    }
+    uint8_t mode_min = ramp_floor;
+    uint8_t mode_max = ramp_ceil;
     if (target < mode_min) return mode_min;
     if (target > mode_max) return mode_max;
     // the rest isn't relevant for smooth ramping
     if (! ramp_style) return target;
 
-    uint8_t ramp_range = ramp_discrete_ceil - ramp_discrete_floor;
+    uint8_t ramp_range = mode_max - mode_min;
     ramp_discrete_step_size = ramp_range / (ramp_discrete_steps-1);
-    uint8_t this_level = ramp_discrete_floor;
+    uint8_t this_level = mode_min;
 
     for(uint8_t i=0; i<ramp_discrete_steps; i++) {
-        this_level = ramp_discrete_floor + (i * (uint16_t)ramp_range / (ramp_discrete_steps-1));
+        this_level = mode_min + (i * (uint16_t)ramp_range / (ramp_discrete_steps-1));
         int16_t diff = target - this_level;
         if (diff < 0) diff = -diff;
         if (diff <= (ramp_discrete_step_size>>1))
@@ -2460,7 +2475,9 @@ void load_config() {
         beacon_seconds = eeprom[beacon_seconds_e];
         #endif
         #ifdef USE_SIMPLE_UI
-        simple_mode_active = eeprom[simple_mode_active_e];
+        simple_ui_active = eeprom[simple_ui_active_e];
+        simple_ui_floor = eeprom[simple_ui_floor_e];
+        simple_ui_ceil = eeprom[simple_ui_ceil_e];
         #endif
         #ifdef USE_THERMAL_REGULATION
         therm_ceil = eeprom[therm_ceil_e];
@@ -2508,7 +2525,9 @@ void save_config() {
     eeprom[beacon_seconds_e] = beacon_seconds;
     #endif
     #ifdef USE_SIMPLE_UI
-    eeprom[simple_mode_active_e] = simple_mode_active;
+    eeprom[simple_ui_active_e] = simple_ui_active;
+    eeprom[simple_ui_floor_e] = simple_ui_floor;
+    eeprom[simple_ui_ceil_e] = simple_ui_ceil;
     #endif
     #ifdef USE_THERMAL_REGULATION
     eeprom[therm_ceil_e] = therm_ceil;
@@ -2547,8 +2566,7 @@ void low_voltage() {
     }
     #endif
 
-    // in normal or muggle mode, step down or turn off
-    //else if ((state == steady_state) || (state == muggle_state)) {
+    // in normal mode, step down or turn off
     else if (state == steady_state) {
         if (actual_level > 1) {
             uint8_t lvl = (actual_level >> 1) + (actual_level >> 2);
@@ -2689,7 +2707,7 @@ void loop() {
         battcheck();
         #ifdef USE_SIMPLE_UI
         // in simple mode, turn off after one readout
-        if (simple_mode_active) set_state(off_state, 0);
+        if (simple_ui_active) set_state(off_state, 0);
         #endif
     }
     #endif
