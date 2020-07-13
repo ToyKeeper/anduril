@@ -146,6 +146,9 @@
 #ifndef DEFAULT_SIMPLE_UI_CEIL
 #define DEFAULT_SIMPLE_UI_CEIL (MAX_1x7135+20)
 #endif
+#ifndef DEFAULT_SIMPLE_UI_STEPS
+#define DEFAULT_SIMPLE_UI_STEPS 3
+#endif
 #endif
 
 #define USE_IDLE_MODE  // reduce power use while awake and no tasks are pending
@@ -202,6 +205,7 @@ typedef enum {
     simple_ui_active_e,
     simple_ui_floor_e,
     simple_ui_ceil_e,
+    simple_ui_steps_e,
     #endif
     #ifdef USE_THERMAL_REGULATION
     therm_ceil_e,
@@ -318,11 +322,6 @@ uint8_t momentary_state(Event event, uint16_t arg);
 uint8_t momentary_mode = 0;  // 0 = ramping, 1 = strobe
 uint8_t momentary_active = 0;  // boolean, true if active *right now*
 #endif
-#ifdef USE_SIMPLE_UI
-uint8_t simple_ui_active = DEFAULT_SIMPLE_UI_ACTIVE;
-uint8_t simple_ui_floor = DEFAULT_SIMPLE_UI_FLOOR;
-uint8_t simple_ui_ceil = DEFAULT_SIMPLE_UI_CEIL;
-#endif
 
 // general helper function for config modes
 uint8_t number_entry_state(Event event, uint16_t arg);
@@ -431,17 +430,37 @@ uint8_t memorized_level = DEFAULT_LEVEL;
 #ifdef USE_MANUAL_MEMORY
 uint8_t manual_memory = 0;
 #endif
+#ifdef USE_SIMPLE_UI
+// whether to enable the simplified interface or not
+uint8_t simple_ui_active = DEFAULT_SIMPLE_UI_ACTIVE;
+#endif
 // smooth vs discrete ramping
 uint8_t ramp_style = RAMP_STYLE;  // 0 = smooth, 1 = discrete
 // current values, regardless of style
 uint8_t ramp_floor = RAMP_SMOOTH_FLOOR;
 uint8_t ramp_ceil = RAMP_SMOOTH_CEIL;
 // per style
-uint8_t ramp_smooth_floor = RAMP_SMOOTH_FLOOR;
-uint8_t ramp_smooth_ceil = RAMP_SMOOTH_CEIL;
-uint8_t ramp_discrete_floor = RAMP_DISCRETE_FLOOR;
-uint8_t ramp_discrete_ceil = RAMP_DISCRETE_CEIL;
-uint8_t ramp_discrete_steps = RAMP_DISCRETE_STEPS;
+uint8_t ramp_floors[] = {
+    RAMP_SMOOTH_FLOOR,
+    RAMP_DISCRETE_FLOOR,
+    #ifdef USE_SIMPLE_UI
+    DEFAULT_SIMPLE_UI_FLOOR,
+    #endif
+    };
+uint8_t ramp_ceils[] = {
+    RAMP_SMOOTH_CEIL,
+    RAMP_DISCRETE_CEIL,
+    #ifdef USE_SIMPLE_UI
+    DEFAULT_SIMPLE_UI_CEIL,
+    #endif
+    };
+uint8_t ramp_stepss[] = {
+    0,
+    RAMP_DISCRETE_STEPS,
+    #ifdef USE_SIMPLE_UI
+    DEFAULT_SIMPLE_UI_STEPS,
+    #endif
+    };
 uint8_t ramp_discrete_step_size;  // don't set this
 
 #ifdef USE_INDICATOR_LED
@@ -464,6 +483,8 @@ uint8_t ramp_discrete_step_size;  // don't set this
 // (is a no-op for smooth ramp, but limits discrete ramp to only the
 // correct levels for the user's config)
 uint8_t nearest_level(int16_t target);
+// ensure ramp globals are correct
+void ramp_update_config();
 
 #ifdef USE_THERMAL_REGULATION
 // brightness before thermal step-down
@@ -777,22 +798,16 @@ uint8_t steady_state(Event event, uint16_t arg) {
     static uint8_t level_before_off = 0;
     #endif
 
-    uint8_t ramp_step_size = 1;
-    ramp_floor = ramp_smooth_floor;
-    ramp_ceil = ramp_smooth_ceil;
-
-    if (ramp_style) {
-        ramp_floor = ramp_discrete_floor;
-        ramp_ceil = ramp_discrete_ceil;
-        ramp_step_size = ramp_discrete_step_size;
-    }
-    if (simple_ui_active) {
-        ramp_floor = simple_ui_floor;
-        ramp_ceil = simple_ui_ceil;
-    }
+    // make sure ramp globals are correct...
+    // ... but they already are; no need to do it here
+    //ramp_update_config();
+    //nearest_level(1);  // same effect, takes less space
 
     uint8_t mode_min = ramp_floor;
     uint8_t mode_max = ramp_ceil;
+    uint8_t step_size;
+    if (ramp_style) { step_size = ramp_discrete_step_size; }
+    else { step_size = 1; }
 
     // turn LED on when we first enter the mode
     if ((event == EV_enter_state) || (event == EV_reenter_state)) {
@@ -875,9 +890,9 @@ uint8_t steady_state(Event event, uint16_t arg) {
             set_state(lockout_state, 0);
         }
         memorized_level = nearest_level((int16_t)actual_level \
-                          + (ramp_step_size * ramp_direction));
+                          + (step_size * ramp_direction));
         #else
-        memorized_level = nearest_level((int16_t)actual_level + ramp_step_size);
+        memorized_level = nearest_level((int16_t)actual_level + step_size);
         #endif
         #if defined(BLINK_AT_RAMP_CEIL) || defined(BLINK_AT_RAMP_MIDDLE)
         // only blink once for each threshold
@@ -938,7 +953,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
             return MISCHIEF_MANAGED;
         }
         // TODO? make it ramp up instead, if already at min?
-        memorized_level = nearest_level((int16_t)actual_level - ramp_step_size);
+        memorized_level = nearest_level((int16_t)actual_level - step_size);
         #if defined(BLINK_AT_RAMP_FLOOR) || defined(BLINK_AT_RAMP_MIDDLE)
         // only blink once for each threshold
         if ((memorized_level != actual_level) && (
@@ -1798,15 +1813,14 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     if ((event & (B_CLICK | B_PRESS)) == (B_CLICK | B_PRESS)) {
         #ifdef LOCKOUT_MOON_LOWEST
         // Use lowest moon configured
-        uint8_t lvl = ramp_smooth_floor;
-        if (ramp_discrete_floor < lvl) lvl = ramp_discrete_floor;
+        uint8_t lvl = ramp_floors[0];
+        if (ramp_floors[1] < lvl) lvl = ramp_floors[1];
         set_level(lvl);
         #elif defined(LOCKOUT_MOON_FANCY)
-        uint8_t levels[] = { ramp_smooth_floor, ramp_discrete_floor };
         if ((event & 0x0f) == 2) {
-            set_level(levels[ramp_style^1]);
+            set_level(ramp_floors[ramp_style^1]);
         } else {
-            set_level(levels[ramp_style]);
+            set_level(ramp_floors[ramp_style]);
         }
         #else
         // Use moon from current ramp
@@ -2041,28 +2055,18 @@ uint8_t config_state_base(Event event, uint16_t arg,
 void ramp_config_save() {
     // parse values
     uint8_t val;
-    uint8_t floor = ramp_floor;
-    uint8_t ceil = ramp_ceil;
+    uint8_t style = ramp_style;
+    // TODO: detect if we're configuring the simple UI
 
     val = config_state_values[0];
-    if (val) { floor = val; }
+    if (val) { ramp_floors[style] = val; }
 
     val = config_state_values[1];
-    if (val) { ceil = MAX_LEVEL + 1 - val; }
+    if (val) { ramp_ceils[style] = MAX_LEVEL + 1 - val; }
 
     if (ramp_style) {  // discrete / stepped ramp
-
-        ramp_discrete_floor = floor;
-        ramp_discrete_ceil = ceil;
-
         val = config_state_values[2];
-        if (val) ramp_discrete_steps = val;
-
-    } else {  // smooth ramp
-
-        ramp_smooth_floor = floor;
-        ramp_smooth_ceil = ceil;
-
+        if (val) ramp_stepss[style] = val;
     }
 }
 
@@ -2216,6 +2220,8 @@ uint8_t number_entry_state(Event event, uint16_t arg) {
 // find the ramp level closest to the target,
 // using only the levels which are allowed in the current state
 uint8_t nearest_level(int16_t target) {
+    ramp_update_config();
+
     // bounds check
     // using int16_t here saves us a bunch of logic elsewhere,
     // by allowing us to correct for numbers < 0 or > 255 in one central place
@@ -2227,17 +2233,27 @@ uint8_t nearest_level(int16_t target) {
     if (! ramp_style) return target;
 
     uint8_t ramp_range = mode_max - mode_min;
-    ramp_discrete_step_size = ramp_range / (ramp_discrete_steps-1);
+    uint8_t num_steps = ramp_stepss[1 + simple_ui_active];
+    ramp_discrete_step_size = ramp_range / (num_steps-1);
     uint8_t this_level = mode_min;
 
-    for(uint8_t i=0; i<ramp_discrete_steps; i++) {
-        this_level = mode_min + (i * (uint16_t)ramp_range / (ramp_discrete_steps-1));
+    for(uint8_t i=0; i<num_steps; i++) {
+        this_level = mode_min + (i * (uint16_t)ramp_range / (num_steps-1));
         int16_t diff = target - this_level;
         if (diff < 0) diff = -diff;
         if (diff <= (ramp_discrete_step_size>>1))
             return this_level;
     }
     return this_level;
+}
+
+// ensure ramp globals are correct
+void ramp_update_config() {
+    uint8_t which = ramp_style;
+    if (simple_ui_active) { which = 2; }
+
+    ramp_floor = ramp_floors[which];
+    ramp_ceil = ramp_ceils[which];
 }
 
 #ifdef USE_THERMAL_REGULATION
@@ -2465,11 +2481,11 @@ void load_config() {
     if (load_eeprom()) {
         ramp_style = eeprom[ramp_style_e];
         #ifdef USE_RAMP_CONFIG
-        ramp_smooth_floor = eeprom[ramp_smooth_floor_e];
-        ramp_smooth_ceil = eeprom[ramp_smooth_ceil_e];
-        ramp_discrete_floor = eeprom[ramp_discrete_floor_e];
-        ramp_discrete_ceil = eeprom[ramp_discrete_ceil_e];
-        ramp_discrete_steps = eeprom[ramp_discrete_steps_e];
+        ramp_floors[0] = eeprom[ramp_smooth_floor_e];
+        ramp_ceils[0] = eeprom[ramp_smooth_ceil_e];
+        ramp_floors[1] = eeprom[ramp_discrete_floor_e];
+        ramp_ceils[1] = eeprom[ramp_discrete_ceil_e];
+        ramp_stepss[1] = eeprom[ramp_discrete_steps_e];
         #endif
         #ifdef USE_MANUAL_MEMORY
         manual_memory = eeprom[manual_memory_e];
@@ -2490,8 +2506,9 @@ void load_config() {
         #endif
         #ifdef USE_SIMPLE_UI
         simple_ui_active = eeprom[simple_ui_active_e];
-        simple_ui_floor = eeprom[simple_ui_floor_e];
-        simple_ui_ceil = eeprom[simple_ui_ceil_e];
+        ramp_floors[2] = eeprom[simple_ui_floor_e];
+        ramp_ceils[2] = eeprom[simple_ui_ceil_e];
+        ramp_stepss[2] = eeprom[simple_ui_steps_e];
         #endif
         #ifdef USE_THERMAL_REGULATION
         therm_ceil = eeprom[therm_ceil_e];
@@ -2515,11 +2532,11 @@ void load_config() {
 void save_config() {
     eeprom[ramp_style_e] = ramp_style;
     #ifdef USE_RAMP_CONFIG
-    eeprom[ramp_smooth_floor_e] = ramp_smooth_floor;
-    eeprom[ramp_smooth_ceil_e] = ramp_smooth_ceil;
-    eeprom[ramp_discrete_floor_e] = ramp_discrete_floor;
-    eeprom[ramp_discrete_ceil_e] = ramp_discrete_ceil;
-    eeprom[ramp_discrete_steps_e] = ramp_discrete_steps;
+    eeprom[ramp_smooth_floor_e] = ramp_floors[0];
+    eeprom[ramp_smooth_ceil_e] = ramp_ceils[0];
+    eeprom[ramp_discrete_floor_e] = ramp_floors[1];
+    eeprom[ramp_discrete_ceil_e] = ramp_ceils[1];
+    eeprom[ramp_discrete_steps_e] = ramp_stepss[1];
     #endif
     #ifdef USE_MANUAL_MEMORY
     eeprom[manual_memory_e] = manual_memory;
@@ -2540,8 +2557,9 @@ void save_config() {
     #endif
     #ifdef USE_SIMPLE_UI
     eeprom[simple_ui_active_e] = simple_ui_active;
-    eeprom[simple_ui_floor_e] = simple_ui_floor;
-    eeprom[simple_ui_ceil_e] = simple_ui_ceil;
+    eeprom[simple_ui_floor_e] = ramp_floors[2];
+    eeprom[simple_ui_ceil_e] = ramp_ceils[2];
+    eeprom[simple_ui_steps_e] = ramp_stepss[2];
     #endif
     #ifdef USE_THERMAL_REGULATION
     eeprom[therm_ceil_e] = therm_ceil;
