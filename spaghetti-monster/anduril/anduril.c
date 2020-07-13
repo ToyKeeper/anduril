@@ -305,7 +305,6 @@ uint8_t goodnight_state(Event event, uint16_t arg);
 #ifdef USE_BEACON_MODE
 // beacon mode and its related config mode
 uint8_t beacon_state(Event event, uint16_t arg);
-uint8_t beacon_config_state(Event event, uint16_t arg);
 #endif
 #ifdef USE_SOS_MODE_IN_BLINKY_GROUP
 // automatic SOS emergency signal
@@ -1349,6 +1348,20 @@ uint8_t strobe_state(Event event, uint16_t arg) {
     return EVENT_NOT_HANDLED;
 }
 
+
+#ifdef USE_BEACON_MODE
+inline void beacon_mode_iter() {
+    // one iteration of main loop()
+    if (! button_last_state) {
+        set_level(memorized_level);
+        nice_delay_ms(100);
+        set_level(0);
+        nice_delay_ms(((beacon_seconds) * 1000) - 100);
+    }
+}
+#endif  // #ifdef USE_BEACON_MODE
+
+
 #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
 inline void party_tactical_strobe_mode_iter(uint8_t st) {
     // one iteration of main loop()
@@ -1747,9 +1760,17 @@ uint8_t beacon_state(Event event, uint16_t arg) {
         #endif
         return MISCHIEF_MANAGED;
     }
-    // 7 clicks: beacon config mode
-    else if (event == EV_7clicks) {
-        push_state(beacon_config_state, 0);
+    // hold: configure beacon timing
+    else if (event == EV_click1_hold) {
+        if (0 == (arg % TICKS_PER_SECOND)) {
+            blink_confirm(1);
+        }
+        return MISCHIEF_MANAGED;
+    }
+    // release hold: save new timing
+    else if (event == EV_click1_hold_release) {
+        beacon_seconds = 1 + (arg / TICKS_PER_SECOND);
+        save_config();
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
@@ -2110,30 +2131,6 @@ uint8_t thermal_config_state(Event event, uint16_t arg) {
 #endif  // #ifdef USE_THERMAL_REGULATION
 
 
-#ifdef USE_BEACON_MODE
-void beacon_config_save() {
-    // parse values
-    uint8_t val = config_state_values[0];
-    if (val) {
-        beacon_seconds = val;
-    }
-}
-
-uint8_t beacon_config_state(Event event, uint16_t arg) {
-    return config_state_base(event, arg,
-                             1, beacon_config_save);
-}
-
-inline void beacon_mode_iter() {
-    // one iteration of main loop()
-    set_level(memorized_level);
-    nice_delay_ms(100);
-    set_level(0);
-    nice_delay_ms(((beacon_seconds) * 1000) - 100);
-}
-#endif  // #ifdef USE_BEACON_MODE
-
-
 uint8_t number_entry_state(Event event, uint16_t arg) {
     static uint8_t value;
     static uint8_t blinks_left;
@@ -2271,6 +2268,7 @@ void blink_confirm(uint8_t num) {
         set_level(MAX_LEVEL/4);
         delay_4ms(10/4);
         set_level(0);
+        // TODO: only do this delay if num > 1
         delay_4ms(100/4);
     }
 }
