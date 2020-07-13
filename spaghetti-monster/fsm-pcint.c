@@ -93,18 +93,17 @@ ISR(PCINT0_vect) {
 // should only be called from PCINT and/or WDT
 // (is a separate function to reduce code duplication)
 void PCINT_inner(uint8_t pressed) {
-    uint8_t pushed;
+    button_last_state = pressed;
 
-    if (pressed) {
-        pushed = push_event(B_PRESS);
-    } else {
-        pushed = push_event(B_RELEASE);
-    }
-
-    // send event to the current state callback
-    if (pushed) {
-        button_last_state = pressed;
+    // register the change, and send event to the current state callback
+    if (pressed) {  // user pressed button
+        push_event(B_PRESS);
         emit_current_event(0);
+    } else {  // user released button
+        // how long was the button held?
+        uint16_t ticks_since_last = ticks_since_last_event;
+        push_event(B_RELEASE);
+        emit_current_event(ticks_since_last);
     }
 }
 #endif
