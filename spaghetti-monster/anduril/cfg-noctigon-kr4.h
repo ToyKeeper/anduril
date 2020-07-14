@@ -1,11 +1,20 @@
 // Noctigon KR4 config options for Anduril
+// (and Emisar D4v2.5, which uses KR4 driver plus a button LED)
 #include "hwdef-Noctigon_KR4.h"
 // ATTINY: 1634
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
+// the aux LEDs are front-facing, so turn them off while main LEDs are on
 //#define USE_AUX_RGB_LEDS_WHILE_ON
-//#define USE_INDICATOR_LED_WHILE_RAMPING
+// it also has an independent LED in the button (D4v2.5 titanium/brass only)
+#define USE_BUTTON_LED
+// TODO: the whole "indicator LED" thing needs to be refactored into
+//       "aux LED(s)" and "button LED(s)" since they work a bit differently
+// enabling this option breaks the button LED on D4v2.5
+#ifdef USE_INDICATOR_LED_WHILE_RAMPING
+#undef USE_INDICATOR_LED_WHILE_RAMPING
+#endif
 #define RGB_LED_OFF_DEFAULT 0x17  // low, rainbow
 #define RGB_LED_LOCKOUT_DEFAULT 0x37  // blinking, rainbow
 #define RGB_RAINBOW_SPEED 0x03  // half a second per color
@@ -46,11 +55,12 @@
 #define THERM_NEXT_WARNING_THRESHOLD 16  // accumulate less error before adjusting
 #define THERM_RESPONSE_MAGNITUDE 128  // bigger adjustments
 
-// easier access to thermal config mode, for Noctigon
+// easier access to thermal config mode
 #define USE_TENCLICK_THERMAL_CONFIG
 
 // slow down party strobe; this driver can't pulse for 1ms or less
-#define PARTY_STROBE_ONTIME 2
+// (only needed on no-FET build)
+//#define PARTY_STROBE_ONTIME 2
 
 #define THERM_CAL_OFFSET 5
 
