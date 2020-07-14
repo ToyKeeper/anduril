@@ -1,4 +1,6 @@
 // Noctigon KR4 (fetless) config options for Anduril
+// (and Noctigon KR1)
+// (and Emisar D4v2 E21A, a.k.a. "D4v2.5")
 #include "cfg-noctigon-kr4.h"
 // ATTINY: 1634
 
@@ -38,6 +40,10 @@
 
 // make candle mode wobble more
 #define CANDLE_AMPLITUDE 32
+
+// slow down party strobe; this driver can't pulse for 1ms or less
+// (only needed on no-FET build)
+#define PARTY_STROBE_ONTIME 2
 
 // stop panicking at ~90% power or ~1600 lm
 #undef THERM_FASTER_LEVEL
