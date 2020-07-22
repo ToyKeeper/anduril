@@ -1,5 +1,5 @@
 /*
- * cfg-default.h: Default configuration for Anduril.
+ * config-default.h: Default configuration for Anduril.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,16 +17,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CFG_DEFAULT_H
-#define CFG_DEFAULT_H
+#ifndef CONFIG_DEFAULT_H
+#define CONFIG_DEFAULT_H
+
+/*
+ * This file specifies the default settings for Anduril.
+ *
+ * These settings can be overridden per build target, in cfg-*.h files...
+ * ... but most are not.  So changing one here will make it change in
+ * almost every build target.
+ */
 
 /********* User-configurable options *********/
+// low voltage protection (also required for battery check mode)
 #define USE_LVP
 
-// parameters for this defined below or per-driver
+// overheat protection
 #define USE_THERMAL_REGULATION
-#define DEFAULT_THERM_CEIL 45  // try not to get hotter than this
+#define DEFAULT_THERM_CEIL 45  // try not to get hotter than this (in C)
 
+// factory reset function erases user's runtime configuration in eeprom
 #define USE_FACTORY_RESET
 //#define USE_SOFT_FACTORY_RESET  // only needed on models which can't use hold-button-at-boot
 
@@ -49,24 +59,40 @@
 
 // ramp down via regular button hold if a ramp-up ended <1s ago
 // ("hold, release, hold" ramps down instead of up)
+// TODO: remove this setting; nobody ever changes it)
 #define USE_REVERSING
 
-// add a runtime option to switch between automatic memory (default)
+// Include a simplified UI for non-enthusiasts?
+#define USE_SIMPLE_UI
+
+// make the ramps configurable by the user
+#define USE_RAMP_CONFIG
+
+// adds a runtime option to switch between automatic memory (default)
 // and manual memory (only available if compiled in)
 // (manual memory makes 1-click-from-off start at the same level each time)
 // (the level can be set explicitly with 5 clicks from on,
 // or the user can go back to automatic with click-click-click-click-hold)
+// TODO: remap to a shorter button sequence?
 #define USE_MANUAL_MEMORY
 
-// enable the battery check mode (shows remaining charge)
+// enable the battery check mode (shows remaining charge) (requires USE_LVP)
 #define USE_BATTCHECK_MODE
 // battery readout style (pick one)
+// TODO: allow VpT and 4-bar simultaneously,
+//       so one can be in "simple mode" and the other in "advanced mode"
 #define BATTCHECK_VpT
 //#define BATTCHECK_8bars  // FIXME: breaks build
 //#define BATTCHECK_4bars  // FIXME: breaks build
 
-// enable a mode for locking the light for safe carry
-#define USE_LOCKOUT_MODE
+// enable beacon mode
+#define USE_BEACON_MODE
+
+// enable sunset (goodnight) mode
+// TODO: replace goodnight mode with a sunset timer in the regular ramp
+#define USE_GOODNIGHT_MODE
+#define GOODNIGHT_TIME  60  // minutes (approximately)
+#define GOODNIGHT_LEVEL 24  // ~11 lm
 
 // enable/disable various strobe modes
 #define USE_BIKE_FLASHER_MODE
@@ -75,23 +101,6 @@
 #define USE_LIGHTNING_MODE
 #define USE_CANDLE_MODE
 
-// enable sunset (goodnight) mode
-#define USE_GOODNIGHT_MODE
-#define GOODNIGHT_TIME  60  // minutes (approximately)
-#define GOODNIGHT_LEVEL 24  // ~11 lm
-
-// enable beacon mode
-#define USE_BEACON_MODE
-
-// enable momentary mode
-#define USE_MOMENTARY_MODE
-
-// Include a simplified UI for non-enthusiasts?
-#define USE_SIMPLE_UI
-
-// make the ramps configurable by the user
-#define USE_RAMP_CONFIG
-
 // boring strobes nobody really likes, but sometimes flashlight companies want
 // (these replace the fun strobe group,
 //  so don't enable them at the same time as any of the above strobes)
@@ -99,6 +108,12 @@
 //#define USE_SOS_MODE
 //#define USE_SOS_MODE_IN_FF_GROUP  // put SOS in the "boring strobes" mode
 //#define USE_SOS_MODE_IN_BLINKY_GROUP  // put SOS in the blinkies mode group
+
+// enable a mode for locking the light for safe carry
+#define USE_LOCKOUT_MODE
+
+// enable momentary mode
+#define USE_MOMENTARY_MODE
 
 // cut clock speed at very low modes for better efficiency
 // (defined here so config files can override it)

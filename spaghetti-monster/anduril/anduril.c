@@ -38,15 +38,19 @@
 // - Library-level configuration headers
 // - Library code (FSM itself)
 // - App headers
-// - App code (all of it)
+// - App code (all of it, inline)
 //
 // Don't do this in regular programs.  It's weird and kind of gross.
-// But in this case it gives us a bunch of much-needed space, so...
+// But in this case it gives us a bunch of much-needed space, so... woot.
+//
+// Also, there are a ton of compile-time flags because it needs to build
+// a bunch of different versions and each one needs to be trimmed as small
+// as possible.  These are mostly "USE" flags.
 
 /********* User-configurable options *********/
-#include "cfg-default.h"
+#include "config-default.h"
 
-/***** specific settings for known driver types *****/
+/********* specific settings for known driver types *********/
 // Anduril config file name (set it here or define it at the gcc command line)
 //#define CONFIGFILE cfg-blf-q8.h
 
@@ -56,7 +60,7 @@
 
 /********* Include headers which need to be before FSM *********/
 
-// enable FSM features needed by strobe modes
+// enable FSM features needed by basic ramping functions
 #include "ramping-fsm.h"
 
 #ifdef USE_FACTORY_RESET
@@ -72,6 +76,7 @@
 
 // figure out how many bytes of eeprom are needed,
 // based on which UI features are enabled
+// (include this one last)
 #include "load-save-config-fsm.h"
 
 
