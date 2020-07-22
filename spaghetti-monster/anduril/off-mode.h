@@ -1,5 +1,5 @@
 /*
- * off-state.h: "Off" state for Anduril.
+ * off-mode.h: "Off" mode for Anduril.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef OFF_STATE_H
-#define OFF_STATE_H
+#ifndef OFF_MODE_H
+#define OFF_MODE_H
 
-// handles when the light is "off" or in standby
+// when the light is "off" or in standby
 uint8_t off_state(Event event, uint16_t arg);
 
 

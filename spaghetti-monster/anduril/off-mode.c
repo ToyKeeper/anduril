@@ -1,5 +1,5 @@
 /*
- * off-state.c: "Off" state for Anduril.
+ * off-mode.c: "Off" mode for Anduril.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef OFF_STATE_C
-#define OFF_STATE_C
+#ifndef OFF_MODE_C
+#define OFF_MODE_C
 
-#include "off-state.h"
+#include "off-mode.h"
 
 uint8_t off_state(Event event, uint16_t arg) {
     // turn emitter off when entering state

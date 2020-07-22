@@ -88,7 +88,7 @@
 
 /********* Include all the regular app headers *********/
 
-#include "off-state.h"
+#include "off-mode.h"
 #include "ramp-mode.h"
 #include "load-save-config.h"
 #include "config-mode.h"
@@ -204,7 +204,7 @@ uint8_t rgb_led_lockout_mode = RGB_LED_LOCKOUT_DEFAULT;
 // (is a bit weird to do things this way,
 //  but it saves a lot of space by letting us use the -fwhole-program flag)
 
-#include "off-state.c"
+#include "off-mode.c"
 #include "ramp-mode.c"
 #include "load-save-config.c"
 #include "config-mode.c"
