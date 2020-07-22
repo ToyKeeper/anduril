@@ -61,7 +61,7 @@
 /********* Include headers which need to be before FSM *********/
 
 // enable FSM features needed by basic ramping functions
-#include "ramping-fsm.h"
+#include "ramp-mode-fsm.h"
 
 #ifdef USE_FACTORY_RESET
 #include "factory-reset-fsm.h"
@@ -89,7 +89,7 @@
 /********* Include all the regular app headers *********/
 
 #include "off-state.h"
-#include "ramping.h"
+#include "ramp-mode.h"
 #include "load-save-config.h"
 #include "config-mode.h"
 #include "misc.h"
@@ -202,10 +202,10 @@ uint8_t rgb_led_lockout_mode = RGB_LED_LOCKOUT_DEFAULT;
 
 /********* Include all the app logic source files *********/
 // (is a bit weird to do things this way,
-//  but it saves a lot of space by letting use use the -fwhole-program flag)
+//  but it saves a lot of space by letting us use the -fwhole-program flag)
 
 #include "off-state.c"
-#include "ramping.c"
+#include "ramp-mode.c"
 #include "load-save-config.c"
 #include "config-mode.c"
 #include "misc.c"

@@ -1,5 +1,5 @@
 /*
- * ramping.c: Ramping functions for Anduril.
+ * ramp-mode.c: Ramping functions for Anduril.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RAMPING_C
-#define RAMPING_C
+#ifndef RAMP_MODE_C
+#define RAMP_MODE_C
 
-#include "ramping.h"
+#include "ramp-mode.h"
 
 uint8_t steady_state(Event event, uint16_t arg) {
     #ifdef USE_REVERSING

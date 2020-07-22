@@ -1,5 +1,5 @@
 /*
- * ramping.h: Ramping functions for Anduril.
+ * ramp-mode.h: Ramping functions for Anduril.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,8 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RAMPING_H
-#define RAMPING_H
+#ifndef RAMP_MODE_H
+#define RAMP_MODE_H
 
 #ifndef RAMP_LENGTH
 #define RAMP_LENGTH 150  // default, if not overridden in a driver cfg file
@@ -37,6 +37,7 @@
 #endif
 
 #if defined(USE_SIMPLE_UI)
+// TODO: Move these settings to config-default.h?
 // start in the simple UI after each factory reset?
 #ifndef DEFAULT_SIMPLE_UI_ACTIVE
 #define DEFAULT_SIMPLE_UI_ACTIVE 1
@@ -61,6 +62,7 @@
 // timeout: react as soon as we're sure the user isn't doing a double-click
 #define B_TIMEOUT_T 2
 // defaults are release on, timeout off
+// TODO: Move these settings to config-default.h?
 #ifndef B_TIMING_ON
 //#define B_TIMING_ON B_PRESS_T
 #define B_TIMING_ON B_RELEASE_T
@@ -72,6 +74,7 @@
 
 // default ramp options if not overridden earlier per-driver
 #ifndef RAMP_STYLE
+// TODO: Move this setting to config-default.h?
 #define RAMP_STYLE 0  // smooth default
 #endif
 #ifndef RAMP_SMOOTH_FLOOR
