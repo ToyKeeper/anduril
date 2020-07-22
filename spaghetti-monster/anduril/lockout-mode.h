@@ -1,5 +1,5 @@
 /*
- * lockout.h: Lockout mode for Anduril.
+ * lockout-mode.h: Lockout mode for Anduril.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,13 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LOCKOUT_H
-#define LOCKOUT_H
+#ifndef LOCKOUT_MODE_H
+#define LOCKOUT_MODE_H
 
-// should lockout mode function as a momentary moon mode?
-#define MOON_DURING_LOCKOUT_MODE
-// if enabled, 2nd lockout click goes to the other ramp's floor level
-#define LOCKOUT_MOON_FANCY
 // soft lockout
 uint8_t lockout_state(Event event, uint16_t arg);
 

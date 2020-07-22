@@ -115,7 +115,7 @@
 #endif
 
 #ifdef USE_LOCKOUT_MODE
-#include "lockout.h"
+#include "lockout-mode.h"
 #endif
 
 #ifdef USE_MOMENTARY_MODE
@@ -231,7 +231,7 @@ uint8_t rgb_led_lockout_mode = RGB_LED_LOCKOUT_DEFAULT;
 #endif
 
 #ifdef USE_LOCKOUT_MODE
-#include "lockout.c"
+#include "lockout-mode.c"
 #endif
 
 #ifdef USE_MOMENTARY_MODE

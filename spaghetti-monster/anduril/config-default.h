@@ -26,6 +26,8 @@
  * These settings can be overridden per build target, in cfg-*.h files...
  * ... but most are not.  So changing one here will make it change in
  * almost every build target.
+ *
+ * Some configurable settings are also in other *.h files.
  */
 
 /********* User-configurable options *********/
@@ -111,6 +113,10 @@
 
 // enable a mode for locking the light for safe carry
 #define USE_LOCKOUT_MODE
+// should lockout mode function as a momentary moon mode?
+#define MOON_DURING_LOCKOUT_MODE
+// if enabled, 2nd lockout click goes to the other ramp's floor level
+#define LOCKOUT_MOON_FANCY
 
 // enable momentary mode
 #define USE_MOMENTARY_MODE

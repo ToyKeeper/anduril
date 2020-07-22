@@ -1,5 +1,5 @@
 /*
- * lockout.c: Lockout mode for Anduril.
+ * lockout-mode.c: Lockout mode for Anduril.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LOCKOUT_C
-#define LOCKOUT_C
+#ifndef LOCKOUT_MODE_C
+#define LOCKOUT_MODE_C
 
-#include "lockout.h"
+#include "lockout-mode.h"
 
 uint8_t lockout_state(Event event, uint16_t arg) {
     #ifdef MOON_DURING_LOCKOUT_MODE
