@@ -4,4 +4,7 @@ all:
 clean:
 	rm -f *.hex *~ *.elf *.o
 
-.phony: clean
+todo:
+	@egrep 'TODO:|FIXME:' *.[ch]
+
+.phony: clean todo
