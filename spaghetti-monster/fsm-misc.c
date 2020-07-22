@@ -222,6 +222,7 @@ void rgb_led_set(uint8_t value) {
 #endif  // ifdef USE_AUX_RGB_LEDS
 
 #ifdef USE_TRIANGLE_WAVE
+// TODO: remove this, it's in the wrong file
 uint8_t triangle_wave(uint8_t phase) {
     uint8_t result = phase << 1;
     if (phase > 127) result = 255 - result;
