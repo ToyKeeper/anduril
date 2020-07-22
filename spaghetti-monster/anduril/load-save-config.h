@@ -1,5 +1,5 @@
 /*
- * config-mode.h: Config mode base functions for Anduril.
+ * load-save-config.h: Load/save/eeprom functions for Anduril.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,16 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CONFIG_MODE_H
-#define CONFIG_MODE_H
+#ifndef LOAD_SAVE_CONFIG_H
+#define LOAD_SAVE_CONFIG_H
 
-#define MAX_CONFIG_VALUES 3
-uint8_t config_state_values[MAX_CONFIG_VALUES];
-
-// simple numeric entry config menu
-uint8_t config_state_base(Event event, uint16_t arg,
-                          uint8_t num_config_steps,
-                          void (*savefunc)());
+// remember stuff even after battery was changed
+void load_config();
+void save_config();
+#ifdef START_AT_MEMORIZED_LEVEL
+void save_config_wl();
+#endif
 
 
 #endif

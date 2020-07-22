@@ -1,5 +1,5 @@
 /*
- * config-mode.h: Config mode base functions for Anduril.
+ * misc.c: Misc extra functions for Anduril.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,16 +17,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CONFIG_MODE_H
-#define CONFIG_MODE_H
+#ifndef MISC_C
+#define MISC_C
 
-#define MAX_CONFIG_VALUES 3
-uint8_t config_state_values[MAX_CONFIG_VALUES];
+#include "misc.h"
 
-// simple numeric entry config menu
-uint8_t config_state_base(Event event, uint16_t arg,
-                          uint8_t num_config_steps,
-                          void (*savefunc)());
+void blink_confirm(uint8_t num) {
+    for (; num>0; num--) {
+        set_level(MAX_LEVEL/4);
+        delay_4ms(10/4);
+        set_level(0);
+        // TODO: only do this delay if num > 1
+        delay_4ms(100/4);
+    }
+}
+
+// Just go dark for a moment to indicate to user that something happened
+void blip() {
+    uint8_t temp = actual_level;
+    set_level(0);
+    delay_4ms(3);
+    set_level(temp);
+}
 
 
 #endif
+

@@ -1,5 +1,5 @@
 /*
- * config-mode.h: Config mode base functions for Anduril.
+ * battcheck-mode.h: Battery check mode for Anduril.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,16 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CONFIG_MODE_H
-#define CONFIG_MODE_H
+#ifndef BATTCHECK_MODE_H
+#define BATTCHECK_MODE_H
 
-#define MAX_CONFIG_VALUES 3
-uint8_t config_state_values[MAX_CONFIG_VALUES];
-
-// simple numeric entry config menu
-uint8_t config_state_base(Event event, uint16_t arg,
-                          uint8_t num_config_steps,
-                          void (*savefunc)());
+uint8_t battcheck_state(Event event, uint16_t arg);
 
 
 #endif

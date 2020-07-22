@@ -1,5 +1,5 @@
 /*
- * config-mode.h: Config mode base functions for Anduril.
+ * ramping-fsm.h: FSM config for ramping functions in Anduril.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,16 +17,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CONFIG_MODE_H
-#define CONFIG_MODE_H
+#ifndef RAMPING_FSM_H
+#define RAMPING_FSM_H
 
-#define MAX_CONFIG_VALUES 3
-uint8_t config_state_values[MAX_CONFIG_VALUES];
+#define USE_RAMPING
 
-// simple numeric entry config menu
-uint8_t config_state_base(Event event, uint16_t arg,
-                          uint8_t num_config_steps,
-                          void (*savefunc)());
+#ifdef USE_THERMAL_REGULATION
+#define USE_SET_LEVEL_GRADUALLY  // isn't used except for thermal adjustments
+#endif
+
+// brightness to use when no memory is set
+// FIXME: this is only here to stop an error in fsm-ramping.c,
+//        which should be fixed by using a different symbol instead
+#ifndef DEFAULT_LEVEL
+#define DEFAULT_LEVEL MAX_1x7135
+#endif
 
 
 #endif

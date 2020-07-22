@@ -162,6 +162,36 @@ uint8_t strobe_state(Event event, uint16_t arg) {
     #endif
     return EVENT_NOT_HANDLED;
 }
+
+// runs repeatedly in FSM loop() whenever UI is in strobe_state or momentary strobe
+inline void strobe_state_iter() {
+    uint8_t st = strobe_type;
+
+    switch(st) {
+        #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
+        #ifdef USE_PARTY_STROBE_MODE
+        case party_strobe_e:
+        #endif
+        #ifdef USE_TACTICAL_STROBE_MODE
+        case tactical_strobe_e:
+        #endif
+            party_tactical_strobe_mode_iter(st);
+            break;
+        #endif
+
+        #ifdef USE_LIGHTNING_MODE
+        case lightning_storm_e:
+            lightning_storm_iter();
+            break;
+        #endif
+
+        #ifdef USE_BIKE_FLASHER_MODE
+        case bike_flasher_e:
+            bike_flasher_iter();
+            break;
+        #endif
+    }
+}
 #endif  // ifdef USE_STROBE_STATE
 
 #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
@@ -384,12 +414,6 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
-}
-
-uint8_t triangle_wave(uint8_t phase) {
-    uint8_t result = phase << 1;
-    if (phase > 127) result = 255 - result;
-    return result;
 }
 #endif  // #ifdef USE_CANDLE_MODE
 

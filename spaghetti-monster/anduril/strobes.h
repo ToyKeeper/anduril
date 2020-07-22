@@ -65,6 +65,7 @@ volatile strobe_mode_te strobe_type = 0;
 // party and tactical strobes
 #ifdef USE_STROBE_STATE
 uint8_t strobe_state(Event event, uint16_t arg);
+inline void strobe_state_iter();
 #endif
 
 #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
@@ -79,13 +80,15 @@ inline void lightning_storm_iter();
 
 // bike mode config options
 #ifdef USE_BIKE_FLASHER_MODE
+#define MAX_BIKING_LEVEL 120  // should be 127 or less
 volatile uint8_t bike_flasher_brightness = MAX_1x7135;
 inline void bike_flasher_iter();
 #endif
 
 #ifdef USE_CANDLE_MODE
 uint8_t candle_mode_state(Event event, uint16_t arg);
-uint8_t triangle_wave(uint8_t phase);
+// moved to fsm-misc.c because tint ramping power correction
+//uint8_t triangle_wave(uint8_t phase);
 #ifndef CANDLE_AMPLITUDE
 #define CANDLE_AMPLITUDE 25
 #endif

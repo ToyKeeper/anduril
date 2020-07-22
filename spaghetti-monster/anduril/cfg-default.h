@@ -58,10 +58,15 @@
 // or the user can go back to automatic with click-click-click-click-hold)
 #define USE_MANUAL_MEMORY
 
+// enable the battery check mode (shows remaining charge)
+#define USE_BATTCHECK_MODE
 // battery readout style (pick one)
 #define BATTCHECK_VpT
 //#define BATTCHECK_8bars  // FIXME: breaks build
 //#define BATTCHECK_4bars  // FIXME: breaks build
+
+// enable a mode for locking the light for safe carry
+#define USE_LOCKOUT_MODE
 
 // enable/disable various strobe modes
 #define USE_BIKE_FLASHER_MODE

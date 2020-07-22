@@ -1,5 +1,5 @@
 /*
- * config-mode.h: Config mode base functions for Anduril.
+ * momentary-mode.h: Momentary mode for Anduril.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,16 +17,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CONFIG_MODE_H
-#define CONFIG_MODE_H
+#ifndef MOMENTARY_MODE_H
+#define MOMENTARY_MODE_H
 
-#define MAX_CONFIG_VALUES 3
-uint8_t config_state_values[MAX_CONFIG_VALUES];
-
-// simple numeric entry config menu
-uint8_t config_state_base(Event event, uint16_t arg,
-                          uint8_t num_config_steps,
-                          void (*savefunc)());
+// momentary / signalling mode
+uint8_t momentary_state(Event event, uint16_t arg);
+uint8_t momentary_mode = 0;  // 0 = ramping, 1 = strobe
+uint8_t momentary_active = 0;  // boolean, true if active *right now*
 
 
 #endif
