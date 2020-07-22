@@ -1,5 +1,5 @@
 /*
- * beacon.h: Beacon mode for Anduril.
+ * beacon-mode.h: Beacon mode for Anduril.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,11 +17,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef BEACON_H
-#define BEACON_H
+#ifndef BEACON_MODE_H
+#define BEACON_MODE_H
 
 // beacon timing
-volatile uint8_t beacon_seconds = 2;
+uint8_t beacon_seconds = 2;
 
 // beacon mode
 uint8_t beacon_state(Event event, uint16_t arg);

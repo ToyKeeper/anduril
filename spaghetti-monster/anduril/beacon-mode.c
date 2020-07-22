@@ -1,5 +1,5 @@
 /*
- * beacon.c: Beacon mode for Anduril.
+ * beacon-mode.c: Beacon mode for Anduril.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef BEACON_C
-#define BEACON_C
+#ifndef BEACON_MODE_C
+#define BEACON_MODE_C
 
-#include "beacon.h"
+#include "beacon-mode.h"
 
 inline void beacon_mode_iter() {
     // one iteration of main loop()

@@ -107,7 +107,7 @@
 #endif
 
 #ifdef USE_BEACON_MODE
-#include "beacon.h"
+#include "beacon-mode.h"
 #endif
 
 #ifdef USE_THERMAL_REGULATION
@@ -223,7 +223,7 @@ uint8_t rgb_led_lockout_mode = RGB_LED_LOCKOUT_DEFAULT;
 #endif
 
 #ifdef USE_BEACON_MODE
-#include "beacon.c"
+#include "beacon-mode.c"
 #endif
 
 #ifdef USE_THERMAL_REGULATION
