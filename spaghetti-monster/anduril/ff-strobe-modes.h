@@ -21,6 +21,7 @@
 #define FF_STROBE_MODES_H
 
 uint8_t boring_strobe_state(Event event, uint16_t arg);
+inline void boring_strobe_state_iter();
 volatile uint8_t boring_strobe_type = 0;
 void sos_blink(uint8_t num, uint8_t dah);
 #ifdef USE_POLICE_STROBE_MODE

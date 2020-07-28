@@ -44,7 +44,7 @@
  * Don't do this in regular programs.  It's weird and kind of gross.
  * But in this case it gives us a bunch of much-needed space, so... woot.
  *
- * Also, there are a ton of compile-time flags because it needs to build
+ * Also, there are a ton of compile-time options because it needs to build
  * a bunch of different versions and each one needs to be trimmed as small
  * as possible.  These are mostly "USE" flags.
  */
@@ -197,84 +197,67 @@
 #endif
 
 
-void low_voltage() {
-    StatePtr state = current_state;
-
-    // TODO: turn off aux LED(s) when power is really low
-
-    if (0) {}  // placeholder
-
-    #ifdef USE_STROBE_STATE
-    // "step down" from strobe to something low
-    else if (state == strobe_state) {
-        set_state(steady_state, RAMP_SIZE/6);
-    }
-    #endif
-
-    // in normal mode, step down or turn off
-    else if (state == steady_state) {
-        if (actual_level > 1) {
-            uint8_t lvl = (actual_level >> 1) + (actual_level >> 2);
-            set_level_and_therm_target(lvl);
-        }
-        else {
-            set_state(off_state, 0);
-        }
-    }
-    // all other modes, just turn off when voltage is low
-    else {
-        set_state(off_state, 0);
-    }
-}
-
-
+// runs one time at boot, when power is connected
 void setup() {
-    #ifdef START_AT_MEMORIZED_LEVEL
-    // dual switch: e-switch + power clicky
-    // power clicky acts as a momentary mode
-    load_config();
 
-    if (button_is_pressed())
-        // hold button to go to moon
-        push_state(steady_state, 1);
-    else
-        // otherwise use memory
-        push_state(steady_state, memorized_level);
+    #ifndef START_AT_MEMORIZED_LEVEL
 
-    #else  // if not START_AT_MEMORIZED_LEVEL
+        // regular e-switch light, no hard clicky power button
 
-    // blink at power-on to let user know power is connected
-    set_level(RAMP_SIZE/8);
-    delay_4ms(3);
-    set_level(0);
+        // blink at power-on to let user know power is connected
+        set_level(RAMP_SIZE/8);
+        delay_4ms(3);
+        set_level(0);
 
-    #ifdef USE_FACTORY_RESET
-    if (button_is_pressed())
-        factory_reset();
-    #endif
+        #ifdef USE_FACTORY_RESET
+        if (button_is_pressed())
+            factory_reset();
+        #endif
 
-    load_config();
+        load_config();
 
-    #ifdef USE_TINT_RAMPING
-    // add tint ramping underneath every other state
-    push_state(tint_ramping_state, 0);
-    #endif  // ifdef USE_TINT_RAMPING
+        #ifdef USE_TINT_RAMPING
+        // add tint ramping underneath every other state
+        push_state(tint_ramping_state, 0);
+        #endif  // ifdef USE_TINT_RAMPING
 
-    push_state(off_state, 1);
+        push_state(off_state, 1);
+
+    #else  // if START_AT_MEMORIZED_LEVEL
+
+        // dual switch: e-switch + power clicky
+        // power clicky acts as a momentary mode
+        load_config();
+
+        #ifdef USE_TINT_RAMPING
+        // add tint ramping underneath every other state
+        push_state(tint_ramping_state, 0);
+        #endif  // ifdef USE_TINT_RAMPING
+
+        if (button_is_pressed())
+            // hold button to go to moon
+            push_state(steady_state, 1);
+        else
+            // otherwise use memory
+            push_state(steady_state, memorized_level);
 
     #endif  // ifdef START_AT_MEMORIZED_LEVEL
+
 }
 
 
+// runs repeatedly whenever light is "on" (not in standby)
 void loop() {
 
+    // "current_state" is volatile, so cache it to reduce code size
     StatePtr state = current_state;
 
     #ifdef USE_AUX_RGB_LEDS_WHILE_ON
-        if (! setting_rgb_mode_now) rgb_led_voltage_readout(1);
+    // display battery charge on RGB button during use
+    if (! setting_rgb_mode_now) rgb_led_voltage_readout(1);
     #endif
 
-    if (0) {}
+    if (0) {}  // placeholder
 
     #ifdef USE_VERSION_CHECK
     else if (state == version_check_state) {
@@ -295,27 +278,17 @@ void loop() {
 
     #ifdef USE_BORING_STROBE_STATE
     else if (state == boring_strobe_state) {
-        switch(boring_strobe_type) {
-            #ifdef USE_POLICE_STROBE_MODE
-            case 0: // police strobe
-                police_strobe_iter();
-                break;
-            #endif
-
-            #ifdef USE_SOS_MODE_IN_FF_GROUP
-            default: // SOS
-                sos_mode_iter();
-                break;
-            #endif
-        }
+        boring_strobe_state_iter();
     }
-    #endif  // #ifdef USE_BORING_STROBE_STATE
+    #endif
 
     #ifdef USE_BATTCHECK
     else if (state == battcheck_state) {
         battcheck();
         #ifdef USE_SIMPLE_UI
         // in simple mode, turn off after one readout
+        // FIXME: can eat the next button press
+        //        (state changes in loop() act weird)
         if (simple_ui_active) set_state(off_state, 0);
         #endif
     }
@@ -349,3 +322,40 @@ void loop() {
     #endif
 
 }
+
+
+// instead of handling EV_low_voltage in each mode,
+// it's handled globally here to make the code smaller and simpler
+void low_voltage() {
+
+    // "current_state" is volatile, so cache it to reduce code size
+    StatePtr state = current_state;
+
+    // TODO: turn off aux LED(s) when power is really low
+
+    if (0) {}  // placeholder
+
+    #ifdef USE_STROBE_STATE
+    // "step down" from strobe to something low
+    else if (state == strobe_state) {
+        set_state(steady_state, RAMP_SIZE/6);
+    }
+    #endif
+
+    // in normal mode, step down or turn off
+    else if (state == steady_state) {
+        if (actual_level > 1) {
+            uint8_t lvl = (actual_level >> 1) + (actual_level >> 2);
+            set_level_and_therm_target(lvl);
+        }
+        else {
+            set_state(off_state, 0);
+        }
+    }
+    // all other modes, just turn off when voltage is low
+    else {
+        set_state(off_state, 0);
+    }
+
+}
+

@@ -46,6 +46,22 @@ uint8_t boring_strobe_state(Event event, uint16_t arg) {
     return EVENT_NOT_HANDLED;
 }
 
+inline void boring_strobe_state_iter() {
+    switch(boring_strobe_type) {
+        #ifdef USE_POLICE_STROBE_MODE
+        case 0: // police strobe
+            police_strobe_iter();
+            break;
+        #endif
+
+        #ifdef USE_SOS_MODE_IN_FF_GROUP
+        default: // SOS
+            sos_mode_iter();
+            break;
+        #endif
+    }
+}
+
 #ifdef USE_POLICE_STROBE_MODE
 inline void police_strobe_iter() {
     // one iteration of main loop()
