@@ -1,5 +1,5 @@
 /*
- * strobes.h: Strobe modes for Anduril.
+ * strobe-modes.h: Strobe modes for Anduril.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,8 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef STROBES_H
-#define STROBES_H
+#ifndef STROBE_MODES_H
+#define STROBE_MODES_H
 
 // internal numbering for strobe modes
 #ifdef USE_STROBE_STATE
@@ -97,7 +97,7 @@ uint8_t candle_mode_state(Event event, uint16_t arg);
 
 #if defined(USE_POLICE_STROBE_MODE) || defined(USE_SOS_MODE_IN_FF_GROUP)
 #define USE_BORING_STROBE_STATE
-#include "ff-strobes.h"
+#include "ff-strobe-modes.h"
 #endif
 
 #endif

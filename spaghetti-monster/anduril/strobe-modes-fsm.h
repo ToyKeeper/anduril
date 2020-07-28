@@ -1,5 +1,5 @@
 /*
- * strobes-fsm.h: FSM config for strobe modes in Anduril.
+ * strobe-modes-fsm.h: FSM config for strobe modes in Anduril.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,8 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef STROBES_FSM_H
-#define STROBES_FSM_H
+#ifndef STROBE_MODES_FSM_H
+#define STROBE_MODES_FSM_H
 
 // enable the random number generator if we need it
 #if defined(USE_LIGHTNING_MODE) || defined(USE_CANDLE_MODE)

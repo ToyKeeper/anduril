@@ -1,5 +1,5 @@
 /*
- * ff-strobes.c: Fireflies Flashlights strobe modes for Anduril.
+ * ff-strobe-modes.c: Fireflies Flashlights strobe modes for Anduril.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FF_STROBES_C
-#define FF_STROBES_C
+#ifndef FF_STROBE_MODES_C
+#define FF_STROBE_MODES_C
 
-#include "ff-strobes.h"
+#include "ff-strobe-modes.h"
 
 uint8_t boring_strobe_state(Event event, uint16_t arg) {
     // police strobe and SOS, meh

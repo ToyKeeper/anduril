@@ -74,7 +74,7 @@
 #endif
 
 // enable FSM features needed by strobe modes
-#include "strobes-fsm.h"
+#include "strobe-modes-fsm.h"
 
 // figure out how many bytes of eeprom are needed,
 // based on which UI features are enabled
@@ -134,7 +134,7 @@
 #endif
 
 // this one detects its own enable/disable settings
-#include "strobes.h"
+#include "strobe-modes.h"
 
 #ifdef USE_SOS_MODE
 #include "sos-mode.h"
@@ -189,7 +189,7 @@
 #endif
 
 #ifdef USE_STROBE_STATE
-#include "strobes.c"
+#include "strobe-modes.c"
 #endif
 
 #ifdef USE_SOS_MODE
