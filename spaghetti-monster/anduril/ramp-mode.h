@@ -39,17 +39,17 @@
 #if defined(USE_SIMPLE_UI)
 // TODO: Move these settings to config-default.h?
 // start in the simple UI after each factory reset?
-#ifndef DEFAULT_SIMPLE_UI_ACTIVE
-#define DEFAULT_SIMPLE_UI_ACTIVE 1
+#ifndef SIMPLE_UI_ACTIVE
+#define SIMPLE_UI_ACTIVE 1
 #endif
-#ifndef DEFAULT_SIMPLE_UI_FLOOR
-#define DEFAULT_SIMPLE_UI_FLOOR 22
+#ifndef SIMPLE_UI_FLOOR
+#define SIMPLE_UI_FLOOR 22
 #endif
-#ifndef DEFAULT_SIMPLE_UI_CEIL
-#define DEFAULT_SIMPLE_UI_CEIL (MAX_1x7135+20)
+#ifndef SIMPLE_UI_CEIL
+#define SIMPLE_UI_CEIL (MAX_1x7135+20)
 #endif
-#ifndef DEFAULT_SIMPLE_UI_STEPS
-#define DEFAULT_SIMPLE_UI_STEPS 3
+#ifndef SIMPLE_UI_STEPS
+#define SIMPLE_UI_STEPS 3
 #endif
 #endif
 
@@ -147,7 +147,7 @@ uint8_t manual_memory = 0;
 #endif
 #ifdef USE_SIMPLE_UI
 // whether to enable the simplified interface or not
-uint8_t simple_ui_active = DEFAULT_SIMPLE_UI_ACTIVE;
+uint8_t simple_ui_active = SIMPLE_UI_ACTIVE;
 #endif
 // smooth vs discrete ramping
 uint8_t ramp_style = RAMP_STYLE;  // 0 = smooth, 1 = discrete
@@ -159,21 +159,21 @@ uint8_t ramp_floors[] = {
     RAMP_SMOOTH_FLOOR,
     RAMP_DISCRETE_FLOOR,
     #ifdef USE_SIMPLE_UI
-    DEFAULT_SIMPLE_UI_FLOOR,
+    SIMPLE_UI_FLOOR,
     #endif
     };
 uint8_t ramp_ceils[] = {
     RAMP_SMOOTH_CEIL,
     RAMP_DISCRETE_CEIL,
     #ifdef USE_SIMPLE_UI
-    DEFAULT_SIMPLE_UI_CEIL,
+    SIMPLE_UI_CEIL,
     #endif
     };
 uint8_t ramp_stepss[] = {
     0,
     RAMP_DISCRETE_STEPS,
     #ifdef USE_SIMPLE_UI
-    DEFAULT_SIMPLE_UI_STEPS,
+    SIMPLE_UI_STEPS,
     #endif
     };
 uint8_t ramp_discrete_step_size;  // don't set this
