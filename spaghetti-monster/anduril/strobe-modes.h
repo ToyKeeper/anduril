@@ -45,9 +45,9 @@ const int NUM_STROBES = strobe_mode_END;
 
 // which strobe mode is active?
 #ifdef USE_CANDLE_MODE
-volatile strobe_mode_te strobe_type = candle_mode_e;
+strobe_mode_te strobe_type = candle_mode_e;
 #else
-volatile strobe_mode_te strobe_type = 0;
+strobe_mode_te strobe_type = 0;
 #endif
 #endif
 
@@ -70,7 +70,7 @@ inline void strobe_state_iter();
 
 #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
 // party / tactical strobe timing
-volatile uint8_t strobe_delays[] = { 41, 67 };  // party strobe 24 Hz, tactical strobe 10 Hz
+uint8_t strobe_delays[] = { 41, 67 };  // party strobe 24 Hz, tactical strobe 10 Hz
 inline void party_tactical_strobe_mode_iter(uint8_t st);
 #endif
 
@@ -81,7 +81,7 @@ inline void lightning_storm_iter();
 // bike mode config options
 #ifdef USE_BIKE_FLASHER_MODE
 #define MAX_BIKING_LEVEL 120  // should be 127 or less
-volatile uint8_t bike_flasher_brightness = MAX_1x7135;
+uint8_t bike_flasher_brightness = MAX_1x7135;
 inline void bike_flasher_iter();
 #endif
 

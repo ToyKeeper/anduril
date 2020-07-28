@@ -26,8 +26,7 @@
 uint8_t strobe_state(Event event, uint16_t arg) {
     static int8_t ramp_direction = 1;
 
-    // 'st' reduces ROM size by avoiding access to a volatile var
-    // (maybe I should just make it nonvolatile?)
+    // 'st' reduces ROM size slightly
     strobe_mode_te st = strobe_type;
 
     #ifdef USE_MOMENTARY_MODE
@@ -165,7 +164,7 @@ uint8_t strobe_state(Event event, uint16_t arg) {
 
 // runs repeatedly in FSM loop() whenever UI is in strobe_state or momentary strobe
 inline void strobe_state_iter() {
-    uint8_t st = strobe_type;
+    uint8_t st = strobe_type;  // can't use switch() on an enum
 
     switch(st) {
         #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)

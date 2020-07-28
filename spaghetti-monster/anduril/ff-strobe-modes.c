@@ -24,8 +24,7 @@
 
 uint8_t boring_strobe_state(Event event, uint16_t arg) {
     // police strobe and SOS, meh
-    // 'st' reduces ROM size by avoiding access to a volatile var
-    // (maybe I should just make it nonvolatile?)
+    // 'st' reduces ROM size slightly
     uint8_t st = boring_strobe_type;
 
     if (event == EV_enter_state) {
