@@ -24,7 +24,7 @@
 #ifdef USE_RAMPING
 
 // actual_level: last ramp level set by set_level()
-volatile uint8_t actual_level = 0;
+uint8_t actual_level = 0;
 
 #ifdef USE_TINT_RAMPING
 uint8_t tint = 128;
