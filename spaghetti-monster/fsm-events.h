@@ -206,8 +206,10 @@ uint8_t push_event(uint8_t ev_type);
 
 
 #define EMISSION_QUEUE_LEN 16
+// was "volatile" before, changed to regular var since IRQ rewrites seem
+// to have removed the need for it to be volatile
 // no comment about "volatile emissions"
-volatile Emission emissions[EMISSION_QUEUE_LEN];
+Emission emissions[EMISSION_QUEUE_LEN];
 
 void append_emission(Event event, uint16_t arg);
 void delete_first_emission();
