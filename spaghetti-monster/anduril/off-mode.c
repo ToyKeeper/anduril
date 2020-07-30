@@ -22,6 +22,10 @@
 
 #include "off-mode.h"
 
+#ifdef USE_SUNSET_TIMER
+#include "sunset-timer.h"
+#endif
+
 uint8_t off_state(Event event, uint16_t arg) {
     // turn emitter off when entering state
     if (event == EV_enter_state) {
@@ -30,6 +34,9 @@ uint8_t off_state(Event event, uint16_t arg) {
         indicator_led(indicator_led_mode & 0x03);
         #elif defined(USE_AUX_RGB_LEDS)
         rgb_led_update(rgb_led_off_mode, 0);
+        #endif
+        #ifdef USE_SUNSET_TIMER
+        sunset_timer = 0;  // needs a reset in case previous timer was aborted
         #endif
         // sleep while off  (lower power use)
         // (unless delay requested; give the ADC some time to catch up)
