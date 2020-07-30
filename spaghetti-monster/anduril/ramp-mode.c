@@ -21,6 +21,9 @@
 #define RAMP_MODE_C
 
 #include "ramp-mode.h"
+#ifdef USE_SUNSET_TIMER
+#include "sunset-timer.h"
+#endif
 
 uint8_t steady_state(Event event, uint16_t arg) {
     #ifdef USE_REVERSING
@@ -42,6 +45,23 @@ uint8_t steady_state(Event event, uint16_t arg) {
     uint8_t step_size;
     if (ramp_style) { step_size = ramp_discrete_step_size; }
     else { step_size = 1; }
+
+    #ifdef USE_SUNSET_TIMER
+    // handle the shutoff timer first
+    static uint8_t timer_orig_level = 0;
+    uint8_t sunset_active = sunset_timer;  // save for comparison
+    // clock tick
+    sunset_timer_state(event, arg);
+    // if the timer was just turned on
+    if (sunset_timer  &&  (! sunset_active)) {
+        timer_orig_level = actual_level;
+    }
+    // if the timer just expired, shut off
+    else if (sunset_active  &&  (! sunset_timer)) {
+        set_state(off_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    #endif  // ifdef USE_SUNSET_TIMER
 
     // turn LED on when we first enter the mode
     if ((event == EV_enter_state) || (event == EV_reenter_state)) {
@@ -232,8 +252,20 @@ uint8_t steady_state(Event event, uint16_t arg) {
     }
     #endif
 
-    #if defined(USE_SET_LEVEL_GRADUALLY) || defined(USE_REVERSING)
     else if (event == EV_tick) {
+        #ifdef USE_SUNSET_TIMER
+        // reduce output if shutoff timer is active
+        if (sunset_timer) {
+            uint8_t dimmed_level = timer_orig_level * (sunset_timer-1) / sunset_timer_peak;
+            if (dimmed_level < 1) dimmed_level = 1;
+            #ifdef USE_SET_LEVEL_GRADUALLY
+            set_level_gradually(dimmed_level);
+            target_level = dimmed_level;
+            #else
+            set_level_and_therm_target(dimmed_level);
+            #endif
+        }
+        #endif
         #ifdef USE_REVERSING
         // un-reverse after 1 second
         if (arg == TICKS_PER_SECOND) ramp_direction = 1;
@@ -270,7 +302,6 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #endif  // ifdef USE_SET_LEVEL_GRADUALLY
         return MISCHIEF_MANAGED;
     }
-    #endif
     #ifdef USE_THERMAL_REGULATION
     // overheating: drop by an amount proportional to how far we are above the ceiling
     else if (event == EV_temperature_high) {
@@ -453,6 +484,8 @@ void set_level_and_therm_target(uint8_t level) {
     target_level = level;
     set_level(level);
 }
+#else
+#define set_level_and_therm_target(level) set_level(level)
 #endif
 
 

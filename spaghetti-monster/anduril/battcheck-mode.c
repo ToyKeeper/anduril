@@ -35,13 +35,7 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
-    #ifdef USE_GOODNIGHT_MODE
-    // 2 clicks: goodnight mode
-    else if (event == EV_2clicks) {
-        set_state(goodnight_state, 0);
-        return MISCHIEF_MANAGED;
-    }
-    #elif defined(USE_BEACON_MODE)
+    #if defined(USE_BEACON_MODE)
     // 2 clicks: beacon mode
     else if (event == EV_2clicks) {
         set_state(beacon_state, 0);

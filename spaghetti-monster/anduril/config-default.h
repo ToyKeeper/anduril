@@ -90,11 +90,9 @@
 // enable beacon mode
 #define USE_BEACON_MODE
 
-// enable sunset (goodnight) mode
-// TODO: replace goodnight mode with a sunset timer in the regular ramp
-#define USE_GOODNIGHT_MODE
-#define GOODNIGHT_TIME  60  // minutes (approximately)
-#define GOODNIGHT_LEVEL 24  // ~11 lm
+// enable sunset timer (ramp-down and automatic shutoff)
+// timer is available in regular ramp mode and candle mode
+#define USE_SUNSET_TIMER
 
 // enable/disable various strobe modes
 #define USE_BIKE_FLASHER_MODE

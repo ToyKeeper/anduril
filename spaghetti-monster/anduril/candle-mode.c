@@ -21,6 +21,9 @@
 #define CANDLE_MODE_C
 
 #include "candle-mode.h"
+#ifdef USE_SUNSET_TIMER
+#include "sunset-timer.h"
+#endif
 
 uint8_t candle_mode_state(Event event, uint16_t arg) {
     static int8_t ramp_direction = 1;
@@ -37,22 +40,35 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
     static uint8_t candle_wave2_depth       = CANDLE_WAVE2_MAXDEPTH * CANDLE_AMPLITUDE / 100;
     static uint8_t candle_wave3_depth       = CANDLE_WAVE3_MAXDEPTH * CANDLE_AMPLITUDE / 100;
     static uint8_t candle_mode_brightness = 24;
-    static uint8_t candle_mode_timer = 0;
-    #define TICKS_PER_CANDLE_MINUTE 4096 // about 65 seconds
-    #define MINUTES_PER_CANDLE_HALFHOUR 27 // ish
+
+    #ifdef USE_SUNSET_TIMER
+    // let the candle "burn out" and shut itself off
+    // if the user told it to
+    // cache this in case it changes when the timer is called
+    uint8_t sunset_active = sunset_timer;
+    // clock tick
+    sunset_timer_state(event, arg);
+    // if the timer just expired, shut off
+    if (sunset_active  &&  (! sunset_timer)) {
+        set_state(off_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    #endif  // ifdef USE_SUNSET_TIMER
+
 
     if (event == EV_enter_state) {
-        candle_mode_timer = 0;  // in case any time was left over from earlier
         ramp_direction = 1;
         return MISCHIEF_MANAGED;
     }
+    #ifdef USE_SUNSET_TIMER
     // 2 clicks: cancel timer
     else if (event == EV_2clicks) {
         // parent state just rotated through strobe/flasher modes,
         // so cancel timer...  in case any time was left over from earlier
-        candle_mode_timer = 0;
+        sunset_timer = 0;
         return MISCHIEF_MANAGED;
     }
+    #endif  // ifdef USE_SUNSET_TIMER
     // hold: change brightness (brighter)
     else if (event == EV_click1_hold) {
         // ramp away from extremes
@@ -78,17 +94,6 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
             candle_mode_brightness --;
         return MISCHIEF_MANAGED;
     }
-    // 3 clicks: add 30m to candle timer
-    else if (event == EV_3clicks) {
-        if (candle_mode_timer < (255 - MINUTES_PER_CANDLE_HALFHOUR)) {
-            // add 30m to the timer
-            candle_mode_timer += MINUTES_PER_CANDLE_HALFHOUR;
-            // blink to confirm
-            set_level(actual_level + 32);
-            delay_4ms(2);
-        }
-        return MISCHIEF_MANAGED;
-    }
     // clock tick: animate candle brightness
     else if (event == EV_tick) {
         // un-reverse after 1 second
@@ -96,22 +101,13 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
 
         // self-timer dims the light during the final minute
         uint8_t subtract = 0;
-        if (candle_mode_timer == 1) {
-            subtract = ((candle_mode_brightness+CANDLE_AMPLITUDE)
-                     * ((arg & (TICKS_PER_CANDLE_MINUTE-1)) >> 4))
-                     >> 8;
+        #ifdef USE_SUNSET_TIMER
+        if (sunset_timer == 1) {
+            subtract = (candle_mode_brightness+CANDLE_AMPLITUDE)
+                       * sunset_ticks / TICKS_PER_MINUTE;
         }
-        // we passed a minute mark, decrease timer if it's running
-        if ((arg & (TICKS_PER_CANDLE_MINUTE-1)) == (TICKS_PER_CANDLE_MINUTE - 1)) {
-            if (candle_mode_timer > 0) {
-                candle_mode_timer --;
-                //set_level(0);  delay_4ms(2);
-                // if the timer ran out, shut off
-                if (! candle_mode_timer) {
-                    set_state(off_state, 0);
-                }
-            }
-        }
+        #endif  // ifdef USE_SUNSET_TIMER
+
         // 3-oscillator synth for a relatively organic pattern
         uint8_t add;
         add = ((triangle_wave(candle_wave1) * candle_wave1_depth) >> 8)

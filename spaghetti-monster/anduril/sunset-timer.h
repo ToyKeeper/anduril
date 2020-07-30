@@ -1,5 +1,5 @@
 /*
- * goodnight-mode.h: Goodnight / sunset for Anduril.
+ * sunset-timer.h: Sunset / candle auto-shutoff functions for Anduril.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,11 +17,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GOODNIGHT_MODE_H
-#define GOODNIGHT_MODE_H
+#ifndef SUNSET_TIMER_H
+#define SUNSET_TIMER_H
 
-// 1-hour ramp down from low, then automatic off
-uint8_t goodnight_state(Event event, uint16_t arg);
+// how many minutes to add each time the user "bumps" the timer?
+#define SUNSET_TIMER_UNIT 10
+
+#define TICKS_PER_MINUTE (TICKS_PER_SECOND*60)
+
+// automatic shutoff timer
+uint8_t sunset_timer = 0;
+uint8_t sunset_timer_peak = 0;
+uint16_t sunset_ticks = 0;
+uint8_t sunset_timer_state(Event event, uint16_t arg);
 
 
 #endif

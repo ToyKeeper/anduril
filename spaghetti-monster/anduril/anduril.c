@@ -97,16 +97,16 @@
 #include "aux-leds.h"
 #include "misc.h"
 
+#ifdef USE_SUNSET_TIMER
+#include "sunset-timer.h"
+#endif
+
 #ifdef USE_VERSION_CHECK
 #include "version-check-mode.h"
 #endif
 
 #ifdef USE_BATTCHECK_MODE
 #include "battcheck-mode.h"
-#endif
-
-#ifdef USE_GOODNIGHT_MODE
-#include "goodnight-mode.h"
 #endif
 
 #ifdef USE_BEACON_MODE
@@ -152,16 +152,16 @@
 #include "aux-leds.c"
 #include "misc.c"
 
+#ifdef USE_SUNSET_TIMER
+#include "sunset-timer.c"
+#endif
+
 #ifdef USE_VERSION_CHECK
 #include "version-check-mode.c"
 #endif
 
 #ifdef USE_BATTCHECK_MODE
 #include "battcheck-mode.c"
-#endif
-
-#ifdef USE_GOODNIGHT_MODE
-#include "goodnight-mode.c"
 #endif
 
 #ifdef USE_BEACON_MODE
