@@ -51,7 +51,7 @@ uint8_t adc_deferred_enable = 0;  // stop waiting and run the deferred code
 void adc_deferred();  // do the actual ADC-related calculations
 
 static inline void ADC_voltage_handler();
-volatile uint8_t voltage = 0;
+uint8_t voltage = 0;
 #ifdef USE_LVP
 void low_voltage();
 #endif
@@ -82,7 +82,7 @@ void battcheck();
 #define THERM_CAL_OFFSET 0
 #endif
 // temperature now, in C (ish)
-volatile int16_t temperature;
+int16_t temperature;
 uint8_t therm_ceil = DEFAULT_THERM_CEIL;
 int8_t therm_cal_offset = 0;
 volatile uint8_t reset_thermal_history = 1;
