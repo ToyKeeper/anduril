@@ -21,6 +21,7 @@
 #define CANDLE_MODE_C
 
 #include "candle-mode.h"
+
 #ifdef USE_SUNSET_TIMER
 #include "sunset-timer.h"
 #endif
@@ -99,22 +100,22 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
         // un-reverse after 1 second
         if (arg == TICKS_PER_SECOND) ramp_direction = 1;
 
-        // self-timer dims the light during the final minute
-        uint8_t subtract = 0;
-        #ifdef USE_SUNSET_TIMER
-        if (sunset_timer == 1) {
-            subtract = (candle_mode_brightness+CANDLE_AMPLITUDE)
-                       * sunset_ticks / TICKS_PER_MINUTE;
-        }
-        #endif  // ifdef USE_SUNSET_TIMER
-
         // 3-oscillator synth for a relatively organic pattern
         uint8_t add;
         add = ((triangle_wave(candle_wave1) * candle_wave1_depth) >> 8)
             + ((triangle_wave(candle_wave2) * candle_wave2_depth) >> 8)
             + ((triangle_wave(candle_wave3) * candle_wave3_depth) >> 8);
-        int8_t brightness = candle_mode_brightness + add - subtract;
-        if (brightness < 0) { brightness = 0; }
+        uint16_t brightness = candle_mode_brightness + add;
+
+        // self-timer dims the light during the final minute
+        #ifdef USE_SUNSET_TIMER
+        if (1 == sunset_timer) {
+            brightness = brightness
+                         * ((TICKS_PER_MINUTE>>5) - (sunset_ticks>>5))
+                         / (TICKS_PER_MINUTE>>5);
+        }
+        #endif  // ifdef USE_SUNSET_TIMER
+
         set_level(brightness);
 
         // wave1: slow random LFO

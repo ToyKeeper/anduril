@@ -30,20 +30,22 @@ uint8_t sunset_timer_state(Event event, uint16_t arg) {
         sunset_ticks = 0;
         return MISCHIEF_MANAGED;
     }
-    // 3 clicks: add 30m to timer
-    else if (event == EV_3clicks) {
-        if (sunset_timer < (255 - SUNSET_TIMER_UNIT)) {
-            // add 30m to the timer
-            sunset_timer += SUNSET_TIMER_UNIT;
-            sunset_timer_peak = sunset_timer;  // reset ceiling
-            sunset_ticks = 0;  // reset phase
-            // blink to confirm
-            uint8_t brightness = actual_level;
-            uint8_t bump = actual_level + 32;
-            if (bump > MAX_LEVEL) bump = 0;
-            set_level(bump);
-            delay_4ms(2);
-            set_level(brightness);
+    // 4H: add 10m to timer, per second, until released
+    else if (event == EV_click4_hold) {
+        if (0 == (arg % TICKS_PER_SECOND)) {
+            if (sunset_timer < (255 - SUNSET_TIMER_UNIT)) {
+                // add 30m to the timer
+                sunset_timer += SUNSET_TIMER_UNIT;
+                sunset_timer_peak = sunset_timer;  // reset ceiling
+                sunset_ticks = 0;  // reset phase
+                // blink to confirm
+                uint8_t brightness = actual_level;
+                uint8_t bump = actual_level + 32;
+                if (bump > MAX_LEVEL) bump = 0;
+                set_level(bump);
+                delay_4ms(2);
+                set_level(brightness);
+            }
         }
         return MISCHIEF_MANAGED;
     }
