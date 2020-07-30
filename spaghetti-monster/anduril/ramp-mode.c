@@ -21,6 +21,7 @@
 #define RAMP_MODE_C
 
 #include "ramp-mode.h"
+
 #ifdef USE_SUNSET_TIMER
 #include "sunset-timer.h"
 #endif
@@ -117,6 +118,9 @@ uint8_t steady_state(Event event, uint16_t arg) {
         else {
             set_level_and_therm_target(memorized_level);
         }
+        #ifdef USE_SUNSET_TIMER
+        timer_orig_level = actual_level;
+        #endif
         return MISCHIEF_MANAGED;
     }
     // hold: change brightness (brighter)
@@ -185,6 +189,9 @@ uint8_t steady_state(Event event, uint16_t arg) {
         }
         #endif
         set_level_and_therm_target(memorized_level);
+        #ifdef USE_SUNSET_TIMER
+        timer_orig_level = actual_level;
+        #endif
         return MISCHIEF_MANAGED;
     }
     #if defined(USE_REVERSING) || defined(START_AT_MEMORIZED_LEVEL)
@@ -242,6 +249,9 @@ uint8_t steady_state(Event event, uint16_t arg) {
         }
         #endif
         set_level_and_therm_target(memorized_level);
+        #ifdef USE_SUNSET_TIMER
+        timer_orig_level = actual_level;
+        #endif
         return MISCHIEF_MANAGED;
     }
     #ifdef START_AT_MEMORIZED_LEVEL
@@ -381,6 +391,9 @@ uint8_t steady_state(Event event, uint16_t arg) {
         blip();
         memorized_level = nearest_level(actual_level);
         set_level_and_therm_target(memorized_level);
+        #ifdef USE_SUNSET_TIMER
+        timer_orig_level = actual_level;
+        #endif
         return MISCHIEF_MANAGED;
     }
 
