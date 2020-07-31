@@ -30,6 +30,14 @@ uint8_t sunset_timer_state(Event event, uint16_t arg) {
         sunset_ticks = 0;
         return MISCHIEF_MANAGED;
     }
+    // hold: maybe "bump" the timer if it's active and almost expired
+    else if (event == EV_hold) {
+        // ramping up should "bump" the timer to extend the deadline a bit
+        if ((sunset_timer > 0) && (sunset_timer < 4)) {
+            sunset_timer = 3;
+            sunset_timer_peak = 3;
+        }
+    }
     // 4H: add 10m to timer, per second, until released
     else if (event == EV_click4_hold) {
         if (0 == (arg % TICKS_PER_SECOND)) {
