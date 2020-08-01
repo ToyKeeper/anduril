@@ -67,6 +67,9 @@ void load_config() {
         rgb_led_off_mode = eeprom[rgb_led_off_mode_e];
         rgb_led_lockout_mode = eeprom[rgb_led_lockout_mode_e];
         #endif
+        #ifdef USE_AUTOLOCK
+        autolock_time = eeprom[autolock_time_e];
+        #endif
     }
     #ifdef START_AT_MEMORIZED_LEVEL
     if (load_eeprom_wl()) {
@@ -117,6 +120,9 @@ void save_config() {
     #ifdef USE_AUX_RGB_LEDS
     eeprom[rgb_led_off_mode_e] = rgb_led_off_mode;
     eeprom[rgb_led_lockout_mode_e] = rgb_led_lockout_mode;
+    #endif
+    #ifdef USE_AUTOLOCK
+    eeprom[autolock_time_e] = autolock_time;
     #endif
 
     save_eeprom();

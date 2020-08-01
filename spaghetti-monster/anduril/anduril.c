@@ -73,6 +73,10 @@
 #include "battcheck-mode-fsm.h"
 #endif
 
+#ifdef USE_LOCKOUT_MODE
+#include "lockout-mode-fsm.h"
+#endif
+
 // enable FSM features needed by strobe modes
 #include "strobe-modes-fsm.h"
 

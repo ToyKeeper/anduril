@@ -113,6 +113,23 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     }
     #endif
 
+    #ifdef USE_AUTOLOCK
+    // 5 clicks: configure the autolock option
+    else if (event == EV_5clicks) {
+        push_state(autolock_config_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    // 5H: turn off autolock
+    else if (event == EV_click5_hold) {
+        if (0 == arg) {
+            autolock_time = 0;
+            save_config();
+            blip();
+        }
+        return MISCHIEF_MANAGED;
+    }
+    #endif
+
     #if defined(USE_INDICATOR_LED)
     // 7 clicks: rotate through indicator LED modes (lockout mode)
     else if (event == EV_7clicks) {
@@ -166,6 +183,18 @@ uint8_t lockout_state(Event event, uint16_t arg) {
 
     return EVENT_NOT_HANDLED;
 }
+
+#ifdef USE_AUTOLOCK
+// set the auto-lock timer to N minutes, where N is the number of clicks
+void autolock_config_save() {
+    uint8_t foo = config_state_values[0];
+    if (foo) autolock_time = config_state_values[0];
+}
+
+uint8_t autolock_config_state(Event event, uint16_t arg) {
+    return config_state_base(event, arg, 1, autolock_config_save);
+}
+#endif  // #ifdef USE_AUTOLOCK
 
 
 #endif

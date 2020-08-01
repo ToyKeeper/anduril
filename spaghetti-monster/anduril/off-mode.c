@@ -55,7 +55,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         }
         return MISCHIEF_MANAGED;
     }
-    #if defined(TICK_DURING_STANDBY) && (defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS))
+    #if defined(TICK_DURING_STANDBY)
     // blink the indicator LED, maybe
     else if (event == EV_sleep_tick) {
         #ifdef USE_INDICATOR_LED
@@ -64,6 +64,14 @@ uint8_t off_state(Event event, uint16_t arg) {
         }
         #elif defined(USE_AUX_RGB_LEDS)
         rgb_led_update(rgb_led_off_mode, arg);
+        #endif
+
+        #ifdef USE_AUTOLOCK
+        // lock the light after being off for N minutes
+        uint16_t ticks = autolock_time * SLEEP_TICKS_PER_SECOND * 60;
+        if ((autolock_time > 0)  && (arg > ticks)) {
+            set_state(lockout_state, 0);
+        }
         #endif
         return MISCHIEF_MANAGED;
     }

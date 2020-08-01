@@ -115,6 +115,8 @@
 #define MOON_DURING_LOCKOUT_MODE
 // if enabled, 2nd lockout click goes to the other ramp's floor level
 #define LOCKOUT_MOON_FANCY
+// add an optional setting to lock the light after being off for a while
+#define USE_AUTOLOCK
 
 // enable momentary mode
 #define USE_MOMENTARY_MODE

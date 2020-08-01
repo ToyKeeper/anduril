@@ -67,6 +67,9 @@ typedef enum {
     rgb_led_off_mode_e,
     rgb_led_lockout_mode_e,
     #endif
+    #ifdef USE_AUTOLOCK
+    autolock_time_e,
+    #endif
     eeprom_indexes_e_END
 } eeprom_indexes_e;
 #define EEPROM_BYTES eeprom_indexes_e_END

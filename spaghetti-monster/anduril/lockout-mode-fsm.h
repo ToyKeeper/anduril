@@ -1,5 +1,5 @@
 /*
- * lockout-mode.h: Lockout mode for Anduril.
+ * lockout-mode-fsm.h: FSM config for lockout mode in Anduril.
  *
  * Copyright (C) 2017 Selene ToyKeeper
  *
@@ -17,15 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LOCKOUT_MODE_H
-#define LOCKOUT_MODE_H
+#ifndef LOCKOUT_MODE_FSM_H
+#define LOCKOUT_MODE_FSM_H
 
-// soft lockout
-uint8_t lockout_state(Event event, uint16_t arg);
-
+// autolock function requires the ability to measure time while "off"
 #ifdef USE_AUTOLOCK
-uint8_t autolock_time = 0;
-uint8_t autolock_config_state(Event event, uint16_t arg);
+#define TICK_DURING_STANDBY
 #endif
 
 

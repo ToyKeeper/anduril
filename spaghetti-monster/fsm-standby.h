@@ -27,15 +27,15 @@ volatile uint8_t go_to_standby = 0;
 
 #ifdef TICK_DURING_STANDBY
 #ifndef STANDBY_TICK_SPEED
-#define STANDBY_TICK_SPEED 5  // every 0.512 s
+#define STANDBY_TICK_SPEED 3  // every 0.128 s
 /*
  * From the Attiny85 manual:
  * 0: 16 ms
  * 1: 32 ms
  * 2: 64 ms
- * 3: 0.125 s
- * 4: 0.25 s
- * 5: 0.5 s
+ * 3: 0.128 s
+ * 4: 0.256 s
+ * 5: 0.512 s
  * 6: 1.0 s
  * 7: 2.0 s
  * 32: 4.0 s
@@ -44,6 +44,19 @@ volatile uint8_t go_to_standby = 0;
  *  separated from the others, in the "32" position instead of "8", but that's
  *  how it is)
  */
+#endif
+#if (STANDBY_TICK_SPEED == 1)
+#define SLEEP_TICKS_PER_SECOND 31
+#elif (STANDBY_TICK_SPEED == 2)
+#define SLEEP_TICKS_PER_SECOND 16
+#elif (STANDBY_TICK_SPEED == 3)
+#define SLEEP_TICKS_PER_SECOND 8
+#elif (STANDBY_TICK_SPEED == 4)
+#define SLEEP_TICKS_PER_SECOND 4
+#elif (STANDBY_TICK_SPEED == 5)
+#define SLEEP_TICKS_PER_SECOND 2
+#elif (STANDBY_TICK_SPEED == 6)
+#define SLEEP_TICKS_PER_SECOND 1
 #endif
 #endif
 
