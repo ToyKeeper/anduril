@@ -13,7 +13,7 @@
 #define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
 
 // Emisar wanted a shortcut to this
-#define USE_TENCLICK_THERMAL_CONFIG
+//#define USE_TENCLICK_THERMAL_CONFIG
 
 
 // level_calc.py seventh 3 150 7135 1 1.4 117.99 7135 6 1 1706.86 FET 3 10 13000
