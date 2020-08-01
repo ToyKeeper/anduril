@@ -1,6 +1,9 @@
 // Mateminco/Astrolux MF01-Mini options for Anduril
 #include "hwdef-Mateminco_MF01-Mini.h"
 
+// ROM is too big... remove something
+#undef USE_VOLTAGE_CORRECTION
+
 // the button lights up
 #define USE_INDICATOR_LED
 //#define INDICATOR_LED_SKIP_LOW  // low mode doesn't work on this driver
@@ -46,5 +49,5 @@
 #define RAMP_DISCRETE_STEPS 7  // ??, ??, ... lm
 
 
-#define USE_TENCLICK_THERMAL_CONFIG  // by request
+//#define USE_TENCLICK_THERMAL_CONFIG  // by request
 #define THERM_FASTER_LEVEL 130  // throttle back faster when high

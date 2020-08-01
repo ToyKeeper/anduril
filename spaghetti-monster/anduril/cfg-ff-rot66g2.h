@@ -1,6 +1,9 @@
 // Fireflies ROT66 G2 config options for Anduril
 #include "cfg-ff-rot66.h"
 
+// ROM is too big... remove something
+#undef USE_VOLTAGE_CORRECTION
+
 // if the "low" mode was disabled, turn it back on
 #ifdef INDICATOR_LED_SKIP_LOW
 #undef INDICATOR_LED_SKIP_LOW

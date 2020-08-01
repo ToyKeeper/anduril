@@ -1,6 +1,9 @@
 // Emisar FET+13+1 config options for Anduril
 #include "hwdef-Emisar_D18.h"
 
+// ROM is too big... remove something
+#undef USE_VOLTAGE_CORRECTION
+
 // front-facing aux LEDs
 #define USE_INDICATOR_LED
 //#define USE_INDICATOR_LED_WHILE_RAMPING
