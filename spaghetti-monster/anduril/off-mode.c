@@ -176,10 +176,16 @@ uint8_t off_state(Event event, uint16_t arg) {
     #endif
 
     #ifdef USE_SIMPLE_UI
-    // 8 clicks, but hold last click: turn simple UI off
+    // 8 clicks, but hold last click: turn simple UI off (or configure it)
     else if ((event == EV_click8_hold) && (!arg)) {
-        blink_confirm(1);
-        simple_ui_active = 0;
+        if (simple_ui_active) {  // turn off simple UI
+            blink_confirm(1);
+            simple_ui_active = 0;
+            save_config();
+        }
+        else {  // configure simple UI ramp
+            push_state(simple_ui_config_state, 0);
+        }
         return MISCHIEF_MANAGED;
     }
 
@@ -191,6 +197,7 @@ uint8_t off_state(Event event, uint16_t arg) {
     else if (event == EV_8clicks) {
         blink_confirm(1);
         simple_ui_active = 1;
+        save_config();
         return MISCHIEF_MANAGED;
     }
     #endif

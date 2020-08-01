@@ -429,8 +429,9 @@ uint8_t steady_state(Event event, uint16_t arg) {
 void ramp_config_save() {
     // parse values
     uint8_t val;
+    // 0 = smooth ramp, 1 = stepped ramp, 2 = simple UI's ramp
     uint8_t style = ramp_style;
-    // TODO: detect if we're configuring the simple UI
+    if (current_state == simple_ui_config_state)  style = 2;
 
     val = config_state_values[0];
     if (val) { ramp_floors[style] = val; }
@@ -438,20 +439,24 @@ void ramp_config_save() {
     val = config_state_values[1];
     if (val) { ramp_ceils[style] = MAX_LEVEL + 1 - val; }
 
-    if (ramp_style) {  // discrete / stepped ramp
+    if (style) {  // smooth ramp has no third value
         val = config_state_values[2];
         if (val) ramp_stepss[style] = val;
     }
 }
 
 uint8_t ramp_config_state(Event event, uint16_t arg) {
-    uint8_t num_config_steps;
-    num_config_steps = 2 + ramp_style;
+    uint8_t num_config_steps = ramp_style + 2;
     return config_state_base(event, arg,
                              num_config_steps, ramp_config_save);
 }
-#endif  // #ifdef USE_RAMP_CONFIG
 
+#ifdef USE_SIMPLE_UI
+uint8_t simple_ui_config_state(Event event, uint16_t arg) {
+    return config_state_base(event, arg, 3, ramp_config_save);
+}
+#endif
+#endif  // #ifdef USE_RAMP_CONFIG
 
 // find the ramp level closest to the target,
 // using only the levels which are allowed in the current state
