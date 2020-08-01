@@ -24,7 +24,7 @@
 
 uint8_t sunset_timer_state(Event event, uint16_t arg) {
 
-    // blink on start
+    // reset on start
     if (event == EV_enter_state) {
         sunset_timer = 0;
         sunset_ticks = 0;
@@ -42,7 +42,7 @@ uint8_t sunset_timer_state(Event event, uint16_t arg) {
     else if (event == EV_click4_hold) {
         if (0 == (arg % TICKS_PER_SECOND)) {
             if (sunset_timer < (255 - SUNSET_TIMER_UNIT)) {
-                // add 30m to the timer
+                // add a few minutes to the timer
                 sunset_timer += SUNSET_TIMER_UNIT;
                 sunset_timer_peak = sunset_timer;  // reset ceiling
                 sunset_ticks = 0;  // reset phase
@@ -57,7 +57,7 @@ uint8_t sunset_timer_state(Event event, uint16_t arg) {
         }
         return MISCHIEF_MANAGED;
     }
-    // tick: step down (maybe) or off (maybe)
+    // tick: count down until time expires
     else if (event == EV_tick) {
         // time passed
         sunset_ticks ++;
