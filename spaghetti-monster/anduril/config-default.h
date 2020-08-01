@@ -86,6 +86,10 @@
 #define BATTCHECK_VpT
 //#define BATTCHECK_8bars  // FIXME: breaks build
 //#define BATTCHECK_4bars  // FIXME: breaks build
+// allow the user to calibrate the voltage readings?
+// (adjust in 0.05V increments from -0.30V to +0.30V)
+// (1 = -0.30V, 2 = -0.25V, ... 7 = 0V, ... 13 = +0.30V)
+#define USE_VOLTAGE_CORRECTION
 
 // enable beacon mode
 #define USE_BEACON_MODE

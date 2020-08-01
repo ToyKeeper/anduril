@@ -60,6 +60,9 @@ typedef enum {
     therm_ceil_e,
     therm_cal_offset_e,
     #endif
+    #ifdef USE_VOLTAGE_CORRECTION
+    voltage_correction_e,
+    #endif
     #ifdef USE_INDICATOR_LED
     indicator_led_mode_e,
     #endif

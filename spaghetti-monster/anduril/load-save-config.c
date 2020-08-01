@@ -60,6 +60,9 @@ void load_config() {
         therm_ceil = eeprom[therm_ceil_e];
         therm_cal_offset = eeprom[therm_cal_offset_e];
         #endif
+        #ifdef USE_VOLTAGE_CORRECTION
+        voltage_correction = eeprom[voltage_correction_e];
+        #endif
         #ifdef USE_INDICATOR_LED
         indicator_led_mode = eeprom[indicator_led_mode_e];
         #endif
@@ -113,6 +116,9 @@ void save_config() {
     #ifdef USE_THERMAL_REGULATION
     eeprom[therm_ceil_e] = therm_ceil;
     eeprom[therm_cal_offset_e] = therm_cal_offset;
+    #endif
+    #ifdef USE_VOLTAGE_CORRECTION
+    eeprom[voltage_correction_e] = voltage_correction;
     #endif
     #ifdef USE_INDICATOR_LED
     eeprom[indicator_led_mode_e] = indicator_led_mode;

@@ -114,7 +114,12 @@ static inline uint8_t calc_voltage_divider(uint16_t value) {
     // use 9.7 fixed-point to get sufficient precision
     uint16_t adc_per_volt = ((ADC_44<<5) - (ADC_22<<5)) / (44-22);
     // shift incoming value into a matching position
-    uint8_t result = ((value>>1) / adc_per_volt) + VOLTAGE_FUDGE_FACTOR;
+    uint8_t result = ((value>>1) / adc_per_volt)
+                     + VOLTAGE_FUDGE_FACTOR
+                     #ifdef USE_VOLTAGE_CORRECTION
+                     + voltage_correction - 7
+                     #endif
+                     ;
     return result;
 }
 #endif
@@ -262,7 +267,12 @@ static inline void ADC_voltage_handler() {
     // calculate actual voltage: volts * 10
     // ADC = 1.1 * 1024 / volts
     // volts = 1.1 * 1024 / ADC
-    voltage = ((uint16_t)(2*1.1*1024*10)/(measurement>>6) + VOLTAGE_FUDGE_FACTOR) >> 1;
+    voltage = ((uint16_t)(2*1.1*1024*10)/(measurement>>6)
+               + VOLTAGE_FUDGE_FACTOR
+               #ifdef USE_VOLTAGE_CORRECTION
+               + voltage_correction - 7
+               #endif
+               ) >> 1;
     #endif
 
     // if low, callback EV_voltage_low / EV_voltage_critical

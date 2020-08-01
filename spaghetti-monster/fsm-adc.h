@@ -52,6 +52,11 @@ void adc_deferred();  // do the actual ADC-related calculations
 
 static inline void ADC_voltage_handler();
 uint8_t voltage = 0;
+#ifdef USE_VOLTAGE_CORRECTION
+// same 0.05V units as fudge factor,
+// but 7 is neutral, and the expected range is from 1 to 13
+uint8_t voltage_correction = 7;
+#endif
 #ifdef USE_LVP
 void low_voltage();
 #endif
