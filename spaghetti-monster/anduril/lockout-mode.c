@@ -28,7 +28,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     // button is being held
     #ifdef USE_AUX_RGB_LEDS
     // don't turn on during RGB aux LED configuration
-    if (event == EV_click3_hold) { set_level(0); } else
+    if (event == EV_click7_hold) { set_level(0); } else
     #endif
     if ((event & (B_CLICK | B_PRESS)) == (B_CLICK | B_PRESS)) {
         #ifdef LOCKOUT_MOON_LOWEST
