@@ -51,13 +51,8 @@ uint8_t sunset_timer_state(Event event, uint16_t arg) {
                 sunset_timer += SUNSET_TIMER_UNIT;
                 sunset_timer_peak = sunset_timer;  // reset ceiling
                 sunset_ticks = 0;  // reset phase
-                // blink to confirm
-                uint8_t brightness = actual_level;
-                uint8_t bump = actual_level + 32;
-                if (bump > MAX_LEVEL) bump = 0;
-                set_level(bump);
-                delay_4ms(2);
-                set_level(brightness);
+                // let the user know something happened
+                blink_once();
             }
         }
         return MISCHIEF_MANAGED;

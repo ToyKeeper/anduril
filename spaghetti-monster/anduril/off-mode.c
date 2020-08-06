@@ -185,7 +185,7 @@ uint8_t off_state(Event event, uint16_t arg) {
     // 8 clicks, but hold last click: turn simple UI off (or configure it)
     else if ((event == EV_click8_hold) && (!arg)) {
         if (simple_ui_active) {  // turn off simple UI
-            blink_confirm(1);
+            blink_once();
             simple_ui_active = 0;
             save_config();
         }
@@ -201,7 +201,7 @@ uint8_t off_state(Event event, uint16_t arg) {
     }
     // 8 clicks: enable simple UI
     else if (event == EV_8clicks) {
-        blink_confirm(1);
+        blink_once();
         simple_ui_active = 1;
         save_config();
         return MISCHIEF_MANAGED;
@@ -223,7 +223,7 @@ uint8_t off_state(Event event, uint16_t arg) {
     #ifdef USE_MOMENTARY_MODE
     // 5 clicks: momentary mode
     else if (event == EV_5clicks) {
-        blink_confirm(1);
+        blink_once();
         set_state(momentary_state, 0);
         return MISCHIEF_MANAGED;
     }
@@ -253,7 +253,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         rgb_led_off_mode = (mode << 4) | (rgb_led_off_mode & 0x0f);
         rgb_led_update(rgb_led_off_mode, 0);
         save_config();
-        blink_confirm(1);
+        blink_once();
         return MISCHIEF_MANAGED;
     }
     // 7 clicks (hold last): change RGB aux LED color

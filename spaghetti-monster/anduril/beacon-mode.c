@@ -54,7 +54,7 @@ uint8_t beacon_state(Event event, uint16_t arg) {
     // hold: configure beacon timing
     else if (event == EV_click1_hold) {
         if (0 == (arg % TICKS_PER_SECOND)) {
-            blink_confirm(1);
+            blink_once();
         }
         return MISCHIEF_MANAGED;
     }

@@ -21,6 +21,7 @@
 #define MISC_H
 
 void blink_confirm(uint8_t num);
+void blink_once();
 void blip();
 
 

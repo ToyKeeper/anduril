@@ -23,13 +23,19 @@
 #include "misc.h"
 
 void blink_confirm(uint8_t num) {
+    uint8_t brightness = actual_level;
+    uint8_t bump = actual_level + (MAX_LEVEL/4);
+    if (bump > MAX_LEVEL) bump = 0;
     for (; num>0; num--) {
-        set_level(MAX_LEVEL/4);
+        set_level(bump);
         delay_4ms(10/4);
-        set_level(0);
-        // TODO: only do this delay if num > 1
-        delay_4ms(100/4);
+        set_level(brightness);
+        if (num > 1) { delay_4ms(100/4); }
     }
+}
+
+void blink_once() {
+    blink_confirm(1);
 }
 
 // Just go dark for a moment to indicate to user that something happened

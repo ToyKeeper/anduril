@@ -92,13 +92,13 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     #endif
     // 4 clicks: exit and turn on
     else if (event == EV_4clicks) {
-        blink_confirm(1);
+        blink_once();
         set_state(steady_state, memorized_level);
         return MISCHIEF_MANAGED;
     }
     // 4 clicks, but hold last: exit and start at floor
     else if (event == EV_click4_hold) {
-        blink_confirm(1);
+        blink_once();
         // reset button sequence to avoid activating anything in ramp mode
         current_event = 0;
         // ... and back to ramp mode
@@ -158,7 +158,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         rgb_led_lockout_mode = (mode << 4) | (rgb_led_lockout_mode & 0x0f);
         rgb_led_update(rgb_led_lockout_mode, 0);
         save_config();
-        blink_confirm(1);
+        blink_once();
         return MISCHIEF_MANAGED;
     }
     // 7H: change RGB aux LED color
