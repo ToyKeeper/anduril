@@ -111,9 +111,7 @@
 // enable a mode for locking the light for safe carry
 #define USE_LOCKOUT_MODE
 // should lockout mode function as a momentary moon mode?
-#define MOON_DURING_LOCKOUT_MODE
-// if enabled, 2nd lockout click goes to the other ramp's floor level
-#define LOCKOUT_MOON_FANCY
+#define USE_MOON_DURING_LOCKOUT_MODE
 // add an optional setting to lock the light after being off for a while
 #define USE_AUTOLOCK
 

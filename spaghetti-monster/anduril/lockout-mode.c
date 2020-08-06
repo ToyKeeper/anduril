@@ -23,7 +23,7 @@
 #include "lockout-mode.h"
 
 uint8_t lockout_state(Event event, uint16_t arg) {
-    #ifdef MOON_DURING_LOCKOUT_MODE
+    #ifdef USE_MOON_DURING_LOCKOUT_MODE
     // momentary(ish) moon mode during lockout
     // button is being held
     #ifdef USE_AUX_RGB_LEDS
@@ -31,27 +31,24 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     if (event == EV_click7_hold) { set_level(0); } else
     #endif
     if ((event & (B_CLICK | B_PRESS)) == (B_CLICK | B_PRESS)) {
-        #ifdef LOCKOUT_MOON_LOWEST
-        // Use lowest moon configured
+        // hold: lowest floor
+        // click, hold: highest floor (or manual mem level)
         uint8_t lvl = ramp_floors[0];
-        if (ramp_floors[1] < lvl) lvl = ramp_floors[1];
-        set_level(lvl);
-        #elif defined(LOCKOUT_MOON_FANCY)
-        if ((event & 0x0f) == 2) {
-            set_level(ramp_floors[ramp_style^1]);
-        } else {
-            set_level(ramp_floors[ramp_style]);
+        if ((event & 0x0f) == 2) {  // second click
+            if (ramp_floors[1] > lvl) lvl = ramp_floors[1];
+            #ifdef USE_MANUAL_MEMORY
+            if (manual_memory) lvl = manual_memory;
+            #endif
+        } else {  // anything except second click
+            if (ramp_floors[1] < lvl) lvl = ramp_floors[1];
         }
-        #else
-        // Use moon from current ramp
-        set_level(nearest_level(1));
-        #endif
+        set_level(lvl);
     }
     // button was released
     else if ((event & (B_CLICK | B_PRESS)) == (B_CLICK)) {
         set_level(0);
     }
-    #endif
+    #endif  // ifdef USE_MOON_DURING_LOCKOUT_MODE
 
     // regular event handling
     // conserve power while locked out
