@@ -16,7 +16,5 @@
 // stop panicking at about 3A or ~1100 lm, this light is a hotrod
 #define THERM_FASTER_LEVEL MAX_Nx7135
 
-#define USE_TENCLICK_THERMAL_CONFIG
-
 // can't reset the normal way because power is connected before the button
 #define USE_SOFT_FACTORY_RESET

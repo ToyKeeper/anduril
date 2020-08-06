@@ -42,9 +42,6 @@
 // stop panicking at ~50% power or ~2000 lm
 #define THERM_FASTER_LEVEL 130
 
-// easier access to thermal config mode, for Emisar
-#define USE_TENCLICK_THERMAL_CONFIG
-
 #ifdef BLINK_AT_RAMP_MIDDLE
 #undef BLINK_AT_RAMP_MIDDLE
 #endif

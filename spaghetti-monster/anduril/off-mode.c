@@ -182,8 +182,8 @@ uint8_t off_state(Event event, uint16_t arg) {
     #endif
 
     #ifdef USE_SIMPLE_UI
-    // 8 clicks, but hold last click: turn simple UI off (or configure it)
-    else if ((event == EV_click8_hold) && (!arg)) {
+    // 10 clicks, but hold last click: turn simple UI off (or configure it)
+    else if ((event == EV_click10_hold) && (!arg)) {
         if (simple_ui_active) {  // turn off simple UI
             blink_once();
             simple_ui_active = 0;
@@ -199,8 +199,8 @@ uint8_t off_state(Event event, uint16_t arg) {
     if (simple_ui_active) {
         return EVENT_NOT_HANDLED;
     }
-    // 8 clicks: enable simple UI
-    else if (event == EV_8clicks) {
+    // 10 clicks: enable simple UI
+    else if (event == EV_10clicks) {
         blink_once();
         simple_ui_active = 1;
         save_config();
@@ -274,13 +274,6 @@ uint8_t off_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif  // end 7 clicks
-    #if defined(USE_TENCLICK_THERMAL_CONFIG) && defined(USE_THERMAL_REGULATION)
-    // 10 clicks: thermal config mode
-    else if (event == EV_10clicks) {
-        push_state(thermal_config_state, 0);
-        return MISCHIEF_MANAGED;
-    }
-    #endif
     return EVENT_NOT_HANDLED;
 }
 

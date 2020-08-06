@@ -39,7 +39,6 @@
 #define RAMP_DISCRETE_CEIL  120 // ~5400 lm
 #define RAMP_DISCRETE_STEPS 7  // 35, 108, 280, 626, 1500, 2930, 5400 lm
 
-#define USE_TENCLICK_THERMAL_CONFIG  // by request
 #define THERM_FASTER_LEVEL 125  // throttle back faster when high (>6000 lm)
 #define THERM_HARD_TURBO_DROP  // this light is massively overpowered
 

@@ -55,9 +55,6 @@
 #define THERM_RESPONSE_MAGNITUDE 32  // smaller adjustments, this host changes temperature slowly
 #define THERM_NEXT_WARNING_THRESHOLD 32  // more error tolerance before adjusting
 
-// easier access to thermal config mode, for Noctigon
-#define USE_TENCLICK_THERMAL_CONFIG
-
 // slow down party strobe; this driver can't pulse for 1ms or less
 #define PARTY_STROBE_ONTIME 4
 

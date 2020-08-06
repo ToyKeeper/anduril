@@ -40,7 +40,4 @@
 // stop panicking at ~30% power or ~1200 lm
 #define THERM_FASTER_LEVEL 105
 
-// easier access to thermal config mode, for Emisar
-#define USE_TENCLICK_THERMAL_CONFIG
-
 #define THERM_CAL_OFFSET 5

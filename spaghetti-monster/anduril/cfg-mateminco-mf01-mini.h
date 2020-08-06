@@ -49,5 +49,4 @@
 #define RAMP_DISCRETE_STEPS 7  // ??, ??, ... lm
 
 
-//#define USE_TENCLICK_THERMAL_CONFIG  // by request
 #define THERM_FASTER_LEVEL 130  // throttle back faster when high

@@ -10,6 +10,3 @@
 // (9 / 45 / 116 / 248 / 467 / 742 / 1280 + 2140 lm)
 #undef RAMP_DISCRETE_STEPS
 #define RAMP_DISCRETE_STEPS 7
-
-// shortcut for first-time setup
-#define USE_TENCLICK_THERMAL_CONFIG
