@@ -27,42 +27,133 @@ look at the Anduril UI diagram, which should be provided along with the
 flashlight.
 
 
+Button presses
+--------------
+
+Button presses are abbreviated using a simple notation:
+
+  - 1C: One click.  Press and then quickly release the button.
+  - 1H: Hold.  Press the button, but keep holding it.
+  - 2C: Two clicks.  Press and release quickly, twice.
+  - 2H: Click, hold.  Click two times, but hold the second press.
+  - 3C: Three clicks.  Press and release quickly, three times.
+  - 3H: Click, click, hold.  Click three times, but hold the final press.
+
+The same pattern is used with higher numbers too.  For example, 10C 
+means ten clicks...  and 10H means ten clicks but hold the final press.
+
+
+Simple UI
+---------
+
+By default, the light uses a simple UI.  This is useful if you lend the 
+light to someone else, or if you just don't want to bother with any 
+crazy disco modes.
+
+Simple UI has all the basic functions needed to work as a flashlight, 
+but the minimum and maximum brightness are limited to make it safer, and 
+any complex or advanced functions are blocked.
+
+The button mappings for changing between the two modes are:
+
+  In Simple UI:
+    - 10H: Go to Advanced UI.
+
+  In Advanced UI:
+    - 10C: Go to Simple UI.
+    - 10H: Configure Simple UI.
+
+Simple UI is also enabled after each factory reset.
+
+Functions available in Simple UI include:
+
+  - 1C: On / off
+  - 1H, 2H: Ramp up / down
+  - 2C: Double click to go to / from highest safe level
+
+If you get lost, or if you want to auto-calibrate the temperature 
+sensor, do a factory reset.  The process for this is: Loosen tailcap, 
+hold button, tighten tailcap, keep holding button for about 4s.
+
+Some other modes and functions are available too.  When the light is 
+off, these are the options:
+
+  - 3C: Battery check mode.
+  - 4C: Lockout mode.
+  - 10H: Enable Advanced UI.
+  - 13H: On some lights, this does a factory reset.
+         (usually only if the regular method is physically impossible)
+  - 15C or more: Version check.
+
+
+Advanced UI
+-----------
+
+Most of the information below this is for the Advanced UI.  Anything not 
+already noted above is blocked in the Simple UI.
+
+
 Ramping / Stepped Ramping Modes
 -------------------------------
 
-Anduril's normal operation mode uses a smooth ramp or a stepped ramp, 
-depending on which style the user prefers.
+Anduril's ramping mode uses a smooth ramp or a stepped ramp, depending 
+on which style the user prefers.
 
 Each ramp has its own settings -- floor (lowest level), ceiling (highest 
 level), and the stepped ramp can also have a configurable number of 
 steps.
 
-There are four ways to access this mode when the light is off:
+Additionally, Simple UI has its own ramp settings for floor, ceiling, 
+and number of steps.  The smooth/stepped style is inherited from the 
+Advanced UI's ramp.
 
-  - Click: Turn on at the memorized brightness.
-  - Hold: Turn on at the floor level.  The light should give a very 
-    subtle dark blink when the user can let go of the button to stay at 
-    the floor, or keep holding the button to ramp up.
-  - 2 clicks: Turn on at the ceiling level.
-  - Click, hold: Turn on at the ceiling level, then ramp down.
+There are four ways to access ramping mode when the light is off:
+
+  - 1C: Turn on at the memorized brightness.
+  - 1H: Turn on at the floor level.  Let go after the light turns on to 
+    stay at the floor level, or keep holding to ramp up.
+  - 2C: Turn on at the ceiling level.
+  - 2H: Turn on at the ceiling level, then ramp down.
 
 While the light is on, a few basic actions are available:
 
-  - Click: Turn off.
-  - 2 clicks: Go to or from turbo (full power).
-  - Hold: Change brightness (up).  If the button was released less than 
-    a second ago, or if it's already at the ceiling, it goes down 
-    instead.
-  - Click, hold: Change brightness (down).
-  - 3 clicks: Switch to the other ramp.
-  - 4 clicks: Go to ramp config mode.
-  - 5 clicks: Activate manual memory and save the current brightness.
-  - 5 clicks, but hold the last click: Go back to automatic memory.
+  - 1C: Turn off.
+  - 2C: Go to or from turbo (full power).
+    (in Simple UI, it goes to/from ceiling level)
+  - 1H: Change brightness (up).  If the button was released less than a 
+    second ago, or if it's already at the ceiling, it goes down instead.
+  - 2H: Change brightness (down).
+  - 3C: Switch to the other ramp style.  (smooth / stepped)
+  - 4H: Start a sunset timer.  Details are below in the Sunset Timer section.
+  - 5C: Activate manual memory and save the current brightness.
+  - 5H: Go back to automatic memory.
+  - 7C: Go to ramp config mode.
 
 The "automatic" vs "manual" memory modes change the level the light goes 
 to with 1 click from off.  In automatic mode, it uses the last 
 brightness the user ramped to.  In manual mode, it uses the brightness 
 the user explicitly saved with 5 clicks.
+
+
+Sunset Timer
+------------
+
+In the ramp mode or candle mode, it's possible to make the light turn 
+itself off after a while.
+
+To activate the timer, go to the brightness you want and then use a 4H 
+action.  Keep holding the button, and the light should blink once per 
+second.  Each blink adds 5 minutes to the timer.
+
+In ramp mode, it slowly dims until it's at the lowest level, then shuts 
+off.  In candle mode, it stays at the same brightness until the final 
+minute, at which point it dims and dies out.
+
+The user can change the brightness while the timer is active.  If this 
+happens during the final few minutes, it also "bumps" the timer up to a 
+minimum of 3 minutes.  So if it's getting really dim and you need a 
+little more time, you could do a 4H to add 5 minutes, or simply ramp up 
+to the desired brightness.
 
 
 Other Modes
@@ -71,11 +162,14 @@ Other Modes
 Anduril has several other modes too.  To access these, press the button 
 more than 2 times when the light is off:
 
-  - 3 clicks: Access the blinky / utility modes.
-  - Click, click, hold: Access the strobe modes.
-  - 4 clicks: Lockout mode.
-  - 5 clicks: Momentary mode.
-  - 6 clicks: Muggle mode.
+  - 3C: Access the blinky / utility modes, starting with battery check.
+  - 3H: Access the strobe modes.
+  - 4C: Lockout mode.
+  - 5C: Momentary mode.
+  - 7C / 7H: Aux LED configuration.
+  - 10H: Simple UI configuration menu.
+  - 13H: Factory reset (on some lights).
+  - 15C or more: Version check.
 
 
 Blinky / Utility Modes
@@ -83,25 +177,25 @@ Blinky / Utility Modes
 
 Click 3 times from Off to access Anduril's blinky / utility modes.  This 
 always starts at battery check and the user can proceed to other blinky 
-modes from there.  The sequence is:
+modes from there if Advanced UI is enabled.  The sequence is:
 
-  1. Battery check.
-  2. Sunset mode.
-  3. Beacon mode.
-  4. Temperature check.
+  - Battery check.
+  - Beacon mode.
+  - SOS mode (if enabled).
+  - Temperature check (if light has a temperature sensor).
 
 In all of these modes, some basic actions are available:
 
   - Click: Turn off.
   - 2 clicks: Next blinky mode.
 
-Additionally, in beacon and temperature check modes:
+Additionally, in battery check and temperature check modes:
 
-  - 4 clicks: Go to the beacon config mode or thermal config mode.
+  - 7 clicks: Go to the voltage config mode or thermal config mode.
 
 In more detail, this is what each blinky / utility mode does:
 
-  1. Battery check.
+  Battery check:
 
      Blinks out the battery voltage per cell.  Full is 4.2V, empty is 
      about 3.0V.  The light blinks the whole-number digit first, pauses, 
@@ -111,31 +205,57 @@ In more detail, this is what each blinky / utility mode does:
 
      A "zero" digit is represented by a very quick blink.
 
-  2. Sunset mode.
+     Voltage config mode has one setting:
 
-     This starts at a low level, then dims gradually for an hour, and 
-     then shuts off.  It is intended for use when going to bed.
+       1. Voltage correction factor.  This adjusts the battery 
+          measurement sensor, allowing the user to add or subtract up to 
+          0.30V in 0.05V steps.  Click N times to enter a value:
 
-  3. Beacon mode.
+          1C: -0.30V
+          2C: -0.25V
+          3C: -0.20V
+          4C: -0.15V
+          5C: -0.10V
+          6C: -0.05V
+          7C: default, 0V
+          8C: +0.05V
+          9C: +0.10V
+          10C: +0.15V
+          11C: +0.20V
+          12C: +0.25V
+          13C: +0.30V
 
-     Blinks at a slow speed.  The light stays on for half a second, and 
-     then stays off until the next blink.  The brightness and the number 
-     of seconds between pulses are configurable:
+  Beacon mode:
+
+     Blinks at a slow speed.  The light stays on for 100ms, and then 
+     stays off until the next blink.  The brightness and the number of 
+     seconds between pulses are configurable:
 
        - Brightness is the user's last-ramped level, so set this in 
          ramping mode before starting beacon mode.
 
-       - Speed is configured in beacon config mode.  Click 4 times to 
-         enter beacon config mode, wait for the light to stutter, then 
-         click to enter the number of seconds per blink.  For example, 
-         to do a 10-second alpine beacon, click 10 times.
+       - Speed is configured by holding the button.  The light should 
+         blink once per second while holding the button.  Release it 
+         after the desired amount of time has passed, to set a new 
+         beacon speed.
+         For example, to do a 10-second alpine beacon, hold the button 
+         for 10 seconds.
 
-  4. Temperature check.
+  SOS mode:
+
+    Blinks out a distress signal.  Three short, three long, three short.  
+    Repeats until light is turned off or until battery is low.
+
+    The last-ramped brightness in Ramping Mode determines the brightness 
+    of SOS Mode.
+
+  Temperature check:
 
      Blinks out the current temperature in degrees C.  This number 
      should be pretty close to what a real thermometer says.  If not, it 
-     would be a good idea to click 4 times to enter thermal config mode, 
-     and calibrate the sensor.
+     would be a good idea to click 7 times to enter thermal config mode, 
+     and calibrate the sensor.  Or let the light settle to room 
+     temperature, then use factory reset to auto-calibrate the sensor.
 
      Thermal config mode has two settings:
 
@@ -167,14 +287,16 @@ so it will return to whichever one you used last.
 
 In all of these modes, a few actions are available:
 
-  - Click: Turn off.
-  - 2 Clicks: Next strobe / mood mode.
-  - Hold: Increase brightness, or strobe faster.  (except lightning)
-  - Click, hold: Decrease brightness, or strobe slower.  (except lightning)
+  - 1C: Turn off.
+  - 2C: Next strobe / mood mode.
+  - 1H: Increase brightness, or strobe faster.  (except lightning)
+  - 2H: Decrease brightness, or strobe slower.  (except lightning)
+  - 5C: Go to momentary mode, for a momentary strobe.
+        (this is useful for light painting)
 
 Additionally, candle mode has one more action:
 
-  - 3 clicks: Add 30 minutes to the timer.
+  - 4H: Activate Sunset Timer, and/or add 5 minutes to the timer.
 
 In more detail, here is what each mode does:
 
@@ -202,6 +324,8 @@ In more detail, here is what each mode does:
     Disorienting strobe light.  Can be used to irritate people.  Speed 
     is configurable, and the duty cycle is always 33%.
 
+    Be careful about heat in this mode, if using it for a long time.
+
   - Lightning storm mode
 
     Flashes at random brightness and random speed to simulate lightning 
@@ -218,14 +342,24 @@ to carry in a pocket or a bag or anywhere else the button might be
 pressed by accident.
 
 To exit lockout mode, click 4 times.  The light should blink briefly and 
-then return to the regular "off" mode.
+then turn on at the memorized level.  Or hold the final press to turn on 
+at the floor level instead:
+
+  - 4C: Go to ramp mode (memorized level).
+  - 4H: Go to ramp mode (floor level).
 
 Lockout mode also doubles as a momentary moon mode, so the user can do 
 quick tasks without having to unlock the light.  The brightness in 
 lockout mode has two levels:
 
-  - Hold: light up at the floor level of the current ramp.
-  - Click, Hold: light up at the floor level of the other ramp.
+  - 1H: Light up at the lowest floor level.
+  - 2H: Light up at the highest floor level.
+  - 3H or more: Light up at the lowest floor level.
+
+And on lights which have aux LEDs, there may be additional functions:
+
+  - 7C / 7H: Change Lockout Mode's aux LED pattern.  More details on 
+    this below, in a separate section.
 
 
 Momentary Mode
@@ -255,30 +389,6 @@ To exit this mode, physically disconnect power by unscrewing the tailcap
 or battery tube.
 
 
-Muggle Mode
------------
-
-Click 6 times from Off to enter Muggle mode.  This is a simpler and 
-less-bright interface which makes the light relatively safe to lend to 
-children or other people who could use the light unsafely.
-
-In Muggle mode, there are only a few available actions:
-
-  - Click: Turn the light on or off.
-  - Hold: Change brightness.
-  - 6 clicks: Exit Muggle mode.
-
-The brightness in this mode usually goes from about 10 lm to 300 lm.
-
-Muggle mode is remembered even after changing the battery.  This helps 
-prevent children from exiting the mode by unscrewing the tailcap.  
-However, be sure to supervise children whenever they are using any 
-powerful tools, including a bright flashlight.
-
-Note: If the light steps down in muggle mode, it probably needs to have 
-the temperature sensor calibrated.  Use thermal config mode to do this.
-
-
 Configuration Modes
 -------------------
 
@@ -306,7 +416,7 @@ that item remains unchanged from its previous value.
 Ramp Config Mode
 ----------------
 
-While the light is on in a ramping mode, click 4 times to enter the 
+While the light is on in a ramping mode, click 7 times to enter the 
 config mode for the current ramp.
 
 For smooth ramping mode, there are two menu options:
@@ -320,6 +430,9 @@ For the stepped ramping mode, there are three menu options:
   2. Ceiling.  (default = 120/150)
   3. Number of steps.  (default = 7)
 
+For the Simple UI mode, there are there menu options.  They are the same 
+as stepped ramping mode.
+
 To configure the floor level, click the button equal to the number of 
 ramp levels (out of 150) at which the floor should be.  To set the 
 lowest possible level, click once.
@@ -329,8 +442,9 @@ click sets the highest possible level, 2 clicks is the 2nd-highest, 3
 clicks is the 3rd-highest level, etc.  To set the default of 120/150, 
 click 31 times.
 
-When configuring the number of steps, the value can be anything from 2 
-to 150.
+When configuring the number of steps, the value can be anything from 1 
+to 150.  A value of 1 is a special case.  It places the step halfway 
+between the floor and ceiling levels.
 
 
 Protection Features
@@ -366,24 +480,39 @@ Aux LED modes typically include:
   - Blinking
 
 To configure the aux LEDs, go to the mode you want to configure and then 
-click the button a few times:
+click the button 7 times.  This should change the aux LEDs to the next 
+mode supported on this light.
 
-  - Off mode: 7 clicks.
-  - Lockout mode: 3 clicks.
-
-This should change the aux LEDs to the next mode supported on this 
-light.
+  - 7C: Next aux LED mode.
 
 If the aux LEDs can change color, there are additional actions to change 
 the color.  It is the same as above, but hold the button on the last 
 click and then let go when the desired color is reached.
 
-  - Off mode: 7 clicks, but hold the last click.
-  - Lockout mode: 3 clicks, but hold the last click.
+  - 7H: Next aux LED color.
+
+On most lights, the colors follow this sequence:
+
+  - Red
+  - Yellow (Red+Green)
+  - Green
+  - Cyan (Green+Blue)
+  - Blue
+  - Purple (Blue+Red)
+  - White (Red+Green+Blue)
+  - Rainbow (cycles through all colors)
+  - Voltage (uses color to display battery charge)
+
+In voltage mode, the colors follow the same sequence, in the same order 
+as a rainbow...  with red indicating a low battery and purple indicating 
+a full battery.
 
 For lights with a button LED, the button LED typically stays on while 
 the main emitters are on.  Its brightness level is set in a way which 
 mirrors the main LED -- off, low, or high.
+
+For lights with a RGB button LED, the button LED indicates battery 
+charge during use in the same manner as the aux LED voltage mode.
 
 For lights with front-facing aux LEDs, the aux LEDs typically stay off 
 when the main emitters are on, and when the light is otherwise awake.  
