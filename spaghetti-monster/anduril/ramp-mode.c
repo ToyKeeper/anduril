@@ -201,6 +201,9 @@ uint8_t steady_state(Event event, uint16_t arg) {
     }
 
     else if (event == EV_tick) {
+        // un-reverse after 1 second
+        if (arg == TICKS_PER_SECOND) ramp_direction = 1;
+
         #ifdef USE_SUNSET_TIMER
         // reduce output if shutoff timer is active
         if (sunset_timer) {
@@ -213,9 +216,8 @@ uint8_t steady_state(Event event, uint16_t arg) {
             set_level_and_therm_target(dimmed_level);
             #endif
         }
-        #endif
-        // un-reverse after 1 second
-        if (arg == TICKS_PER_SECOND) ramp_direction = 1;
+        #endif  // ifdef USE_SUNSET_TIMER
+
         #ifdef USE_SET_LEVEL_GRADUALLY
         int16_t diff = gradual_target - actual_level;
         static uint16_t ticks_since_adjust = 0;
@@ -404,13 +406,18 @@ uint8_t nearest_level(int16_t target) {
     // by allowing us to correct for numbers < 0 or > 255 in one central place
     uint8_t mode_min = ramp_floor;
     uint8_t mode_max = ramp_ceil;
+    uint8_t num_steps = ramp_stepss[1 + simple_ui_active];
+    // special case for 1-step ramp... use halfway point between floor and ceiling
+    if (ramp_style && (1 == num_steps)) {
+        uint8_t mid = (mode_max + mode_min) >> 1;
+        return mid;
+    }
     if (target < mode_min) return mode_min;
     if (target > mode_max) return mode_max;
     // the rest isn't relevant for smooth ramping
     if (! ramp_style) return target;
 
     uint8_t ramp_range = mode_max - mode_min;
-    uint8_t num_steps = ramp_stepss[1 + simple_ui_active];
     ramp_discrete_step_size = ramp_range / (num_steps-1);
     uint8_t this_level = mode_min;
 
