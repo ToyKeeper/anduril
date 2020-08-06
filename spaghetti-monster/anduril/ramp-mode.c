@@ -27,9 +27,7 @@
 #endif
 
 uint8_t steady_state(Event event, uint16_t arg) {
-    #ifdef USE_REVERSING
     static int8_t ramp_direction = 1;
-    #endif
     #if (B_TIMING_OFF == B_RELEASE_T)
     // if the user double clicks, we need to abort turning off,
     // and this stores the level to return to
@@ -79,9 +77,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         // use the requested level even if not memorized
         arg = nearest_level(arg);
         set_level_and_therm_target(arg);
-        #ifdef USE_REVERSING
         ramp_direction = 1;
-        #endif
         return MISCHIEF_MANAGED;
     }
     #if (B_TIMING_OFF == B_RELEASE_T)
@@ -123,13 +119,14 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #endif
         return MISCHIEF_MANAGED;
     }
-    // hold: change brightness (brighter)
-    else if (event == EV_click1_hold) {
+
+    // hold: change brightness (brighter, dimmer)
+    // click, hold: change brightness (dimmer)
+    else if ((event == EV_click1_hold) || (event == EV_click2_hold)) {
         // ramp slower in discrete mode
         if (ramp_style  &&  (arg % HOLD_TIMEOUT != 0)) {
             return MISCHIEF_MANAGED;
         }
-        #ifdef USE_REVERSING
         // fix ramp direction on first frame if necessary
         if (!arg) {
             // make it ramp down instead, if already at max
@@ -137,6 +134,8 @@ uint8_t steady_state(Event event, uint16_t arg) {
             // make it ramp up if already at min
             // (off->hold->stepped_min->release causes this state)
             else if (actual_level <= mode_min) { ramp_direction = 1; }
+            // click, hold should always go down if possible
+            else if (event == EV_click2_hold) { ramp_direction = -1; }
         }
         // if the button is stuck, err on the side of safety and ramp down
         else if ((arg > TICKS_PER_SECOND * 5) && (actual_level >= mode_max)) {
@@ -145,15 +144,12 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #ifdef USE_LOCKOUT_MODE
         // if the button is still stuck, lock the light
         else if ((arg > TICKS_PER_SECOND * 10) && (actual_level <= mode_min)) {
-            blip();
+            blink_once();
             set_state(lockout_state, 0);
         }
         #endif
         memorized_level = nearest_level((int16_t)actual_level \
                           + (step_size * ramp_direction));
-        #else
-        memorized_level = nearest_level((int16_t)actual_level + step_size);
-        #endif
         #if defined(BLINK_AT_RAMP_CEIL) || defined(BLINK_AT_RAMP_MIDDLE)
         // only blink once for each threshold
         if ((memorized_level != actual_level) && (
@@ -166,66 +162,6 @@ uint8_t steady_state(Event event, uint16_t arg) {
                 #endif
                 #ifdef BLINK_AT_RAMP_CEIL
                 || (memorized_level == mode_max)
-                #endif
-                #if defined(USE_REVERSING) && defined(BLINK_AT_RAMP_FLOOR)
-                || (memorized_level == mode_min)
-                #endif
-                )) {
-            blip();
-        }
-        #endif
-        #if defined(BLINK_AT_STEPS)
-        uint8_t foo = ramp_style;
-        ramp_style = 1;
-        uint8_t nearest = nearest_level((int16_t)actual_level);
-        ramp_style = foo;
-        // only blink once for each threshold
-        if ((memorized_level != actual_level) &&
-                    (ramp_style == 0) &&
-                    (memorized_level == nearest)
-                    )
-        {
-            blip();
-        }
-        #endif
-        set_level_and_therm_target(memorized_level);
-        #ifdef USE_SUNSET_TIMER
-        timer_orig_level = actual_level;
-        #endif
-        return MISCHIEF_MANAGED;
-    }
-    #if defined(USE_REVERSING) || defined(START_AT_MEMORIZED_LEVEL)
-    // reverse ramp direction on hold release
-    else if (event == EV_click1_hold_release) {
-        #ifdef USE_REVERSING
-        ramp_direction = -ramp_direction;
-        #endif
-        #ifdef START_AT_MEMORIZED_LEVEL
-        save_config_wl();
-        #endif
-        return MISCHIEF_MANAGED;
-    }
-    #endif
-    // click, hold: change brightness (dimmer)
-    else if (event == EV_click2_hold) {
-        #ifdef USE_REVERSING
-        ramp_direction = 1;
-        #endif
-        // ramp slower in discrete mode
-        if (ramp_style  &&  (arg % HOLD_TIMEOUT != 0)) {
-            return MISCHIEF_MANAGED;
-        }
-        // TODO? make it ramp up instead, if already at min?
-        memorized_level = nearest_level((int16_t)actual_level - step_size);
-        #if defined(BLINK_AT_RAMP_FLOOR) || defined(BLINK_AT_RAMP_MIDDLE)
-        // only blink once for each threshold
-        if ((memorized_level != actual_level) && (
-                0  // for easier syntax below
-                #ifdef BLINK_AT_RAMP_MIDDLE_1
-                || (memorized_level == BLINK_AT_RAMP_MIDDLE_1)
-                #endif
-                #ifdef BLINK_AT_RAMP_MIDDLE_2
-                || (memorized_level == BLINK_AT_RAMP_MIDDLE_2)
                 #endif
                 #ifdef BLINK_AT_RAMP_FLOOR
                 || (memorized_level == mode_min)
@@ -254,13 +190,15 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #endif
         return MISCHIEF_MANAGED;
     }
-    #ifdef START_AT_MEMORIZED_LEVEL
-    // click, release, hold, release: save new ramp level (if necessary)
-    else if (event == EV_click2_hold_release) {
+    // reverse ramp direction on hold release
+    else if ((event == EV_click1_hold_release)
+             || (event == EV_click2_hold_release)) {
+        ramp_direction = -ramp_direction;
+        #ifdef START_AT_MEMORIZED_LEVEL
         save_config_wl();
+        #endif
         return MISCHIEF_MANAGED;
     }
-    #endif
 
     else if (event == EV_tick) {
         #ifdef USE_SUNSET_TIMER
@@ -276,10 +214,8 @@ uint8_t steady_state(Event event, uint16_t arg) {
             #endif
         }
         #endif
-        #ifdef USE_REVERSING
         // un-reverse after 1 second
         if (arg == TICKS_PER_SECOND) ramp_direction = 1;
-        #endif
         #ifdef USE_SET_LEVEL_GRADUALLY
         int16_t diff = gradual_target - actual_level;
         static uint16_t ticks_since_adjust = 0;

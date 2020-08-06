@@ -59,11 +59,6 @@
 #define BLINK_AT_RAMP_CEIL
 //#define BLINK_AT_STEPS  // whenever a discrete ramp mode is passed in smooth mode
 
-// ramp down via regular button hold if a ramp-up ended <1s ago
-// ("hold, release, hold" ramps down instead of up)
-// TODO: remove this setting; nobody ever changes it)
-#define USE_REVERSING
-
 // Include a simplified UI for non-enthusiasts?
 #define USE_SIMPLE_UI
 
