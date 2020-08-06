@@ -1,24 +1,6 @@
 // Emisar FET+13+1 config options for Anduril
 #include "hwdef-Emisar_D18.h"
 
-// ROM is too big... remove something
-#undef USE_VOLTAGE_CORRECTION
-
-// front-facing aux LEDs
-#define USE_INDICATOR_LED
-//#define USE_INDICATOR_LED_WHILE_RAMPING
-// enable blinking indicator LED while off
-#define TICK_DURING_STANDBY
-#define STANDBY_TICK_SPEED 3  // every 0.128 s
-#define USE_FANCIER_BLINKING_INDICATOR
-// off mode: low (1)
-// lockout: blinking (3)
-#define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
-
-// Emisar wanted a shortcut to this
-//#define USE_TENCLICK_THERMAL_CONFIG
-
-
 // level_calc.py seventh 3 150 7135 1 1.4 117.99 7135 6 1 1706.86 FET 3 10 13000
 // (designed to make 1x hit at level 50, and Nx hit at level 100)
 #define RAMP_LENGTH 150
