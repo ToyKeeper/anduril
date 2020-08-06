@@ -337,14 +337,14 @@ uint8_t steady_state(Event event, uint16_t arg) {
     else if (event == EV_5clicks) {
         manual_memory = actual_level;
         save_config();
-        blip();
+        blink_once();
         return MISCHIEF_MANAGED;
     }
     else if (event == EV_click5_hold) {
         if (0 == arg) {
             manual_memory = 0;
             save_config();
-            blip();
+            blink_once();
         }
         return MISCHIEF_MANAGED;
     }

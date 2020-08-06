@@ -124,7 +124,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         if (0 == arg) {
             autolock_time = 0;
             save_config();
-            blip();
+            blink_once();
         }
         return MISCHIEF_MANAGED;
     }
