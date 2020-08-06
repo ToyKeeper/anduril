@@ -46,9 +46,11 @@
 // the default of 26 looks a bit flat, so increase it
 #define CANDLE_AMPLITUDE 40
 
+// override default ramp style
+#undef RAMP_STYLE
+#define RAMP_STYLE 1  // 0 = smooth, 1 = stepped
 // set floor and ceiling as far apart as possible
 // because this lantern isn't overpowered
-#define RAMP_STYLE 1  // 0 = smooth, 1 = stepped
 #define RAMP_SMOOTH_FLOOR 1
 #define RAMP_SMOOTH_CEIL  150
 #define RAMP_DISCRETE_FLOOR 10

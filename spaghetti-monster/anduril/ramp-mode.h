@@ -62,7 +62,6 @@
 // timeout: react as soon as we're sure the user isn't doing a double-click
 #define B_TIMEOUT_T 2
 // defaults are release on, timeout off
-// TODO: Move these settings to config-default.h?
 #ifndef B_TIMING_ON
 //#define B_TIMING_ON B_PRESS_T
 #define B_TIMING_ON B_RELEASE_T
@@ -74,7 +73,6 @@
 
 // default ramp options if not overridden earlier per-driver
 #ifndef RAMP_STYLE
-// TODO: Move this setting to config-default.h?
 #define RAMP_STYLE 0  // smooth default
 #endif
 #ifndef RAMP_SMOOTH_FLOOR

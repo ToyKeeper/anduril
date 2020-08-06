@@ -38,16 +38,23 @@
 #define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 45  // try not to get hotter than this (in C)
 
-// factory reset function erases user's runtime configuration in eeprom
-#define USE_FACTORY_RESET
-//#define USE_SOFT_FACTORY_RESET  // only needed on models which can't use hold-button-at-boot
 
-// dual-switch support (second switch is a tail clicky)
-// (currently incompatible with factory reset)
-//#define START_AT_MEMORIZED_LEVEL
+// Include a simplified UI for non-enthusiasts?
+#define USE_SIMPLE_UI
 
-// include a function to blink out the firmware version
-#define USE_VERSION_CHECK
+
+///// Ramp mode options /////
+
+// button timing for turning light on/off:
+// B_PRESS_T:   activate as soon as button is pressed
+// B_RELEASE_T: activate when user lets go of button
+// B_TIMEOUT_T: activate when we're sure the user won't double-click
+// defaults are release on, timeout off
+#define B_TIMING_ON B_RELEASE_T
+#define B_TIMING_OFF B_TIMEOUT_T
+
+// default ramp style: 0 = smooth, 1 = stepped
+#define RAMP_STYLE 0
 
 // short blip when crossing from "click" to "hold" from off
 // (helps the user hit moon mode exactly, instead of holding too long
@@ -59,9 +66,6 @@
 #define BLINK_AT_RAMP_CEIL
 //#define BLINK_AT_STEPS  // whenever a discrete ramp mode is passed in smooth mode
 
-// Include a simplified UI for non-enthusiasts?
-#define USE_SIMPLE_UI
-
 // make the ramps configurable by the user
 #define USE_RAMP_CONFIG
 
@@ -72,6 +76,26 @@
 // or the user can go back to automatic with click-click-click-click-hold)
 // TODO: remap to a shorter button sequence?
 #define USE_MANUAL_MEMORY
+
+// enable sunset timer (ramp-down and automatic shutoff)
+// timer is available in regular ramp mode and candle mode
+#define USE_SUNSET_TIMER
+
+
+///// What to do when power is connected /////
+// factory reset function erases user's runtime configuration in eeprom
+#define USE_FACTORY_RESET
+//#define USE_SOFT_FACTORY_RESET  // only needed on models which can't use hold-button-at-boot
+
+// dual-switch support (second switch is a tail clicky)
+// (currently incompatible with factory reset)
+//#define START_AT_MEMORIZED_LEVEL
+
+
+///// extra modes (enable / disable / configure each mode) /////
+
+// include a function to blink out the firmware version
+#define USE_VERSION_CHECK
 
 // enable the battery check mode (shows remaining charge) (requires USE_LVP)
 #define USE_BATTCHECK_MODE
@@ -88,10 +112,6 @@
 
 // enable beacon mode
 #define USE_BEACON_MODE
-
-// enable sunset timer (ramp-down and automatic shutoff)
-// timer is available in regular ramp mode and candle mode
-#define USE_SUNSET_TIMER
 
 // enable/disable various strobe modes
 #define USE_BIKE_FLASHER_MODE
@@ -117,6 +137,7 @@
 
 // enable momentary mode
 #define USE_MOMENTARY_MODE
+
 
 // cut clock speed at very low modes for better efficiency
 // (defined here so config files can override it)
