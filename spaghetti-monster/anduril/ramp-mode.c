@@ -336,18 +336,26 @@ uint8_t steady_state(Event event, uint16_t arg) {
     }
 
     #ifdef USE_MANUAL_MEMORY
-    else if (event == EV_5clicks) {
+    else if (event == EV_4clicks) {
         manual_memory = actual_level;
         save_config();
         blink_once();
         return MISCHIEF_MANAGED;
     }
-    else if (event == EV_click5_hold) {
+    else if (event == EV_click4_hold) {
         if (0 == arg) {
             manual_memory = 0;
             save_config();
             blink_once();
         }
+        return MISCHIEF_MANAGED;
+    }
+    #endif
+
+    #ifdef USE_MOMENTARY_MODE
+    else if (event == EV_5clicks) {
+        set_level(0);
+        set_state(momentary_state, 0);
         return MISCHIEF_MANAGED;
     }
     #endif

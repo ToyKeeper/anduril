@@ -87,14 +87,14 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif
-    // 4 clicks: exit and turn on
-    else if (event == EV_4clicks) {
+    // 3 clicks: exit and turn on
+    else if (event == EV_3clicks) {
         blink_once();
         set_state(steady_state, memorized_level);
         return MISCHIEF_MANAGED;
     }
-    // 4 clicks, but hold last: exit and start at floor
-    else if (event == EV_click4_hold) {
+    // 3 clicks, but hold last: exit and start at floor
+    else if (event == EV_click3_hold) {
         blink_once();
         // reset button sequence to avoid activating anything in ramp mode
         current_event = 0;

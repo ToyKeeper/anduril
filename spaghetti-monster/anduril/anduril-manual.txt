@@ -78,8 +78,8 @@ hold button, tighten tailcap, keep holding button for about 4s.
 Some other modes and functions are available too.  When the light is 
 off, these are the options:
 
-  - 3C: Battery check mode.
-  - 4C: Lockout mode.
+  - 3C: Lockout mode.
+  - 4C: Battery check mode.
   - 10H: Enable Advanced UI.
   - 13H: On some lights, this does a factory reset.
          (usually only if the regular method is physically impossible)
@@ -123,10 +123,16 @@ While the light is on, a few basic actions are available:
   - 1H: Change brightness (up).  If the button was released less than a 
     second ago, or if it's already at the ceiling, it goes down instead.
   - 2H: Change brightness (down).
+
   - 3C: Switch to the other ramp style.  (smooth / stepped)
-  - 4H: Start a sunset timer.  Details are below in the Sunset Timer section.
-  - 5C: Activate manual memory and save the current brightness.
-  - 5H: Go back to automatic memory.
+  - 3H: Tint ramping (on lights which have it).
+
+  - 4C: Activate manual memory and save the current brightness.
+  - 4H: Go back to automatic memory.
+
+  - 5C: Go to momentary mode.
+  - 5H: Start a sunset timer.  Details are below in the Sunset Timer section.
+
   - 7C: Go to ramp config mode.
 
 The "automatic" vs "manual" memory modes change the level the light goes 
@@ -141,7 +147,7 @@ Sunset Timer
 In the ramp mode or candle mode, it's possible to make the light turn 
 itself off after a while.
 
-To activate the timer, go to the brightness you want and then use a 4H 
+To activate the timer, go to the brightness you want and then use a 5H 
 action.  Keep holding the button, and the light should blink once per 
 second.  Each blink adds 5 minutes to the timer.
 
@@ -162,9 +168,9 @@ Other Modes
 Anduril has several other modes too.  To access these, press the button 
 more than 2 times when the light is off:
 
-  - 3C: Access the blinky / utility modes, starting with battery check.
+  - 3C: Lockout mode.
   - 3H: Access the strobe modes.
-  - 4C: Lockout mode.
+  - 4C: Access the blinky / utility modes, starting with battery check.
   - 5C: Momentary mode.
   - 7C / 7H: Aux LED configuration.
   - 10H: Simple UI configuration menu.
@@ -172,10 +178,45 @@ more than 2 times when the light is off:
   - 15C or more: Version check.
 
 
+Lockout Mode
+------------
+
+Click 3 times from Off to enter Lockout mode.  This makes the light safe 
+to carry in a pocket or a bag or anywhere else the button might be 
+pressed by accident.
+
+To exit lockout mode, click 3 times.  The light should blink briefly and 
+then turn on at the memorized level.  Or hold the final press to turn on 
+at the floor level instead:
+
+  - 3C: Go to ramp mode (memorized level).
+  - 3H: Go to ramp mode (floor level).
+
+Lockout mode also doubles as a momentary moon mode, so the user can do 
+quick tasks without having to unlock the light.  The brightness in 
+lockout mode has two levels:
+
+  - 1H: Light up at the lowest floor level.
+  - 2H: Light up at the highest floor level.
+
+It is also possible to make the light lock itself automatically after 
+being turned off.  To enable this, go to lockout mode and then click 5 
+times to activate the auto-lock config menu.  Then at the prompt, click 
+N times to set the auto-lock timeout to N minutes.
+
+  - 5C: Auto-lock config menu.  Click N times to set timeout to N minutes.
+  - 5H: Turn off auto-lock.
+
+And on lights which have aux LEDs, there may be additional functions:
+
+  - 7C / 7H: Change Lockout Mode's aux LED pattern.  More details on 
+    this below, in a separate section.
+
+
 Blinky / Utility Modes
 ----------------------
 
-Click 3 times from Off to access Anduril's blinky / utility modes.  This 
+Click 4 times from Off to access Anduril's blinky / utility modes.  This 
 always starts at battery check and the user can proceed to other blinky 
 modes from there if Advanced UI is enabled.  The sequence is:
 
@@ -296,7 +337,7 @@ In all of these modes, a few actions are available:
 
 Additionally, candle mode has one more action:
 
-  - 4H: Activate Sunset Timer, and/or add 5 minutes to the timer.
+  - 5H: Activate Sunset Timer, and/or add 5 minutes to the timer.
 
 In more detail, here is what each mode does:
 
@@ -332,34 +373,6 @@ In more detail, here is what each mode does:
     strikes during a busy lightning storm.  Do not look directly at the 
     flashlight when this mode is running, because it may suddenly go to 
     full power without warning.
-
-
-Lockout Mode
-------------
-
-Click 4 times from Off to enter Lockout mode.  This makes the light safe 
-to carry in a pocket or a bag or anywhere else the button might be 
-pressed by accident.
-
-To exit lockout mode, click 4 times.  The light should blink briefly and 
-then turn on at the memorized level.  Or hold the final press to turn on 
-at the floor level instead:
-
-  - 4C: Go to ramp mode (memorized level).
-  - 4H: Go to ramp mode (floor level).
-
-Lockout mode also doubles as a momentary moon mode, so the user can do 
-quick tasks without having to unlock the light.  The brightness in 
-lockout mode has two levels:
-
-  - 1H: Light up at the lowest floor level.
-  - 2H: Light up at the highest floor level.
-  - 3H or more: Light up at the lowest floor level.
-
-And on lights which have aux LEDs, there may be additional functions:
-
-  - 7C / 7H: Change Lockout Mode's aux LED pattern.  More details on 
-    this below, in a separate section.
 
 
 Momentary Mode
@@ -517,3 +530,27 @@ charge during use in the same manner as the aux LED voltage mode.
 For lights with front-facing aux LEDs, the aux LEDs typically stay off 
 when the main emitters are on, and when the light is otherwise awake.  
 The aux LEDs on most lights only turn on when the light is asleep.
+
+
+Tint Ramping
+------------
+
+Some lights have more than one set of LEDs which can be adjusted to 
+change the color temperature of the light.  On these models, there is a 
+global button mapping which works at all times unless it's overridden by 
+the mode the light is in:
+
+  - 3H: Tint ramping
+
+So, at almost any time, click 3 times but hold the final press, and it 
+can change the color of the light.  This is best done with the light at 
+a moderately high level, because it makes the changes smooth.  Low 
+levels have more coarse resolution and will typically change in very 
+visible steps.
+
+At both ends of the tint ramp, there is an "auto tint" mode.  This 
+automatically chooses a tint based on the brightness level...  so it can 
+be warm white while dim, or cool white while bright.  Or vice-versa.  To 
+access this, ramp to the end of the tint range, then keep holding until 
+the light blinks a second time.
+
