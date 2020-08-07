@@ -554,3 +554,80 @@ be warm white while dim, or cool white while bright.  Or vice-versa.  To
 access this, ramp to the end of the tint range, then keep holding until 
 the light blinks a second time.
 
+
+UI Reference Table
+------------------
+
+This is a table of all button mappings in Anduril, in one place:
+
+Mode		UI	Button	Action
+----		--	------	------
+Off		Any	1C	On (ramp mode, memorized level)
+Off		Any	1H	On (ramp mode, floor level)
+Off		Any	2C	On (ramp mode, ceiling level)
+Off		Any	2H	On (ramp mode, ceiling level, then ramp down)
+Off		Any	3C	Lockout mode
+Off		Full	3H	Strobe mode (whichever was used last)
+Off		Any	4C	Battcheck mode
+Off		Full	5C	Momentary mode
+Off		Full	7C	Aux LEDs: Next pattern
+Off		Full	7H	Aux LEDs: Next color
+Off		Full	10C	Enable Simple UI
+Off		Simple	10H	Disable Simple UI
+Off		Full	10H	Simple UI ramp config menu
+Off		Any	13H	Factory reset (on some lights)
+Off		Any	15+C	Version check
+
+Ramp		Any	1C	Off
+Ramp		Any	1H	Ramp (up, with reversing)
+Ramp		Any	2H	Ramp (down)
+Ramp		Simple	2C	Go to/from ceiling
+Ramp		Full	2C	Go to/from turbo
+Ramp		Full	3C	Change ramp style (smooth / stepped)
+Ramp		Any	3H	Tint ramping (on some lights)
+Ramp		Full	4C	Enable manual memory at current brightness
+Ramp		Full	4H	Disable manual memory
+Ramp		Full	5C	Momentary mode
+Ramp		Full	5H	Sunset timer on, and add 5 minutes
+Ramp		Full	7C	Ramp config mode
+
+Lockout		Any	1C/1H	Momentary moon (lowest floor)
+Lockout		Any	2C/2H	Momentary moon (highest floor, or manual mem level)
+Lockout		Any	3C	On (ramp mode, memorized level)
+Lockout		Any	3H	On (ramp mode, floor level)
+Lockout		Full	5C	Auto-lock config menu
+Lockout		Full	5H	Disable Auto-lock
+Lockout		Full	7C	Aux LEDs: Next pattern
+Lockout		Full	7H	Aux LEDs: Next color
+
+Strobe (any)	Full	1C	Off
+Strobe (any)	Full	2C	Next strobe mode
+Strobe (any)	Full	5C	Momentary mode (using current strobe)
+
+Candle		Full	1H/2H	Brighter / dimmer
+Candle		Full	5H	Sunset timer on, add 5 minutes
+Party strobe	Full	1H/2H	Faster / slower
+Tactical strobe	Full	1H/2H	Faster / slower
+Biking		Full	1H/2H	Brighter / dimmer
+Lightning	Full	1H	Interrupt current flash or start new one
+
+Batt check	Any	1C	Off
+Batt check	Full	2C	Next blinky mode (Beacon, SOS, Temp check)
+Batt check	Full	7C	Voltage config mode
+
+Beacon		Full	1C	Off
+Beacon		Full	1H	Configure beacon timing
+Beacon		Full	2C	Next blinky mode (SOS, Temp check, Batt check)
+
+SOS		Full	1C	Off
+SOS		Full	2C	Next blinky mode (Temp check, Batt check)
+
+Temp check	Full	1C	Off
+Temp check	Full	2C	Next blinky mode (Batt check)
+Temp check	Full	7C	Thermal config mode
+
+Momentary	Full	Any	On (until button is released)
+Momentary	Full	Disconnect power	Exit Momentary mode
+
+Config modes	Full	None	Skip current item with no changes
+Config modes	Full	1+C	Enter new numeric value for current item
