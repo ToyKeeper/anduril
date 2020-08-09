@@ -113,7 +113,8 @@ There are four ways to access ramping mode when the light is off:
   - 1H: Turn on at the floor level.  Let go after the light turns on to 
     stay at the floor level, or keep holding to ramp up.
   - 2C: Turn on at the ceiling level.
-  - 2H: Turn on at the ceiling level, then ramp down.
+  - 2H: Turn on at the ceiling level, turn off when released.
+        (momentary high mode)
 
 While the light is on, a few basic actions are available:
 
@@ -565,7 +566,7 @@ Mode		UI	Button	Action
 Off		Any	1C	On (ramp mode, memorized level)
 Off		Any	1H	On (ramp mode, floor level)
 Off		Any	2C	On (ramp mode, ceiling level)
-Off		Any	2H	On (ramp mode, ceiling level, then ramp down)
+Off		Any	2H	On (momentary ceiling level)
 Off		Any	3C	Lockout mode
 Off		Full	3H	Strobe mode (whichever was used last)
 Off		Any	4C	Battcheck mode
@@ -602,6 +603,7 @@ Lockout		Full	7H	Aux LEDs: Next color
 
 Strobe (any)	Full	1C	Off
 Strobe (any)	Full	2C	Next strobe mode
+Strobe (any)	Full	3H	Tint ramping (on some lights)
 Strobe (any)	Full	5C	Momentary mode (using current strobe)
 
 Candle		Full	1H/2H	Brighter / dimmer

@@ -136,9 +136,13 @@ uint8_t off_state(Event event, uint16_t arg) {
         set_state(steady_state, memorized_level);
         return MISCHIEF_MANAGED;
     }
-    // click, hold: go to highest level (ceiling) (for ramping down)
+    // click, hold: momentary at ceiling level
     else if (event == EV_click2_hold) {
-        set_state(steady_state, MAX_LEVEL);
+        set_level(nearest_level(MAX_LEVEL));
+        return MISCHIEF_MANAGED;
+    }
+    else if (event == EV_click2_hold_release) {
+        set_level(0);
         return MISCHIEF_MANAGED;
     }
     // 2 clicks: highest mode (ceiling)
