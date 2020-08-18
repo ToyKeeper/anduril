@@ -567,9 +567,9 @@ Off		Any	1C	On (ramp mode, memorized level)
 Off		Any	1H	On (ramp mode, floor level)
 Off		Any	2C	On (ramp mode, ceiling level)
 Off		Any	2H	On (momentary ceiling level)
-Off		Any	3C	Lockout mode
+Off		Any	3C	Battcheck mode
 Off		Full	3H	Strobe mode (whichever was used last)
-Off		Any	4C	Battcheck mode
+Off		Any	4C	Lockout mode
 Off		Full	5C	Momentary mode
 Off		Full	7C	Aux LEDs: Next pattern
 Off		Full	7H	Aux LEDs: Next color
@@ -586,20 +586,22 @@ Ramp		Simple	2C	Go to/from ceiling
 Ramp		Full	2C	Go to/from turbo
 Ramp		Full	3C	Change ramp style (smooth / stepped)
 Ramp		Any	3H	Tint ramping (on some lights)
-Ramp		Full	4C	Enable manual memory at current brightness
-Ramp		Full	4H	Disable manual memory
+Ramp		Any	4C	Lockout mode
 Ramp		Full	5C	Momentary mode
 Ramp		Full	5H	Sunset timer on, and add 5 minutes
 Ramp		Full	7C	Ramp config mode
+Ramp		Full	10C	Enable manual memory at current brightness
+Ramp		Full	10H	Disable manual memory
 
 Lockout		Any	1C/1H	Momentary moon (lowest floor)
 Lockout		Any	2C/2H	Momentary moon (highest floor, or manual mem level)
-Lockout		Any	3C	On (ramp mode, memorized level)
-Lockout		Any	3H	On (ramp mode, floor level)
-Lockout		Full	5C	Auto-lock config menu
-Lockout		Full	5H	Disable Auto-lock
+Lockout		Any	4C	On (ramp mode, memorized level)
+Lockout		Any	4H	On (ramp mode, floor level)
+Lockout		Any	5C	On (ramp mode, ceiling level)
 Lockout		Full	7C	Aux LEDs: Next pattern
 Lockout		Full	7H	Aux LEDs: Next color
+Lockout		Full	10C	Auto-lock config menu
+Lockout		Full	10H	Disable Auto-lock
 
 Strobe (any)	Full	1C	Off
 Strobe (any)	Full	2C	Next strobe mode

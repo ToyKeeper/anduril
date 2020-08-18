@@ -155,18 +155,18 @@ uint8_t off_state(Event event, uint16_t arg) {
         set_level(0);
         return MISCHIEF_MANAGED;
     }
-    #ifdef USE_LOCKOUT_MODE
-    // 3 clicks: soft lockout
+    #ifdef USE_BATTCHECK
+    // 3 clicks: battcheck mode / blinky mode group 1
     else if (event == EV_3clicks) {
-        blink_confirm(2);
-        set_state(lockout_state, 0);
+        set_state(battcheck_state, 0);
         return MISCHIEF_MANAGED;
     }
     #endif
-    #ifdef USE_BATTCHECK
-    // 4 clicks: battcheck mode / blinky mode group 1
+    #ifdef USE_LOCKOUT_MODE
+    // 4 clicks: soft lockout
     else if (event == EV_4clicks) {
-        set_state(battcheck_state, 0);
+        blink_confirm(2);
+        set_state(lockout_state, 0);
         return MISCHIEF_MANAGED;
     }
     #endif

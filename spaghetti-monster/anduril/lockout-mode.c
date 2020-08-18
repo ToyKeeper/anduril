@@ -87,19 +87,26 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif
-    // 3 clicks: exit and turn on
-    else if (event == EV_3clicks) {
+
+    // 4 clicks: exit and turn on
+    else if (event == EV_4clicks) {
         blink_once();
         set_state(steady_state, memorized_level);
         return MISCHIEF_MANAGED;
     }
-    // 3 clicks, but hold last: exit and start at floor
-    else if (event == EV_click3_hold) {
+    // 4 clicks, but hold last: exit and start at floor
+    else if (event == EV_click4_hold) {
         blink_once();
         // reset button sequence to avoid activating anything in ramp mode
         current_event = 0;
         // ... and back to ramp mode
         set_state(steady_state, 1);
+        return MISCHIEF_MANAGED;
+    }
+    // 5 clicks: exit and turn on at ceiling level
+    else if (event == EV_5clicks) {
+        blink_once();
+        set_state(steady_state, MAX_LEVEL);
         return MISCHIEF_MANAGED;
     }
 
@@ -111,13 +118,13 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     #endif
 
     #ifdef USE_AUTOLOCK
-    // 5 clicks: configure the autolock option
-    else if (event == EV_5clicks) {
+    // 10 clicks: configure the autolock option
+    else if (event == EV_10clicks) {
         push_state(autolock_config_state, 0);
         return MISCHIEF_MANAGED;
     }
-    // 5H: turn off autolock
-    else if (event == EV_click5_hold) {
+    // 10H: turn off autolock
+    else if (event == EV_click10_hold) {
         if (0 == arg) {
             autolock_time = 0;
             save_config();

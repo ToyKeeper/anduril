@@ -120,6 +120,16 @@ uint8_t steady_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
 
+    #ifdef USE_LOCKOUT_MODE
+    // 4 clicks: shortcut to lockout mode
+    else if (event == EV_4clicks) {
+        set_level(0);
+        blink_once();
+        set_state(lockout_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    #endif
+
     // hold: change brightness (brighter, dimmer)
     // click, hold: change brightness (dimmer)
     else if ((event == EV_click1_hold) || (event == EV_click2_hold)) {
@@ -250,6 +260,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #endif  // ifdef USE_SET_LEVEL_GRADUALLY
         return MISCHIEF_MANAGED;
     }
+
     #ifdef USE_THERMAL_REGULATION
     // overheating: drop by an amount proportional to how far we are above the ceiling
     else if (event == EV_temperature_high) {
@@ -335,24 +346,8 @@ uint8_t steady_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
 
-    #ifdef USE_MANUAL_MEMORY
-    else if (event == EV_4clicks) {
-        manual_memory = actual_level;
-        save_config();
-        blink_once();
-        return MISCHIEF_MANAGED;
-    }
-    else if (event == EV_click4_hold) {
-        if (0 == arg) {
-            manual_memory = 0;
-            save_config();
-            blink_once();
-        }
-        return MISCHIEF_MANAGED;
-    }
-    #endif
-
     #ifdef USE_MOMENTARY_MODE
+    // 5 clicks: shortcut to momentary mode
     else if (event == EV_5clicks) {
         set_level(0);
         set_state(momentary_state, 0);
@@ -367,6 +362,24 @@ uint8_t steady_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif
+
+    #ifdef USE_MANUAL_MEMORY
+    else if (event == EV_10clicks) {
+        manual_memory = actual_level;
+        save_config();
+        blink_once();
+        return MISCHIEF_MANAGED;
+    }
+    else if (event == EV_click10_hold) {
+        if (0 == arg) {
+            manual_memory = 0;
+            save_config();
+            blink_once();
+        }
+        return MISCHIEF_MANAGED;
+    }
+    #endif
+
     return EVENT_NOT_HANDLED;
 }
 
