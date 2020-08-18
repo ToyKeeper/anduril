@@ -2,7 +2,7 @@
 #include "cfg-ff-rot66.h"
 
 // ROM is too big... remove something
-//#undef USE_VOLTAGE_CORRECTION
+#undef USE_VOLTAGE_CORRECTION
 
 // if the "low" mode was disabled, turn it back on
 #ifdef INDICATOR_LED_SKIP_LOW
