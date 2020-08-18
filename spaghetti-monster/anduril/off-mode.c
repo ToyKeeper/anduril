@@ -71,7 +71,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         #ifdef USE_SIMPLE_UI
         if (! simple_ui_active) {  // no auto-lock in Simple UI
         #endif
-            uint16_t ticks = autolock_time * SLEEP_TICKS_PER_SECOND * 60;
+            uint16_t ticks = autolock_time * SLEEP_TICKS_PER_MINUTE;
             if ((autolock_time > 0)  && (arg > ticks)) {
                 set_state(lockout_state, 0);
             }

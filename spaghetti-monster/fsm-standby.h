@@ -45,18 +45,31 @@ volatile uint8_t go_to_standby = 0;
  *  how it is)
  */
 #endif
+
 #if (STANDBY_TICK_SPEED == 1)
 #define SLEEP_TICKS_PER_SECOND 31
+#define SLEEP_TICKS_PER_MINUTE 1875
+
 #elif (STANDBY_TICK_SPEED == 2)
 #define SLEEP_TICKS_PER_SECOND 16
+#define SLEEP_TICKS_PER_MINUTE 938
+
 #elif (STANDBY_TICK_SPEED == 3)
 #define SLEEP_TICKS_PER_SECOND 8
+#define SLEEP_TICKS_PER_MINUTE 469
+
 #elif (STANDBY_TICK_SPEED == 4)
 #define SLEEP_TICKS_PER_SECOND 4
+#define SLEEP_TICKS_PER_MINUTE 234
+
 #elif (STANDBY_TICK_SPEED == 5)
 #define SLEEP_TICKS_PER_SECOND 2
+#define SLEEP_TICKS_PER_MINUTE 117
+
 #elif (STANDBY_TICK_SPEED == 6)
 #define SLEEP_TICKS_PER_SECOND 1
+#define SLEEP_TICKS_PER_MINUTE 59
+
 #endif
 #endif
 
