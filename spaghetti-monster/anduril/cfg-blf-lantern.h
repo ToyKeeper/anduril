@@ -57,8 +57,10 @@
 #define RAMP_DISCRETE_CEIL  RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 5
 
-#define SIMPLE_UI_FLOOR    15  // about  20 lm
-#define SIMPLE_UI_CEIL    115  // about 350 lm
+// LT1 can handle heat well, so don't limit simple mode
+#define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
+#define SIMPLE_UI_CEIL RAMP_DISCRETE_CEIL
+#define SIMPLE_UI_STEPS RAMP_DISCRETE_STEPS
 
 #define USE_SOS_MODE
 #define USE_SOS_MODE_IN_BLINKY_GROUP

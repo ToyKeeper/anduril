@@ -37,6 +37,11 @@
 #define RAMP_DISCRETE_CEIL  POWER_80PX
 #define RAMP_DISCRETE_STEPS 7
 
+// GT can handle heat well, so don't limit simple mode
+#define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
+#define SIMPLE_UI_CEIL RAMP_DISCRETE_CEIL
+#define SIMPLE_UI_STEPS 5
+
 // stop panicking at 80% power, this light has plenty of thermal mass
 #define THERM_FASTER_LEVEL POWER_80PX  // throttle back faster when high
 

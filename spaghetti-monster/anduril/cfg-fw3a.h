@@ -13,6 +13,12 @@
 #define HALFSPEED_LEVEL 14
 #define QUARTERSPEED_LEVEL 5
 
+// safe limit ~20% power
+// 20 40 60 80 100
+#define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
+#define SIMPLE_UI_CEIL 100
+#define SIMPLE_UI_STEPS 5
+
 // stop panicking at about 3A or ~1100 lm, this light is a hotrod
 #define THERM_FASTER_LEVEL MAX_Nx7135
 

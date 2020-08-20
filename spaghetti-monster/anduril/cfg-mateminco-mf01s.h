@@ -39,6 +39,12 @@
 #define RAMP_DISCRETE_CEIL  120 // ~5400 lm
 #define RAMP_DISCRETE_STEPS 7  // 35, 108, 280, 626, 1500, 2930, 5400 lm
 
+// safe limit ~25% power
+// 18 35 52 [70] 87 105
+#define SIMPLE_UI_FLOOR 18
+#define SIMPLE_UI_CEIL 105
+#define SIMPLE_UI_STEPS 6
+
 #define THERM_FASTER_LEVEL 125  // throttle back faster when high (>6000 lm)
 #define THERM_HARD_TURBO_DROP  // this light is massively overpowered
 

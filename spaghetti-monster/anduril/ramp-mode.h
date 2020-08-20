@@ -49,7 +49,7 @@
 #define SIMPLE_UI_CEIL (MAX_1x7135+20)
 #endif
 #ifndef SIMPLE_UI_STEPS
-#define SIMPLE_UI_STEPS 3
+#define SIMPLE_UI_STEPS 5
 #endif
 #endif
 

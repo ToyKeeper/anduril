@@ -34,3 +34,8 @@
 #define RAMP_DISCRETE_CEIL  RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 7
 
+// safe limit ~25% power
+// 10 37 65 92 120
+#undef SIMPLE_UI_CEIL
+#define SIMPLE_UI_CEIL 120
+

@@ -49,4 +49,9 @@
 #define RAMP_DISCRETE_CEIL  MAX_Nx7135
 #define RAMP_DISCRETE_STEPS 7
 
+// safe limit max regulated power
+// 10 37 65 92 [120]
+#define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
+#define SIMPLE_UI_CEIL MAX_Nx7135
+#define SIMPLE_UI_STEPS 5
 

@@ -48,5 +48,11 @@
 #define RAMP_DISCRETE_CEIL  130 // ~??? lm
 #define RAMP_DISCRETE_STEPS 7  // ??, ??, ... lm
 
+// safe limit max regulated power
+// 15 38 62 86 [110]
+#define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
+#define SIMPLE_UI_CEIL 110
+#define SIMPLE_UI_STEPS 5
+
 
 #define THERM_FASTER_LEVEL 130  // throttle back faster when high

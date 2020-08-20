@@ -35,6 +35,12 @@
 #define HALFSPEED_LEVEL 14
 #define QUARTERSPEED_LEVEL 8
 
+// safe limit max regulated power
+// 20 46 72 98 [125]
+#define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
+#define SIMPLE_UI_CEIL MAX_Nx7135
+#define SIMPLE_UI_STEPS 5
+
 // regulate down faster when the FET is active, slower otherwise
 #define THERM_FASTER_LEVEL 130  // throttle back faster when high
 

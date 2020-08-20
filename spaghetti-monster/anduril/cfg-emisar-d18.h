@@ -15,10 +15,18 @@
 // start at ~2000 lm after battery change, not ~150 lm (at Emisar's request)
 //#define DEFAULT_LEVEL MAX_Nx7135
 
-// higher floor than default, and stop at highest regulated level
-#define RAMP_DISCRETE_FLOOR 25
-#define RAMP_DISCRETE_CEIL  MAX_Nx7135
+// go up to ~4000 lm
+#define RAMP_SMOOTH_FLOOR  1
+#define RAMP_SMOOTH_CEIL  117
+// 20 36 52 68 84 [100] 117
+#define RAMP_DISCRETE_FLOOR 20
+#define RAMP_DISCRETE_CEIL  RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 7
+
+// safe limit ~20% power / max regulated
+#define SIMPLE_UI_FLOOR 20
+#define SIMPLE_UI_CEIL MAX_Nx7135
+#define SIMPLE_UI_STEPS 5
 
 // only blink at max regulated level and ceiling
 #define BLINK_AT_RAMP_MIDDLE

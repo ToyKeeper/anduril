@@ -33,10 +33,12 @@
 #define RAMP_DISCRETE_CEIL  RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 7
 
+// safe limit ~67% power / ~1200 lm (can sustain 900 lm)
 #undef SIMPLE_UI_FLOOR
 #undef SIMPLE_UI_CEIL
 #define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
-#define SIMPLE_UI_CEIL  70
+#define SIMPLE_UI_CEIL RAMP_DISCRETE_CEIL
+
 
 // make candle mode wobble more
 #define CANDLE_AMPLITUDE 32

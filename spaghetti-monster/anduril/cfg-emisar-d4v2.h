@@ -37,6 +37,11 @@
 #define RAMP_DISCRETE_CEIL  RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 7
 
+// safe limit ~20% power
+#define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
+#define SIMPLE_UI_CEIL 95
+#define SIMPLE_UI_STEPS 5
+
 // stop panicking at ~30% power or ~1200 lm
 #define THERM_FASTER_LEVEL 105
 

@@ -26,6 +26,8 @@
 #define HALFSPEED_LEVEL 18
 #define QUARTERSPEED_LEVEL 8
 
+//#define DEFAULT_LEVEL MAX_Nx7135
+
 #define RAMP_SMOOTH_FLOOR 1
 #define RAMP_SMOOTH_CEIL  130
 // 20, 38, 56, 75, [93], 111, 130
@@ -33,11 +35,13 @@
 #define RAMP_DISCRETE_CEIL  RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 7
 
-//#define DEFAULT_LEVEL MAX_Nx7135
-#define STROBE_BRIGHTNESS MAX_LEVEL
-
+// safe limit ~35% power, 150% of sustainable thermal power
+// 20 44 69 [93] 118
 #define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
-#define SIMPLE_UI_CEIL  MAX_Nx7135
+#define SIMPLE_UI_CEIL 118
+#define SIMPLE_UI_STEPS 5
+
+#define STROBE_BRIGHTNESS MAX_LEVEL
 
 // stop panicking at ~50% power or ~2000 lm
 #define THERM_FASTER_LEVEL 130

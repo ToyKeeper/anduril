@@ -3,6 +3,10 @@
 // same as Emisar D4, mostly
 #include "cfg-emisar-d4.h"
 
+// safe limit ~50% power
+#undef SIMPLE_UI_CEIL
+#define SIMPLE_UI_CEIL 120
+
 // stop panicking at ~90% power or ~1200 lm (D1S has a good power-to-thermal-mass ratio)
 #ifdef THERM_FASTER_LEVEL
 #undef THERM_FASTER_LEVEL

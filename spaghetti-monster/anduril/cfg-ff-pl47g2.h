@@ -42,9 +42,11 @@
 #define RAMP_DISCRETE_CEIL  120
 #define RAMP_DISCRETE_STEPS 7
 
-// ~25 lm to ~300 lm
-#define SIMPLE_UI_FLOOR 30
-#define SIMPLE_UI_CEIL  MAX_1x7135
+// safe limit ~25% power / ~1000 lm
+// 10 34 59 [83] 108
+#define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
+#define SIMPLE_UI_CEIL 108
+#define SIMPLE_UI_STEPS 5
 
 // regulate down faster when the FET is active, slower otherwise
 #define THERM_FASTER_LEVEL 135  // throttle back faster when high

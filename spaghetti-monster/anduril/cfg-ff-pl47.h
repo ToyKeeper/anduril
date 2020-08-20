@@ -51,9 +51,15 @@
 #define RAMP_DISCRETE_CEIL  120
 #define RAMP_DISCRETE_STEPS 7
 
+// safe limit ~25% power / ~1000 lm
+// 10 34 59 [83] 108
+#define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
+#define SIMPLE_UI_CEIL 108
+#define SIMPLE_UI_STEPS 5
+
 // ~25 lm to ~300 lm
-#define SIMPLE_UI_FLOOR 30
-#define SIMPLE_UI_CEIL  MAX_1x7135
+//#define SIMPLE_UI_FLOOR 30
+//#define SIMPLE_UI_CEIL  MAX_1x7135
 // ~50 lm to ~500 lm
 //#define SIMPLE_UI_FLOOR 40
 //#define SIMPLE_UI_CEIL  90
