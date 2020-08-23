@@ -21,6 +21,12 @@
 #define FSM_ADC_H
 
 
+#if defined(USE_LVP) || defined(USE_THERMAL_REGULATION)
+// use raw value instead of lowpassed value for the next N measurements
+// (2 = 1 for voltage + 1 for temperature)
+volatile uint8_t adc_reset = 2;
+#endif
+
 #ifdef USE_LVP
 // default 5 seconds between low-voltage warning events
 #ifndef VOLTAGE_WARNING_SECONDS
@@ -85,7 +91,6 @@ void battcheck();
 volatile int16_t temperature;
 uint8_t therm_ceil = DEFAULT_THERM_CEIL;
 int8_t therm_cal_offset = 0;
-volatile uint8_t reset_thermal_history = 1;
 static inline void ADC_temperature_handler();
 #endif  // ifdef USE_THERMAL_REGULATION
 

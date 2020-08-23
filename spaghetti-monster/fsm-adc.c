@@ -222,6 +222,8 @@ void adc_deferred() {
         #endif
     }
     #endif
+
+    if (adc_reset) adc_reset --;
 }
 
 
@@ -240,7 +242,7 @@ static inline void ADC_voltage_handler() {
     uint16_t measurement;
 
     // latest ADC value
-    if (go_to_standby || (adc_smooth[0] < 255)) {
+    if (adc_reset) {  // while asleep, or just after waking, don't lowpass
         measurement = adc_raw[0];
         adc_smooth[0] = measurement;  // no lowpass while asleep
     }
@@ -308,10 +310,7 @@ static inline void ADC_temperature_handler() {
     static uint16_t temperature_history[NUM_TEMP_HISTORY_STEPS];
     static int8_t warning_threshold = 0;
 
-    if (reset_thermal_history) { // wipe out old data
-        // don't keep resetting
-        reset_thermal_history = 0;
-
+    if (adc_reset) {  // wipe out old data
         // ignore average, use latest sample
         uint16_t foo = adc_raw[1];
         adc_smooth[1] = foo;

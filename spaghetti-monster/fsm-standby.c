@@ -73,6 +73,7 @@ void sleep_until_eswitch_pressed()
             go_to_standby = 0;
         }
         if (irq_adc) {  // ADC done measuring
+            adc_reset = 1;  // don't lowpass while asleep
             adc_deferred_enable = 1;
             adc_deferred();
             //ADC_off();  // takes care of itself
@@ -84,10 +85,9 @@ void sleep_until_eswitch_pressed()
     }
     #endif
 
-    #ifdef USE_THERMAL_REGULATION
-    // forget what the temperature was last time we were on
-    reset_thermal_history = 1;
-    #endif
+    // don't lowpass immediately after waking
+    // also, reset thermal history
+    adc_reset = 2;
 
     // go back to normal running mode
     // PCINT not needed any more, and can cause problems if on

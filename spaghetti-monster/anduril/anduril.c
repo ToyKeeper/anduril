@@ -2162,7 +2162,7 @@ void thermal_config_save() {
     if (val) {
         int8_t rawtemp = temperature - therm_cal_offset;
         therm_cal_offset = val - rawtemp;
-        reset_thermal_history = 1;  // invalidate all recent temperature data
+        adc_reset = 2;  // invalidate all recent temperature data
     }
 
     val = config_state_values[1];
