@@ -43,10 +43,10 @@
 #define SIMPLE_UI_ACTIVE 1
 #endif
 #ifndef SIMPLE_UI_FLOOR
-#define SIMPLE_UI_FLOOR 22
+#define SIMPLE_UI_FLOOR (RAMP_SIZE*2/15)
 #endif
 #ifndef SIMPLE_UI_CEIL
-#define SIMPLE_UI_CEIL (MAX_1x7135+20)
+#define SIMPLE_UI_CEIL (RAMP_SIZE*9/15)
 #endif
 #ifndef SIMPLE_UI_STEPS
 #define SIMPLE_UI_STEPS 5
