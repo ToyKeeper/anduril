@@ -100,12 +100,16 @@ uint8_t steady_state(Event event, uint16_t arg) {
     }
     // 2 clicks: go to/from highest level
     else if (event == EV_2clicks) {
+        // simple UI: to/from ceiling
+        // full UI: to/from ceiling if mem < ceiling,
+        //          or to/from turbo if mem >= ceiling
         uint8_t turbo_level;
-        #ifdef USE_SIMPLE_UI
-        if (simple_ui_active) { turbo_level = mode_max; }
-        else
-        #endif
-            turbo_level = MAX_LEVEL;
+        if ((memorized_level < mode_max)
+            #ifdef USE_SIMPLE_UI
+            || simple_ui_active
+            #endif
+           ) { turbo_level = mode_max; }
+        else { turbo_level = MAX_LEVEL; }
 
         if (actual_level < turbo_level) {
             // true turbo, not the mode-specific ceiling

@@ -566,7 +566,8 @@ Mode		UI	Button	Action
 Off		Any	1C	On (ramp mode, memorized level)
 Off		Any	1H	On (ramp mode, floor level)
 Off		Any	2C	On (ramp mode, ceiling level)
-Off		Any	2H	On (momentary ceiling level)
+Off		Simple	2H	On (momentary ceiling level)
+Off		Full	2H	On (momentary turbo)
 Off		Any	3C	Battcheck mode
 Off		Full	3H	Strobe mode (whichever was used last)
 Off		Any	4C	Lockout mode
@@ -583,7 +584,7 @@ Ramp		Any	1C	Off
 Ramp		Any	1H	Ramp (up, with reversing)
 Ramp		Any	2H	Ramp (down)
 Ramp		Simple	2C	Go to/from ceiling
-Ramp		Full	2C	Go to/from turbo
+Ramp		Full	2C	Go to/from ceiling (or turbo if at ceil already)
 Ramp		Full	3C	Change ramp style (smooth / stepped)
 Ramp		Any	3H	Tint ramping (on some lights)
 Ramp		Any	4C	Lockout mode

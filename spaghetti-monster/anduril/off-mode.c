@@ -136,9 +136,13 @@ uint8_t off_state(Event event, uint16_t arg) {
         set_state(steady_state, memorized_level);
         return MISCHIEF_MANAGED;
     }
-    // click, hold: momentary at ceiling level
+    // click, hold: momentary at ceiling or turbo
     else if (event == EV_click2_hold) {
-        set_level(nearest_level(MAX_LEVEL));
+        if (simple_ui_active) {
+            set_level(nearest_level(MAX_LEVEL));
+        } else {
+            set_level(MAX_LEVEL);
+        }
         return MISCHIEF_MANAGED;
     }
     else if (event == EV_click2_hold_release) {
