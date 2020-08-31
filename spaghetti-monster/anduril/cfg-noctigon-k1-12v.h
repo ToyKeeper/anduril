@@ -1,4 +1,5 @@
 // Noctigon K1 12V config options for Anduril
+#define MODEL_NUMBER "0253"
 #include "hwdef-Noctigon_K1-12V.h"
 // ATTINY: 1634
 

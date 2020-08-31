@@ -1,4 +1,5 @@
-// Emisar FET+13+1 config options for Anduril
+// Emisar D18 (FET+13+1) config options for Anduril
+#define MODEL_NUMBER "0141"
 #include "hwdef-Emisar_D18.h"
 
 // level_calc.py seventh 3 150 7135 1 1.4 117.99 7135 6 1 1706.86 FET 3 10 13000

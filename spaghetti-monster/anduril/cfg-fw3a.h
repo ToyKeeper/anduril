@@ -1,4 +1,5 @@
 // FW3A config options for Anduril
+#define MODEL_NUMBER "0311"
 #include "hwdef-FW3A.h"
 
 // ../../bin/level_calc.py 1 65 7135 1 0.8 150

@@ -2,6 +2,8 @@
 // (and Noctigon KR1)
 // (and Emisar D4v2 E21A, a.k.a. "D4v2.5")
 #include "cfg-noctigon-kr4.h"
+#undef MODEL_NUMBER
+#define MODEL_NUMBER "0212"
 // ATTINY: 1634
 
 // brightness w/ SST-20 4000K LEDs:

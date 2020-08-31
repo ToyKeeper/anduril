@@ -1,4 +1,5 @@
 // Noctigon K1 config options for Anduril
+#define MODEL_NUMBER "0251"
 // (originally known as Emisar D1S v2)
 #include "hwdef-Noctigon_K1.h"
 // ATTINY: 1634

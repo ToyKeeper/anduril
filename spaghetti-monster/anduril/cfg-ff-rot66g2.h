@@ -1,5 +1,7 @@
 // Fireflies ROT66 G2 config options for Anduril
 #include "cfg-ff-rot66.h"
+#undef MODEL_NUMBER
+#define MODEL_NUMBER "0413"
 
 // ROM is too big... remove something
 #undef USE_VOLTAGE_CORRECTION

@@ -1,4 +1,5 @@
 // BLF GT config options for Anduril
+#define MODEL_NUMBER "0321"
 #include "hwdef-BLF_GT.h"
 
 // the button lights up

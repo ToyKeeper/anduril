@@ -1,5 +1,7 @@
 // Emisar D4v2-noFET config options for Anduril
 #include "cfg-emisar-d4v2.h"
+#undef MODEL_NUMBER
+#define MODEL_NUMBER "0115"
 // ATTINY: 1634
 
 #undef PWM_CHANNELS

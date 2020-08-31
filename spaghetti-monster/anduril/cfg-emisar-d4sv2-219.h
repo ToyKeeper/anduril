@@ -1,5 +1,7 @@
 // Emisar D4Sv2-219 config options for Anduril
 #include "cfg-emisar-d4sv2.h"
+#undef MODEL_NUMBER
+#define MODEL_NUMBER "0134"
 // ATTINY: 1634
 
 #undef PWM1_LEVELS

@@ -1,4 +1,5 @@
 // Mateminco/Astrolux MF01-Mini options for Anduril
+#define MODEL_NUMBER "0521"
 #include "hwdef-Mateminco_MF01-Mini.h"
 
 // ROM is too big... remove something

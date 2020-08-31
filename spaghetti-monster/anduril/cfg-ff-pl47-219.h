@@ -2,6 +2,8 @@
 // same as PL47 but with FET modes limited to 67% power
 // to avoid destroying the LEDs
 #include "cfg-ff-pl47.h"
+#undef MODEL_NUMBER
+#define MODEL_NUMBER "0422"
 
 #undef PWM1_LEVELS
 #undef PWM2_LEVELS

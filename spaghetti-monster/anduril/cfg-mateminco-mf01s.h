@@ -1,4 +1,5 @@
 // Mateminco/Astrolux MF01S options for Anduril
+#define MODEL_NUMBER "0511"
 #include "hwdef-Mateminco_MF01S.h"
 
 // the button lights up

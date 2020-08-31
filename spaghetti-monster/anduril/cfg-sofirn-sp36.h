@@ -1,6 +1,8 @@
 // Sofirn SP36 (small Q8) config options for Anduril
 // same as  the  BLF Q8, mostly
 #include "cfg-blf-q8.h"
+#undef MODEL_NUMBER
+#define MODEL_NUMBER "0612"
 
 // voltage readings were a little high with the Q8 value
 #undef VOLTAGE_FUDGE_FACTOR

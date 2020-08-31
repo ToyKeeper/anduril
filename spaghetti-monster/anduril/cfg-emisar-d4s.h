@@ -1,4 +1,5 @@
 // Emisar D4S config options for Anduril
+#define MODEL_NUMBER "0131"
 #include "hwdef-Emisar_D4S.h"
 
 // the button lights up

@@ -2,6 +2,8 @@
 #include "hwdef-Emisar_D1.h"
 // same as Emisar D4, mostly
 #include "cfg-emisar-d4.h"
+#undef MODEL_NUMBER
+#define MODEL_NUMBER "0121"
 
 // safe limit ~50% power
 #undef SIMPLE_UI_CEIL

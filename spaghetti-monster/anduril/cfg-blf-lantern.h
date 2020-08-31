@@ -1,4 +1,5 @@
 // BLF Lantern config options for Anduril
+#define MODEL_NUMBER "0621"
 /* BLF Lantern pinout
  *           ----
  *   Reset -|1  8|- VCC

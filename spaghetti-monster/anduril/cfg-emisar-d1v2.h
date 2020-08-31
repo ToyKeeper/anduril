@@ -2,6 +2,8 @@
 // ATTINY: 1634
 // same as Emisar D4v2, mostly
 #include "cfg-emisar-d4v2.h"
+#undef MODEL_NUMBER
+#define MODEL_NUMBER "0123"
 
 // there are no aux LEDs on a D1
 #undef USE_AUX_RGB_LEDS

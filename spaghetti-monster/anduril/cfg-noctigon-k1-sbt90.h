@@ -1,5 +1,6 @@
 // Noctigon K1-SBT90.2 config options for Anduril
 // (is a K1 host with a KR4-like driver and a really high-powered LED)
+#define MODEL_NUMBER "0252"
 #include "hwdef-Noctigon_K1-SBT90.h"
 // ATTINY: 1634
 

@@ -1,4 +1,5 @@
 // Fireflies PL47 G2 config options for Anduril
+#define MODEL_NUMBER "0423"
 #include "hwdef-FF_PL47.h"
 
 // the button lights up

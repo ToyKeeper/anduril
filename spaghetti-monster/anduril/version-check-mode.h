@@ -22,8 +22,14 @@
 
 #define USE_BLINK_DIGIT  // FIXME: does nothing unless defined earlier
 
+#ifndef MODEL_NUMBER
+// if no model number, it's a build error
+//#define MODEL_NUMBER "0000"
+#error MODEL_NUMBER undefined
+#endif
+
 #include "version.h"
-const PROGMEM uint8_t version_number[] = VERSION_NUMBER;
+const PROGMEM uint8_t version_number[] = VERSION_NUMBER MODEL_NUMBER;
 uint8_t version_check_state(Event event, uint16_t arg);
 inline void version_check_iter();
 

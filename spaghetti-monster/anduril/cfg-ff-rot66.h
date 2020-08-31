@@ -1,4 +1,5 @@
 // Fireflies ROT66 (14x7135) config options for Anduril
+#define MODEL_NUMBER "0411"
 #include "hwdef-FF_ROT66.h"
 
 // the button lights up

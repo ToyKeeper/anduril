@@ -1,5 +1,7 @@
 // FW3A-219 config options for Anduril
 #include "cfg-fw3a.h"
+#undef MODEL_NUMBER
+#define MODEL_NUMBER "0312"
 
 #undef PWM1_LEVELS
 #undef PWM2_LEVELS

@@ -1,5 +1,6 @@
 // Noctigon KR4 config options for Anduril
 // (and Emisar D4v2.5, which uses KR4 driver plus a button LED)
+#define MODEL_NUMBER "0211"
 #include "hwdef-Noctigon_KR4.h"
 // ATTINY: 1634
 

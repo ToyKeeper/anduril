@@ -1,5 +1,7 @@
 // Noctigon KR4 (75% FET) config options for Anduril
 #include "cfg-noctigon-kr4.h"
+#undef MODEL_NUMBER
+#define MODEL_NUMBER "0213"
 // ATTINY: 1634
 
 // don't turn off first channel at turbo level

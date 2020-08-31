@@ -1,6 +1,8 @@
 // Fireflies E01 SST-40 thrower config options for Anduril
 // most of the good stuff is in the FFUI config; just copy it
 #include "../fireflies-ui/cfg-ff-e01.h"
+#undef MODEL_NUMBER
+#define MODEL_NUMBER "0441"
 
 #ifndef BLINK_AT_RAMP_CEIL
 #define BLINK_AT_RAMP_CEIL

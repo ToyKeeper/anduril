@@ -1,4 +1,5 @@
 // BLF Q8 config options for Anduril
+#define MODEL_NUMBER "0611"
 #include "hwdef-BLF_Q8.h"
 
 // the button lights up
