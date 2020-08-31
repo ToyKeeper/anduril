@@ -22,6 +22,7 @@
 
 #include "misc.h"
 
+/* no longer used
 void blink_confirm(uint8_t num) {
     uint8_t brightness = actual_level;
     uint8_t bump = actual_level + (MAX_LEVEL/6);
@@ -33,9 +34,18 @@ void blink_confirm(uint8_t num) {
         if (num > 1) { delay_4ms(100/4); }
     }
 }
+*/
 
+// make a short, visible pulse
+// (either brighter or darker, depending on current brightness)
 void blink_once() {
-    blink_confirm(1);
+    uint8_t brightness = actual_level;
+    uint8_t bump = brightness + (MAX_LEVEL/6);
+    if (bump > MAX_LEVEL) bump = 0;
+
+    set_level(bump);
+    delay_4ms(10/4);
+    set_level(brightness);
 }
 
 // Just go dark for a moment to indicate to user that something happened
