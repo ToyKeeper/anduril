@@ -140,8 +140,6 @@ uint8_t number_entry_state(Event event, uint16_t arg) {
             wait_ticks = 0;
             // flash briefly
             set_level(RAMP_SIZE/2);
-            delay_4ms(8/2);
-            set_level(0);
         }
         return MISCHIEF_MANAGED;
     }

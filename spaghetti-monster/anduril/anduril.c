@@ -209,9 +209,7 @@ void setup() {
         // regular e-switch light, no hard clicky power button
 
         // blink at power-on to let user know power is connected
-        set_level(RAMP_SIZE/8);
-        delay_4ms(3);
-        set_level(0);
+        blink_once();
 
         #ifdef USE_FACTORY_RESET
         if (button_is_pressed())
