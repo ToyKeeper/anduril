@@ -24,7 +24,7 @@
 
 void blink_confirm(uint8_t num) {
     uint8_t brightness = actual_level;
-    uint8_t bump = actual_level + (MAX_LEVEL/4);
+    uint8_t bump = actual_level + (MAX_LEVEL/6);
     if (bump > MAX_LEVEL) bump = 0;
     for (; num>0; num--) {
         set_level(bump);

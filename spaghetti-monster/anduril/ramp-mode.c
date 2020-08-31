@@ -128,7 +128,6 @@ uint8_t steady_state(Event event, uint16_t arg) {
     // 4 clicks: shortcut to lockout mode
     else if (event == EV_4clicks) {
         set_level(0);
-        blink_once();
         set_state(lockout_state, 0);
         return MISCHIEF_MANAGED;
     }
