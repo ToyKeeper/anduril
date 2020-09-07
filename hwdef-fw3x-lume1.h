@@ -1,5 +1,5 @@
-#ifndef HWDEF_LUME1_FW3X_REVB_H
-#define HWDEF_LUME1_FW3X_REVB_H
+#ifndef HWDEF_FW3X_LUME1_H
+#define HWDEF_FW3X_LUME1_H
 
 /* lume1 Driver Rev B for FW3x driver layout (attiny1634)
  * www.loneoceans.com/labs/ for more information
@@ -9,9 +9,9 @@
  *   2    PA5   R red aux LED (PWM0B)
  *   3    PA4   G green aux LED
  *   4    PA3   B blue aux LED
- *   5    PA2   e-switch (PCINT2) 
+ *   5    PA2   e-switch (PCINT2)
  *   6    PA1   Jumper 1
- *   7    PA0   Jumper 2 
+ *   7    PA0   Jumper 2
  *   8    GND   GND
  *   9    VCC   VCC
  *  10    PC5   Jumper 3
@@ -25,11 +25,11 @@
  *  18    PB1   MOSI
  *  19    PB0   ADC5 Voltage Battery Sense (2:1 divider)
  *  20    PA7   BB_Enable
- *				ADC12   internal thermal sensor (not used for lume1)
+ *        ADC12 internal thermal sensor (not used for lume1)
  *
- * Main LED power uses one pin as a global Buck Boost Enable, and 
+ * Main LED power uses one pin as a global Buck Boost Enable, and
  * one pin to control the power level via PWM. Another pin is used
- * for FET control. 
+ * for FET control.
  */
 
 #ifdef ATTINY
@@ -64,14 +64,6 @@
 #define JUMPER2_PIN PA0
 #define JUMPER3_PIN PC5
 #define JUMPER4_PIN PC4
-*/
-
-/*
-// average drop across diode on this hardware
-// not applicable for LUME1 driver
-#ifndef VOLTAGE_FUDGE_FACTOR
-#define VOLTAGE_FUDGE_FACTOR 4  // add 0.20V  (measured 0.22V)
-#endif
 */
 
 #define USE_VOLTAGE_DIVIDER   // use a dedicated pin, not VCC, because VCC input is flattened
@@ -111,31 +103,33 @@
 // See line 34 and line 209
 #define USE_EXTERNAL_TEMP_SENSOR
 #define ADMUX_THERM_EXTERNAL_SENSOR 0b00001011  // VCC reference (2.5V), Channel PC2
-#define TEMP_CHANNEL 0b00001111
+// Used for Lume1 Driver: MCP9700 - T_Celsius = 100*(VOUT - 0.5V)
+// ADC is 2.5V reference, 0 to 1023
+// FIXME: due to floating point, this calculation takes 916 extra bytes
+//        (should use an integer equivalent instead)
+#define EXTERN_TEMP_FORMULA(m) (((m)-205)/4.09)
 
 // this driver allows for aux LEDs under the optic
-#define AUXLED_R_PIN   PA5    // pin 2
-#define AUXLED_G_PIN   PA4    // pin 3
-#define AUXLED_B_PIN   PA3    // pin 4
-#define AUXLED_RGB_PORT PORTA // PORTA or PORTB or PORTC
-#define AUXLED_RGB_DDR DDRA   // DDRA or DDRB or DDRC
-#define AUXLED_RGB_PUE PUEA   // PUEA or PUEB or PUEC
+#define AUXLED_R_PIN    PA5    // pin 2
+#define AUXLED_G_PIN    PA4    // pin 3
+#define AUXLED_B_PIN    PA3    // pin 4
+#define AUXLED_RGB_PORT PORTA  // PORTA or PORTB or PORTC
+#define AUXLED_RGB_DDR  DDRA   // DDRA or DDRB or DDRC
+#define AUXLED_RGB_PUE  PUEA   // PUEA or PUEB or PUEC
 
 // with so many pins, doing this all with #ifdefs gets awkward...
 // ... so just hardcode it in each hwdef file instead
 // For lume1 driver, no SW support for Auxillary Jumpers X1 to X4 yet!
 inline void hwdef_setup() {
   // enable output ports in Data Direction Registers
-  // Buck Boost Enable Pin
-  // DDRA = (1 << LED_ENABLE_PIN);
   // FET PWM Pin
   DDRB = (1 << PWM2_PIN);
-  // Main PWM, aux R/G/B
+  // Main PWM, Buck Boost Enable Pin, aux R/G/B
   DDRA = (1 << PWM1_PIN)
+       | (1 << LED_ENABLE_PIN)
        | (1 << AUXLED_R_PIN)
        | (1 << AUXLED_G_PIN)
        | (1 << AUXLED_B_PIN)
-       | (1 << LED_ENABLE_PIN)
        ;
   //DDRB&=~(1<<VOLTAGE_PIN); // All pins are input by default
   /* // For Jumpers X1 to X4, no SW support yet
@@ -143,10 +137,10 @@ inline void hwdef_setup() {
   DDRA &= (1<<JUMPER2_PIN);
   DDRC &= (1<<JUMPER3_PIN);
   DDRC &= (1<<JUMPER4_PIN);
-  PUEA = (1 << JUMPER1_PIN); 
-  PUEA = (1 << JUMPER2_PIN); 
-  PUEC = (1 << JUMPER3_PIN); 
-  PUEC = (1 << JUMPER4_PIN); 
+  PUEA = (1 << JUMPER1_PIN);
+  PUEA = (1 << JUMPER2_PIN);
+  PUEC = (1 << JUMPER3_PIN);
+  PUEC = (1 << JUMPER4_PIN);
   */
 
   // configure PWM for 10 bit at 3.9kHz
