@@ -44,16 +44,15 @@
 // TODO: test if underclocking works on lume1
 //#define HALFSPEED_LEVEL 14
 //#define QUARTERSPEED_LEVEL 5
-
-// the entire ramp is regulated except turbo; don't blink halfway up
-#ifdef BLINK_AT_RAMP_MIDDLE
-#undef BLINK_AT_RAMP_MIDDLE
-#endif
-
 // don't slow down at low levels; this isn't that sort of light
 // (it needs to stay at full speed for the 10-bit PWM to work)
 #ifdef USE_DYNAMIC_UNDERCLOCKING
 #undef USE_DYNAMIC_UNDERCLOCKING
+#endif
+
+// the entire ramp is regulated except turbo; don't blink halfway up
+#ifdef BLINK_AT_RAMP_MIDDLE
+#undef BLINK_AT_RAMP_MIDDLE
 #endif
 
 #define RAMP_SMOOTH_FLOOR 1
@@ -72,6 +71,9 @@
 #define MUGGLE_FLOOR RAMP_DISCRETE_FLOOR
 #define MUGGLE_CEILING 99
 
+// slow down party strobe; this driver can't pulse for too short a time
+#define PARTY_STROBE_ONTIME 4
+
 // optional, makes initial turbo step-down faster so first peak isn't as hot
 // FET mode can run very very hot, so be extra careful
 //#define THERM_HARD_TURBO_DROP
@@ -79,22 +81,10 @@
 // stop panicking at ~85% regulated power or ~750 lm
 #define THERM_FASTER_LEVEL 140
 
-// respond to thermal changes faster
-#define THERMAL_WARNING_SECONDS 3
-#define THERMAL_UPDATE_SPEED 1
-#define THERM_PREDICTION_STRENGTH 4
-//#define THERM_RESPONSE_MAGNITUDE 128
+#define THERM_CAL_OFFSET 0  // not needed due to external sensor
 
 // easier access to thermal config mode, similar to Emisar, Noctigon
 #define USE_TENCLICK_THERMAL_CONFIG
-
-// slow down party strobe; this driver can't pulse for too short a time
-#define PARTY_STROBE_ONTIME 4
-
-#ifdef THERM_CAL_OFFSET
-#undef THERM_CAL_OFFSET
-#endif
-#define THERM_CAL_OFFSET 0  // not needed due to external sensor
 
 // can't reset the normal way because power is connected before the button
 #define USE_SOFT_FACTORY_RESET
