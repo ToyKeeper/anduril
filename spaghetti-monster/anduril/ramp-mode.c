@@ -142,13 +142,13 @@ uint8_t steady_state(Event event, uint16_t arg) {
         }
         // fix ramp direction on first frame if necessary
         if (!arg) {
+            // click, hold should always go down if possible
+            if (event == EV_click2_hold) { ramp_direction = -1; }
             // make it ramp down instead, if already at max
-            if (actual_level >= mode_max) { ramp_direction = -1; }
+            else if (actual_level >= mode_max) { ramp_direction = -1; }
             // make it ramp up if already at min
             // (off->hold->stepped_min->release causes this state)
             else if (actual_level <= mode_min) { ramp_direction = 1; }
-            // click, hold should always go down if possible
-            else if (event == EV_click2_hold) { ramp_direction = -1; }
         }
         // if the button is stuck, err on the side of safety and ramp down
         else if ((arg > TICKS_PER_SECOND * 5) && (actual_level >= mode_max)) {
