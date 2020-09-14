@@ -530,7 +530,8 @@ On most lights, the colors follow this sequence:
   - Blue
   - Purple (Blue+Red)
   - White (Red+Green+Blue)
-  - Rainbow (cycles through all colors)
+  - Disco (fast random colors)
+  - Rainbow (cycles through all colors in order)
   - Voltage (uses color to display battery charge)
 
 In voltage mode, the colors follow the same sequence, in the same order 

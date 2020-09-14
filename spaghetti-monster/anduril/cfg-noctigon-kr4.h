@@ -16,9 +16,6 @@
 #ifdef USE_INDICATOR_LED_WHILE_RAMPING
 #undef USE_INDICATOR_LED_WHILE_RAMPING
 #endif
-#define RGB_LED_OFF_DEFAULT 0x17  // low, rainbow
-#define RGB_LED_LOCKOUT_DEFAULT 0x37  // blinking, rainbow
-#define RGB_RAINBOW_SPEED 0x03  // half a second per color
 
 // enable blinking aux LEDs
 #define TICK_DURING_STANDBY

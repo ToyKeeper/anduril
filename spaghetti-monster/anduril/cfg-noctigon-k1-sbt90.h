@@ -12,9 +12,7 @@
 #define USE_AUX_RGB_LEDS
 #define USE_AUX_RGB_LEDS_WHILE_ON
 #define USE_INDICATOR_LED_WHILE_RAMPING
-#define RGB_LED_OFF_DEFAULT 0x18  // low, voltage
-#define RGB_LED_LOCKOUT_DEFAULT 0x37  // blinking, rainbow
-#define RGB_RAINBOW_SPEED 0x03  // half a second per color
+#define RGB_RAINBOW_SPEED 0x03  // half a second per color in rainbow mode
 
 // enable blinking aux LEDs
 #define TICK_DURING_STANDBY
