@@ -23,6 +23,57 @@
 #include <util/delay_basic.h>
 
 
+void append_emission(Event event, uint16_t arg) {
+    uint8_t i;
+    // find last entry
+    for(i=0;
+        (i<EMISSION_QUEUE_LEN) && (emissions[i].event != EV_none);
+        i++) { }
+    // add new entry
+    if (i < EMISSION_QUEUE_LEN) {
+        emissions[i].event = event;
+        emissions[i].arg = arg;
+    } else {
+        // TODO: if queue full, what should we do?
+    }
+}
+
+void delete_first_emission() {
+    uint8_t i;
+    for(i=0; i<EMISSION_QUEUE_LEN-1; i++) {
+        emissions[i].event = emissions[i+1].event;
+        emissions[i].arg = emissions[i+1].arg;
+    }
+    emissions[i].event = EV_none;
+    emissions[i].arg = 0;
+}
+
+void process_emissions() {
+    while (emissions[0].event != EV_none) {
+        emit_now(emissions[0].event, emissions[0].arg);
+        delete_first_emission();
+    }
+}
+
+// Call stacked callbacks for the given event until one handles it.
+uint8_t emit_now(Event event, uint16_t arg) {
+    for(int8_t i=state_stack_len-1; i>=0; i--) {
+        uint8_t err = state_stack[i](event, arg);
+        if (! err) return 0;
+    }
+    return 1;  // event not handled
+}
+
+void emit(Event event, uint16_t arg) {
+    // add this event to the queue for later,
+    // so we won't use too much time during an interrupt
+    append_emission(event, arg);
+}
+
+void emit_current_event(uint16_t arg) {
+    emit(current_event, arg);
+}
+
 void empty_event_sequence() {
     current_event = EV_none;
     ticks_since_last_event = 0;
@@ -63,41 +114,8 @@ uint8_t push_event(uint8_t ev_type) {  // only for use by PCINT_inner()
     }
 
     return 0;  // unexpected event type
-
 }
 
-
-void append_emission(Event event, uint16_t arg) {
-    uint8_t i;
-    // find last entry
-    for(i=0;
-        (i<EMISSION_QUEUE_LEN) && (emissions[i].event != EV_none);
-        i++) { }
-    // add new entry
-    if (i < EMISSION_QUEUE_LEN) {
-        emissions[i].event = event;
-        emissions[i].arg = arg;
-    } else {
-        // TODO: if queue full, what should we do?
-    }
-}
-
-void delete_first_emission() {
-    uint8_t i;
-    for(i=0; i<EMISSION_QUEUE_LEN-1; i++) {
-        emissions[i].event = emissions[i+1].event;
-        emissions[i].arg = emissions[i+1].arg;
-    }
-    emissions[i].event = EV_none;
-    emissions[i].arg = 0;
-}
-
-void process_emissions() {
-    while (emissions[0].event != EV_none) {
-        emit_now(emissions[0].event, emissions[0].arg);
-        delete_first_emission();
-    }
-}
 
 // explicitly interrupt these "nice" delays
 volatile uint8_t nice_delay_interrupt = 0;
@@ -193,24 +211,5 @@ uint8_t nice_delay_s() {
     return nice_delay_4ms(250);
 }
 */
-
-// Call stacked callbacks for the given event until one handles it.
-uint8_t emit_now(Event event, uint16_t arg) {
-    for(int8_t i=state_stack_len-1; i>=0; i--) {
-        uint8_t err = state_stack[i](event, arg);
-        if (! err) return 0;
-    }
-    return 1;  // event not handled
-}
-
-void emit(Event event, uint16_t arg) {
-    // add this event to the queue for later,
-    // so we won't use too much time during an interrupt
-    append_emission(event, arg);
-}
-
-void emit_current_event(uint16_t arg) {
-    emit(current_event, arg);
-}
 
 #endif
