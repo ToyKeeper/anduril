@@ -32,7 +32,7 @@ def nearest_level(target, floor, ceil, steps):
     #if (! ramp_style): return target;
 
     ramp_range = ceil - floor;
-    ramp_discrete_step_size = ramp_range / (steps-1);
+    ramp_discrete_step_size = int(ramp_range / (steps-1));
     this_level = floor;
 
     for i in range(steps):
