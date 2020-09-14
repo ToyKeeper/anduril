@@ -202,7 +202,7 @@ static volatile uint16_t ticks_since_last_event = 0;
 
 
 void empty_event_sequence();
-uint8_t push_event(uint8_t ev_type);
+uint8_t push_event(uint8_t ev_type);  // only for use by PCINT_inner()
 
 
 #define EMISSION_QUEUE_LEN 16

@@ -25,6 +25,7 @@
 
 void empty_event_sequence() {
     current_event = EV_none;
+    ticks_since_last_event = 0;
     // when the user completes an input sequence, interrupt any running timers
     // to cancel any delays currently in progress
     // This eliminates a whole bunch of extra code:
@@ -33,8 +34,9 @@ void empty_event_sequence() {
     interrupt_nice_delays();
 }
 
-uint8_t push_event(uint8_t ev_type) {
-    ticks_since_last_event = 0;  // something happened
+uint8_t push_event(uint8_t ev_type) {  // only for use by PCINT_inner()
+    // don't do this here; do it in PCINT_inner() instead
+    //ticks_since_last_event = 0;  // something happened
 
     // only click events are sent to this function
     current_event |= B_CLICK;
@@ -208,7 +210,6 @@ void emit(Event event, uint16_t arg) {
 }
 
 void emit_current_event(uint16_t arg) {
-    ticks_since_last_event = arg;
     emit(current_event, arg);
 }
 

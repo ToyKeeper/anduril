@@ -101,9 +101,9 @@ void PCINT_inner(uint8_t pressed) {
         emit_current_event(0);
     } else {  // user released button
         // how long was the button held?
-        uint16_t ticks_since_last = ticks_since_last_event;
         push_event(B_RELEASE);
-        emit_current_event(ticks_since_last);
+        emit_current_event(ticks_since_last_event);
     }
+    ticks_since_last_event = 0;
 }
 #endif

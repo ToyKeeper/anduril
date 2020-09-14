@@ -150,6 +150,7 @@ void WDT_inner() {
         // (first frame of a "hold" event)
         else {
             if (ticks_since_last >= HOLD_TIMEOUT) {
+                ticks_since_last_event = 0;
                 current_event |= B_HOLD;
                 emit_current_event(0);
             }
@@ -160,9 +161,8 @@ void WDT_inner() {
     else if (current_event) {
         // "hold" event just ended
         // no timeout required when releasing a long-press
-        // TODO? move this logic to PCINT() and simplify things here?
         if (current_event & B_HOLD) {
-            //emit_current_event(0);  // should have been emitted by PCINT_inner()
+            //emit_current_event(ticks_since_last);  // should have been emitted by PCINT_inner()
             empty_event_sequence();
         }
         // end and clear event after release timeout
