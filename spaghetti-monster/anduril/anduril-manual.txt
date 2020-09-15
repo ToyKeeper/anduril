@@ -140,12 +140,22 @@ While the light is on, a few basic actions are available:
   - 7C: Go to ramp config mode.
 
   - 10C: Activate manual memory and save the current brightness.
-  - 10H: Go back to automatic memory.
+         Or, if it was already set to the current brightness, deactivate
+         manual memory and go back to automatic memory.
+  - 10H: Configure the manual memory timer, on lights where it is
+         supported.  Otherwise, if not supported, 10H goes back to
+         automatic memory.
 
 The "automatic" vs "manual" memory modes change the level the light goes 
 to with 1 click from off.  In automatic mode, it uses the last 
 brightness the user ramped to.  In manual mode, it uses the brightness 
 the user explicitly saved with 10 clicks.
+
+There is also an optional timer for manual memory, which puts it into a 
+hybrid memory mode.  This makes the light use automatic memory if it was 
+only off for a short time, or reset to the manual memory level if it was 
+off for a longer time.  The timeout value is configurable by the user, 
+from 0 to 254 minutes.
 
 
 Sunset Timer
@@ -608,8 +618,9 @@ Ramp		Any	4C	Lockout mode
 Ramp		Full	5C	Momentary mode
 Ramp		Full	5H	Sunset timer on, and add 5 minutes
 Ramp		Full	7C	Ramp config mode
-Ramp		Full	10C	Enable manual memory at current brightness
-Ramp		Full	10H	Disable manual memory
+Ramp		Full	10C	Toggle manual memory on/off at current brightness
+Ramp		Full	10H	Manual memory timer config menu
+Ramp		Full	10H	Disable manual memory (if manual mem timer not compiled in)
 
 Lockout		Any	1C/1H	Momentary moon (lowest floor)
 Lockout		Any	2C/2H	Momentary moon (highest floor, or manual mem level)
