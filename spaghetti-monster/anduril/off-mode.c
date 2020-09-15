@@ -27,6 +27,12 @@
 #endif
 
 uint8_t off_state(Event event, uint16_t arg) {
+    #ifdef USE_MANUAL_MEMORY_TIMER
+    // keep track of how long the light was off,
+    // so we can do different things on waking, depending on how long asleep
+    static uint16_t off_time = 0;
+    #endif
+
     // turn emitter off when entering state
     if (event == EV_enter_state) {
         set_level(0);
@@ -58,6 +64,9 @@ uint8_t off_state(Event event, uint16_t arg) {
     #if defined(TICK_DURING_STANDBY)
     // blink the indicator LED, maybe
     else if (event == EV_sleep_tick) {
+        #ifdef USE_MANUAL_MEMORY_TIMER
+        off_time = arg;
+        #endif
         #ifdef USE_INDICATOR_LED
         if ((indicator_led_mode & 0b00000011) == 0b00000011) {
             indicator_blink(arg);
@@ -118,9 +127,14 @@ uint8_t off_state(Event event, uint16_t arg) {
     // 1 click (before timeout): go to memorized level, but allow abort for double click
     else if (event == EV_click1_release) {
         #ifdef USE_MANUAL_MEMORY
-        if (manual_memory)
-            set_level(nearest_level(manual_memory));
-        else
+        // for full manual memory, set manual_memory_timer to 0
+        if (manual_memory
+            #ifdef USE_MANUAL_MEMORY_TIMER
+            && (off_time >= (manual_memory_timer * SLEEP_TICKS_PER_MINUTE))
+            #endif
+            ) {
+                set_level(nearest_level(manual_memory));
+        } else
         #endif
         set_level(nearest_level(memorized_level));
         return MISCHIEF_MANAGED;
@@ -128,12 +142,14 @@ uint8_t off_state(Event event, uint16_t arg) {
     #endif  // if (B_TIMING_ON != B_TIMEOUT_T)
     // 1 click: regular mode
     else if (event == EV_1click) {
-        #ifdef USE_MANUAL_MEMORY
-        if (manual_memory)
-            set_state(steady_state, manual_memory);
-        else
-        #endif
+        #if (B_TIMING_ON != B_TIMEOUT_T)
+        // brightness was already set; reuse previous value
+        set_state(steady_state, actual_level);
+        #else
+        // FIXME: B_TIMEOUT_T breaks manual_memory and manual_memory_timer
+        //        (need to duplicate manual mem logic here, probably)
         set_state(steady_state, memorized_level);
+        #endif
         return MISCHIEF_MANAGED;
     }
     // click, hold: momentary at ceiling or turbo

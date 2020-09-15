@@ -5,6 +5,7 @@
 
 // ROM is too big... remove something
 #undef USE_VOLTAGE_CORRECTION
+#undef USE_MANUAL_MEMORY_TIMER
 
 // if the "low" mode was disabled, turn it back on
 #ifdef INDICATOR_LED_SKIP_LOW

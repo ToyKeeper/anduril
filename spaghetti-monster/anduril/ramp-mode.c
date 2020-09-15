@@ -368,20 +368,32 @@ uint8_t steady_state(Event event, uint16_t arg) {
 
     #ifdef USE_MANUAL_MEMORY
     else if (event == EV_10clicks) {
+        #ifdef USE_MANUAL_MEMORY_TIMER
+        // first time turns on manual memory,
+        // second time (at same level) goes back to automatic
+        if (manual_memory == actual_level) manual_memory = 0;
+        else
+        #endif
         manual_memory = actual_level;
         save_config();
         blink_once();
         return MISCHIEF_MANAGED;
     }
     else if (event == EV_click10_hold) {
+        #ifdef USE_MANUAL_MEMORY_TIMER
+        // let user configure timer for manual / hybrid memory
+        push_state(manual_memory_timer_config_state, 0);
+        #else  // manual mem, but no timer
+        // turn off manual memory; go back to automatic
         if (0 == arg) {
             manual_memory = 0;
             save_config();
             blink_once();
         }
+        #endif
         return MISCHIEF_MANAGED;
     }
-    #endif
+    #endif  // ifdef USE_MANUAL_MEMORY
 
     return EVENT_NOT_HANDLED;
 }
@@ -419,6 +431,19 @@ uint8_t simple_ui_config_state(Event event, uint16_t arg) {
 }
 #endif
 #endif  // #ifdef USE_RAMP_CONFIG
+
+#ifdef USE_MANUAL_MEMORY_TIMER
+void manual_memory_timer_config_save() {
+    uint8_t val;
+    // skip to keep old value, or click to use hybrid mem with N-1 minute timer
+    val = config_state_values[0];
+    if (val) manual_memory_timer = val - 1;
+}
+
+uint8_t manual_memory_timer_config_state(Event event, uint16_t arg) {
+    return config_state_base(event, arg, 1, manual_memory_timer_config_save);
+}
+#endif
 
 // find the ramp level closest to the target,
 // using only the levels which are allowed in the current state

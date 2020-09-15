@@ -124,6 +124,10 @@ uint8_t simple_ui_config_state(Event event, uint16_t arg);
 #endif
 #endif
 
+#if defined(USE_MANUAL_MEMORY) && defined(USE_MANUAL_MEMORY_TIMER)
+uint8_t manual_memory_timer_config_state(Event event, uint16_t arg);
+#endif
+
 // calculate the nearest ramp level which would be valid at the moment
 // (is a no-op for smooth ramp, but limits discrete ramp to only the
 // correct levels for the user's config)
@@ -145,6 +149,9 @@ void set_level_and_therm_target(uint8_t level);
 uint8_t memorized_level = DEFAULT_LEVEL;
 #ifdef USE_MANUAL_MEMORY
 uint8_t manual_memory = 0;
+#ifdef USE_MANUAL_MEMORY_TIMER
+uint8_t manual_memory_timer = 0;
+#endif
 #endif
 #ifdef USE_SIMPLE_UI
 // whether to enable the simplified interface or not

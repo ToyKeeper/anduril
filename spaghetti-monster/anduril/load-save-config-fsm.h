@@ -33,6 +33,9 @@ typedef enum {
     #endif
     #ifdef USE_MANUAL_MEMORY
     manual_memory_e,
+    #ifdef USE_MANUAL_MEMORY_TIMER
+    manual_memory_timer_e,
+    #endif
     #endif
     #ifdef USE_TINT_RAMPING
     tint_e,

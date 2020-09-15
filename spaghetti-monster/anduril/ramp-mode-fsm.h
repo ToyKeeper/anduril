@@ -36,5 +36,10 @@
 #define DEFAULT_LEVEL MAX_1x7135
 #endif
 
+// requires the ability to measure time while "off"
+#ifdef USE_MANUAL_MEMORY_TIMER
+#define TICK_DURING_STANDBY
+#endif
+
 
 #endif

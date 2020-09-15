@@ -72,10 +72,16 @@
 // adds a runtime option to switch between automatic memory (default)
 // and manual memory (only available if compiled in)
 // (manual memory makes 1-click-from-off start at the same level each time)
-// (the level can be set explicitly with 5 clicks from on,
-// or the user can go back to automatic with click-click-click-click-hold)
-// TODO: remap to a shorter button sequence?
+// (the level can be set explicitly with 10 clicks from on,
+// or the user can go back to automatic with 10H)
 #define USE_MANUAL_MEMORY
+// if enabled, user can use "hybrid memory"
+// The light will use automatic or manual memory level, depending on how long
+// the light was off.  Short off = automatic, long off = manual.
+// This also remaps 10C/10H:
+// - 10C toggles manual mem on/off at current level.
+// - 10H configures the timer value.
+#define USE_MANUAL_MEMORY_TIMER
 
 // enable sunset timer (ramp-down and automatic shutoff)
 // timer is available in regular ramp mode and candle mode

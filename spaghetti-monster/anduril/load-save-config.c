@@ -35,6 +35,9 @@ void load_config() {
         #endif
         #ifdef USE_MANUAL_MEMORY
         manual_memory = eeprom[manual_memory_e];
+        #ifdef USE_MANUAL_MEMORY_TIMER
+        manual_memory_timer = eeprom[manual_memory_timer_e];
+        #endif
         #endif
         #ifdef USE_TINT_RAMPING
         tint = eeprom[tint_e];
@@ -92,6 +95,9 @@ void save_config() {
     #endif
     #ifdef USE_MANUAL_MEMORY
     eeprom[manual_memory_e] = manual_memory;
+    #ifdef USE_MANUAL_MEMORY_TIMER
+    eeprom[manual_memory_timer_e] = manual_memory_timer;
+    #endif
     #endif
     #ifdef USE_TINT_RAMPING
     eeprom[tint_e] = tint;
