@@ -104,12 +104,20 @@ uint8_t steady_state(Event event, uint16_t arg) {
         // full UI: to/from ceiling if mem < ceiling,
         //          or to/from turbo if mem >= ceiling
         uint8_t turbo_level;
-        if ((memorized_level < mode_max)
+        #ifdef USE_2C_MAX_TURBO  // 2C = turbo (Anduril1 behavior)
             #ifdef USE_SIMPLE_UI
-            || simple_ui_active
+            if (simple_ui_active) turbo_level = mode_max;
+            else
             #endif
-           ) { turbo_level = mode_max; }
-        else { turbo_level = MAX_LEVEL; }
+            turbo_level = MAX_LEVEL;
+        #else  // 2C = ceiling, unless already at ceiling (Anduril2 default)
+            if ((memorized_level < mode_max)
+                #ifdef USE_SIMPLE_UI
+                || simple_ui_active
+                #endif
+               ) { turbo_level = mode_max; }
+            else { turbo_level = MAX_LEVEL; }
+        #endif
 
         if (actual_level < turbo_level) {
             // true turbo, not the mode-specific ceiling

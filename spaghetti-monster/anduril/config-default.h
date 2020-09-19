@@ -66,6 +66,13 @@
 #define BLINK_AT_RAMP_CEIL
 //#define BLINK_AT_STEPS  // whenever a discrete ramp mode is passed in smooth mode
 
+// Uncomment for Anduril1 "Ramp 2C" behavior:
+//   - Ramp 2C goes to turbo (advanced UI) or ceiling (simple UI), like in Anduril1
+// Or comment out to use Anduril2 behavior instead:
+//   - Ramp 2C goes to ceiling, unless already at ceiling or in simple UI.
+//     (Advanced UI ceiling 2C goes to turbo)
+//#define USE_2C_MAX_TURBO
+
 // make the ramps configurable by the user
 #define USE_RAMP_CONFIG
 
