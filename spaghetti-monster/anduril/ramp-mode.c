@@ -100,17 +100,19 @@ uint8_t steady_state(Event event, uint16_t arg) {
     }
     // 2 clicks: go to/from highest level
     else if (event == EV_2clicks) {
-        // simple UI: to/from ceiling
-        // full UI: to/from ceiling if mem < ceiling,
-        //          or to/from turbo if mem >= ceiling
         uint8_t turbo_level;
-        #ifdef USE_2C_MAX_TURBO  // 2C = turbo (Anduril1 behavior)
+        #ifdef USE_2C_MAX_TURBO
+            // simple UI: to/from ceiling
+            // full UI: to/from turbo (Anduril1 behavior)
             #ifdef USE_SIMPLE_UI
             if (simple_ui_active) turbo_level = mode_max;
             else
             #endif
             turbo_level = MAX_LEVEL;
-        #else  // 2C = ceiling, unless already at ceiling (Anduril2 default)
+        #else
+            // simple UI: to/from ceiling
+            // full UI: to/from ceiling if mem < ceiling,
+            //          or to/from turbo if mem >= ceiling
             if ((memorized_level < mode_max)
                 #ifdef USE_SIMPLE_UI
                 || simple_ui_active
@@ -120,7 +122,6 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #endif
 
         if (actual_level < turbo_level) {
-            // true turbo, not the mode-specific ceiling
             set_level_and_therm_target(turbo_level);
         }
         else {
