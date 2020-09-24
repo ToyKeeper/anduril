@@ -410,11 +410,11 @@ void ramp_config_save(uint8_t step, uint8_t value) {
     uint8_t style = ramp_style;
     if (current_state == simple_ui_config_state)  style = 2;
 
-    // ceiling value is inverted
-    if (step == 2) value = MAX_LEVEL + 1 - value;
-
     // save adjusted value to the correct slot
     if (value) {
+        // ceiling value is inverted
+        if (step == 2) value = MAX_LEVEL + 1 - value;
+
         // which option are we configuring?
         // TODO? maybe rearrange definitions to avoid the need for this table
         //       (move all ramp values into a single array?)
