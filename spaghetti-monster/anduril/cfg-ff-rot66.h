@@ -3,7 +3,7 @@
 #include "hwdef-FF_ROT66.h"
 
 // ROM is too big... remove something
-#undef USE_VOLTAGE_CORRECTION
+//#undef USE_VOLTAGE_CORRECTION
 
 // the button lights up
 #define USE_INDICATOR_LED
