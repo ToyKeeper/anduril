@@ -137,14 +137,15 @@ While the light is on, a few basic actions are available:
   - 5C: Go to momentary mode.
   - 5H: Start a sunset timer.  Details are below in the Sunset Timer section.
 
-  - 7C: Go to ramp config mode.
+  - 7H: Go to ramp config mode.
 
   - 10C: Activate manual memory and save the current brightness.
-         Or, if it was already set to the current brightness, deactivate
-         manual memory and go back to automatic memory.
-  - 10H: Configure the manual memory timer, on lights where it is
-         supported.  Otherwise, if not supported, 10H goes back to
-         automatic memory.
+  - 10H: Manual memory config menu.
+    - Item 1: Disable manual memory and go back to automatic memory.
+              (doesn't matter what value the user enters at the prompt)
+    - Item 2: Configure the manual memory timer.
+              Sets the timer to N minutes, where N is the number of 
+              clicks.  A value of 0 (no clicks) turns the timer off.
 
 The "automatic" vs "manual" memory modes change the level the light goes 
 to with 1 click from off.  In automatic mode, it uses the last 
@@ -250,7 +251,7 @@ In all of these modes, some basic actions are available:
 
 Additionally, in battery check and temperature check modes:
 
-  - 7 clicks: Go to the voltage config mode or thermal config mode.
+  - 7H: Go to the voltage config mode or thermal config mode.
 
 In more detail, this is what each blinky / utility mode does:
 
@@ -426,28 +427,27 @@ Every config mode has the same interface.  The menu has one or more
 options the user can configure, and it will go through them in order.  
 For each menu item, the light will follow the same pattern:
 
-  - Blink one or more times, corresponding to the item number.
+  - Blink once, then go to a lower brightness.  The user can keep 
+    holding the button to skip this menu item, or release the button to 
+    dive in and enter a new value.
 
-  - Stutter or "buzz" quickly between two brightness levels for a few 
-    seconds.  This indicates that the user can click one or more times 
-    to enter a number.  It will keep buzzing until the user stops 
-    clicking, so there is no need to hurry.
+  - If the user released the button:
 
-  - Pause, and then go to the next option.
+    - Stutter or "buzz" quickly between two brightness levels for a few 
+      seconds.  This indicates that the user can click one or more times 
+      to enter a number.  It will keep buzzing until the user stops 
+      clicking, so there is no need to hurry.
 
-After the light has gone through all of the menu options, it should 
-return to whatever mode the light was in before entering the config 
-mode.
-
-If the user doesn't press a button during a menu item's "buzz" phase, 
-that item remains unchanged from its previous value.
+After entering a number, or after skipping every menu item, it waits 
+until the button is released then exits the menu.  It should return to 
+whatever mode the light was in before entering the config mode.
 
 
 Ramp Config Mode
 ----------------
 
-While the light is on in a ramping mode, click 7 times to enter the 
-config mode for the current ramp.
+While the light is on in a ramping mode, click 7 times (but hold the 
+final click) to enter the config mode for the current ramp.
 
 Or, to access the ramp config for Simple UI, make sure the Simple UI is 
 not active, then do a 10H action from Off.
@@ -603,7 +603,7 @@ Off		Full	7C	Aux LEDs: Next pattern
 Off		Full	7H	Aux LEDs: Next color
 Off		Full	10C	Enable Simple UI
 Off		Simple	10H	Disable Simple UI
-Off		Full	10H	Simple UI ramp config menu
+Off		Full	10H	Simple UI ramp config menu (1: floor, 2: ceiling, [3: steps])
 Off		Any	13H	Factory reset (on some lights)
 Off		Any	15+C	Version check
 
@@ -617,10 +617,9 @@ Ramp		Any	3H	Tint ramping (on some lights)
 Ramp		Any	4C	Lockout mode
 Ramp		Full	5C	Momentary mode
 Ramp		Full	5H	Sunset timer on, and add 5 minutes
-Ramp		Full	7C	Ramp config mode
-Ramp		Full	10C	Toggle manual memory on/off at current brightness
-Ramp		Full	10H	Manual memory timer config menu
-Ramp		Full	10H	Disable manual memory (if manual mem timer not compiled in)
+Ramp		Full	7H	Ramp config mode (1: floor, 2: ceiling, [3: steps])
+Ramp		Full	10C	Turn on manual memory and save current brightness
+Ramp		Full	10H	Manual memory config menu (1: off, 2: set timeout)
 
 Lockout		Any	1C/1H	Momentary moon (lowest floor)
 Lockout		Any	2C/2H	Momentary moon (highest floor, or manual mem level)
@@ -629,8 +628,7 @@ Lockout		Any	4H	On (ramp mode, floor level)
 Lockout		Any	5C	On (ramp mode, ceiling level)
 Lockout		Full	7C	Aux LEDs: Next pattern
 Lockout		Full	7H	Aux LEDs: Next color
-Lockout		Full	10C	Auto-lock config menu
-Lockout		Full	10H	Disable Auto-lock
+Lockout		Full	10H	Auto-lock config menu (1: set timeout)
 
 Strobe (any)	Full	1C	Off
 Strobe (any)	Full	2C	Next strobe mode
@@ -646,7 +644,7 @@ Lightning	Full	1H	Interrupt current flash or start new one
 
 Batt check	Any	1C	Off
 Batt check	Full	2C	Next blinky mode (Beacon, SOS, Temp check)
-Batt check	Full	7C	Voltage config mode
+Batt check	Full	7H	Voltage config mode
 
 Beacon		Full	1C	Off
 Beacon		Full	1H	Configure beacon timing
@@ -657,10 +655,12 @@ SOS		Full	2C	Next blinky mode (Temp check, Batt check)
 
 Temp check	Full	1C	Off
 Temp check	Full	2C	Next blinky mode (Batt check)
-Temp check	Full	7C	Thermal config mode
+Temp check	Full	7H	Thermal config mode
 
 Momentary	Full	Any	On (until button is released)
 Momentary	Full	Disconnect power	Exit Momentary mode
 
-Config modes	Full	None	Skip current item with no changes
-Config modes	Full	1+C	Enter new numeric value for current item
+Config modes	Full	Hold	Skip current item with no changes
+Config modes	Full	Release	Configure current item
+
+Number entry	Full	Click	Add 1 to value for current item

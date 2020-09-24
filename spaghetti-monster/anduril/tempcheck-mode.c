@@ -35,30 +35,29 @@ uint8_t tempcheck_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif
-    // 7 clicks: thermal config mode
-    else if (event == EV_7clicks) {
+    // 7H: thermal config mode
+    else if (event == EV_click7_hold) {
         push_state(thermal_config_state, 0);
         return MISCHIEF_MANAGED;
     }
     return EVENT_NOT_HANDLED;
 }
 
-void thermal_config_save() {
-    // parse values
-    uint8_t val;
-
-    // calibrate room temperature
-    val = config_state_values[0];
-    if (val) {
-        int8_t rawtemp = temperature - therm_cal_offset;
-        therm_cal_offset = val - rawtemp;
-        adc_reset = 2;  // invalidate all recent temperature data
+void thermal_config_save(uint8_t step, uint8_t value) {
+    // item 1: calibrate room temperature
+    if (step == 1) {
+        if (value) {
+            int8_t rawtemp = temperature - therm_cal_offset;
+            therm_cal_offset = value - rawtemp;
+            adc_reset = 2;  // invalidate all recent temperature data
+        }
     }
 
-    val = config_state_values[1];
-    if (val) {
-        // set maximum heat limit
-        therm_ceil = 30 + val - 1;
+    // item 2: set maximum heat limit
+    else {
+        if (value) {
+            therm_ceil = 30 + value - 1;
+        }
     }
     if (therm_ceil > MAX_THERM_CEIL) therm_ceil = MAX_THERM_CEIL;
 }

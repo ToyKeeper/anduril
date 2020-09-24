@@ -20,13 +20,13 @@
 #ifndef CONFIG_MODE_H
 #define CONFIG_MODE_H
 
-#define MAX_CONFIG_VALUES 3
-uint8_t config_state_values[MAX_CONFIG_VALUES];
-
-// simple numeric entry config menu
-uint8_t config_state_base(Event event, uint16_t arg,
-                          uint8_t num_config_steps,
-                          void (*savefunc)());
+// config menu
+uint8_t config_state_base(
+    Event event,
+    uint16_t arg,
+    uint8_t num_config_steps,
+    void (*savefunc)(uint8_t step, uint8_t value)
+    );
 
 
 #endif

@@ -121,18 +121,9 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     #endif
 
     #ifdef USE_AUTOLOCK
-    // 10 clicks: configure the autolock option
-    else if (event == EV_10clicks) {
-        push_state(autolock_config_state, 0);
-        return MISCHIEF_MANAGED;
-    }
-    // 10H: turn off autolock
+    // 10H: configure the autolock option
     else if (event == EV_click10_hold) {
-        if (0 == arg) {
-            autolock_time = 0;
-            save_config();
-            blink_once();
-        }
+        push_state(autolock_config_state, 0);
         return MISCHIEF_MANAGED;
     }
     #endif
@@ -193,9 +184,8 @@ uint8_t lockout_state(Event event, uint16_t arg) {
 
 #ifdef USE_AUTOLOCK
 // set the auto-lock timer to N minutes, where N is the number of clicks
-void autolock_config_save() {
-    uint8_t foo = config_state_values[0];
-    if (foo) autolock_time = config_state_values[0];
+void autolock_config_save(uint8_t step, uint8_t value) {
+    autolock_time = value;
 }
 
 uint8_t autolock_config_state(Event event, uint16_t arg) {

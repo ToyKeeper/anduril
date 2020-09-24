@@ -24,7 +24,7 @@
 
 uint8_t tempcheck_state(Event event, uint16_t arg);
 uint8_t thermal_config_state(Event event, uint16_t arg);
-void thermal_config_save();
+void thermal_config_save(uint8_t step, uint8_t value);
 
 
 #endif

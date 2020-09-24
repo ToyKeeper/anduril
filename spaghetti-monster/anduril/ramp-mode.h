@@ -118,7 +118,7 @@ uint8_t steady_state(Event event, uint16_t arg);
 
 #ifdef USE_RAMP_CONFIG
 uint8_t ramp_config_state(Event event, uint16_t arg);
-void ramp_config_save();
+void ramp_config_save(uint8_t step, uint8_t value);
 #ifdef USE_SIMPLE_UI
 uint8_t simple_ui_config_state(Event event, uint16_t arg);
 #endif

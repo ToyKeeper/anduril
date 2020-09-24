@@ -51,8 +51,8 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
     #endif
 
     #ifdef USE_VOLTAGE_CORRECTION
-    // 7 clicks: voltage config mode
-    else if (event == EV_7clicks) {
+    // 7H: voltage config mode
+    else if (event == EV_click7_hold) {
         push_state(voltage_config_state, 0);
         return MISCHIEF_MANAGED;
     }
@@ -70,9 +70,8 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
 // 8 = add 0.05V
 // ...
 // 13 = add 0.30V
-void voltage_config_save() {
-    uint8_t foo = config_state_values[0];
-    if (foo) voltage_correction = config_state_values[0];
+void voltage_config_save(uint8_t step, uint8_t value) {
+    if (value) voltage_correction = value;
 }
 
 uint8_t voltage_config_state(Event event, uint16_t arg) {

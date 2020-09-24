@@ -368,8 +368,8 @@ uint8_t steady_state(Event event, uint16_t arg) {
     #endif
 
     #ifdef USE_RAMP_CONFIG
-    // 7 clicks: configure this ramp mode
-    else if (event == EV_7clicks) {
+    // 7H: configure this ramp mode
+    else if (event == EV_click7_hold) {
         push_state(ramp_config_state, 0);
         return MISCHIEF_MANAGED;
     }
@@ -377,12 +377,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
 
     #ifdef USE_MANUAL_MEMORY
     else if (event == EV_10clicks) {
-        #ifdef USE_MANUAL_MEMORY_TIMER
-        // first time turns on manual memory,
-        // second time (at same level) goes back to automatic
-        if (manual_memory == actual_level) manual_memory = 0;
-        else
-        #endif
+        // turn on manual memory and save current brightness
         manual_memory = actual_level;
         save_config();
         blink_once();
@@ -409,22 +404,24 @@ uint8_t steady_state(Event event, uint16_t arg) {
 
 
 #ifdef USE_RAMP_CONFIG
-void ramp_config_save() {
-    // parse values
-    uint8_t val;
+void ramp_config_save(uint8_t step, uint8_t value) {
+
     // 0 = smooth ramp, 1 = stepped ramp, 2 = simple UI's ramp
     uint8_t style = ramp_style;
     if (current_state == simple_ui_config_state)  style = 2;
 
-    val = config_state_values[0];
-    if (val) { ramp_floors[style] = val; }
+    // ceiling value is inverted
+    if (step == 2) value = MAX_LEVEL + 1 - value;
 
-    val = config_state_values[1];
-    if (val) { ramp_ceils[style] = MAX_LEVEL + 1 - val; }
-
-    if (style) {  // smooth ramp has no third value
-        val = config_state_values[2];
-        if (val) ramp_stepss[style] = val;
+    // save adjusted value to the correct slot
+    if (value) {
+        // which option are we configuring?
+        // TODO? maybe rearrange definitions to avoid the need for this table
+        //       (move all ramp values into a single array?)
+        uint8_t *steps[] = { ramp_floors, ramp_ceils, ramp_stepss };
+        uint8_t *option;
+        option = steps[step-1];
+        option[style] = value;
     }
 }
 
@@ -442,15 +439,15 @@ uint8_t simple_ui_config_state(Event event, uint16_t arg) {
 #endif  // #ifdef USE_RAMP_CONFIG
 
 #ifdef USE_MANUAL_MEMORY_TIMER
-void manual_memory_timer_config_save() {
-    uint8_t val;
-    // skip to keep old value, or click to use hybrid mem with N-1 minute timer
-    val = config_state_values[0];
-    if (val) manual_memory_timer = val - 1;
+void manual_memory_timer_config_save(uint8_t step, uint8_t value) {
+    // item 1: disable manual memory, go back to automatic
+    if (step == 1) { manual_memory = 0; }
+    // item 2: set manual memory timer duration
+    else { manual_memory_timer = value; }
 }
 
 uint8_t manual_memory_timer_config_state(Event event, uint16_t arg) {
-    return config_state_base(event, arg, 1, manual_memory_timer_config_save);
+    return config_state_base(event, arg, 2, manual_memory_timer_config_save);
 }
 #endif
 
