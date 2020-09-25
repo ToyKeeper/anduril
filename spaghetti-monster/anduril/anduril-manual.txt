@@ -224,7 +224,10 @@ then turn on at the memorized level.  Or hold the final press to turn on
 at the floor level instead:
 
   - 4C: Go to ramp mode (memorized level).
+    (uses manual mem level if there is one)
+
   - 4H: Go to ramp mode (floor level).
+
   - 5C: Go to ramp mode (ceiling level).
 
 Lockout mode also doubles as a momentary moon mode, so the user can do 
@@ -232,7 +235,9 @@ quick tasks without having to unlock the light.  The brightness in
 lockout mode has two levels:
 
   - 1H: Light up at the lowest floor level.
+
   - 2H: Light up at the highest floor level.
+        (or the manual mem level, if there is one)
 
 It is also possible to make the light lock itself automatically after 
 being turned off.  To enable this, go to lockout mode and use a 10H 
