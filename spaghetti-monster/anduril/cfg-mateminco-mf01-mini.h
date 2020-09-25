@@ -2,10 +2,6 @@
 #define MODEL_NUMBER "0521"
 #include "hwdef-Mateminco_MF01-Mini.h"
 
-// ROM is too big... remove something
-#undef USE_VOLTAGE_CORRECTION
-//#undef USE_MANUAL_MEMORY_TIMER
-
 // the button lights up
 #define USE_INDICATOR_LED
 //#define INDICATOR_LED_SKIP_LOW  // low mode doesn't work on this driver
