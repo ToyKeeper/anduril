@@ -3,9 +3,13 @@
 #include "hwdef-Noctigon_K1-12V.h"
 // ATTINY: 1634
 
-// this light can safely run a bit hotter than most
+// Most K1 lights can run hotter than default, but the 12V model
+// is known to have issues with the driver itself getting too hot.
+// This then causes the main LEDs to turn off during use, because the
+// boost chip's built-in protection activates.  So try to keep the
+// temperature relatively low.
 #undef DEFAULT_THERM_CEIL
-#define DEFAULT_THERM_CEIL 55
+#define DEFAULT_THERM_CEIL 45
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
