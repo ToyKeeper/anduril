@@ -38,9 +38,12 @@ volatile uint8_t number_entry_value;
 //     at the prompt to set the new value to N.
 // after completing this process, config state calls the savefunc callback
 // and then returns to caller/parent state
-uint8_t config_state_base(Event event, uint16_t arg,
-                          uint8_t num_config_steps,
-                          void (*savefunc)(uint8_t step, uint8_t value)) {
+uint8_t config_state_base(
+        Event event,
+        uint16_t arg,
+        uint8_t num_config_steps,
+        void (*savefunc)(uint8_t step, uint8_t value)) {
+
     static uint8_t config_step;
     if (event == EV_enter_state) {
         config_step = 0;

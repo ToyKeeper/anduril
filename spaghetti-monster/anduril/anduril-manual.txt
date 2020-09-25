@@ -114,13 +114,17 @@ Advanced UI's ramp.
 There are four ways to access ramping mode when the light is off:
 
   - 1C: Turn on at the memorized brightness.
+    (see below for details about what "memorized" means)
+
   - 1H: Turn on at the floor level.  Let go after the light turns on to 
     stay at the floor level, or keep holding to ramp up.
+
   - 2C: Turn on at the ceiling level.
+
   - 2H: Turn on at full power, turn off when released.  (momentary turbo)
         (in Simple UI, this uses the ceiling level instead of turbo)
 
-While the light is on, a few basic actions are available:
+While the light is on, a few actions are available:
 
   - 1C: Turn off.
   - 2C: Go to or from the ceiling level.
@@ -138,6 +142,9 @@ While the light is on, a few basic actions are available:
   - 5H: Start a sunset timer.  Details are below in the Sunset Timer section.
 
   - 7H: Go to ramp config mode.
+    - Item 1: Floor level.
+    - Item 2: Ceiling level.
+    - Item 3: Number of steps (except for smooth ramp).
 
   - 10C: Activate manual memory and save the current brightness.
   - 10H: Manual memory config menu.
@@ -147,16 +154,25 @@ While the light is on, a few basic actions are available:
               Sets the timer to N minutes, where N is the number of 
               clicks.  A value of 0 (no clicks) turns the timer off.
 
-The "automatic" vs "manual" memory modes change the level the light goes 
-to with 1 click from off.  In automatic mode, it uses the last 
-brightness the user ramped to.  In manual mode, it uses the brightness 
-the user explicitly saved with 10 clicks.
+Memory determines which brightness level the light goes to with 1 click 
+from off.  There are three types of brightness memory to choose from:
 
-There is also an optional timer for manual memory, which puts it into a 
-hybrid memory mode.  This makes the light use automatic memory if it was 
-only off for a short time, or reset to the manual memory level if it was 
-off for a longer time.  The timeout value is configurable by the user, 
-from 0 to 254 minutes.
+  - Automatic:  Always uses the last-ramped brightness.
+
+  - Manual:  Always uses the user's saved brightness.
+
+  - Hybrid:  Uses the automatic memory brightness if the light was only 
+    off for a short time, or resets to the manual memory level if it was 
+    off for a longer time.
+    The timer for this is configurable from 0 to 255 minutes.
+
+To choose a memory style, set the configuration accordingly:
+
+  mem type	manual mem	manual mem timer
+  --------	----------	----------------
+  automatic	off		any
+  manual	on		zero
+  hybrid	on		non-zero
 
 
 Sunset Timer
@@ -219,12 +235,14 @@ lockout mode has two levels:
   - 2H: Light up at the highest floor level.
 
 It is also possible to make the light lock itself automatically after 
-being turned off.  To enable this, go to lockout mode and then click 10 
-times to activate the auto-lock config menu.  Then at the prompt, click 
-N times to set the auto-lock timeout to N minutes.
+being turned off.  To enable this, go to lockout mode and use a 10H 
+action to activate the auto-lock config menu.  Release the button after 
+the first blink.  Then at the prompt, click N times to set the auto-lock 
+timeout to N minutes.
 
-  - 10C: Auto-lock config menu.  Click N times to set timeout to N minutes.
-  - 10H: Turn off auto-lock.
+  - 10H: Auto-lock config menu.  Click N times to set timeout to N minutes.
+         A value of zero disables the auto-lock feature.
+         So, to turn off auto-lock, don't click at all.
 
 And on lights which have aux LEDs, there may be additional functions:
 
@@ -485,6 +503,29 @@ click 31 times.
 When configuring the number of steps, the value can be anything from 1 
 to 150.  A value of 1 is a special case.  It places the step halfway 
 between the floor and ceiling levels.
+
+
+Version Check Mode
+------------------
+
+This allows people to see which version of the firmware is installed on 
+their light.  The format for this is (usually) 12 digits -- a date 
+followed by a model number.  YYYYMMDDBBPP
+
+  - YYYY: Year
+  - MM: Month
+  - DD: Day
+  - BB: Brand ID
+  - PP: Product ID
+
+The date is when the firmware was compiled.  If the vendor did not set 
+this value, it defaults to 1969-07-20, the date of first human contact 
+with the moon.  However, it might not be a date at all; some vendors may 
+specify a completely different type of value here.
+
+The brand/product values are also known as the model number.  These are 
+hard-coded in the source code for each light's build target, and can be 
+looked up in the "MODELS" file or by using the "make models" command.
 
 
 Protection Features

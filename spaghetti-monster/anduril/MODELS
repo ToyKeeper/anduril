@@ -1,9 +1,39 @@
-Vendor / Model IDs for version check function
-
-Undefined	0000
-Emisar		0100 - 0199
-Noctigon	0200 - 0199
-Lumintop	0300 - 0399
-Fireflies	0400 - 0499
-Mateminco	0500 - 0599
-Sofirn		0600 - 0699
+Model numbers:
+0111	emisar-d4
+0112	emisar-d4-219c
+0113	emisar-d4v2
+0114	emisar-d4v2-219
+0115	emisar-d4v2-nofet
+0121	emisar-d1
+0122	emisar-d1s
+0123	emisar-d1v2
+0131	emisar-d4s
+0132	emisar-d4s-219c
+0133	emisar-d4sv2
+0134	emisar-d4sv2-219
+0141	emisar-d18
+0211	noctigon-kr4
+0212	noctigon-kr4-nofet
+0213	noctigon-kr4-219
+0251	noctigon-k1
+0252	noctigon-k1-sbt90
+0253	noctigon-k1-12v
+0311	fw3a
+0312	fw3a-219
+0313	fw3a-nofet
+0321	blf-gt
+0322	blf-gt-mini
+0411	ff-rot66
+0412	ff-rot66-219
+0413	ff-rot66g2
+0421	ff-pl47
+0422	ff-pl47-219
+0423	ff-pl47g2
+0441	ff-e01
+0511	mateminco-mf01s
+0521	mateminco-mf01-mini
+0611	blf-q8
+0612	sofirn-sp36
+0621	blf-lantern
+Duplicates:
+Missing:

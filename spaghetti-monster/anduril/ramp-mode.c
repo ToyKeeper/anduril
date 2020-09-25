@@ -454,11 +454,13 @@ uint8_t manual_memory_timer_config_state(Event event, uint16_t arg) {
 // find the ramp level closest to the target,
 // using only the levels which are allowed in the current state
 uint8_t nearest_level(int16_t target) {
+    // using int16_t here saves us a bunch of logic elsewhere,
+    // by allowing us to correct for numbers < 0 or > 255 in one central place
+
+    // ensure all globals are correct
     ramp_update_config();
 
     // bounds check
-    // using int16_t here saves us a bunch of logic elsewhere,
-    // by allowing us to correct for numbers < 0 or > 255 in one central place
     uint8_t mode_min = ramp_floor;
     uint8_t mode_max = ramp_ceil;
     uint8_t num_steps = ramp_stepss[1 + simple_ui_active];
