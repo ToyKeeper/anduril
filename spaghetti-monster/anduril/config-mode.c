@@ -42,16 +42,14 @@ uint8_t config_state_base(Event event, uint16_t arg,
                           uint8_t num_config_steps,
                           void (*savefunc)(uint8_t step, uint8_t value)) {
     static uint8_t config_step;
-    static uint8_t config_state_done;
     if (event == EV_enter_state) {
         config_step = 0;
-        config_state_done = 0;
         set_level(0);
         // if button isn't held, configure first menu item
         if (! button_last_state) {
+            config_step ++;
             push_state(number_entry_state, 0);
         }
-        return MISCHIEF_MANAGED;
     }
 
     // if initial "hold" event still active
@@ -79,16 +77,13 @@ uint8_t config_state_base(Event event, uint16_t arg,
 
     // button release: activate number entry for one menu item
     else if ((event & B_CLICK_FLAGS) == B_ANY_HOLD_RELEASE) {
-        // let user know we noticed what they did
-        set_level(0);
-
         // ask the user for a number, if they selected a menu item
-        if (config_step <= num_config_steps) {
+        if (config_step && config_step <= num_config_steps) {
             push_state(number_entry_state, 0);
         }
         // exit after falling out of end of menu
         else {
-            config_state_done = 1;
+            pop_state();
         }
     }
 
@@ -98,13 +93,6 @@ uint8_t config_state_base(Event event, uint16_t arg,
         savefunc(config_step, number_entry_value);
         // make changes persist in eeprom
         save_config();
-        config_state_done = 1;
-        return MISCHIEF_MANAGED;
-    }
-
-    // all finished
-    else if (config_state_done) {
-        config_state_done = 0;  // ensure this only happens once
         pop_state();
     }
 
@@ -118,7 +106,7 @@ uint8_t number_entry_state(Event event, uint16_t arg) {
     if (event == EV_enter_state) {
         number_entry_value = 0;
         entry_step = 0;
-        return MISCHIEF_MANAGED;
+        set_level(0);  // initial pause should be dark
     }
 
     // advance through the process:
