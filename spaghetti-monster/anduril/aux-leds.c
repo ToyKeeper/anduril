@@ -32,8 +32,8 @@ void indicator_blink(uint8_t arg) {
     #ifdef USE_FANCIER_BLINKING_INDICATOR
 
     // fancy blink, set off/low/high levels here:
-    uint8_t seq[] = {0, 1, 2, 1,  0, 0, 0, 0,
-                     0, 0, 1, 0,  0, 0, 0, 0};
+    static const uint8_t seq[] = {0, 1, 2, 1,  0, 0, 0, 0,
+                                  0, 0, 1, 0,  0, 0, 0, 0};
     indicator_led(seq[arg & 15]);
 
     #else  // basic blink, 1/8th duty cycle
@@ -51,7 +51,7 @@ void indicator_blink(uint8_t arg) {
 
 #if defined(USE_AUX_RGB_LEDS) && defined(TICK_DURING_STANDBY)
 uint8_t voltage_to_rgb() {
-    uint8_t levels[] = {
+    static const uint8_t levels[] = {
     // voltage, color
           0, 0, // 0, R
          33, 1, // 1, R+G
@@ -131,8 +131,8 @@ void rgb_led_update(uint8_t mode, uint8_t arg) {
     // pick a brightness from the animation sequence
     if (pattern == 3) {
         // uses an odd length to avoid lining up with rainbow loop
-        uint8_t animation[] = {2, 1, 0, 0,  0, 0, 0, 0,  0,
-                               1, 0, 0, 0,  0, 0, 0, 0,  0, 1};
+        static const uint8_t animation[] = {2, 1, 0, 0,  0, 0, 0, 0,  0,
+                                            1, 0, 0, 0,  0, 0, 0, 0,  0, 1};
         frame = (frame + 1) % sizeof(animation);
         pattern = animation[frame];
     }
