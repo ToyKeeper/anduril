@@ -297,7 +297,8 @@ void loop() {
         // in simple mode, turn off after one readout
         // FIXME: can eat the next button press
         //        (state changes in loop() act weird)
-        if (simple_ui_active) set_state(off_state, 0);
+        if (simple_ui_active) set_state_deferred(off_state, 0);
+        else nice_delay_ms(1000);
         #endif
     }
     #endif

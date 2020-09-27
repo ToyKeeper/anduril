@@ -39,6 +39,9 @@ void _set_state(StatePtr new_state, uint16_t arg,
     current_state = new_state;
     // call new state-enter hook (don't use stack)
     if (new_state != NULL) current_state(enter_event, arg);
+
+    // since state changed, stop any animation in progress
+    interrupt_nice_delays();
 }
 
 int8_t push_state(StatePtr new_state, uint16_t arg) {
@@ -77,6 +80,11 @@ uint8_t set_state(StatePtr new_state, uint16_t arg) {
     //        (for the layer underneath the top)
     pop_state();
     return push_state(new_state, arg);
+}
+
+void set_state_deferred(StatePtr new_state, uint16_t arg) {
+    deferred_state = new_state;
+    deferred_state_arg = arg;
 }
 
 #ifndef DONT_USE_DEFAULT_STATE

@@ -139,6 +139,14 @@ int main() {
         // if event queue not empty, empty it
         process_emissions();
 
+        // if loop() tried to change state, process that now
+        StatePtr df = deferred_state;
+        if (df) {
+            set_state(df, deferred_state_arg);
+            deferred_state = NULL;
+            //deferred_state_arg = 0;  // unnecessary
+        }
+
         // enter standby mode if requested
         // (works better if deferred like this)
         if (go_to_standby) {
@@ -164,11 +172,12 @@ int main() {
         // catch up on interrupts
         handle_deferred_interrupts();
 
+        // turn delays back on, if they were off
+        nice_delay_interrupt = 0;
+
         // give the recipe some time slices
         loop();
 
-        // in case we fell through, turn delays back on
-        nice_delay_interrupt = 0;
     }
 }
 

@@ -126,7 +126,6 @@ inline void interrupt_nice_delays() { nice_delay_interrupt = 1; }
 //   0: state changed
 //   1: normal completion
 uint8_t nice_delay_ms(uint16_t ms) {
-    StatePtr old_state = current_state;
     /*  // delay_zero() implementation
     if (ms == 0) {
         CLKPR = 1<<CLKPCE; CLKPR = 0;  // full speed
@@ -135,6 +134,10 @@ uint8_t nice_delay_ms(uint16_t ms) {
     }
     */
     while(ms-- > 0) {
+        if (nice_delay_interrupt) {
+            return 0;
+        }
+
         #ifdef USE_DYNAMIC_UNDERCLOCKING
         #ifdef USE_RAMPING
         uint8_t level = actual_level;  // volatile, avoid repeat access
@@ -168,9 +171,6 @@ uint8_t nice_delay_ms(uint16_t ms) {
         // run pending system processes while we wait
         handle_deferred_interrupts();
 
-        if ((nice_delay_interrupt) || (old_state != current_state)) {
-            return 0;  // state changed; abort
-        }
         // handle events only afterward, so that any collapsed delays will
         // finish running the UI's loop() code before taking any further actions
         // (this helps make sure code runs in the correct order)

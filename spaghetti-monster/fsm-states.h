@@ -40,6 +40,13 @@ void _set_state(StatePtr new_state, uint16_t arg,
 int8_t push_state(StatePtr new_state, uint16_t arg);
 StatePtr pop_state();
 uint8_t set_state(StatePtr new_state, uint16_t arg);
+
+// if loop() needs to change state, use this instead of set_state()
+// (because this avoids race conditions)
+volatile StatePtr deferred_state;
+volatile uint16_t deferred_state_arg;
+void set_state_deferred(StatePtr new_state, uint16_t arg);
+
 #ifndef DONT_USE_DEFAULT_STATE
 uint8_t default_state(Event event, uint16_t arg);
 #endif

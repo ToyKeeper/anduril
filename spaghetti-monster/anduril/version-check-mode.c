@@ -39,7 +39,7 @@ inline void version_check_iter() {
     //while (button_is_pressed()) {}
     //empty_event_sequence();
 
-    set_state(off_state, 0);
+    set_state_deferred(off_state, 0);
 }
 
 

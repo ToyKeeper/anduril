@@ -83,13 +83,12 @@ uint8_t blink_big_num(uint16_t num) {
 #endif
 #ifdef USE_BLINK_NUM
 uint8_t blink_num(uint8_t num) {
-    //StatePtr old_state = current_state;
-    #if 0
+    #if 1
     uint8_t hundreds = num / 100;
     num = num % 100;
     uint8_t tens = num / 10;
     num = num % 10;
-    #else  // 8 bytes smaller
+    #else  // can be smaller or larger, depending on whether divmod is used elsewhere
     uint8_t hundreds = 0;
     uint8_t tens = 0;
     for(; num >= 100; hundreds ++, num -= 100);
@@ -102,32 +101,9 @@ uint8_t blink_num(uint8_t num) {
     nice_delay_ms(200);
     #endif
 
-    #if 0
-    if (hundreds) {
-        if (! blink_digit(hundreds)) return 0;
-        if (! blink_digit(tens)) return 0;
-    }
-    else if (tens) {
-        if (! blink_digit(tens)) return 0;
-    }
-    if (! blink_digit(num)) return 0;
-    return nice_delay_ms(1000);
-    #else // same size :(
-    if (hundreds) if (! blink_digit(hundreds)) return 0;
-    if (hundreds || tens) if (! blink_digit(tens)) return 0;
-    if (! blink_digit(num)) return 0;
-    return nice_delay_ms(1000);
-    #endif
-
-    /*
-    uint8_t volts, tenths;
-    volts = voltage / 10;
-    tenths = voltage % 10;
-    if (! blink(volts)) return;
-    nice_delay_ms(200);
-    if (! blink(tenths)) return;
-    nice_delay_ms(200);
-    */
+    if (hundreds) blink_digit(hundreds);
+    if (hundreds || tens) blink_digit(tens);
+    return blink_digit(num);
 }
 #endif
 
