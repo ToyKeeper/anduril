@@ -129,6 +129,7 @@ int main() {
     // fallback for handling a few things
     #ifndef DONT_USE_DEFAULT_STATE
     push_state(default_state, 0);
+    nice_delay_interrupt = 0;
     #endif
 
     // call recipe's setup
