@@ -279,6 +279,7 @@ inline void bike_flasher_iter() {
         nice_delay_ms(65);
     }
     nice_delay_ms(720);  // no return check necessary on final delay
+    set_level(0);
 }
 #endif
 
