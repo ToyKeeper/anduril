@@ -29,14 +29,14 @@ uint8_t sos_state(Event event, uint16_t arg) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
-    // 2 clicks: next mode
+    // 2 clicks: next blinky mode
     else if (event == EV_2clicks) {
-        #ifdef USE_THERMAL_REGULATION
-        set_state(tempcheck_state, 0);
-        #else
-        #ifdef USE_BATTCHECK_MODE
+        #if defined(USE_BATTCHECK_MODE)
         set_state(battcheck_state, 0);
-        #endif
+        #elif defined(USE_THERMAL_REGULATION)
+        set_state(tempcheck_state, 0);
+        #elif defined(USE_BEACON_MODE)
+        set_state(beacon_state, 0);
         #endif
         return MISCHIEF_MANAGED;
     }

@@ -54,7 +54,33 @@ Simple UI has all the basic functions needed to work as a flashlight,
 but the minimum and maximum brightness are limited to make it safer, and 
 any complex or advanced functions are blocked.
 
-The button mappings for changing between the two modes are:
+Functions available in Simple UI include:
+
+  - 1C: On / off
+  - 1H: Ramp up (or down, if button was released less than a second ago)
+  - 2H: If light is on : ramp down
+        If light is off: momentary high mode
+  - 2C: Double click to go to / from highest safe level
+  - 4C: Lockout mode.
+
+Some other modes and functions are available too.  When the light is 
+off, these are the options:
+
+  - 3C: Battery check mode.  (displays voltage once, then turns off)
+  - 4C: Lockout mode.
+  - 10H: Switch to Advanced UI.
+  - 15C or more: Version check.
+
+In Lockout mode with Simple UI, there are a few functions:
+
+  - 1H: Momentary moon
+  - 2H: Momentary low
+  - 4C: Unlock and turn on
+  - 4H: Unlock and turn on at low level
+  - 5C: Unlock and turn on at high level
+
+To change between Simple UI and Advanced UI, turn the light off and then 
+do one of these:
 
   In Simple UI:
     - 10H: Go to Advanced UI.
@@ -63,31 +89,28 @@ The button mappings for changing between the two modes are:
     - 10C: Go to Simple UI.
     - 10H: Configure Simple UI.
 
-Simple UI is also enabled after each factory reset.
-
-Functions available in Simple UI include:
-
-  - 1C: On / off
-  - 1H, 2H: Ramp up / down
-  - 2C: Double click to go to / from highest safe level
-  - 4C: Lockout mode.
-
 If you get lost, or if you want to auto-calibrate the temperature 
-sensor, do a factory reset.  The process for this is: Loosen tailcap, 
-hold button, tighten tailcap, keep holding button for about 4s.  The 
-light should flicker while getting brighter, then briefly burst to full 
-power.  Hold until it reaches full power to do a reset, or let go of the 
-button early to abort.
+sensor, do a factory reset.  The process for this is:
 
-Some other modes and functions are available too.  When the light is 
-off, these are the options:
+  - Loosen tailcap
+  - Hold button
+  - Tighten tailcap
+  - Keep holding button for about 4s
 
-  - 3C: Battery check mode.
-  - 4C: Lockout mode.
-  - 10H: Enable Advanced UI.
-  - 13H: On some lights, this does a factory reset.
-         (usually only if the regular method is physically impossible)
-  - 15C or more: Version check.
+The light should flicker while getting brighter, then briefly burst to 
+full power.  Hold until it reaches full power to do a reset, or let go 
+of the button early to abort.
+
+On some lights, like products where the tailcap method is impossible, 
+use 13H from Off to do a factory reset.  If this is difficult, try 
+counting it like music to make it easier:
+
+  1 2 3 4
+  1 2 3 4
+  1 2 3 4
+  HOLD
+
+Simple UI is enabled after each factory reset.
 
 
 Advanced UI
@@ -141,7 +164,7 @@ While the light is on, a few actions are available:
   - 5C: Go to momentary mode.
   - 5H: Start a sunset timer.  Details are below in the Sunset Timer section.
 
-  - 7H: Go to ramp config mode.
+  - 7H: Ramp config menu.
     - Item 1: Floor level.
     - Item 2: Ceiling level.
     - Item 3: Number of steps (except for smooth ramp).
@@ -165,6 +188,13 @@ from off.  There are three types of brightness memory to choose from:
     off for a short time, or resets to the manual memory level if it was 
     off for a longer time.
     The timer for this is configurable from 0 to 255 minutes.
+
+Another way to think of it is:  There are three styles of memory for the 
+last-ramped brightness level...
+
+  - Always remember         (automatic)
+  - Remember for N minutes  (hybrid)
+  - Never remember          (manual)
 
 To choose a memory style, set the configuration accordingly:
 
@@ -263,9 +293,9 @@ always starts at battery check and the user can proceed to other blinky
 modes if Advanced UI is enabled.  The sequence is:
 
   - Battery check.
+  - Temperature check (if light has a temperature sensor).
   - Beacon mode.
   - SOS mode (if enabled).
-  - Temperature check (if light has a temperature sensor).
 
 In all of these modes, some basic actions are available:
 
@@ -274,7 +304,7 @@ In all of these modes, some basic actions are available:
 
 Additionally, in battery check and temperature check modes:
 
-  - 7H: Go to the voltage config mode or thermal config mode.
+  - 7H: Go to the voltage config menu or thermal config menu.
 
 In more detail, this is what each blinky / utility mode does:
 
@@ -288,7 +318,7 @@ In more detail, this is what each blinky / utility mode does:
 
      A "zero" digit is represented by a very quick blink.
 
-     Voltage config mode has one setting:
+     The voltage config menu has one setting:
 
        1. Voltage correction factor.  This adjusts the battery 
           measurement sensor, allowing the user to add or subtract up to 
@@ -307,6 +337,26 @@ In more detail, this is what each blinky / utility mode does:
           11C: +0.20V
           12C: +0.25V
           13C: +0.30V
+
+  Temperature check:
+
+     Blinks out the current temperature in degrees C.  This number 
+     should be pretty close to what a real thermometer says.  If not, it 
+     would be a good idea to enter the thermal config menu and calibrate 
+     the sensor.  Or let the light settle to room temperature, then use 
+     factory reset to auto-calibrate the sensor.
+
+     The thermal config menu has two settings:
+
+     - Current temperature.  Click once per degree C to calibrate the 
+       sensor.  For example, if the ambient temperature is 21 C, then 
+       click 21 times.
+
+     - Temperature limit.  This sets the maximum temperature the light 
+       can reach before it will start doing thermal regulation to keep 
+       itself from overheating.  Click once per degree C above 30.  For 
+       example, to set the limit to 50 C, click 20 times.  The default 
+       is 45 C, and the highest value it will allow is 70 C.
 
   Beacon mode:
 
@@ -331,26 +381,6 @@ In more detail, this is what each blinky / utility mode does:
 
     The last-ramped brightness in Ramping Mode determines the brightness 
     of SOS Mode.
-
-  Temperature check:
-
-     Blinks out the current temperature in degrees C.  This number 
-     should be pretty close to what a real thermometer says.  If not, it 
-     would be a good idea to click 7 times to enter thermal config mode, 
-     and calibrate the sensor.  Or let the light settle to room 
-     temperature, then use factory reset to auto-calibrate the sensor.
-
-     Thermal config mode has two settings:
-
-     - Current temperature.  Click once per degree C to calibrate the 
-       sensor.  For example, if the ambient temperature is 21 C, then 
-       click 21 times.
-
-     - Temperature limit.  This sets the maximum temperature the light 
-       can reach before it will start doing thermal regulation to keep 
-       itself from overheating.  Click once per degree C above 30.  For 
-       example, to set the limit to 50 C, click 20 times.  The default 
-       is 45 C, and the highest value it will allow is 70 C.
 
 
 Strobe / Mood Modes
@@ -443,12 +473,12 @@ To exit this mode, physically disconnect power by unscrewing the tailcap
 or battery tube.
 
 
-Configuration Modes
+Configuration Menus
 -------------------
 
-Every config mode has the same interface.  The menu has one or more 
-options the user can configure, and it will go through them in order.  
-For each menu item, the light will follow the same pattern:
+Every config menu has the same interface.  It has one or more options 
+the user can configure, and it will go through them in order.  For each 
+menu item, the light follows the same pattern:
 
   - Blink once, then go to a lower brightness.  The user can keep 
     holding the button to skip this menu item, or release the button to 
@@ -463,14 +493,14 @@ For each menu item, the light will follow the same pattern:
 
 After entering a number, or after skipping every menu item, it waits 
 until the button is released then exits the menu.  It should return to 
-whatever mode the light was in before entering the config mode.
+whatever mode the light was in before entering the config menu.
 
 
-Ramp Config Mode
+Ramp Config Menu
 ----------------
 
 While the light is on in a ramping mode, click 7 times (but hold the 
-final click) to enter the config mode for the current ramp.
+final click) to access the config menu for the current ramp.
 
 Or, to access the ramp config for Simple UI, make sure the Simple UI is 
 not active, then do a 10H action from Off.
@@ -663,7 +693,7 @@ Ramp		Any	3H	Tint ramping (on some lights)
 Ramp		Any	4C	Lockout mode
 Ramp		Full	5C	Momentary mode
 Ramp		Full	5H	Sunset timer on, and add 5 minutes
-Ramp		Full	7H	Ramp config mode (1: floor, 2: ceiling, [3: steps])
+Ramp		Full	7H	Ramp config menu (1: floor, 2: ceiling, [3: steps])
 Ramp		Full	10C	Turn on manual memory and save current brightness
 Ramp		Full	10H	Manual memory config menu (1: off, 2: set timeout)
 
@@ -689,24 +719,24 @@ Biking		Full	1H/2H	Brighter / dimmer
 Lightning	Full	1H	Interrupt current flash or start new one
 
 Batt check	Any	1C	Off
-Batt check	Full	2C	Next blinky mode (Beacon, SOS, Temp check)
-Batt check	Full	7H	Voltage config mode
+Batt check	Full	2C	Next blinky mode (Temp check, Beacon, SOS)
+Batt check	Full	7H	Voltage config menu
+
+Temp check	Full	1C	Off
+Temp check	Full	2C	Next blinky mode (Beacon, SOS, Batt check)
+Temp check	Full	7H	Thermal config menu
 
 Beacon		Full	1C	Off
 Beacon		Full	1H	Configure beacon timing
-Beacon		Full	2C	Next blinky mode (SOS, Temp check, Batt check)
+Beacon		Full	2C	Next blinky mode (SOS, Batt check, Temp check)
 
 SOS		Full	1C	Off
-SOS		Full	2C	Next blinky mode (Temp check, Batt check)
-
-Temp check	Full	1C	Off
-Temp check	Full	2C	Next blinky mode (Batt check)
-Temp check	Full	7H	Thermal config mode
+SOS		Full	2C	Next blinky mode (Batt check, Temp check, Beacon)
 
 Momentary	Full	Any	On (until button is released)
 Momentary	Full	Disconnect power	Exit Momentary mode
 
-Config modes	Full	Hold	Skip current item with no changes
-Config modes	Full	Release	Configure current item
+Config menus	Full	Hold	Skip current item with no changes
+Config menus	Full	Release	Configure current item
 
 Number entry	Full	Click	Add 1 to value for current item

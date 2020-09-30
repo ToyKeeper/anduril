@@ -28,13 +28,17 @@ uint8_t tempcheck_state(Event event, uint16_t arg) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
-    #ifdef USE_BATTCHECK
-    // 2 clicks: battcheck mode
+    // 2 clicks: next blinky mode
     else if (event == EV_2clicks) {
+        #if defined(USE_BEACON_MODE)
+        set_state(beacon_state, 0);
+        #elif defined(USE_SOS_MODE) && defined(USE_SOS_MODE_IN_BLINKY_GROUP)
+        set_state(sos_state, 0);
+        #elif defined(USE_BATTCHECK)
         set_state(battcheck_state, 0);
+        #endif
         return MISCHIEF_MANAGED;
     }
-    #endif
     // 7H: thermal config mode
     else if (event == EV_click7_hold) {
         push_state(thermal_config_state, 0);

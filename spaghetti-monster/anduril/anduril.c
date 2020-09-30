@@ -303,23 +303,23 @@ void loop() {
     }
     #endif
 
+    #ifdef USE_THERMAL_REGULATION
+    // TODO: blink out therm_ceil during thermal_config_state?
+    else if (state == tempcheck_state) {
+        blink_num(temperature);
+        nice_delay_ms(1000);
+    }
+    #endif
+
     #ifdef USE_BEACON_MODE
     else if (state == beacon_state) {
         beacon_mode_iter();
     }
     #endif
 
-    #ifdef USE_SOS_MODE_IN_BLINKY_GROUP
+    #if defined(USE_SOS_MODE) && defined(USE_SOS_MODE_IN_BLINKY_GROUP)
     else if (state == sos_state) {
         sos_mode_iter();
-    }
-    #endif
-
-    #ifdef USE_THERMAL_REGULATION
-    // TODO: blink out therm_ceil during thermal_config_state?
-    else if (state == tempcheck_state) {
-        blink_num(temperature);
-        nice_delay_ms(1000);
     }
     #endif
 
