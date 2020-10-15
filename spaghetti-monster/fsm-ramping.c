@@ -54,6 +54,10 @@ void set_level(uint8_t level) {
         #endif
     #endif
 
+    #ifdef OVERRIDE_SET_LEVEL
+        set_level_override(level);
+    #else
+
     //TCCR0A = PHASE;
     if (level == 0) {
         #if PWM_CHANNELS >= 1
@@ -139,6 +143,7 @@ void set_level(uint8_t level) {
 
         #endif  // ifdef USE_TINT_RAMPING
     }
+    #endif  // ifdef OVERRIDE_SET_LEVEL
     #ifdef USE_DYNAMIC_UNDERCLOCKING
     auto_clock_speed();
     #endif

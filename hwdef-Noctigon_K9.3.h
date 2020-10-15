@@ -40,7 +40,7 @@
 #define ATTINY 1634
 #include <avr/io.h>
 
-#define PWM_CHANNELS 2  // 3 actually, but only 2 for main LEDs
+#define PWM_CHANNELS 3  // 2 for main LEDs, 1 for 2nd LEDs
 #define PWM_BITS 10  // 0 to 1023 at 4 kHz, not 0 to 255 at 16 kHz
 #define PWM_TOP 1023
 

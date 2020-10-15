@@ -85,11 +85,15 @@
 // (include this one last)
 #include "load-save-config-fsm.h"
 
-
 /********* bring in FSM / SpaghettiMonster *********/
 #define USE_IDLE_MODE  // reduce power use while awake and no tasks are pending
 
 #include "spaghetti-monster.h"
+
+/********* does this build target have special code to include? *********/
+#ifdef OVERRIDES_FILE
+#include incfile(OVERRIDES_FILE)
+#endif
 
 
 /********* Include all the regular app headers *********/
