@@ -56,8 +56,8 @@
 #define LED_ENABLE_PIN  PB0    // pin 19, Opamp power
 #define LED_ENABLE_PORT PORTB  // control port for PB0
 
-#define LED_ENABLE2_PIN  PC0    // pin 15, boost PMIC enable
-#define LED_ENABLE2_PORT PORTC  // control port for PC0
+#define LED2_ENABLE_PIN  PC0    // pin 15, boost PMIC enable
+#define LED2_ENABLE_PORT PORTC  // control port for PC0
 
 
 #define USE_VOLTAGE_DIVIDER  // use a dedicated pin, not VCC, because VCC input is flattened
@@ -103,7 +103,7 @@
 inline void hwdef_setup() {
   // enable output ports
   // boost PMIC on/off
-  DDRC = (1 << LED_ENABLE2_PIN);
+  DDRC = (1 << LED2_ENABLE_PIN);
   // Opamp level and Opamp on/off
   DDRB = (1 << PWM1_PIN)
        | (1 << LED_ENABLE_PIN);

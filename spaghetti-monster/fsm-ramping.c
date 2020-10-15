@@ -72,8 +72,8 @@ void set_level(uint8_t level) {
         #ifdef LED_ENABLE_PIN
         LED_ENABLE_PORT &= ~(1 << LED_ENABLE_PIN);
         #endif
-        #ifdef LED_ENABLE2_PIN
-        LED_ENABLE2_PORT &= ~(1 << LED_ENABLE2_PIN);
+        #ifdef LED2_ENABLE_PIN
+        LED2_ENABLE_PORT &= ~(1 << LED2_ENABLE_PIN);
         #endif
     } else {
         level --;
@@ -82,8 +82,8 @@ void set_level(uint8_t level) {
         #ifdef LED_ENABLE_PIN
         LED_ENABLE_PORT |= (1 << LED_ENABLE_PIN);
         #endif
-        #ifdef LED_ENABLE2_PIN
-        LED_ENABLE2_PORT |= (1 << LED_ENABLE2_PIN);
+        #ifdef LED2_ENABLE_PIN
+        LED2_ENABLE_PORT |= (1 << LED2_ENABLE_PIN);
         #endif
 
         #ifdef USE_TINT_RAMPING
