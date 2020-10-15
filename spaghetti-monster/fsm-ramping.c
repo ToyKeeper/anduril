@@ -154,6 +154,7 @@ inline void set_level_gradually(uint8_t lvl) {
     gradual_target = lvl;
 }
 
+#ifndef OVERRIDE_GRADUAL_TICK
 // call this every frame or every few frames to change brightness very smoothly
 void gradual_tick() {
     // go by only one ramp level at a time instead of directly to the target
@@ -209,7 +210,8 @@ void gradual_tick() {
     auto_clock_speed();
     #endif
 }
-#endif
+#endif  // ifdef OVERRIDE_GRADUAL_TICK
+#endif  // ifdef USE_SET_LEVEL_GRADUALLY
 
 #endif  // ifdef USE_RAMPING
 #endif

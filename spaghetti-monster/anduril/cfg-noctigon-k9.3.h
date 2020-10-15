@@ -5,6 +5,7 @@
 // this model requires some special code
 #define OVERRIDES_FILE cfg-noctigon-k9.3.c
 #define OVERRIDE_SET_LEVEL
+#define OVERRIDE_GRADUAL_TICK
 inline void set_level_override(uint8_t level);
 
 
@@ -66,9 +67,12 @@ inline void set_level_override(uint8_t level);
 //#define THERM_NEXT_WARNING_THRESHOLD 16  // accumulate less error before adjusting
 //#define THERM_RESPONSE_MAGNITUDE 128  // bigger adjustments
 
+// use the brightest setting for strobe
+#define STROBE_BRIGHTNESS MAX_LEVEL
 // slow down party strobe; this driver can't pulse for 1ms or less
-// (only needed on no-FET build)
-//#define PARTY_STROBE_ONTIME 2
+#define PARTY_STROBE_ONTIME 2
+
+#define BLINK_ONCE_TIME 12  // longer blink, since main LEDs are slow
 
 #define THERM_CAL_OFFSET 5
 
