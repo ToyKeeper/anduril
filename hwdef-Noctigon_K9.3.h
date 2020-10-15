@@ -121,8 +121,8 @@ inline void hwdef_setup() {
        | (1 << AUXLED_G_PIN)
        | (1 << AUXLED_B_PIN)
        | (1 << BUTTON_LED_PIN)
-       | (1 << LED_ENABLE_PIN);
-       | (1 << LED2_ENABLE_PIN);
+       | (1 << LED_ENABLE_PIN)
+       | (1 << LED2_ENABLE_PIN)
        ;
 
   // configure PWM
