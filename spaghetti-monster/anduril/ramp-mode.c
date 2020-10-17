@@ -358,6 +358,20 @@ uint8_t steady_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
 
+    #ifndef USE_TINT_RAMPING
+    // 3H: momentary turbo (on lights with no tint ramping)
+    else if (event == EV_click3_hold) {
+        if (! arg) {  // first frame only, to allow thermal regulation to work
+            set_level_and_therm_target(MAX_LEVEL);
+        }
+        return MISCHIEF_MANAGED;
+    }
+    else if (event == EV_click3_hold_release) {
+        set_level_and_therm_target(memorized_level);
+        return MISCHIEF_MANAGED;
+    }
+    #endif  // ifndef USE_TINT_RAMPING
+
     #ifdef USE_MOMENTARY_MODE
     // 5 clicks: shortcut to momentary mode
     else if (event == EV_5clicks) {
