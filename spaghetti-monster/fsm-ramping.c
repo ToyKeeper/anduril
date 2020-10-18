@@ -76,15 +76,24 @@ void set_level(uint8_t level) {
         LED_ENABLE2_PORT &= ~(1 << LED_ENABLE2_PIN);
         #endif
     } else {
-        level --;
-
         // enable the power channel, if relevant
         #ifdef LED_ENABLE_PIN
-        LED_ENABLE_PORT |= (1 << LED_ENABLE_PIN);
+            #ifndef LED_ENABLE_PIN_LEVEL_MIN
+            LED_ENABLE_PORT |= (1 << LED_ENABLE_PIN);
+            #else
+            // only enable during part of the ramp
+            if ((level >= LED_ENABLE_PIN_LEVEL_MIN)
+                    && (level <= LED_ENABLE_PIN_LEVEL_MAX))
+                LED_ENABLE_PORT |= (1 << LED_ENABLE_PIN);
+            else  // disable during other parts of the ramp
+                LED_ENABLE_PORT &= ~(1 << LED_ENABLE_PIN);
+            #endif
         #endif
         #ifdef LED_ENABLE2_PIN
         LED_ENABLE2_PORT |= (1 << LED_ENABLE2_PIN);
         #endif
+
+        level --;
 
         #ifdef USE_TINT_RAMPING
         #ifndef TINT_RAMPING_CORRECTION
@@ -155,6 +164,15 @@ void gradual_tick() {
     uint8_t gt = gradual_target;
     if (gt < actual_level) gt = actual_level - 1;
     else if (gt > actual_level) gt = actual_level + 1;
+
+    #ifdef LED_ENABLE_PIN_LEVEL_MIN
+    // only enable during part of the ramp
+    if ((gt >= LED_ENABLE_PIN_LEVEL_MIN)
+            && (gt <= LED_ENABLE_PIN_LEVEL_MAX))
+        LED_ENABLE_PORT |= (1 << LED_ENABLE_PIN);
+    else  // disable during other parts of the ramp
+        LED_ENABLE_PORT &= ~(1 << LED_ENABLE_PIN);
+    #endif
 
     gt --;  // convert 1-based number to 0-based
 
