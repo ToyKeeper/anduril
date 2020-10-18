@@ -20,6 +20,14 @@
 #ifndef FSM_ADC_C
 #define FSM_ADC_C
 
+// override onboard temperature sensor definition, if relevant
+#ifdef USE_EXTERNAL_TEMP_SENSOR
+#ifdef ADMUX_THERM
+#undef ADMUX_THERM
+#endif
+#define ADMUX_THERM ADMUX_THERM_EXTERNAL_SENSOR
+#endif
+
 
 static inline void set_admux_therm() {
     #if (ATTINY == 1634)
@@ -345,7 +353,13 @@ static inline void ADC_temperature_handler() {
 
     // let the UI see the current temperature in C
     // Convert ADC units to Celsius (ish)
+    #ifndef USE_EXTERNAL_TEMP_SENSOR
+    // onboard sensor for attiny25/45/85/1634
     temperature = (measurement>>1) + THERM_CAL_OFFSET + (int16_t)therm_cal_offset - 275;
+    #else
+    // external sensor
+    temperature = EXTERN_TEMP_FORMULA(measurement>>1) + THERM_CAL_OFFSET + (int16_t)therm_cal_offset;
+    #endif
 
     // how much has the temperature changed between now and a few seconds ago?
     int16_t diff;
