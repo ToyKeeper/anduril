@@ -4,7 +4,7 @@
 /* Noctigon K9.3 driver layout (attiny1634)
  *
  * Pin / Name / Function
- *   1    PA6   main LED PWM (linear) (PWM1B)
+ *   1    PA6   2nd LED PWM (linear) (PWM1B)
  *   2    PA5   R: red aux LED (PWM0B)
  *   3    PA4   G: green aux LED
  *   4    PA3   B: blue aux LED
@@ -19,7 +19,7 @@
  *  13    PC2   (none)
  *  14    PC1   SCK
  *  15    PC0   main LED PWM (FET) (PWM0A)
- *  16    PB3   2nd LED PWM (linear) (PWM1A)
+ *  16    PB3   main LED PWM (linear) (PWM1A)
  *  17    PB2   MISO
  *  18    PB1   MOSI / battery voltage (ADC6)
  *  19    PB0   (none)
@@ -51,20 +51,20 @@
 #define SWITCH_PORT  PINA    // PINA or PINB or PINC
 #define PCINT_vect   PCINT0_vect  // ISR for PCINT[7:0]
 
-#define PWM1_PIN PA6        // pin 1, 2nd LED Opamp reference
-#define PWM1_LVL OCR1B      // OCR1B is the output compare register for PA6
+#define PWM1_PIN PB3        // pin 16, Opamp reference
+#define PWM1_LVL OCR1A      // OCR1A is the output compare register for PB3
 
 #define PWM2_PIN PC0        // pin 15, DD FET PWM
 #define PWM2_LVL OCR0A      // OCR0A is the output compare register for PC0
 
-#define PWM3_PIN PB3        // pin 16, Opamp reference
-#define PWM3_LVL OCR1A      // OCR1A is the output compare register for PB3
+#define PWM3_PIN PA6        // pin 1, 2nd LED Opamp reference
+#define PWM3_LVL OCR1B      // OCR1B is the output compare register for PA6
 
-#define LED_ENABLE_PIN  PA1    // pin 6, Opamp power
-#define LED_ENABLE_PORT PORTA  // control port for PA1
+#define LED_ENABLE_PIN  PA0    // pin 7, Opamp power
+#define LED_ENABLE_PORT PORTA  // control port for PA0
 
-#define LED2_ENABLE_PIN  PA0    // pin 7, Opamp power
-#define LED2_ENABLE_PORT PORTA  // control port for PA0
+#define LED2_ENABLE_PIN  PA1    // pin 6, Opamp power
+#define LED2_ENABLE_PORT PORTA  // control port for PA1
 
 
 #define USE_VOLTAGE_DIVIDER  // use a dedicated pin, not VCC, because VCC input is flattened
@@ -115,8 +115,8 @@
 inline void hwdef_setup() {
   // enable output ports
   DDRC = (1 << PWM2_PIN);
-  DDRB = (1 << PWM3_PIN);
-  DDRA = (1 << PWM1_PIN)
+  DDRB = (1 << PWM1_PIN);
+  DDRA = (1 << PWM3_PIN)
        | (1 << AUXLED_R_PIN)
        | (1 << AUXLED_G_PIN)
        | (1 << AUXLED_B_PIN)
