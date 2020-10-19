@@ -6,6 +6,10 @@
  * - 85: https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf
  */
 
+// TODO: determine if "03" (Lumintop) is the right prefix,
+//       or if there should be a brand ID for LoneOceans
+#define MODEL_NUMBER "0314"
+
 #include "hwdef-fw3x-lume1.h"
 // ATTINY: 1634
 
