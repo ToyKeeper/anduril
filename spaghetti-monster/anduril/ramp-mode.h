@@ -148,9 +148,15 @@ void set_level_and_therm_target(uint8_t level);
 // brightness control
 uint8_t memorized_level = DEFAULT_LEVEL;
 #ifdef USE_MANUAL_MEMORY
-uint8_t manual_memory = 0;
+#ifndef DEFAULT_MANUAL_MEMORY
+#define DEFAULT_MANUAL_MEMORY 0
+#endif
+uint8_t manual_memory = DEFAULT_MANUAL_MEMORY;
 #ifdef USE_MANUAL_MEMORY_TIMER
-uint8_t manual_memory_timer = 0;
+#ifndef DEFAULT_MANUAL_MEMORY_TIMER
+#define DEFAULT_MANUAL_MEMORY_TIMER 0
+#endif
+uint8_t manual_memory_timer = DEFAULT_MANUAL_MEMORY_TIMER;
 #endif
 #endif
 #ifdef USE_SIMPLE_UI

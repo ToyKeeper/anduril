@@ -49,6 +49,10 @@ inline void set_level_override(uint8_t level);
 #define HALFSPEED_LEVEL 10
 #define QUARTERSPEED_LEVEL 2
 
+#define USE_MANUAL_MEMORY_TIMER_FOR_TINT
+#define DEFAULT_MANUAL_MEMORY        DEFAULT_LEVEL
+#define DEFAULT_MANUAL_MEMORY_TIMER  10
+
 #define RAMP_SMOOTH_FLOOR 3  // level 1 is unreliable (?)
 #define RAMP_SMOOTH_CEIL  120
 // 10, 28, [46], 65, 83, 101, [120]
