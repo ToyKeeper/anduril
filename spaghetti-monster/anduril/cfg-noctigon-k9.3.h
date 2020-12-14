@@ -11,6 +11,7 @@ inline void set_level_override(uint8_t level);
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
+#define RGB_LED_OFF_DEFAULT 0x18  // low, rainbow
 // the aux LEDs are front-facing, so turn them off while main LEDs are on
 //#define USE_AUX_RGB_LEDS_WHILE_ON
 // it also has an independent LED in the button
@@ -50,8 +51,8 @@ inline void set_level_override(uint8_t level);
 #define QUARTERSPEED_LEVEL 2
 
 #define USE_MANUAL_MEMORY_TIMER_FOR_TINT
-#define DEFAULT_MANUAL_MEMORY        DEFAULT_LEVEL
-#define DEFAULT_MANUAL_MEMORY_TIMER  10
+//#define DEFAULT_MANUAL_MEMORY        DEFAULT_LEVEL
+//#define DEFAULT_MANUAL_MEMORY_TIMER  10
 
 #define RAMP_SMOOTH_FLOOR 3  // level 1 is unreliable (?)
 #define RAMP_SMOOTH_CEIL  120
