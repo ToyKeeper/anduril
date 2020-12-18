@@ -23,6 +23,10 @@
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
 
+// *** Note for the AVRXMEGA3 (1-Series, eg 816 and 817), the WDT 
+// is not used for time-based interrupts.  A new peripheral, the 
+// Periodic Interrupt Timer ("PIT") is used for this purpose.
+
 void WDT_on()
 {
     #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
@@ -35,6 +39,10 @@ void WDT_on()
     #elif (ATTINY == 1634)
         wdt_reset();                    // Reset the WDT
         WDTCSR = (1<<WDIE);             // Enable interrupt every 16ms
+    #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc
+        RTC.PITINTCTRL = RTC_PI_bm;   // enable the Periodic Interrupt
+        while (RTC.PITSTATUS > 0) {}  // make sure the register is ready to be updated
+        RTC.PITCTRLA = RTC_PERIOD_CYC512_gc | RTC_PITEN_bm; // Period = 16ms, enable the PI Timer
     #else
         #error Unrecognized MCU type
     #endif
@@ -53,6 +61,10 @@ inline void WDT_slow()
     #elif (ATTINY == 1634)
         wdt_reset();                    // Reset the WDT
         WDTCSR = (1<<WDIE) | STANDBY_TICK_SPEED;
+    #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc
+        RTC.PITINTCTRL = RTC_PI_bm;   // enable the Periodic Interrupt
+        while (RTC.PITSTATUS > 0) {}  // make sure the register is ready to be updated
+        RTC.PITCTRLA = RTC_PERIOD_CYC16384_gc | RTC_PITEN_bm; // Period = 0.5s, enable the PI Timer
     #else
         #error Unrecognized MCU type
     #endif
@@ -75,13 +87,21 @@ inline void WDT_off()
         CCP = 0xD8;           // enable config changes
         WDTCSR = 0;           // disable and clear all WDT settings
         sei();
+    #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc
+        while (RTC.PITSTATUS > 0) {}  // make sure the register is ready to be updated
+        RTC.PITCTRLA = 0; // Disable the PI Timer
     #else
         #error Unrecognized MCU type
     #endif
 }
 
 // clock tick -- this runs every 16ms (62.5 fps)
+#ifdef AVRXMEGA3  // ATTINY816, 817, etc
+ISR(RTC_PIT_vect) {
+    RTC.PITINTFLAGS = RTC_PI_bm; // clear the PIT interrupt flag 
+#else
 ISR(WDT_vect) {
+#endif
     irq_wdt = 1;  // WDT event happened
 }
 
