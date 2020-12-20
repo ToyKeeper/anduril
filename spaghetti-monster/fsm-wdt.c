@@ -64,7 +64,7 @@ inline void WDT_slow()
     #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc
         RTC.PITINTCTRL = RTC_PI_bm;   // enable the Periodic Interrupt
         while (RTC.PITSTATUS > 0) {}  // make sure the register is ready to be updated
-        RTC.PITCTRLA = RTC_PERIOD_CYC16384_gc | RTC_PITEN_bm; // Period = 0.5s, enable the PI Timer
+        RTC.PITCTRLA = (1<<6) | (STANDBY_TICK_SPEED<<3) | RTC_PITEN_bm; // Set period, enable the PI Timer
     #else
         #error Unrecognized MCU type
     #endif

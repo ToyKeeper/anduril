@@ -37,3 +37,6 @@
 
 // stop panicking at ~30% power
 #define THERM_FASTER_LEVEL 105
+
+// enable 2 click turbo
+#define USE_2C_MAX_TURBO
