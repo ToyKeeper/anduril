@@ -3,6 +3,7 @@
 #include "cfg-blf-q8-t1616.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0632"
+// ATTINY: 1616
 
 // voltage readings were a little high with the Q8 value
 #undef VOLTAGE_FUDGE_FACTOR

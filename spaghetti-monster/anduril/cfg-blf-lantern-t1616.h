@@ -7,6 +7,7 @@
 
 // basically the same as a Q8...  sort of
 #include "hwdef-BLF_Q8-T1616.h"
+// ATTINY: 1616
 
 // the button lights up
 #define USE_INDICATOR_LED
