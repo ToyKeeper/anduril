@@ -341,7 +341,11 @@ static inline void ADC_voltage_handler() {
     if (lvp_timer) {
         lvp_timer --;
     } else {  // it has been long enough since the last warning
+    	#ifdef DUAL_VOLTAGE_FLOOR
+    	if (((voltage < VOLTAGE_LOW) && (voltage > DUAL_VOLTAGE_FLOOR)) || (voltage < DUAL_VOLTAGE_LOW_LOW)) {
+    	#else
         if (voltage < VOLTAGE_LOW) {
+        #endif
             // send out a warning
             emit(EV_voltage_low, 0);
             // reset rate-limit counter
