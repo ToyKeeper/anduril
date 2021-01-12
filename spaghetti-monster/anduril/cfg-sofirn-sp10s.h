@@ -1,6 +1,6 @@
 // gChart's custom SP10S  driver config options for Anduril
 #define MODEL_NUMBER "0622"
-#include "hwdef-Sofirn-SP10S.h"
+#include "hwdef-Sofirn_SP10S.h"
 // ATTINY: 1616
 
 #undef BLINK_AT_RAMP_MIDDLE
