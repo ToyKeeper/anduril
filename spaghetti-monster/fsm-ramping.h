@@ -27,7 +27,11 @@
 uint8_t actual_level = 0;
 
 #ifdef USE_TINT_RAMPING
+#ifdef TINT_RAMP_TOGGLE_ONLY
+uint8_t tint = 0;
+#else
 uint8_t tint = 128;
+#endif
 #define USE_TRIANGLE_WAVE
 #endif
 

@@ -54,6 +54,10 @@ void set_level(uint8_t level) {
         #endif
     #endif
 
+    #ifdef OVERRIDE_SET_LEVEL
+        set_level_override(level);
+    #else
+
     //TCCR0A = PHASE;
     if (level == 0) {
         #if PWM_CHANNELS >= 1
@@ -72,8 +76,8 @@ void set_level(uint8_t level) {
         #ifdef LED_ENABLE_PIN
         LED_ENABLE_PORT &= ~(1 << LED_ENABLE_PIN);
         #endif
-        #ifdef LED_ENABLE2_PIN
-        LED_ENABLE2_PORT &= ~(1 << LED_ENABLE2_PIN);
+        #ifdef LED2_ENABLE_PIN
+        LED2_ENABLE_PORT &= ~(1 << LED2_ENABLE_PIN);
         #endif
     } else {
         // enable the power channel, if relevant
@@ -89,8 +93,8 @@ void set_level(uint8_t level) {
                 LED_ENABLE_PORT &= ~(1 << LED_ENABLE_PIN);
             #endif
         #endif
-        #ifdef LED_ENABLE2_PIN
-        LED_ENABLE2_PORT |= (1 << LED_ENABLE2_PIN);
+        #ifdef LED2_ENABLE_PIN
+        LED2_ENABLE_PORT |= (1 << LED2_ENABLE_PIN);
         #endif
 
         level --;
@@ -148,6 +152,7 @@ void set_level(uint8_t level) {
 
         #endif  // ifdef USE_TINT_RAMPING
     }
+    #endif  // ifdef OVERRIDE_SET_LEVEL
     #ifdef USE_DYNAMIC_UNDERCLOCKING
     auto_clock_speed();
     #endif
@@ -158,6 +163,7 @@ inline void set_level_gradually(uint8_t lvl) {
     gradual_target = lvl;
 }
 
+#ifndef OVERRIDE_GRADUAL_TICK
 // call this every frame or every few frames to change brightness very smoothly
 void gradual_tick() {
     // go by only one ramp level at a time instead of directly to the target
@@ -222,7 +228,8 @@ void gradual_tick() {
     auto_clock_speed();
     #endif
 }
-#endif
+#endif  // ifdef OVERRIDE_GRADUAL_TICK
+#endif  // ifdef USE_SET_LEVEL_GRADUALLY
 
 #endif  // ifdef USE_RAMPING
 #endif
