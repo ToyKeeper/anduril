@@ -98,8 +98,5 @@ void gradual_tick() {
         { actual_level = gt + 1; }
     }
 
-    #ifdef USE_DYNAMIC_UNDERCLOCKING
-    auto_clock_speed();
-    #endif
 }
 

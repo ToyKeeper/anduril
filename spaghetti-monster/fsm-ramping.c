@@ -135,7 +135,7 @@ void set_level(uint8_t level) {
 
         PWM1_LVL = warm_PWM;
         PWM2_LVL = cool_PWM;
-        #else
+        #else  // ifdef USE_TINT_RAMPING
 
         #if PWM_CHANNELS >= 1
         PWM1_LVL = PWM_GET(pwm1_levels, level);
