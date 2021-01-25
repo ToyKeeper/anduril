@@ -99,6 +99,15 @@ void rgb_led_update(uint8_t mode, uint8_t arg) {
     const uint8_t *colors = rgb_led_colors;
     uint8_t actual_color = 0;
     if (color < 7) {  // normal color
+        #ifdef USE_K93_LOCKOUT_KLUDGE
+        // FIXME: jank alert: this is dumb
+        // this clause does nothing; it just uses up clock cycles
+        // because without it, the K9.3's lockout mode fails and returns
+        // to "off" after ~5 to 15 seconds when configured for a blinking
+        // single color, even though there is no code path from lockout to
+        // "off", and it doesn't act like a reboot either (no boot-up blink)
+        rainbow = (rainbow + 1 + pseudo_rand() % 5) % 6;
+        #endif
         actual_color = pgm_read_byte(colors + color);
     }
     else if (color == 7) {  // disco

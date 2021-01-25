@@ -84,3 +84,6 @@ inline void set_level_override(uint8_t level);
 // for consistency with KR4 (not otherwise necessary though)
 #define USE_SOFT_FACTORY_RESET
 
+
+// work around bizarre bug: lockout mode fails when set to solid color blinking
+#define USE_K93_LOCKOUT_KLUDGE
