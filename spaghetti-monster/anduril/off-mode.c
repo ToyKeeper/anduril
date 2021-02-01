@@ -133,6 +133,9 @@ uint8_t off_state(Event event, uint16_t arg) {
             && (off_time >= (manual_memory_timer * SLEEP_TICKS_PER_MINUTE))
             #endif
             ) {
+                #if defined(USE_MANUAL_MEMORY_TIMER_FOR_TINT) && defined(USE_TINT_RAMPING) && defined(TINT_RAMP_TOGGLE_ONLY)
+                tint = 0;
+                #endif
                 set_level(nearest_level(manual_memory));
         } else
         #endif

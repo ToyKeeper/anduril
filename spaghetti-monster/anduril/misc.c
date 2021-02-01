@@ -38,13 +38,16 @@ void blink_confirm(uint8_t num) {
 
 // make a short, visible pulse
 // (either brighter or darker, depending on current brightness)
+#ifndef BLINK_ONCE_TIME
+#define BLINK_ONCE_TIME 10
+#endif
 void blink_once() {
     uint8_t brightness = actual_level;
     uint8_t bump = brightness + (MAX_LEVEL/6);
     if (bump > MAX_LEVEL) bump = 0;
 
     set_level(bump);
-    delay_4ms(10/4);
+    delay_4ms(BLINK_ONCE_TIME/4);
     set_level(brightness);
 }
 
