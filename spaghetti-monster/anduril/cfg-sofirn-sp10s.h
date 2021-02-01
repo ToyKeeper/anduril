@@ -5,8 +5,6 @@
 
 #undef BLINK_AT_RAMP_MIDDLE
 
-#define BATTCHECK_VpT
-
 #define USE_DYNAMIC_UNDERCLOCKING
 
 #define RAMP_LENGTH 150

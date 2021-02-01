@@ -2,10 +2,7 @@
 #define HWDEF_SOFIRN_SP10S_H
 
 /* gChart's PIC12 to ATTINY1616 v1 adapter for the SP10S
-https://oshpark.com/shared_projects/rljCF1NN
-
-EDIT: modify the PCB, cutting the Pin 6 trace and use an airwire to route it to SOIC Pin 2 (PA5)
-NOTE: a v2 (no airwire) is on the way and this HWDEF file will need to be updated accordingly
+https://oshpark.com/shared_projects/b4IZEGSy
 
 PIC12 Pinout:
 1 - VDD
@@ -18,11 +15,12 @@ PIC12 Pinout:
 8 - GND
 
 ATTINY1616 Mapping:
-2 - PA5 : ADC0 - AIN5
+2 - PA5 : (no connect)
 3 - PB5 : TCA0 - WO2 Alternate MUX
-4 - PB4
+4 - PB3 : (switch)
 5 - PB0 : TCA0 - WO0
-7 - PA1
+6 - PB4 : ADC0 - AIN9
+7 - PA1 : (boost enable)
 
 */
 
@@ -36,9 +34,9 @@ ATTINY1616 Mapping:
 #include <avr/io.h>
 
 #ifndef SWITCH_PIN
-#define SWITCH_PIN     4    
+#define SWITCH_PIN     3    
 #define SWITCH_PORT    VPORTB.IN
-#define SWITCH_ISC_REG PORTB.PIN4CTRL
+#define SWITCH_ISC_REG PORTB.PIN3CTRL
 #define SWITCH_VECT    PORTB_PORT_vect
 #define SWITCH_INTFLG  VPORTB.INTFLAGS
 #endif
@@ -63,7 +61,7 @@ ATTINY1616 Mapping:
 #define USE_VOLTAGE_DIVIDER       // use a dedicated pin, not VCC, because VCC input is flattened
 #define DUAL_VOLTAGE_FLOOR    20  // for AA/14500 boost drivers, don't indicate low voltage if below this level
 #define DUAL_VOLTAGE_LOW_LOW  07  // the lower voltage range's danger zone 0.7 volts
-#define ADMUX_VOLTAGE_DIVIDER ADC_MUXPOS_AIN5_gc  // which ADC channel to read
+#define ADMUX_VOLTAGE_DIVIDER ADC_MUXPOS_AIN9_gc  // which ADC channel to read
 
 // Raw ADC readings at 4.4V and 2.2V
 // calibrate the voltage readout here
@@ -97,15 +95,15 @@ inline void hwdef_setup() {
     PORTA.PIN2CTRL = PORT_PULLUPEN_bm;
     PORTA.PIN3CTRL = PORT_PULLUPEN_bm;
     PORTA.PIN4CTRL = PORT_PULLUPEN_bm;
-    //PORTA.PIN5CTRL = PORT_PULLUPEN_bm; // Voltage divider
+    PORTA.PIN5CTRL = PORT_PULLUPEN_bm;
     PORTA.PIN6CTRL = PORT_PULLUPEN_bm;
     PORTA.PIN7CTRL = PORT_PULLUPEN_bm;
     
     //PORTB.PIN0CTRL = PORT_PULLUPEN_bm; // Big PWM channel
     PORTB.PIN1CTRL = PORT_PULLUPEN_bm;
     PORTB.PIN2CTRL = PORT_PULLUPEN_bm;
-    PORTB.PIN3CTRL = PORT_PULLUPEN_bm;
-    PORTB.PIN4CTRL = PORT_PULLUPEN_bm | PORT_ISC_BOTHEDGES_gc;  // Switch
+    PORTB.PIN3CTRL = PORT_PULLUPEN_bm | PORT_ISC_BOTHEDGES_gc;  // Switch
+    //PORTB.PIN4CTRL = PORT_PULLUPEN_bm; // Voltage divider
     //PORTB.PIN5CTRL = PORT_PULLUPEN_bm; // Small PWM channel
     
     //PORTC.PIN0CTRL = PORT_PULLUPEN_bm; connected to the ADC via airwire
