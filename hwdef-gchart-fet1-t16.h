@@ -23,12 +23,11 @@ Read voltage from VCC pin, has diode with ~0.4v drop
 #define PWM_CHANNELS 2
 
 #ifndef SWITCH_PIN
-#define SWITCH_PIN     2    
+#define SWITCH_PIN     PIN2_bp    
 #define SWITCH_PORT    VPORTB.IN
 #define SWITCH_ISC_REG PORTB.PIN2CTRL
 #define SWITCH_VECT    PORTB_PORT_vect
 #define SWITCH_INTFLG  VPORTB.INTFLAGS
-//#define SWITCH_ISC_REG  _SFR_MEM8(&PORTB + 0x10 + SWITCH_PIN)
 #endif
 
 
@@ -52,9 +51,8 @@ Read voltage from VCC pin, has diode with ~0.4v drop
 
 // lighted button
 #ifndef AUXLED_PIN
-#define AUXLED_PIN  PIN3_bm
+#define AUXLED_PIN  PIN3_bp
 #define AUXLED_PORT PORTB
-#define AUXLED_CTRL PIN3CTRL
 #endif
 
 

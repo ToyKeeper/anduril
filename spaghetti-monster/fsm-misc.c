@@ -112,27 +112,29 @@ void indicator_led(uint8_t lvl) {
     switch (lvl) {
         #ifdef AVRXMEGA3  // ATTINY816, 817, etc
         case 0:  // indicator off
-            AUXLED_PORT.DIRSET = AUXLED_PIN; // set as output
-            AUXLED_PORT.OUTCLR = AUXLED_PIN; // set output low
+            AUXLED_PORT.DIRSET = (1 << AUXLED_PIN); // set as output
+            AUXLED_PORT.OUTCLR = (1 << AUXLED_PIN); // set output low
             #ifdef AUXLED2_PIN  // second LED mirrors the first
-            AUXLED2_PORT.DIRSET = AUXLED2_PIN; // set as output
-            AUXLED2_PORT.OUTCLR = AUXLED2_PIN; // set output low
+            AUXLED2_PORT.DIRSET = (1 << AUXLED2_PIN); // set as output
+            AUXLED2_PORT.OUTCLR = (1 << AUXLED2_PIN); // set output low
             #endif
             break;
         case 1:  // indicator low
-            AUXLED_PORT.DIRCLR = AUXLED_PIN; // set as input
-            AUXLED_PORT.AUXLED_CTRL = PORT_PULLUPEN_bm; // enable internal pull-up
+            AUXLED_PORT.DIRCLR = (1 << AUXLED_PIN); // set as input
+            // this resolves to PORTx.PINxCTRL = PORT_PULLUPEN_bm;
+            *((uint8_t *)&AUXLED_PORT + 0x10 + AUXLED_PIN) = PORT_PULLUPEN_bm; // enable internal pull-up
             #ifdef AUXLED2_PIN  // second LED mirrors the first
-            AUXLED2_PORT.DIRCLR = AUXLE2D_PIN; // set as input
-            AUXLED2_PORT.AUXLED2_CTRL = PORT_PULLUPEN_bm; // enable internal pull-up
+            AUXLED2_PORT.DIRCLR = (1 << AUXLED2_PIN); // set as input
+            // this resolves to PORTx.PINxCTRL = PORT_PULLUPEN_bm;
+            *((uint8_t *)&AUXLED2_PORT + 0x10 + AUXLED2_PIN) = PORT_PULLUPEN_bm; // enable internal pull-up
             #endif
             break;
         default:  // indicator high
-            AUXLED_PORT.DIRSET = AUXLED_PIN; // set as output
-            AUXLED_PORT.OUTSET = AUXLED_PIN; // set as high
+            AUXLED_PORT.DIRSET = (1 << AUXLED_PIN); // set as output
+            AUXLED_PORT.OUTSET = (1 << AUXLED_PIN); // set as high
             #ifdef AUXLED2_PIN  // second LED mirrors the first
-            AUXLED2_PORT.DIRSET = AUXLED2_PIN; // set as output
-            AUXLED2_PORT.OUTSET = AUXLED2_PIN; // set as high
+            AUXLED2_PORT.DIRSET = (1 << AUXLED2_PIN); // set as output
+            AUXLED2_PORT.OUTSET = (1 << AUXLED2_PIN); // set as high
             #endif
             break;
       
@@ -182,16 +184,17 @@ void button_led_set(uint8_t lvl) {
 
         #ifdef AVRXMEGA3  // ATTINY816, 817, etc
         case 0:  // LED off
-            BUTTON_LED_PORT.DIRSET = BUTTON_LED_PIN; // set as output
-            BUTTON_LED_PORT.OUTCLR = BUTTON_LED_PIN; // set output low
+            BUTTON_LED_PORT.DIRSET = (1 << BUTTON_LED_PIN); // set as output
+            BUTTON_LED_PORT.OUTCLR = (1 << BUTTON_LED_PIN); // set output low
             break;
         case 1:  // LED low
-            BUTTON_LED_PORT.DIRCLR = BUTTON_LED_PIN; // set as input
-            BUTTON_LED_PORT.BUTTON_LED_CTRL = PORT_PULLUPEN_bm; // enable internal pull-up
+            BUTTON_LED_PORT.DIRCLR = (1 << BUTTON_LED_PIN); // set as input
+            // this resolves to PORTx.PINxCTRL = PORT_PULLUPEN_bm;
+            *((uint8_t *)&BUTTON_LED_PORT + 0x10 + BUTTON_LED_PIN) = PORT_PULLUPEN_bm; // enable internal pull-up
             break;
         default:  // LED high
-            BUTTON_LED_PORT.DIRSET = BUTTON_LED_PIN; // set as output
-            BUTTON_LED_PORT.OUTSET = BUTTON_LED_PIN; // set as high
+            BUTTON_LED_PORT.DIRSET = (1 << BUTTON_LED_PIN); // set as output
+            BUTTON_LED_PORT.OUTSET = (1 << BUTTON_LED_PIN); // set as high
             break;
 
         #else
@@ -218,9 +221,6 @@ void button_led_set(uint8_t lvl) {
 #endif
 
 #ifdef USE_AUX_RGB_LEDS
-#ifdef AVRXMEGA3  // ATTINY816, 817, etc
-#error Function rgb_led_set in fsm-misc is currently not set up for the AVR 1-Series
-#endif
 void rgb_led_set(uint8_t value) {
     // value: 0b00BBGGRR
     uint8_t pins[] = { AUXLED_R_PIN, AUXLED_G_PIN, AUXLED_B_PIN };
@@ -228,6 +228,24 @@ void rgb_led_set(uint8_t value) {
         uint8_t lvl = (value >> (i<<1)) & 0x03;
         uint8_t pin = pins[i];
         switch (lvl) {
+        
+            #ifdef AVRXMEGA3  // ATTINY816, 817, etc
+            case 0:  // LED off
+                AUXLED_RGB_PORT.DIRSET = (1 << pin); // set as output
+                AUXLED_RGB_PORT.OUTCLR = (1 << pin); // set output low
+                break;
+            case 1:  // LED low
+                AUXLED_RGB_PORT.DIRCLR = (1 << pin); // set as input
+                // this resolves to PORTx.PINxCTRL = PORT_PULLUPEN_bm;
+                *((uint8_t *)&AUXLED_RGB_PORT + 0x10 + pin) = PORT_PULLUPEN_bm; // enable internal pull-up
+                break;
+            default:  // LED high
+                AUXLED_RGB_PORT.DIRSET = (1 << pin); // set as output
+                AUXLED_RGB_PORT.OUTSET = (1 << pin); // set as high
+                break;
+
+            #else
+        
             case 0:  // LED off
                 AUXLED_RGB_DDR  &= 0xff ^ (1 << pin);
                 AUXLED_RGB_PUE  &= 0xff ^ (1 << pin);
@@ -243,6 +261,9 @@ void rgb_led_set(uint8_t value) {
                 AUXLED_RGB_PUE  |= (1 << pin);
                 AUXLED_RGB_PORT |= (1 << pin);
                 break;
+                
+            #endif
+                    
         }
     }
 }

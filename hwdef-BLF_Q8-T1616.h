@@ -24,7 +24,7 @@ Driver pinout:
 #define PWM_CHANNELS 2
 
 #ifndef SWITCH_PIN
-#define SWITCH_PIN     5    
+#define SWITCH_PIN     PIN5_bp    
 #define SWITCH_PORT    VPORTA.IN
 #define SWITCH_ISC_REG PORTA.PIN2CTRL
 #define SWITCH_VECT    PORTA_PORT_vect
@@ -52,9 +52,8 @@ Driver pinout:
 
 // lighted button
 #ifndef AUXLED_PIN
-#define AUXLED_PIN  PIN5_bm
+#define AUXLED_PIN  PIN5_bp
 #define AUXLED_PORT PORTB
-#define AUXLED_CTRL PIN5CTRL
 #endif
 
 
