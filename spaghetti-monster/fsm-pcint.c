@@ -46,6 +46,8 @@ inline void PCINT_on() {
         #else
         GIMSK |= (1 << SWITCH_PCIE);
         #endif
+    #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc)
+        SWITCH_ISC_REG |= PORT_ISC_BOTHEDGES_gc;
     #else
         #error Unrecognized MCU type
     #endif
@@ -58,6 +60,8 @@ inline void PCINT_off() {
     #elif (ATTINY == 1634)
         // disable all pin-change interrupts
         GIMSK &= ~(1 << SWITCH_PCIE);
+    #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc)
+        SWITCH_ISC_REG &= ~(PORT_ISC_gm);
     #else
         #error Unrecognized MCU type
     #endif
@@ -71,6 +75,11 @@ ISR(PCINT_vect) {
 #else
 ISR(PCINT0_vect) {
 #endif
+    irq_pcint = 1;
+}
+#elif defined(AVRXMEGA3)  // ATTINY816, 817, etc)
+ISR(SWITCH_VECT) {
+    SWITCH_INTFLG |= (1 << SWITCH_PIN);  // Write a '1' to clear the interrupt flag
     irq_pcint = 1;
 }
 #else
