@@ -115,3 +115,26 @@ build Crescendo for an attiny25-based driver and then flash it:
   ../../bin/flash-tiny25.sh crescendo.hex
 
 Other useful tools are in bin/ too, so they might be worth a look.
+
+
+ATtiny Series 1 (tiny1616) Support
+==================================
+
+As of early 2021, the Debian packages for gcc-avr and avrdude do not include
+support for the Tiny1 series chips.  Extra steps are required to get these
+working.
+
+  - Download the Atmel ATtiny Series Device Support pack:
+    http://packs.download.atmel.com/
+
+  - Unzip the pack somewhere on your build computer
+
+  - Set ATTINY_DFP=/path/to/where/you/unzipped/the/pack
+    (either in your shell, or in this repo's bin/build.sh script)
+ 
+  - Make sure you're using gcc-avr 1:5.4.0+Atmel3.6.2 or newer.
+    3.6.1 will not work.  It gives errors like:
+    /usr/lib/gcc/avr/5.4.0/../../../avr/bin/ld: address 0x80381e of anduril.elf section `.data' is not within region `data'
+    This requires debian/bullseye or newer; buster has 3.6.1.
+ 
+This should at least allow the code to compile.
