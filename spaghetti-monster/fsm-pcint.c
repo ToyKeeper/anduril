@@ -46,6 +46,8 @@ inline void PCINT_on() {
         #else
         GIMSK |= (1 << SWITCH_PCIE);
         #endif
+    #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc)
+        SWITCH_ISC_REG |= PORT_ISC_BOTHEDGES_gc;
     #else
         #error Unrecognized MCU type
     #endif
@@ -58,6 +60,8 @@ inline void PCINT_off() {
     #elif (ATTINY == 1634)
         // disable all pin-change interrupts
         GIMSK &= ~(1 << SWITCH_PCIE);
+    #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc)
+        SWITCH_ISC_REG &= ~(PORT_ISC_gm);
     #else
         #error Unrecognized MCU type
     #endif
@@ -65,19 +69,20 @@ inline void PCINT_off() {
 
 //void button_change_interrupt() {
 #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85) || (ATTINY == 1634)
-//EMPTY_INTERRUPT(PCINT0_vect);
-#ifdef PCINT_vect
-ISR(PCINT_vect) {
-#else
-ISR(PCINT0_vect) {
-#endif
-    irq_pcint = 1;
-}
+    #ifdef PCINT_vect
+    ISR(PCINT_vect) {
+    #else
+    ISR(PCINT0_vect) {
+    #endif
+#elif defined(AVRXMEGA3)  // ATTINY816, 817, etc)
+    ISR(SWITCH_VECT) {
+        // Write a '1' to clear the interrupt flag
+        SWITCH_INTFLG |= (1 << SWITCH_PIN);
 #else
     #error Unrecognized MCU type
 #endif
-/*
-ISR(PCINT0_vect) {
+
+    irq_pcint = 1;  // let deferred code know an interrupt happened
 
     //DEBUG_FLASH;
 
@@ -86,9 +91,7 @@ ISR(PCINT0_vect) {
     // noisy / bouncy switch (so the content of this function has been
     // moved to a separate function, called from WDT only)
     // PCINT_inner(button_is_pressed());
-
 }
-*/
 
 // should only be called from PCINT and/or WDT
 // (is a separate function to reduce code duplication)

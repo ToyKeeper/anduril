@@ -71,6 +71,12 @@
     #define DELAY_ZERO_TIME 1020
     //#define SWITCH_PORT  PINA  // set this in hwdef
     //#define VOLTAGE_ADC_DIDR DIDR0  // set this in hwdef
+#elif (ATTINY == 412) || (ATTINY == 416) || (ATTINY == 417) || (ATTINY == 816) || (ATTINY == 817) || (ATTINY == 1616) || (ATTINY == 1617) || (ATTINY == 3216) || (ATTINY == 3217)
+    #define AVRXMEGA3
+    #define F_CPU 5000000UL
+    #define BOGOMIPS (F_CPU/4000)
+    #define EEPSIZE 128
+    #define DELAY_ZERO_TIME 1020
 #else
     #error Hey, you need to define ATTINY.
 #endif
@@ -138,6 +144,29 @@
       clock_div_256 = 8
   } clock_div_t;
 
+#elif defined(AVRXMEGA3)  // ATTINY816, 817, etc
+    // this should work, but needs further validation
+    inline void clock_prescale_set(uint8_t n) {
+        cli();         
+        CCP = CCP_IOREG_gc; // temporarily disable clock change protection
+        CLKCTRL.MCLKCTRLB = n; // Set the prescaler
+        while (CLKCTRL.MCLKSTATUS & CLKCTRL_SOSC_bm) {} // wait for clock change to finish
+        sei();
+    }
+    typedef enum
+    {
+      // Actual clock is 20 MHz, but assume that 5 MHz is the top speed and work from there
+      // TODO: measure PWM speed and power use at 1.25/2.5/5/10 MHz, to determine which speeds are optimal 
+      clock_div_1 =   (CLKCTRL_PDIV_4X_gc  | CLKCTRL_PEN_bm), // 5 MHz
+      clock_div_2 =   (CLKCTRL_PDIV_8X_gc  | CLKCTRL_PEN_bm), // 2.5 MHz
+      clock_div_4 =   (CLKCTRL_PDIV_16X_gc | CLKCTRL_PEN_bm), // 1.25 MHz
+      clock_div_8 =   (CLKCTRL_PDIV_32X_gc | CLKCTRL_PEN_bm), // 625 kHz
+      clock_div_16 =  (CLKCTRL_PDIV_64X_gc | CLKCTRL_PEN_bm), // 312 kHz, max without changing to the 32 kHz ULP
+      clock_div_32 =  (CLKCTRL_PDIV_64X_gc | CLKCTRL_PEN_bm), // 312 kHz 
+      clock_div_64 =  (CLKCTRL_PDIV_64X_gc | CLKCTRL_PEN_bm), // 312 kHz 
+      clock_div_128 = (CLKCTRL_PDIV_64X_gc | CLKCTRL_PEN_bm), // 312 kHz 
+      clock_div_256 = (CLKCTRL_PDIV_64X_gc | CLKCTRL_PEN_bm)  // 312 kHz 
+    } clock_div_t;
 #else
 #error Unable to define MCU macros.
 #endif
