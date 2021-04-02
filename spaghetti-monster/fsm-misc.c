@@ -111,6 +111,7 @@ uint8_t blink_num(uint8_t num) {
 void indicator_led(uint8_t lvl) {
     switch (lvl) {
         #ifdef AVRXMEGA3  // ATTINY816, 817, etc
+
         case 0:  // indicator off
             AUXLED_PORT.DIRSET = (1 << AUXLED_PIN); // set as output
             AUXLED_PORT.OUTCLR = (1 << AUXLED_PIN); // set output low
@@ -139,6 +140,7 @@ void indicator_led(uint8_t lvl) {
             break;
       
         #else
+
         case 0:  // indicator off
             DDRB &= 0xff ^ (1 << AUXLED_PIN);
             PORTB &= 0xff ^ (1 << AUXLED_PIN);
@@ -164,7 +166,7 @@ void indicator_led(uint8_t lvl) {
             #endif
             break;
 
-        #endif
+        #endif  // MCU type
     }
 }
 
@@ -183,6 +185,7 @@ void button_led_set(uint8_t lvl) {
     switch (lvl) {
 
         #ifdef AVRXMEGA3  // ATTINY816, 817, etc
+
         case 0:  // LED off
             BUTTON_LED_PORT.DIRSET = (1 << BUTTON_LED_PIN); // set as output
             BUTTON_LED_PORT.OUTCLR = (1 << BUTTON_LED_PIN); // set output low
@@ -215,7 +218,7 @@ void button_led_set(uint8_t lvl) {
             BUTTON_LED_PORT |= (1 << BUTTON_LED_PIN);
             break;
 
-        #endif
+        #endif  // MCU type
     }
 }
 #endif
@@ -230,6 +233,7 @@ void rgb_led_set(uint8_t value) {
         switch (lvl) {
         
             #ifdef AVRXMEGA3  // ATTINY816, 817, etc
+
             case 0:  // LED off
                 AUXLED_RGB_PORT.DIRSET = (1 << pin); // set as output
                 AUXLED_RGB_PORT.OUTCLR = (1 << pin); // set output low
@@ -262,8 +266,7 @@ void rgb_led_set(uint8_t value) {
                 AUXLED_RGB_PORT |= (1 << pin);
                 break;
                 
-            #endif
-                    
+            #endif  // MCU type                    
         }
     }
 }
