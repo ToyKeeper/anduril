@@ -91,6 +91,9 @@ inline void hwdef_setup() {
 
     // set up the PWM
     // TODO: add references to MCU documentation
+    // TODO: measure 5 MHz fast PWM vs 10 MHz phase-correct, to see if it
+    //       still has issues at 0/255 and 255/255 like older models did
+    //       (and maybe switch to phase-correct@10MHz)
     TCA0.SINGLE.CTRLB = TCA_SINGLE_CMP0EN_bm | TCA_SINGLE_CMP1EN_bm | TCA_SINGLE_WGMODE_SINGLESLOPE_gc;
     TCA0.SINGLE.PER = 255;
     TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc | TCA_SINGLE_ENABLE_bm;
