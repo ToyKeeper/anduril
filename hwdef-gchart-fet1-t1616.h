@@ -1,5 +1,5 @@
-#ifndef HWDEF_GCH_FET1_T16_H
-#define HWDEF_GCH_FET1_T16_H
+#ifndef HWDEF_GCH_FET1_T1616_H
+#define HWDEF_GCH_FET1_T1616_H
 
 /* gChart's custom FET+1 driver layout
 

@@ -1,6 +1,6 @@
 // gChart's custom FET+1 driver config options for Anduril
 #define MODEL_NUMBER "1618" // Golden Ratio... because I can
-#include "hwdef-gchart-fet1-t16.h"
+#include "hwdef-gchart-fet1-t1616.h"
 // ATTINY: 1616
 
 // the button lights up
