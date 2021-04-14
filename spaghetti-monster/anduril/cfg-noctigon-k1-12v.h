@@ -17,10 +17,6 @@
 #define USE_AUX_RGB_LEDS_WHILE_ON
 #define USE_INDICATOR_LED_WHILE_RAMPING
 
-// enable blinking aux LEDs
-#define TICK_DURING_STANDBY
-#define STANDBY_TICK_SPEED 3  // every 0.128 s
-
 
 // level_calc.py cube 1 150 7135 0 4 1300
 // (with max_pwm set to 1023)

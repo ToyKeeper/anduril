@@ -8,12 +8,7 @@
 #ifdef USE_INDICATOR_LED_WHILE_RAMPING
 #undef USE_INDICATOR_LED_WHILE_RAMPING
 #endif
-// enable blinking indicator LED while off?
-#define TICK_DURING_STANDBY
-#define STANDBY_TICK_SPEED 3  // every 0.128 s
-#define USE_FANCIER_BLINKING_INDICATOR
 
-// If TICK_DURING_STANDBY is enabled...
 // off mode: low (1)
 // lockout: blinking (3)
 #define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)

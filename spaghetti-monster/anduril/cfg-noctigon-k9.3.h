@@ -23,10 +23,6 @@ inline void set_level_override(uint8_t level);
 #undef USE_INDICATOR_LED_WHILE_RAMPING
 #endif
 
-// enable blinking aux LEDs
-#define TICK_DURING_STANDBY
-#define STANDBY_TICK_SPEED 3  // every 0.128 s
-
 // has two channels of independent LEDs
 #define USE_TINT_RAMPING
 // ... but it doesn't make sense to ramp between; only toggle

@@ -1106,6 +1106,7 @@ void blink_confirm(uint8_t num) {
 #if defined(USE_INDICATOR_LED) && defined(TICK_DURING_STANDBY)
 // beacon-like mode for the indicator LED
 void indicator_blink(uint8_t arg) {
+    #define USE_FANCIER_BLINKING_INDICATOR
     #ifdef USE_FANCIER_BLINKING_INDICATOR
 
     // fancy blink, set off/low/high levels here:

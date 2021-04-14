@@ -28,12 +28,6 @@
 #undef USE_INDICATOR_LED_WHILE_RAMPING
 #endif
 
-// enable blinking aux LEDs
-#define TICK_DURING_STANDBY
-#define STANDBY_TICK_SPEED 3  // every 0.128 s
-//#define STANDBY_TICK_SPEED 4  // every 0.256 s
-//#define STANDBY_TICK_SPEED 5  // every 0.512 s
-
 // ../../bin/level_calc.py cube 1 149 7135 0 0.5 1000, with 0 appended to the end.
 // for FET PWM (PWM2), all values are 0, except for last value of 1023
 // (with max_pwm set to 1023)

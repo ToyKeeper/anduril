@@ -14,10 +14,6 @@
 #define USE_AUX_RGB_LEDS_WHILE_ON
 #define USE_INDICATOR_LED_WHILE_RAMPING
 
-// enable blinking aux LEDs
-#define TICK_DURING_STANDBY
-#define STANDBY_TICK_SPEED 3  // every 0.128 s
-
 
 // brightness:
 // 0/1023: 0.35 lm

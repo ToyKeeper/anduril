@@ -7,10 +7,6 @@
 #ifdef INDICATOR_LED_SKIP_LOW
 #undef INDICATOR_LED_SKIP_LOW
 #endif
-// enable blinking indicator LED while off
-#define TICK_DURING_STANDBY
-#define STANDBY_TICK_SPEED 3  // every 0.128 s
-#define USE_FANCIER_BLINKING_INDICATOR
 
 // lockout: blinking (3), off: low (1)
 #ifdef INDICATOR_LED_DEFAULT_MODE
