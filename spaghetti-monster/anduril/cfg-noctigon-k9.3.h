@@ -1,6 +1,7 @@
 // Noctigon K9.3 config options for Anduril
 #define MODEL_NUMBER "0261"
 #include "hwdef-Noctigon_K9.3.h"
+#include "hank-cfg.h"
 // ATTINY: 1634
 // this model requires some special code
 #define OVERRIDES_FILE cfg-noctigon-k9.3.c
@@ -11,7 +12,6 @@ inline void set_level_override(uint8_t level);
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
-#define RGB_LED_OFF_DEFAULT 0x18  // low, rainbow
 // the aux LEDs are front-facing, so turn them off while main LEDs are on
 //#define USE_AUX_RGB_LEDS_WHILE_ON
 // it also has an independent LED in the button

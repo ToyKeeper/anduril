@@ -2,6 +2,7 @@
 // (and Emisar D4v2.5, which uses KR4 driver plus a button LED)
 #define MODEL_NUMBER "0211"
 #include "hwdef-Noctigon_KR4.h"
+#include "hank-cfg.h"
 // ATTINY: 1634
 
 // this light has three aux LED channels: R, G, B

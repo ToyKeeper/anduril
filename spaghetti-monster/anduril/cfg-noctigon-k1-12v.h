@@ -1,6 +1,7 @@
 // Noctigon K1 12V config options for Anduril
 #define MODEL_NUMBER "0253"
 #include "hwdef-Noctigon_K1-12V.h"
+#include "hank-cfg.h"
 // ATTINY: 1634
 
 // Most K1 lights can run hotter than default, but the 12V model

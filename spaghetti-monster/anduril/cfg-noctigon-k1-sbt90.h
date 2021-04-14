@@ -2,6 +2,7 @@
 // (is a K1 host with a KR4-like driver and a really high-powered LED)
 #define MODEL_NUMBER "0252"
 #include "hwdef-Noctigon_K1-SBT90.h"
+#include "hank-cfg.h"
 // ATTINY: 1634
 
 // this light can safely run a bit hotter than most
@@ -12,7 +13,6 @@
 #define USE_AUX_RGB_LEDS
 #define USE_AUX_RGB_LEDS_WHILE_ON
 #define USE_INDICATOR_LED_WHILE_RAMPING
-#define RGB_RAINBOW_SPEED 0x03  // half a second per color in rainbow mode
 
 // enable blinking aux LEDs
 #define TICK_DURING_STANDBY
@@ -52,7 +52,7 @@
 //#define THERM_NEXT_WARNING_THRESHOLD 16  // accumulate less error before adjusting
 //#define THERM_RESPONSE_MAGNITUDE 128  // bigger adjustments
 
-// slow down party strobe; this driver can't pulse for 1ms or less
+// normal party strobe speed; this driver can pulse very quickly
 //#define PARTY_STROBE_ONTIME 2
 
 #define THERM_CAL_OFFSET 5

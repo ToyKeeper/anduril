@@ -1,6 +1,7 @@
 // Emisar D4S config options for Anduril
 #define MODEL_NUMBER "0131"
 #include "hwdef-Emisar_D4S.h"
+#include "hank-cfg.h"
 
 // the button lights up
 #define USE_INDICATOR_LED
