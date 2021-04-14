@@ -157,9 +157,12 @@ uint8_t off_state(Event event, uint16_t arg) {
     }
     // click, hold: momentary at ceiling or turbo
     else if (event == EV_click2_hold) {
+        #ifdef USE_SIMPLE_UI
         if (simple_ui_active) {
             set_level(nearest_level(MAX_LEVEL));
-        } else {
+        } else
+        #endif
+        {
             set_level(MAX_LEVEL);
         }
         return MISCHIEF_MANAGED;

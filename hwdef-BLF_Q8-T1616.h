@@ -24,7 +24,7 @@ Driver pinout:
 #define PWM_CHANNELS 2
 
 #ifndef SWITCH_PIN
-#define SWITCH_PIN     PIN5_bp    
+#define SWITCH_PIN     PIN5_bp
 #define SWITCH_PORT    VPORTA.IN
 #define SWITCH_ISC_REG PORTA.PIN2CTRL
 #define SWITCH_VECT    PORTA_PORT_vect
@@ -34,13 +34,13 @@ Driver pinout:
 
 // 7135 channel
 #ifndef PWM1_PIN
-#define PWM1_PIN PB1               // 
+#define PWM1_PIN PB1               //
 #define PWM1_LVL TCA0.SINGLE.CMP1  // CMP1 is the output compare register for PB1
 #endif
 
 // FET channel
 #ifndef PWM2_PIN
-#define PWM2_PIN PB0               // 
+#define PWM2_PIN PB0               //
 #define PWM2_LVL TCA0.SINGLE.CMP0  // CMP0 is the output compare register for PB0
 #endif
 
@@ -61,8 +61,8 @@ Driver pinout:
 // ... so just hardcode it in each hwdef file instead
 inline void hwdef_setup() {
 
-	// set up the system clock to run at 5 MHz instead of the default 3.33 MHz
-	_PROTECTED_WRITE( CLKCTRL.MCLKCTRLB, CLKCTRL_PDIV_4X_gc | CLKCTRL_PEN_bm );
+    // set up the system clock to run at 5 MHz instead of the default 3.33 MHz
+    _PROTECTED_WRITE( CLKCTRL.MCLKCTRLB, CLKCTRL_PDIV_4X_gc | CLKCTRL_PEN_bm );
 
     //VPORTA.DIR = ...;
     VPORTB.DIR = PIN0_bm | PIN1_bm | PIN5_bm;  // Outputs: Aux LED and PWMs
@@ -77,20 +77,21 @@ inline void hwdef_setup() {
     PORTA.PIN5CTRL = PORT_PULLUPEN_bm | PORT_ISC_BOTHEDGES_gc;  // eSwitch
     PORTA.PIN6CTRL = PORT_PULLUPEN_bm;
     PORTA.PIN7CTRL = PORT_PULLUPEN_bm;
-    
+
     //PORTB.PIN0CTRL = PORT_PULLUPEN_bm; // FET channel
     //PORTB.PIN1CTRL = PORT_PULLUPEN_bm; // 7135 channel
     PORTB.PIN2CTRL = PORT_PULLUPEN_bm;
     PORTB.PIN3CTRL = PORT_PULLUPEN_bm;
     PORTB.PIN4CTRL = PORT_PULLUPEN_bm;
     //PORTB.PIN5CTRL = PORT_PULLUPEN_bm; // Aux LED
-    
+
     PORTC.PIN0CTRL = PORT_PULLUPEN_bm;
     PORTC.PIN1CTRL = PORT_PULLUPEN_bm;
     PORTC.PIN2CTRL = PORT_PULLUPEN_bm;
     PORTC.PIN3CTRL = PORT_PULLUPEN_bm;
-  
-  	// set up the PWM
+
+    // set up the PWM
+    // TODO: add references to MCU documentation
     TCA0.SINGLE.CTRLB = TCA_SINGLE_CMP0EN_bm | TCA_SINGLE_CMP1EN_bm | TCA_SINGLE_WGMODE_SINGLESLOPE_gc;
     TCA0.SINGLE.PER = 255;
     TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc | TCA_SINGLE_ENABLE_bm;

@@ -1,5 +1,5 @@
 // BLF Q8 config options for Anduril using the Attiny1616
-#define MODEL_NUMBER "0631"
+#define MODEL_NUMBER "0613"
 #include "hwdef-BLF_Q8-T1616.h"
 // ATTINY: 1616
 

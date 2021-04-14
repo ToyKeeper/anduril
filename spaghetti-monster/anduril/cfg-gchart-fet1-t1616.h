@@ -1,6 +1,6 @@
 // gChart's custom FET+1 driver config options for Anduril
 #define MODEL_NUMBER "1618" // Golden Ratio... because I can
-#include "hwdef-gchart-fet1-t16.h"
+#include "hwdef-gchart-fet1-t1616.h"
 // ATTINY: 1616
 
 // the button lights up
@@ -9,6 +9,11 @@
 #define USE_INDICATOR_LED_WHILE_RAMPING
 // enable blinking indicator LED while off
 #define TICK_DURING_STANDBY
+#define STANDBY_TICK_SPEED 3  // every 0.128 s
+#define USE_FANCIER_BLINKING_INDICATOR
+// off mode: low (1)
+// lockout: blinking (3)
+#define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
 
 #undef BLINK_AT_RAMP_MIDDLE
 

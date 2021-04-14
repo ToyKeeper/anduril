@@ -1,6 +1,8 @@
 #ifndef HWDEF_SOFIRN_SP10S_H
 #define HWDEF_SOFIRN_SP10S_H
 
+// TODO: rename to sofirn-sp10s-gchart?
+
 /* gChart's PIC12 to ATTINY1616 v1 adapter for the SP10S
 https://oshpark.com/shared_projects/b4IZEGSy
 
@@ -34,7 +36,7 @@ ATTINY1616 Mapping:
 #include <avr/io.h>
 
 #ifndef SWITCH_PIN
-#define SWITCH_PIN     3    
+#define SWITCH_PIN     3
 #define SWITCH_PORT    VPORTB.IN
 #define SWITCH_ISC_REG PORTB.PIN3CTRL
 #define SWITCH_VECT    PORTB_PORT_vect
@@ -81,13 +83,12 @@ ATTINY1616 Mapping:
 // ... so just hardcode it in each hwdef file instead
 inline void hwdef_setup() {
 
-	// set up the system clock to run at 5 MHz instead of the default 3.33 MHz
-	_PROTECTED_WRITE( CLKCTRL.MCLKCTRLB, CLKCTRL_PDIV_4X_gc | CLKCTRL_PEN_bm );
+    // set up the system clock to run at 5 MHz instead of the default 3.33 MHz
+    _PROTECTED_WRITE( CLKCTRL.MCLKCTRLB, CLKCTRL_PDIV_4X_gc | CLKCTRL_PEN_bm );
 
     VPORTA.DIR = PIN1_bm;  // Boost enable pin
     VPORTB.DIR = PIN0_bm | PIN5_bm;  // PWM pins as output
     //VPORTC.DIR = ...;
-
 
     // enable pullups on the input pins to reduce power
     PORTA.PIN0CTRL = PORT_PULLUPEN_bm;
@@ -98,21 +99,22 @@ inline void hwdef_setup() {
     PORTA.PIN5CTRL = PORT_PULLUPEN_bm;
     PORTA.PIN6CTRL = PORT_PULLUPEN_bm;
     PORTA.PIN7CTRL = PORT_PULLUPEN_bm;
-    
+
     //PORTB.PIN0CTRL = PORT_PULLUPEN_bm; // Big PWM channel
     PORTB.PIN1CTRL = PORT_PULLUPEN_bm;
     PORTB.PIN2CTRL = PORT_PULLUPEN_bm;
     PORTB.PIN3CTRL = PORT_PULLUPEN_bm | PORT_ISC_BOTHEDGES_gc;  // Switch
     //PORTB.PIN4CTRL = PORT_PULLUPEN_bm; // Voltage divider
     //PORTB.PIN5CTRL = PORT_PULLUPEN_bm; // Small PWM channel
-    
+
     //PORTC.PIN0CTRL = PORT_PULLUPEN_bm; connected to the ADC via airwire
     PORTC.PIN1CTRL = PORT_PULLUPEN_bm;
     PORTC.PIN2CTRL = PORT_PULLUPEN_bm;
     PORTC.PIN3CTRL = PORT_PULLUPEN_bm;
-  
-  	// set up the PWM
-  	PORTMUX.CTRLC = PORTMUX_TCA02_ALTERNATE_gc;  // Use alternate pin for TCA0:WO2
+
+    // set up the PWM
+    // TODO: add references to MCU documentation
+    PORTMUX.CTRLC = PORTMUX_TCA02_ALTERNATE_gc;  // Use alternate pin for TCA0:WO2
     TCA0.SINGLE.CTRLB = TCA_SINGLE_CMP0EN_bm | TCA_SINGLE_CMP2EN_bm | TCA_SINGLE_WGMODE_SINGLESLOPE_gc;
     TCA0.SINGLE.PER = 255;
     TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc | TCA_SINGLE_ENABLE_bm;

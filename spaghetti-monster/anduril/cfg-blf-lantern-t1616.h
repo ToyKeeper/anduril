@@ -1,5 +1,5 @@
 // BLF Lantern config options for Anduril using the Attiny1616
-#define MODEL_NUMBER "0633"
+#define MODEL_NUMBER "0622"
 /* BLF Lantern pinout
  * PB0 is 5000K channel
  * PB1 is 3000K channel

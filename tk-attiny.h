@@ -156,6 +156,7 @@
     typedef enum
     {
       // Actual clock is 20 MHz, but assume that 5 MHz is the top speed and work from there
+      // TODO: measure PWM speed and power use at 1.25/2.5/5/10 MHz, to determine which speeds are optimal 
       clock_div_1 =   (CLKCTRL_PDIV_4X_gc  | CLKCTRL_PEN_bm), // 5 MHz
       clock_div_2 =   (CLKCTRL_PDIV_8X_gc  | CLKCTRL_PEN_bm), // 2.5 MHz
       clock_div_4 =   (CLKCTRL_PDIV_16X_gc | CLKCTRL_PEN_bm), // 1.25 MHz
