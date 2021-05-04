@@ -60,8 +60,8 @@ Read voltage from VCC pin, has diode with ~0.4v drop
 // ... so just hardcode it in each hwdef file instead
 inline void hwdef_setup() {
 
-    // set up the system clock to run at 5 MHz instead of the default 3.33 MHz
-    _PROTECTED_WRITE( CLKCTRL.MCLKCTRLB, CLKCTRL_PDIV_4X_gc | CLKCTRL_PEN_bm );
+    // set up the system clock to run at 10 MHz instead of the default 3.33 MHz
+    _PROTECTED_WRITE( CLKCTRL.MCLKCTRLB, CLKCTRL_PDIV_2X_gc | CLKCTRL_PEN_bm );
 
     //VPORTA.DIR = 0b00000010;
     VPORTB.DIR = PIN0_bm | PIN1_bm | PIN3_bm;
@@ -90,11 +90,14 @@ inline void hwdef_setup() {
     PORTC.PIN3CTRL = PORT_PULLUPEN_bm;
 
     // set up the PWM
-    // TODO: add references to MCU documentation
-    // TODO: measure 5 MHz fast PWM vs 10 MHz phase-correct, to see if it
-    //       still has issues at 0/255 and 255/255 like older models did
-    //       (and maybe switch to phase-correct@10MHz)
-    TCA0.SINGLE.CTRLB = TCA_SINGLE_CMP0EN_bm | TCA_SINGLE_CMP1EN_bm | TCA_SINGLE_WGMODE_SINGLESLOPE_gc;
+    // https://ww1.microchip.com/downloads/en/DeviceDoc/ATtiny1614-16-17-DataSheet-DS40002204A.pdf
+    // PB0 is TCA0:WO0, use TCA_SINGLE_CMP0EN_bm
+    // PB1 is TCA0:WO1, use TCA_SINGLE_CMP1EN_bm
+    // PB2 is TCA0:WO2, use TCA_SINGLE_CMP2EN_bm
+    // For Fast (Single Slope) PWM use TCA_SINGLE_WGMODE_SINGLESLOPE_gc
+    // For Phase Correct (Dual Slope) PWM use TCA_SINGLE_WGMODE_DSBOTTOM_gc
+    // See the manual for other pins, clocks, configs, portmux, etc
+    TCA0.SINGLE.CTRLB = TCA_SINGLE_CMP0EN_bm | TCA_SINGLE_CMP1EN_bm | TCA_SINGLE_WGMODE_DSBOTTOM_gc;
     TCA0.SINGLE.PER = 255;
     TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc | TCA_SINGLE_ENABLE_bm;
 }

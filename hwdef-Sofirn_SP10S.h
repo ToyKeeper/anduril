@@ -83,8 +83,8 @@ ATTINY1616 Mapping:
 // ... so just hardcode it in each hwdef file instead
 inline void hwdef_setup() {
 
-    // set up the system clock to run at 5 MHz instead of the default 3.33 MHz
-    _PROTECTED_WRITE( CLKCTRL.MCLKCTRLB, CLKCTRL_PDIV_4X_gc | CLKCTRL_PEN_bm );
+    // set up the system clock to run at 10 MHz instead of the default 3.33 MHz
+    _PROTECTED_WRITE( CLKCTRL.MCLKCTRLB, CLKCTRL_PDIV_2X_gc | CLKCTRL_PEN_bm );
 
     VPORTA.DIR = PIN1_bm;  // Boost enable pin
     VPORTB.DIR = PIN0_bm | PIN5_bm;  // PWM pins as output
@@ -113,9 +113,15 @@ inline void hwdef_setup() {
     PORTC.PIN3CTRL = PORT_PULLUPEN_bm;
 
     // set up the PWM
-    // TODO: add references to MCU documentation
+    // https://ww1.microchip.com/downloads/en/DeviceDoc/ATtiny1614-16-17-DataSheet-DS40002204A.pdf
+    // PB0 is TCA0:WO0, use TCA_SINGLE_CMP0EN_bm
+    // PB1 is TCA0:WO1, use TCA_SINGLE_CMP1EN_bm
+    // PB2 is TCA0:WO2, use TCA_SINGLE_CMP2EN_bm
+    // For Fast (Single Slope) PWM use TCA_SINGLE_WGMODE_SINGLESLOPE_gc
+    // For Phase Correct (Dual Slope) PWM use TCA_SINGLE_WGMODE_DSBOTTOM_gc
+    // See the manual for other pins, clocks, configs, portmux, etc
     PORTMUX.CTRLC = PORTMUX_TCA02_ALTERNATE_gc;  // Use alternate pin for TCA0:WO2
-    TCA0.SINGLE.CTRLB = TCA_SINGLE_CMP0EN_bm | TCA_SINGLE_CMP2EN_bm | TCA_SINGLE_WGMODE_SINGLESLOPE_gc;
+    TCA0.SINGLE.CTRLB = TCA_SINGLE_CMP0EN_bm | TCA_SINGLE_CMP2EN_bm | TCA_SINGLE_WGMODE_DSBOTTOM_gc;
     TCA0.SINGLE.PER = 255;
     TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc | TCA_SINGLE_ENABLE_bm;
 }

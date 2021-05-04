@@ -44,8 +44,12 @@ void factory_reset() {
     // explode, if button pressed long enough
     if (reset) {
         #ifdef USE_THERMAL_REGULATION
+        #ifdef AVRXMEGA3 // AVR 1-Series has factory calibrated thermal sensor, remove the offset
+        thermal_config_save(1,temperature - therm_cal_offset); // this will cancel out the offset
+        #else
         // auto-calibrate temperature...  assume current temperature is 21 C
         thermal_config_save(1, 21);
+        #endif // AVRXMEGA3
         #endif
         // save all settings to eeprom
         // (assuming they're all at default because we haven't loaded them yet)
