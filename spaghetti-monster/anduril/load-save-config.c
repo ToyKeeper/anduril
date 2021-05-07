@@ -34,13 +34,16 @@ void load_config() {
         ramp_stepss[1] = eeprom[ramp_discrete_steps_e];
         #endif
         #ifdef USE_MANUAL_MEMORY
-        manual_memory = eeprom[manual_memory_e];
-        #ifdef USE_MANUAL_MEMORY_TIMER
-        manual_memory_timer = eeprom[manual_memory_timer_e];
-        #endif
+            manual_memory = eeprom[manual_memory_e];
+            #ifdef USE_MANUAL_MEMORY_TIMER
+                manual_memory_timer = eeprom[manual_memory_timer_e];
+            #endif
+            #ifdef USE_TINT_RAMPING
+                manual_memory_tint = eeprom[manual_memory_tint_e];
+            #endif
         #endif
         #ifdef USE_TINT_RAMPING
-        tint = eeprom[tint_e];
+            tint = eeprom[tint_e];
         #endif
         #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
         strobe_type = eeprom[strobe_type_e];  // TODO: move this to eeprom_wl?
@@ -94,13 +97,16 @@ void save_config() {
     eeprom[ramp_discrete_steps_e] = ramp_stepss[1];
     #endif
     #ifdef USE_MANUAL_MEMORY
-    eeprom[manual_memory_e] = manual_memory;
-    #ifdef USE_MANUAL_MEMORY_TIMER
-    eeprom[manual_memory_timer_e] = manual_memory_timer;
-    #endif
+        eeprom[manual_memory_e] = manual_memory;
+        #ifdef USE_MANUAL_MEMORY_TIMER
+            eeprom[manual_memory_timer_e] = manual_memory_timer;
+        #endif
+        #ifdef USE_TINT_RAMPING
+            eeprom[manual_memory_tint_e] = manual_memory_tint;
+        #endif
     #endif
     #ifdef USE_TINT_RAMPING
-    eeprom[tint_e] = tint;
+        eeprom[tint_e] = tint;
     #endif
     #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
     eeprom[strobe_type_e] = strobe_type;  // TODO: move this to eeprom_wl?

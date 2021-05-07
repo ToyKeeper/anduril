@@ -20,6 +20,10 @@
 #ifndef TINT_RAMPING_H
 #define TINT_RAMPING_H
 
+#ifdef USE_MANUAL_MEMORY
+uint8_t manual_memory_tint;
+#endif
+
 // not actually a mode, more of a fallback under other modes
 uint8_t tint_ramping_state(Event event, uint16_t arg);
 
