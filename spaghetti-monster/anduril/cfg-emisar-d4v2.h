@@ -1,6 +1,7 @@
 // Emisar D4 config options for Anduril
 #define MODEL_NUMBER "0113"
 #include "hwdef-Emisar_D4v2.h"
+#include "hank-cfg.h"
 // ATTINY: 1634
 
 // this light has three aux LED channels: R, G, B
@@ -13,11 +14,6 @@
 #ifdef USE_INDICATOR_LED_WHILE_RAMPING
 #undef USE_INDICATOR_LED_WHILE_RAMPING
 #endif
-// enable blinking aux LEDs
-#define TICK_DURING_STANDBY
-#define STANDBY_TICK_SPEED 3  // every 0.128 s
-//#define STANDBY_TICK_SPEED 4  // every 0.256 s
-//#define STANDBY_TICK_SPEED 5  // every 0.512 s
 
 
 // copied from original D4, since it's also a FET+1 and has the same host

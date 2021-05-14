@@ -9,8 +9,6 @@
 #undef USE_AUX_RGB_LEDS
 // ... and no button LED
 #undef USE_BUTTON_LED
-// no aux LEDs means no need for sleep ticks
-#undef TICK_DURING_STANDBY
 
 // safe limit ~50% power
 #undef SIMPLE_UI_CEIL

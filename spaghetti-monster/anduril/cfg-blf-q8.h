@@ -6,10 +6,6 @@
 #define USE_INDICATOR_LED
 // the button is visible while main LEDs are on
 #define USE_INDICATOR_LED_WHILE_RAMPING
-// enable blinking indicator LED while off
-#define TICK_DURING_STANDBY
-#define STANDBY_TICK_SPEED 3  // every 0.128 s
-#define USE_FANCIER_BLINKING_INDICATOR
 // off mode: high (2)
 // lockout: blinking (3)
 #define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 2)
@@ -32,10 +28,13 @@
 #define RAMP_DISCRETE_CEIL RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 7
 
-// safe limit ~50% power
+// at Sofirn's request, use max (150) for the Simple UI ceiling
 #define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
-#define SIMPLE_UI_CEIL RAMP_DISCRETE_CEIL
+#define SIMPLE_UI_CEIL 150
 #define SIMPLE_UI_STEPS 5
+
+// also at Sofirn's request, enable 2 click turbo
+#define USE_2C_MAX_TURBO
 
 // stop panicking at ~75% power or ~3000 lm, this light has high thermal mass
 #define THERM_FASTER_LEVEL (RAMP_SIZE*9/10)  // throttle back faster when high

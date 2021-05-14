@@ -2,6 +2,7 @@
 #define MODEL_NUMBER "0251"
 // (originally known as Emisar D1S v2)
 #include "hwdef-Noctigon_K1.h"
+#include "hank-cfg.h"
 // ATTINY: 1634
 
 // this light can safely run a bit hotter than most
@@ -12,10 +13,6 @@
 #define USE_AUX_RGB_LEDS
 #define USE_AUX_RGB_LEDS_WHILE_ON
 #define USE_INDICATOR_LED_WHILE_RAMPING
-
-// enable blinking aux LEDs
-#define TICK_DURING_STANDBY
-#define STANDBY_TICK_SPEED 3  // every 0.128 s
 
 
 // ../../bin/level_calc.py cube 1 150 7135 1 4 1300

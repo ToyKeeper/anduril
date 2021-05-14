@@ -1,6 +1,7 @@
 // Emisar D4S config options for Anduril
 #define MODEL_NUMBER "0131"
 #include "hwdef-Emisar_D4S.h"
+#include "hank-cfg.h"
 
 // the button lights up
 #define USE_INDICATOR_LED
@@ -8,10 +9,6 @@
 #ifdef USE_INDICATOR_LED_WHILE_RAMPING
 #undef USE_INDICATOR_LED_WHILE_RAMPING
 #endif
-// enable blinking indicator LED while off
-#define TICK_DURING_STANDBY
-#define STANDBY_TICK_SPEED 3  // every 0.128 s
-#define USE_FANCIER_BLINKING_INDICATOR
 
 #ifdef RAMP_LENGTH
 #undef RAMP_LENGTH

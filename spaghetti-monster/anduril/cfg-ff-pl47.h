@@ -9,10 +9,7 @@
 #undef USE_INDICATOR_LED_WHILE_RAMPING
 #endif
 //#define USE_INDICATOR_LED_WHILE_RAMPING
-// enable blinking indicator LED while off?
-#define TICK_DURING_STANDBY
 
-// If TICK_DURING_STANDBY is enabled...
 // off mode: high (2)
 // lockout: blinking (3)
 #define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 2)
@@ -21,11 +18,6 @@
 // (but it does work on the switch LEDs)
 // Fireflies wants to skip aux LED mode 1 (low)
 #define INDICATOR_LED_SKIP_LOW
-
-// ... or if TICK_DURING_STANDBY is turned off:
-// off mode: high (2)
-// lockout: off (0)
-//#define INDICATOR_LED_DEFAULT_MODE ((0<<2) + 2)
 
 
 #define RAMP_LENGTH 150

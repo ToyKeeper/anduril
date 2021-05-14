@@ -32,13 +32,16 @@ typedef enum {
     ramp_discrete_steps_e,
     #endif
     #ifdef USE_MANUAL_MEMORY
-    manual_memory_e,
-    #ifdef USE_MANUAL_MEMORY_TIMER
-    manual_memory_timer_e,
-    #endif
+        manual_memory_e,
+        #ifdef USE_MANUAL_MEMORY_TIMER
+            manual_memory_timer_e,
+        #endif
+        #ifdef USE_TINT_RAMPING
+            manual_memory_tint_e,
+        #endif
     #endif
     #ifdef USE_TINT_RAMPING
-    tint_e,
+        tint_e,
     #endif
     #ifdef USE_STROBE_STATE
     strobe_type_e,

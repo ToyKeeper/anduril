@@ -1,6 +1,7 @@
 // Emisar D4 config options for Anduril
 #define MODEL_NUMBER "0111"
 #include "hwdef-Emisar_D4.h"
+#include "hank-cfg.h"
 
 // ../../bin/level_calc.py 1 65 7135 1 0.8 150
 // ... mixed with this:
