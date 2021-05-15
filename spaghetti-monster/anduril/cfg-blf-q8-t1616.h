@@ -37,6 +37,9 @@
 // also at Sofirn's request, enable 2 click turbo
 #define USE_2C_MAX_TURBO
 
+// Allow 3C in Simple UI for switching between smooth and stepped ramping
+#define USE_SIMPLE_UI_RAMPING_TOGGLE
+
 // stop panicking at ~75% power or ~3000 lm, this light has high thermal mass
 #define THERM_FASTER_LEVEL (RAMP_SIZE*9/10)  // throttle back faster when high
 

@@ -21,8 +21,20 @@
 #define RAMP_DISCRETE_CEIL RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 7
 
+// at Sofirn's request, use max (150) for the Simple UI ceiling
+#define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
+#define SIMPLE_UI_CEIL 150
+#define SIMPLE_UI_STEPS 5
+
+// also at Sofirn's request, enable 2 click turbo
+#define USE_2C_MAX_TURBO
+
+// Allow 3C in Simple UI for switching between smooth and stepped ramping
+#define USE_SIMPLE_UI_RAMPING_TOGGLE
+
+// and finally, set the default ramp style to Stepped
+#undef RAMP_STYLE
+#define RAMP_STYLE 1  // 0 = smooth, 1 = stepped
+
 // stop panicking at ~30% power
 #define THERM_FASTER_LEVEL 105
-
-// enable 2 click turbo
-#define USE_2C_MAX_TURBO

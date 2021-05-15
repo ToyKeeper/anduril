@@ -54,6 +54,9 @@
 #define RAMP_DISCRETE_CEIL  RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 5
 
+// Allow 3C in Simple UI for switching between smooth and stepped ramping
+#define USE_SIMPLE_UI_RAMPING_TOGGLE
+
 // LT1 can handle heat well, so don't limit simple mode
 #define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
 #define SIMPLE_UI_CEIL RAMP_DISCRETE_CEIL
