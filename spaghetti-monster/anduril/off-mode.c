@@ -27,11 +27,6 @@
 #endif
 
 uint8_t off_state(Event event, uint16_t arg) {
-    #ifdef USE_MANUAL_MEMORY_TIMER
-    // keep track of how long the light was off,
-    // so we can do different things on waking, depending on how long asleep
-    static uint16_t off_time = 0;
-    #endif
 
     // turn emitter off when entering state
     if (event == EV_enter_state) {
@@ -65,7 +60,14 @@ uint8_t off_state(Event event, uint16_t arg) {
     // blink the indicator LED, maybe
     else if (event == EV_sleep_tick) {
         #ifdef USE_MANUAL_MEMORY_TIMER
-        off_time = arg;
+        // reset to manual memory level when timer expires
+        if (manual_memory &&
+                (arg >= (manual_memory_timer * SLEEP_TICKS_PER_MINUTE))) {
+            memorized_level = manual_memory;
+            #ifdef USE_TINT_RAMPING
+            tint = manual_memory_tint;
+            #endif
+        }
         #endif
         #ifdef USE_INDICATOR_LED
         if ((indicator_led_mode & 0b00000011) == 0b00000011) {
@@ -126,18 +128,15 @@ uint8_t off_state(Event event, uint16_t arg) {
     #if (B_TIMING_ON != B_TIMEOUT_T)
     // 1 click (before timeout): go to memorized level, but allow abort for double click
     else if (event == EV_click1_release) {
-        #ifdef USE_MANUAL_MEMORY
-        // for full manual memory, set manual_memory_timer to 0
-        if (manual_memory
-            #ifdef USE_MANUAL_MEMORY_TIMER
-            && (off_time >= (manual_memory_timer * SLEEP_TICKS_PER_MINUTE))
-            #endif
-            ) {
+        #if defined(USE_MANUAL_MEMORY) && !defined(USE_MANUAL_MEMORY_TIMER)
+            // this clause probably isn't used by any configs any more
+            // but is included just in case someone configures it this way
+            if (manual_memory) {
+                memorized_level = manual_memory;
                 #ifdef USE_TINT_RAMPING
                 tint = manual_memory_tint;
                 #endif
-                set_level(nearest_level(manual_memory));
-        } else
+            }
         #endif
         set_level(nearest_level(memorized_level));
         return MISCHIEF_MANAGED;
