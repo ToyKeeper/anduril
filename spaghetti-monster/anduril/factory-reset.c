@@ -43,7 +43,7 @@ void factory_reset() {
     }
     // explode, if button pressed long enough
     if (reset) {
-        #ifdef USE_THERMAL_REGULATION
+        #if defined(USE_THERMAL_REGULATION) && defined(USE_THERM_AUTOCALIBRATE)
         // auto-calibrate temperature...  assume current temperature is 21 C
         thermal_config_save(1, 21);
         #endif
