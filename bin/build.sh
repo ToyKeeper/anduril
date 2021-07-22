@@ -12,9 +12,18 @@ fi
 export ATTINY=$1 ; shift
 export PROGRAM=$1 ; shift
 
-# path to the Atmel ATtiny device family pack:  (for attiny1616 support)
+# give a more useful error message when AVR DFP is needed but not installed
+# (Atmel ATtiny device family pack, for attiny1616 support)
 # http://packs.download.atmel.com/
-if [ -z "$ATTINY_DFP" ]; then export ATTINY_DFP=~/avr/attiny_dfp ; fi
+#if [ -z "$ATTINY_DFP" ]; then export ATTINY_DFP=~/avr/attiny_dfp ; fi
+SERIES1=' 416 417 816 817 1616 1617 3216 3217 '
+if [[ $SERIES1 =~ " $ATTINY " ]]; then
+  if [ -z "$ATTINY_DFP" ]; then
+    echo "ATtiny$ATTINY support requires Atmel attiny device family pack."
+    echo "More info is in /README under tiny1616 support."
+    exit 1
+  fi
+fi
 
 export MCU=attiny$ATTINY
 export CC=avr-gcc
