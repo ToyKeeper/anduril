@@ -1,5 +1,12 @@
 #!/bin/sh
 
+# Usage: build-all.sh [pattern]
+# If pattern given, only build targets which match.
+
+if [ ! -z "$1" ]; then
+  SEARCH="$1"
+fi
+
 UI=anduril
 
 date '+#define VERSION_NUMBER "%Y%m%d"' > version.h
@@ -10,6 +17,12 @@ PASSED=''
 FAILED=''
 
 for TARGET in cfg-*.h ; do
+
+  # maybe limit builds to a specific pattern
+  if [ ! -z "$SEARCH" ]; then
+    echo "$TARGET" | grep -i "$SEARCH" > /dev/null
+    if [ 0 != $? ]; then continue ; fi
+  fi
 
   # friendly name for this build
   NAME=$(echo "$TARGET" | perl -ne '/cfg-(.*).h/ && print "$1\n";')
