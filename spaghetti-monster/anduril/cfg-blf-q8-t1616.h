@@ -37,6 +37,10 @@
 // also at Sofirn's request, enable 2 click turbo
 #define USE_2C_MAX_TURBO
 
+// enable SOS in the blinkies group
+#define USE_SOS_MODE
+#define USE_SOS_MODE_IN_BLINKY_GROUP
+
 // Allow 3C in Simple UI for switching between smooth and stepped ramping
 #define USE_SIMPLE_UI_RAMPING_TOGGLE
 

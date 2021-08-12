@@ -1,28 +1,14 @@
-#ifndef HWDEF_SOFIRN_SP10S_H
-#define HWDEF_SOFIRN_SP10S_H
+#ifndef HWDEF_SOFIRN_SP10_H
+#define HWDEF_SOFIRN_SP10_H
 
-// TODO: rename to sofirn-sp10s-gchart?
-
-/* gChart's PIC12 to ATTINY1616 v1 adapter for the SP10S
-https://oshpark.com/shared_projects/b4IZEGSy
-
-PIC12 Pinout:
-1 - VDD
-2 - No Connect
-3 - Low Channel FET (series 4.7K Ohms)
-4 - Switch
-5 - High Channel FET (main PWM)
-6 - Voltage Divider (300K:100K Ohms)
-7 - Boost chip enable
-8 - GND
+/* Sofirn SP10 Pro pinout
 
 ATTINY1616 Mapping:
-2 - PA5 : (no connect)
-3 - PB5 : TCA0 - WO2 Alternate MUX
-4 - PB3 : (switch)
-5 - PB0 : TCA0 - WO0
-6 - PB4 : ADC0 - AIN9
-7 - PA1 : (boost enable)
+PB5 : PWM small channel (TCA0 - WO2 Alternate MUX)
+PB3 : eSwitch
+PB0 : PWM big channel (TCA0 - WO0)
+PB4 : Voltage divider (ADC0 - AIN9)
+PA1 : Boost Enable
 
 */
 
@@ -62,7 +48,7 @@ ATTINY1616 Mapping:
 
 #define USE_VOLTAGE_DIVIDER       // use a dedicated pin, not VCC, because VCC input is flattened
 #define DUAL_VOLTAGE_FLOOR    20  // for AA/14500 boost drivers, don't indicate low voltage if below this level
-#define DUAL_VOLTAGE_LOW_LOW  07  // the lower voltage range's danger zone 0.7 volts
+#define DUAL_VOLTAGE_LOW_LOW   9  // the lower voltage range's danger zone 0.9 volts (NiMH)
 #define ADMUX_VOLTAGE_DIVIDER ADC_MUXPOS_AIN9_gc  // which ADC channel to read
 
 // Raw ADC readings at 4.4V and 2.2V
@@ -107,7 +93,7 @@ inline void hwdef_setup() {
     //PORTB.PIN4CTRL = PORT_PULLUPEN_bm; // Voltage divider
     //PORTB.PIN5CTRL = PORT_PULLUPEN_bm; // Small PWM channel
 
-    //PORTC.PIN0CTRL = PORT_PULLUPEN_bm; connected to the ADC via airwire
+    PORTC.PIN0CTRL = PORT_PULLUPEN_bm;
     PORTC.PIN1CTRL = PORT_PULLUPEN_bm;
     PORTC.PIN2CTRL = PORT_PULLUPEN_bm;
     PORTC.PIN3CTRL = PORT_PULLUPEN_bm;
