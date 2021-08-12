@@ -62,6 +62,10 @@
 #define PWM2_PIN PA6        // pin 1, DD FET PWM
 #define PWM2_LVL OCR1B      // OCR1B is the output compare register for PA6
 
+// PWM parameters of both channels are tied together because they share a counter
+#define PWM1_TOP ICR1       // holds the TOP value for for variable-resolution PWM
+#define PWM2_TOP ICR1       // holds the TOP value for for variable-resolution PWM
+
 #define LED_ENABLE_PIN  PB0    // pin 19, Opamp power
 #define LED_ENABLE_PORT PORTB  // control port for PB0
 
@@ -131,13 +135,16 @@ inline void hwdef_setup() {
   // CS1[2:0]:    0,0,1: clk/1 (No prescaling) (DS table 12-6)
   // COM1A[1:0]:    1,0: PWM OC1A in the normal direction (DS table 12-4)
   // COM1B[1:0]:    1,0: PWM OC1B in the normal direction (DS table 12-4)
-  TCCR1A  = (1<<WGM11)  | (1<<WGM10)   // 10-bit (TOP=0x03FF) (DS table 12-5)
+  TCCR1A  = (1<<WGM11)  | (0<<WGM10)   // adjustable PWM (TOP=ICR1) (DS table 12-5)
           | (1<<COM1A1) | (0<<COM1A0)  // PWM 1A in normal direction (DS table 12-4)
           | (1<<COM1B1) | (0<<COM1B0)  // PWM 1B in normal direction (DS table 12-4)
           ;
   TCCR1B  = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
-          | (0<<WGM13)  | (0<<WGM12)  // phase-correct PWM (DS table 12-5)
+          | (1<<WGM13)  | (0<<WGM12)  // phase-correct adjustable PWM (DS table 12-5)
           ;
+
+  // set PWM resolution
+  PWM1_TOP = 1023;
 
   // set up e-switch
   //PORTB = (1 << SWITCH_PIN);  // TODO: configure PORTA / PORTB / PORTC?
