@@ -96,6 +96,12 @@ uint8_t off_state(Event event, uint16_t arg) {
     #if (B_TIMING_ON == B_PRESS_T)
     // hold (initially): go to lowest level (floor), but allow abort for regular click
     else if (event == EV_click1_press) {
+        #ifdef JUMP_START_MOON
+            if (!arg) {
+                set_level(JUMP_START_MOON);
+                delay_4ms(3);
+            }
+        #endif
         set_level(nearest_level(1));
         return MISCHIEF_MANAGED;
     }
@@ -110,6 +116,13 @@ uint8_t off_state(Event event, uint16_t arg) {
         } else
         #endif
         #else  // B_RELEASE_T or B_TIMEOUT_T
+            #ifdef JUMP_START_MOON
+                // pulse the output for a moment to wake up the power regulator
+                if (!arg) {
+                    set_level(JUMP_START_MOON);
+                    delay_4ms(3);
+                }
+            #endif
         set_level(nearest_level(1));
         #endif
         // don't start ramping immediately;
