@@ -25,7 +25,7 @@
 /* no longer used
 void blink_confirm(uint8_t num) {
     uint8_t brightness = actual_level;
-    uint8_t bump = actual_level + (MAX_LEVEL/6);
+    uint8_t bump = actual_level + BLINK_BRIGHTNESS;
     if (bump > MAX_LEVEL) bump = 0;
     for (; num>0; num--) {
         set_level(bump);
@@ -41,9 +41,12 @@ void blink_confirm(uint8_t num) {
 #ifndef BLINK_ONCE_TIME
 #define BLINK_ONCE_TIME 10
 #endif
+#ifndef BLINK_BRIGHTNESS
+#define BLINK_BRIGHTNESS (MAX_LEVEL/6)
+#endif
 void blink_once() {
     uint8_t brightness = actual_level;
-    uint8_t bump = brightness + (MAX_LEVEL/6);
+    uint8_t bump = brightness + BLINK_BRIGHTNESS;
     if (bump > MAX_LEVEL) bump = 0;
 
     set_level(bump);

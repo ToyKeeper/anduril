@@ -53,7 +53,9 @@ void gradual_tick();
 #define PWM_GET(x,y) pgm_read_byte(x+y)
 #else
 #define PWM_DATATYPE uint16_t
+#ifndef PWM_TOP
 #define PWM_TOP 1023  // 10 bits by default
+#endif
 // pointer plus 2*y bytes
 //#define PWM_GET(x,y) pgm_read_word(x+(2*y))
 // nope, the compiler was already doing the math correctly
@@ -72,6 +74,12 @@ PROGMEM const PWM_DATATYPE pwm3_levels[] = { PWM3_LEVELS };
 #endif
 #ifdef PWM4_LEVELS
 PROGMEM const PWM_DATATYPE pwm4_levels[] = { PWM4_LEVELS };
+#endif
+
+// pulse frequency modulation, a.k.a. dynamic PWM
+// (different ceiling / frequency at each ramp level)
+#ifdef USE_DYN_PWM
+PROGMEM const PWM_DATATYPE pwm_tops[] = { PWM_TOPS };
 #endif
 
 // default / example ramps
