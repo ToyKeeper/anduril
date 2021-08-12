@@ -16,9 +16,9 @@ dyn_pwm = False
 def main(args):
     """Calculates PWM levels for visually-linear steps.
     """
-    pwm_arg = str(max_pwm)
     cli_answers = []
     global max_pwm, max_pwms, dyn_pwm
+    pwm_arg = str(max_pwm)
 
     i = 0
     while i < len(args):

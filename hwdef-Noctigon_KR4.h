@@ -41,8 +41,9 @@
 #include <avr/io.h>
 
 #define PWM_CHANNELS 2
-#define PWM_BITS 10  // 0 to 1023 at 4 kHz, not 0 to 255 at 16 kHz
-#define PWM_TOP 1023
+#define PWM_BITS 16  // data type needs 16 bits, not 8
+#define PWM_TOP  255 // highest value used in top half of ramp
+#define USE_DYN_PWM  // dynamic frequency and speed
 
 #define SWITCH_PIN   PB2     // pin 17
 #define SWITCH_PCINT PCINT10 // pin 17 pin change interrupt
@@ -58,13 +59,13 @@
 
 #define PWM1_PIN PB3        // pin 16, Opamp reference
 #define PWM1_LVL OCR1A      // OCR1A is the output compare register for PB3
+#define PWM1_CNT TCNT1      // for dynamic PWM, reset phase
 
 #define PWM2_PIN PA6        // pin 1, DD FET PWM
 #define PWM2_LVL OCR1B      // OCR1B is the output compare register for PA6
 
 // PWM parameters of both channels are tied together because they share a counter
 #define PWM1_TOP ICR1       // holds the TOP value for for variable-resolution PWM
-#define PWM2_TOP ICR1       // holds the TOP value for for variable-resolution PWM
 
 #define LED_ENABLE_PIN  PB0    // pin 19, Opamp power
 #define LED_ENABLE_PORT PORTB  // control port for PB0
@@ -144,7 +145,7 @@ inline void hwdef_setup() {
           ;
 
   // set PWM resolution
-  PWM1_TOP = 1023;
+  PWM1_TOP = PWM_TOP;
 
   // set up e-switch
   //PORTB = (1 << SWITCH_PIN);  // TODO: configure PORTA / PORTB / PORTC?

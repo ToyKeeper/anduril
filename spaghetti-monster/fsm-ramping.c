@@ -151,6 +151,32 @@ void set_level(uint8_t level) {
         #endif
 
         #endif  // ifdef USE_TINT_RAMPING
+
+        #ifdef USE_DYN_PWM
+            // pulse frequency modulation, a.k.a. dynamic PWM
+            PWM1_TOP = PWM_GET(pwm_tops, level);
+            #ifdef PMW2_TOP
+            PWM2_TOP = PWM_GET(pwm_tops, level);
+            #endif
+            #ifdef PMW3_TOP
+            PWM3_TOP = PWM_GET(pwm_tops, level);
+            #endif
+
+            // reset the phase, to avoid random long pulses
+            // see attiny1634 reference manual page 103 for a warning about
+            // the timing of changing the TOP value (section 12.8.4)
+            // (we don't care about being phase-correct, so the brute-force
+            //  approach can be used to reset it here)
+            #ifdef PWM1_CNT
+            PWM1_CNT = 0;
+            #endif
+            #ifdef PWM2_CNT
+            PWM2_CNT = 0;
+            #endif
+            #ifdef PWM3_CNT
+            PWM3_CNT = 0;
+            #endif
+        #endif
     }
     #endif  // ifdef OVERRIDE_SET_LEVEL
     #ifdef USE_DYNAMIC_UNDERCLOCKING
