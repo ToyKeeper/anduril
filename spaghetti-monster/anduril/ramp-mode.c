@@ -462,6 +462,9 @@ void manual_memory_timer_config_save(uint8_t step, uint8_t value) {
     // item 1: disable manual memory, go back to automatic
     if (step == 1) { manual_memory = 0; }
     // item 2: set manual memory timer duration
+    // FIXME: should be limited to (65535 / SLEEP_TICKS_PER_MINUTE)
+    //   to avoid overflows or impossibly long timeouts
+    //   (by default, the effective limit is 145, but it allows up to 255)
     else { manual_memory_timer = value; }
 }
 

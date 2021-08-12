@@ -182,13 +182,15 @@ Memory determines which brightness level the light goes to with 1 click
 from off.  There are three types of brightness memory to choose from:
 
   - Automatic:  Always uses the last-ramped brightness.
+    (does not memorize levels accessed by a shortcut,
+    like turbo, 2C for ceiling, or 1H-from-off for floor)
 
   - Manual:  Always uses the user's saved brightness.
 
   - Hybrid:  Uses the automatic memory brightness if the light was only 
     off for a short time, or resets to the manual memory level if it was 
     off for a longer time.
-    The timer for this is configurable from 0 to 255 minutes.
+    The timer for this is configurable from 0 to ~140 minutes.
 
 Another way to think of it is:  There are three styles of memory for the 
 last-ramped brightness level...
