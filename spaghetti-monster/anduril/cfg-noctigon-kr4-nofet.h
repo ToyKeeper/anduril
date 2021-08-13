@@ -54,7 +54,7 @@
 
 // jump start a bit higher than base driver
 #undef JUMP_START_MOON
-#define JUMP_START_MOON 25
+#define JUMP_START_MOON 36
 
 // stop panicking at ~1300 lm
 #undef THERM_FASTER_LEVEL
