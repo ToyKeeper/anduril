@@ -162,46 +162,52 @@ def multi_pwm(answers, channels):
             elif goal_lm > channel.prev_lm:
                 # assume 7135 channels all add together
                 if channel.type == '7135':
-                    diff = channel.lm_max - channel.lm_min
+                    lm_avail = channel.lm_max - channel.lm_min
                 # assume FET channel gets higher output on its own
                 elif channel.type == 'FET':
-                    diff = channel.lm_max - channel.prev_lm - channel.lm_min
+                    lm_avail = channel.lm_max - channel.prev_lm - channel.lm_min
 
-                needed = goal_lm - channel.prev_lm - channel.lm_min
+                lm_needed = goal_lm - channel.prev_lm - channel.lm_min
 
-                ceil = max_pwms[i]
-                ratio = needed / diff * (ceil-channel.pwm_min)
-                # if there's wiggle room, adjust ceiling to reduce error
-                #if dyn_pwm:
-                #    this_step = max(1, math.floor(ratio))
-                #    next_step = this_step + 0.5
-                #    limit = float(this_step) / next_step * ceil
-                #    limit = max(limit, max_pwm)
-                #while (ceil > limit) and ((ratio - math.floor(ratio)) > 0.1):
-                #    ceil -= 1
-                #    ratio = needed / diff * (ceil-channel.pwm_min)
-                #    max_pwms[i] = ceil
-                if dyn_pwm and (ceil > max_pwm):
-                    this_step = max(1, math.floor(ratio))
+                pwm_top = max_pwms[i]
+                pwm_avail = pwm_top - channel.pwm_min
+                pwm_needed = pwm_avail * lm_needed / lm_avail
+                if dyn_pwm and (pwm_top > max_pwm):
+                    this_step = max(1, math.floor(pwm_needed))
                     next_step = this_step + 1
-                    fpart = ratio - math.floor(ratio)
+                    fpart = pwm_needed - math.floor(pwm_needed)
                     correction = (next_step - fpart) / next_step
-                    ceil = int(ceil * correction)
-                    ratio = needed / diff * (ceil-channel.pwm_min)
-                    max_pwms[i] = ceil
+                    pwm_top = int(pwm_avail * correction) + channel.pwm_min
+                    pwm_avail = pwm_top - channel.pwm_min
+                    pwm_needed = pwm_avail * lm_needed / lm_avail
+                    max_pwms[i] = pwm_top
                 # save the result
-                pwm = max(0, ratio + channel.pwm_min)
+                pwm = max(0, pwm_needed + channel.pwm_min)
                 channel.modes.append(pwm)
+                # how close did we get?
+                #ptop = int(round(pwm - channel.pwm_min))
+                #pbot = pwm_top - channel.pwm_min
+                #print('%.3f%% needed, %.3f%% actual' % (
+                #    100.0 * lm_needed / lm_avail,
+                #    100.0 * ptop / pbot,
+                #    ))
             # This channel isn't active yet, output too low
             else:
                 channel.modes.append(0)
 
     # Show individual levels in detail
+    prev_ratios = [0.0] * len(channels)
     for i in range(answers.num_levels):
         goal_vis, goal_lm = goals[i]
         pwms = []
-        for channel in channels:
-            pwms.append('%.2f/%i' % (channel.modes[i], max_pwms[i]))
+        for c, channel in enumerate(channels):
+            top = channel.modes[i] - channel.pwm_min
+            bot = max_pwms[i] - channel.pwm_min
+            ratio = 100 * (int(round(top)) / float(bot))
+            pwms.append('%.2f/%i (%.3f%%)' % (top, bot, ratio))
+            if ratio < prev_ratios[c]:
+                pwms.append('WARN')
+            prev_ratios[c] = ratio
         print('%i: visually %.2f (%.2f lm): %s' % 
               (i+1, goal_vis, goal_lm, ', '.join(pwms)))
 
