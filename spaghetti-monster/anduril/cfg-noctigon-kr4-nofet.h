@@ -31,10 +31,10 @@
 #undef RAMP_DISCRETE_CEIL
 #undef RAMP_DISCRETE_STEPS
 
-#define RAMP_SMOOTH_FLOOR 1  // level 1 may be unreliable
+#define RAMP_SMOOTH_FLOOR 11  // low levels may be unreliable
 #define RAMP_SMOOTH_CEIL  130
-// 10, 30, [50], 70, 90, 110, 130  (plus [150] on turbo)
-#define RAMP_DISCRETE_FLOOR 10
+// 11, 30, [50], 70, 90, 110, 130  (plus [150] on turbo)
+#define RAMP_DISCRETE_FLOOR 11
 #define RAMP_DISCRETE_CEIL  RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 7
 
@@ -54,7 +54,7 @@
 
 // jump start a bit higher than base driver
 #undef JUMP_START_MOON
-#define JUMP_START_MOON 36
+#define JUMP_START_MOON 31
 
 // stop panicking at ~1300 lm
 #undef THERM_FASTER_LEVEL

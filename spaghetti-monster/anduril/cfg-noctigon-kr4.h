@@ -43,10 +43,10 @@
 #define HALFSPEED_LEVEL 12
 #define QUARTERSPEED_LEVEL 4
 
-#define RAMP_SMOOTH_FLOOR 3  // level 1 may be unreliable
+#define RAMP_SMOOTH_FLOOR 11  // low levels may be unreliable
 #define RAMP_SMOOTH_CEIL  130
-// 10 30 [50] 70 90 110 [130]
-#define RAMP_DISCRETE_FLOOR 10
+// 11 30 [50] 70 90 110 [130]
+#define RAMP_DISCRETE_FLOOR 11
 #define RAMP_DISCRETE_CEIL  RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 7
 
@@ -69,7 +69,7 @@
 #define THERM_CAL_OFFSET 5
 
 // the power regulator is a bit slow, so push it harder for a quick response from off
-#define JUMP_START_MOON 31
+#define JUMP_START_MOON 26
 #define BLINK_BRIGHTNESS DEFAULT_LEVEL
 #define BLINK_ONCE_TIME 12
 
