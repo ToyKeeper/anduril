@@ -202,10 +202,12 @@ def multi_pwm(answers, channels):
         pwms = []
         for c, channel in enumerate(channels):
             top = channel.modes[i] - channel.pwm_min
+            if top < 0: top = 0
             bot = max_pwms[i] - channel.pwm_min
             ratio = 100 * (int(round(top)) / float(bot))
+            top, bot = channel.modes[i], max_pwms[i]
             pwms.append('%.2f/%i (%.3f%%)' % (top, bot, ratio))
-            if ratio < prev_ratios[c]:
+            if (ratio < prev_ratios[c]) and (ratio > 0):
                 pwms.append('WARN')
             prev_ratios[c] = ratio
         print('%i: visually %.2f (%.2f lm): %s' % 
