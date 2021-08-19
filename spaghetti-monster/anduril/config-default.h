@@ -37,7 +37,19 @@
 // overheat protection
 #define USE_THERMAL_REGULATION
 #define DEFAULT_THERM_CEIL 45  // try not to get hotter than this (in C)
-
+// Comment out to disable automatic calibration on factory reset
+//   - If so, be sure to set THERM_CAL_OFFSET to the correct calibration offset
+//   - Calibration can still be overridden in temperature check mode
+// Or uncomment to use the default auto-calibrate on factory reset
+//
+// To determine THERM_CAL_OFFSET, comment out USE_THERM_AUTOCALIBRATE to
+// disable auto-calibration, compile and flash, let flashlight rest at a known
+// temperature, then enter temp check mode (do NOT enter calibration mode).
+//
+// THERM_CAL_OFFSET = known_temperature - temp_check_blinks + THERM_CAL_OFFSET
+//
+// (include THERM_CAL_OFFSET in sum as it might already be a non-zero number)
+#define USE_THERM_AUTOCALIBRATE
 
 // Include a simplified UI for non-enthusiasts?
 #define USE_SIMPLE_UI
