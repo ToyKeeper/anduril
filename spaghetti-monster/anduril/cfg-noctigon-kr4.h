@@ -43,10 +43,10 @@
 #define HALFSPEED_LEVEL 12
 #define QUARTERSPEED_LEVEL 4
 
-#define RAMP_SMOOTH_FLOOR 3  // level 1 may be unreliable
+#define RAMP_SMOOTH_FLOOR 11  // low levels may be unreliable
 #define RAMP_SMOOTH_CEIL  130
-// 10 30 [50] 70 90 110 [130]
-#define RAMP_DISCRETE_FLOOR 10
+// 11 30 [50] 70 90 110 [130]
+#define RAMP_DISCRETE_FLOOR 11
 #define RAMP_DISCRETE_CEIL  RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 7
 
@@ -58,8 +58,9 @@
 // stop panicking at ~1300 lm
 #define THERM_FASTER_LEVEL 120
 #define MIN_THERM_STEPDOWN 66  // must be > end of dynamic PWM range
-#define THERM_NEXT_WARNING_THRESHOLD 16  // accumulate less error before adjusting
-#define THERM_RESPONSE_MAGNITUDE 128  // bigger adjustments
+// no longer needed, after switching to dynamic PWM
+//#define THERM_NEXT_WARNING_THRESHOLD 16  // accumulate less error before adjusting
+//#define THERM_RESPONSE_MAGNITUDE 128  // bigger adjustments
 
 // slow down party strobe; this driver can't pulse for 1ms or less
 // (only needed on no-FET build)
@@ -68,7 +69,7 @@
 #define THERM_CAL_OFFSET 5
 
 // the power regulator is a bit slow, so push it harder for a quick response from off
-#define JUMP_START_MOON 25
+#define JUMP_START_MOON 26
 #define BLINK_BRIGHTNESS DEFAULT_LEVEL
 #define BLINK_ONCE_TIME 12
 
