@@ -639,6 +639,31 @@ when the main emitters are on, and when the light is otherwise awake.
 The aux LEDs on most lights only turn on when the light is asleep.
 
 
+Global Config Menu
+------------------
+
+Some models may have an extra config menu for settings which don't fit 
+anywhere else.  These settings are, in order:
+
+  - 2C style:  (not yet implemented)
+
+    1: 2C goes to turbo         (Anduril V1 style)
+    2: 2C goes to ramp ceiling  (Anduril V2 style)
+
+  - Jump Start level:
+
+    Some lights are prone to starting up slowly at low levels, so they 
+    have an option to "jump start" the engine by pulsing a higher power 
+    level for a few milliseconds when changing from off to a low level.  
+    This setting specifies how bright that pulse should be.
+
+    The value can be from 1 to 150, but is usually between 10 and 30.
+
+Some settings are hardware-specific and may not be present on all 
+lights.  The number of settings in the global menu depends on the 
+hardware model and the firmware version.
+
+
 Tint Ramping
 ------------
 
@@ -680,6 +705,7 @@ Off		Any	4C	Lockout mode
 Off		Full	5C	Momentary mode
 Off		Full	7C	Aux LEDs: Next pattern
 Off		Full	7H	Aux LEDs: Next color
+Off		Full	9H	Global config menu
 Off		Full	10C	Enable Simple UI
 Off		Simple	10H	Disable Simple UI
 Off		Full	10H	Simple UI ramp config menu (1: floor, 2: ceiling, [3: steps])
