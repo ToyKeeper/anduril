@@ -473,6 +473,24 @@ uint8_t manual_memory_timer_config_state(Event event, uint16_t arg) {
 }
 #endif
 
+#ifdef USE_GLOBALS_CONFIG
+void globals_config_save(uint8_t step, uint8_t value) {
+    if (0) {}
+    #ifdef USE_2C_STYLE_CONFIG
+    // TODO: make double-click style configurable (turbo or ceil)
+    else if (1 == step) {}
+    #endif
+    #ifdef JUMP_START_MOON
+    else { jump_start_moon = value; }
+    #endif
+}
+
+uint8_t globals_config_state(Event event, uint16_t arg) {
+    // TODO: set number of steps based on how many configurable options
+    return config_state_base(event, arg, 1, globals_config_save);
+}
+#endif
+
 // find the ramp level closest to the target,
 // using only the levels which are allowed in the current state
 uint8_t nearest_level(int16_t target) {
@@ -534,6 +552,12 @@ void set_level_and_therm_target(uint8_t level) {
 #define set_level_and_therm_target(level) set_level(level)
 #endif
 
+#ifdef JUMP_START_MOON
+void jump_start_func() {
+    set_level(jump_start_moon);
+    delay_4ms(3);
+}
+#endif
 
 #endif
 

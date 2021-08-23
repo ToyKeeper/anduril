@@ -41,5 +41,10 @@
 #define TICK_DURING_STANDBY
 #endif
 
+// include an extra config mode for random stuff which doesn't fit elsewhere
+#if defined(JUMP_START_MOON) || defined(USE_2C_STYLE_CONFIG)
+#define USE_GLOBALS_CONFIG
+#endif
+
 
 #endif

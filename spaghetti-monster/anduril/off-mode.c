@@ -98,8 +98,7 @@ uint8_t off_state(Event event, uint16_t arg) {
     else if (event == EV_click1_press) {
         #ifdef JUMP_START_MOON
             if (!arg) {
-                set_level(JUMP_START_MOON);
-                delay_4ms(3);
+                jump_start_func();
             }
         #endif
         set_level(nearest_level(1));
@@ -119,8 +118,7 @@ uint8_t off_state(Event event, uint16_t arg) {
             #ifdef JUMP_START_MOON
                 // pulse the output for a moment to wake up the power regulator
                 if (!arg) {
-                    set_level(JUMP_START_MOON);
-                    delay_4ms(3);
+                    jump_start_func();
                 }
             #endif
         set_level(nearest_level(1));
@@ -150,6 +148,9 @@ uint8_t off_state(Event event, uint16_t arg) {
                 tint = manual_memory_tint;
                 #endif
             }
+        #endif
+        #ifdef JUMP_START_MOON
+            jump_start_func();
         #endif
         set_level(nearest_level(memorized_level));
         return MISCHIEF_MANAGED;
@@ -316,6 +317,14 @@ uint8_t off_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif  // end 7 clicks
+
+    #ifdef USE_GLOBALS_CONFIG
+    // 9 clicks, but hold last click: configure misc global settings
+    else if ((event == EV_click9_hold) && (!arg)) {
+        push_state(globals_config_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    #endif
     return EVENT_NOT_HANDLED;
 }
 
