@@ -53,8 +53,8 @@
 #define PARTY_STROBE_ONTIME 2
 
 // jump start a bit higher than base driver
-#undef JUMP_START_MOON
-#define JUMP_START_MOON 31
+#undef DEFAULT_JUMP_START_LEVEL
+#define DEFAULT_JUMP_START_LEVEL 25
 
 // stop panicking at ~1300 lm
 #undef THERM_FASTER_LEVEL

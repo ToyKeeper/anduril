@@ -192,11 +192,6 @@ uint8_t ramp_stepss[] = {
     };
 uint8_t ramp_discrete_step_size;  // don't set this
 
-#ifdef JUMP_START_MOON
-uint8_t jump_start_moon = JUMP_START_MOON;
-void jump_start_func();
-#endif
-
 #ifdef USE_GLOBALS_CONFIG
 void globals_config_save(uint8_t step, uint8_t value);
 uint8_t globals_config_state(Event event, uint16_t arg);

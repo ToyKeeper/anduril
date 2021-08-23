@@ -45,8 +45,8 @@ void load_config() {
         #ifdef USE_TINT_RAMPING
             tint = eeprom[tint_e];
         #endif
-        #ifdef JUMP_START_MOON
-            jump_start_moon = eeprom[jump_start_moon_e],
+        #ifdef USE_JUMP_START
+            jump_start_level = eeprom[jump_start_level_e],
         #endif
         #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
         strobe_type = eeprom[strobe_type_e];  // TODO: move this to eeprom_wl?
@@ -111,8 +111,8 @@ void save_config() {
     #ifdef USE_TINT_RAMPING
         eeprom[tint_e] = tint;
     #endif
-    #ifdef JUMP_START_MOON
-        eeprom[jump_start_moon_e] = jump_start_moon,
+    #ifdef USE_JUMP_START
+        eeprom[jump_start_level_e] = jump_start_level,
     #endif
     #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
     eeprom[strobe_type_e] = strobe_type;  // TODO: move this to eeprom_wl?

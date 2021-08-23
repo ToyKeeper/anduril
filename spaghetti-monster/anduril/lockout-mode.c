@@ -42,9 +42,6 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         } else {  // anything except second click
             if (ramp_floors[1] < lvl) lvl = ramp_floors[1];
         }
-        #ifdef JUMP_START_MOON
-        if (! actual_level) jump_start_func();
-        #endif
         set_level(lvl);
     }
     // button was released

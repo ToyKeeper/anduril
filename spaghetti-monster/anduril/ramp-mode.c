@@ -480,8 +480,8 @@ void globals_config_save(uint8_t step, uint8_t value) {
     // TODO: make double-click style configurable (turbo or ceil)
     else if (1 == step) {}
     #endif
-    #ifdef JUMP_START_MOON
-    else { jump_start_moon = value; }
+    #ifdef USE_JUMP_START
+    else { jump_start_level = value; }
     #endif
 }
 
@@ -552,12 +552,6 @@ void set_level_and_therm_target(uint8_t level) {
 #define set_level_and_therm_target(level) set_level(level)
 #endif
 
-#ifdef JUMP_START_MOON
-void jump_start_func() {
-    set_level(jump_start_moon);
-    delay_4ms(3);
-}
-#endif
 
 #endif
 
