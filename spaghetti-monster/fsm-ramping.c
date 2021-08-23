@@ -58,6 +58,11 @@ void set_level(uint8_t level) {
         set_level_override(level);
     #else
 
+    #ifdef PWM1_CNT
+    static uint8_t prev_level = 0;
+    uint8_t api_level = level;
+    #endif
+
     //TCCR0A = PHASE;
     if (level == 0) {
         #if PWM_CHANNELS >= 1
@@ -97,6 +102,7 @@ void set_level(uint8_t level) {
         LED2_ENABLE_PORT |= (1 << LED2_ENABLE_PIN);
         #endif
 
+        // PWM array index = level - 1
         level --;
 
         #ifdef USE_TINT_RAMPING
@@ -160,8 +166,10 @@ void set_level(uint8_t level) {
             //  goes all the way to 65535 before returning)
             // (see attiny1634 reference manual page 103 for a warning about
             //  the timing of changing the TOP value (section 12.8.4))
+            // (but don't wait when turning on from zero, because
+            //  it'll reset the phase below anyway)
             // to be safe, allow at least 64 cycles to update TOP
-            while(PWM1_CNT > (top - 64)) {}
+            while(prev_level && (PWM1_CNT > (top - 64))) {}
             #endif
             // pulse frequency modulation, a.k.a. dynamic PWM
             PWM1_TOP = top;
@@ -169,18 +177,34 @@ void set_level(uint8_t level) {
             // repeat for other channels if necessary
             #ifdef PMW2_TOP
                 #ifdef PWM2_CNT
-                while(PWM2_CNT > (top - 64)) {}
+                while(prev_level && (PWM2_CNT > (top - 64))) {}
                 #endif
                 PWM2_TOP = top;
             #endif
             #ifdef PMW3_TOP
                 #ifdef PWM3_CNT
-                while(PWM3_CNT > (top - 64)) {}
+                while(prev_level && (PWM3_CNT > (top - 64))) {}
                 #endif
                 PWM3_TOP = top;
             #endif
         #endif  // ifdef USE_DYN_PWM
+        #ifdef PWM1_CNT
+            // force reset phase when turning on from zero
+            // (because otherwise the initial response is inconsistent)
+            if (! prev_level) {
+                PWM1_CNT = 0;
+                #ifdef PWM2_CNT
+                PWM2_CNT = 0;
+                #endif
+                #ifdef PWM3_CNT
+                PWM3_CNT = 0;
+                #endif
+            }
+        #endif
     }
+    #ifdef PWM1_CNT
+    prev_level = api_level;
+    #endif
     #endif  // ifdef OVERRIDE_SET_LEVEL
     #ifdef USE_DYNAMIC_UNDERCLOCKING
     auto_clock_speed();
