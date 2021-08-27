@@ -78,17 +78,11 @@ uint8_t off_state(Event event, uint16_t arg) {
         #endif
 
         #ifdef USE_AUTOLOCK
-        // lock the light after being off for N minutes
-        #ifdef USE_SIMPLE_UI
-        if (! simple_ui_active) {  // no auto-lock in Simple UI
-        #endif
+            // lock the light after being off for N minutes
             uint16_t ticks = autolock_time * SLEEP_TICKS_PER_MINUTE;
             if ((autolock_time > 0)  && (arg > ticks)) {
                 set_state(lockout_state, 0);
             }
-        #ifdef USE_SIMPLE_UI
-        }
-        #endif
         #endif  // ifdef USE_AUTOLOCK
         return MISCHIEF_MANAGED;
     }
