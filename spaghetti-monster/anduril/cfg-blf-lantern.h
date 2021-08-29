@@ -62,6 +62,9 @@
 #define SIMPLE_UI_CEIL RAMP_DISCRETE_CEIL
 #define SIMPLE_UI_STEPS RAMP_DISCRETE_STEPS
 
+// also at Sofirn's request, enable 2 click turbo
+#define USE_2C_MAX_TURBO
+
 #define USE_SOS_MODE
 #define USE_SOS_MODE_IN_BLINKY_GROUP
 
