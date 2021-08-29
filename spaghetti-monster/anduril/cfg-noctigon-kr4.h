@@ -69,7 +69,7 @@
 #define THERM_CAL_OFFSET 5
 
 // the power regulator is a bit slow, so push it harder for a quick response from off
-#define JUMP_START_MOON 26
+#define DEFAULT_JUMP_START_LEVEL 21
 #define BLINK_BRIGHTNESS DEFAULT_LEVEL
 #define BLINK_ONCE_TIME 12
 

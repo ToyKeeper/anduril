@@ -78,17 +78,11 @@ uint8_t off_state(Event event, uint16_t arg) {
         #endif
 
         #ifdef USE_AUTOLOCK
-        // lock the light after being off for N minutes
-        #ifdef USE_SIMPLE_UI
-        if (! simple_ui_active) {  // no auto-lock in Simple UI
-        #endif
+            // lock the light after being off for N minutes
             uint16_t ticks = autolock_time * SLEEP_TICKS_PER_MINUTE;
             if ((autolock_time > 0)  && (arg > ticks)) {
                 set_state(lockout_state, 0);
             }
-        #ifdef USE_SIMPLE_UI
-        }
-        #endif
         #endif  // ifdef USE_AUTOLOCK
         return MISCHIEF_MANAGED;
     }
@@ -96,12 +90,6 @@ uint8_t off_state(Event event, uint16_t arg) {
     #if (B_TIMING_ON == B_PRESS_T)
     // hold (initially): go to lowest level (floor), but allow abort for regular click
     else if (event == EV_click1_press) {
-        #ifdef JUMP_START_MOON
-            if (!arg) {
-                set_level(JUMP_START_MOON);
-                delay_4ms(3);
-            }
-        #endif
         set_level(nearest_level(1));
         return MISCHIEF_MANAGED;
     }
@@ -116,13 +104,6 @@ uint8_t off_state(Event event, uint16_t arg) {
         } else
         #endif
         #else  // B_RELEASE_T or B_TIMEOUT_T
-            #ifdef JUMP_START_MOON
-                // pulse the output for a moment to wake up the power regulator
-                if (!arg) {
-                    set_level(JUMP_START_MOON);
-                    delay_4ms(3);
-                }
-            #endif
         set_level(nearest_level(1));
         #endif
         // don't start ramping immediately;
@@ -316,6 +297,14 @@ uint8_t off_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif  // end 7 clicks
+
+    #ifdef USE_GLOBALS_CONFIG
+    // 9 clicks, but hold last click: configure misc global settings
+    else if ((event == EV_click9_hold) && (!arg)) {
+        push_state(globals_config_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    #endif
     return EVENT_NOT_HANDLED;
 }
 

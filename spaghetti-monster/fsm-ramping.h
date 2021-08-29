@@ -82,6 +82,16 @@ PROGMEM const PWM_DATATYPE pwm4_levels[] = { PWM4_LEVELS };
 PROGMEM const PWM_DATATYPE pwm_tops[] = { PWM_TOPS };
 #endif
 
+#ifdef USE_JUMP_START
+#ifndef JUMP_START_TIME
+#define JUMP_START_TIME 8  // in ms, should be 4, 8, or 12
+#endif
+#ifndef DEFAULT_JUMP_START_LEVEL
+#define DEFAULT_JUMP_START_LEVEL 10
+#endif
+uint8_t jump_start_level = DEFAULT_JUMP_START_LEVEL;
+#endif
+
 // default / example ramps
 #ifndef PWM1_LEVELS
 #if PWM_CHANNELS == 1

@@ -41,5 +41,15 @@
 #define TICK_DURING_STANDBY
 #endif
 
+// ensure the jump start feature gets compiled in if needed
+#ifdef DEFAULT_JUMP_START_LEVEL
+#define USE_JUMP_START
+#endif
+
+// include an extra config mode for random stuff which doesn't fit elsewhere
+#if defined(USE_JUMP_START) || defined(USE_2C_STYLE_CONFIG)
+#define USE_GLOBALS_CONFIG
+#endif
+
 
 #endif

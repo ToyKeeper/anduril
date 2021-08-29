@@ -43,6 +43,9 @@ typedef enum {
     #ifdef USE_TINT_RAMPING
         tint_e,
     #endif
+    #ifdef USE_JUMP_START
+        jump_start_level_e,
+    #endif
     #ifdef USE_STROBE_STATE
     strobe_type_e,
     #endif
