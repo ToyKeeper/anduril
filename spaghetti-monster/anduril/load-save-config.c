@@ -42,8 +42,11 @@ void load_config() {
         ramp_stepss[2] = eeprom[simple_ui_steps_e];
         simple_ui_active = eeprom[simple_ui_active_e];
         #endif
-        #ifdef USE_RAMP_AFTER_MOON_OPTION
+        #ifdef USE_RAMP_AFTER_MOON_CONFIG
         dont_ramp_after_moon = eeprom[dont_ramp_after_moon_e];
+        #endif
+        #ifdef USE_2C_STYLE_CONFIG
+        ramp_2c_style = eeprom[ramp_2c_style_e];
         #endif
         #ifdef USE_MANUAL_MEMORY
             manual_memory = eeprom[manual_memory_e];
@@ -114,8 +117,11 @@ void save_config() {
     eeprom[simple_ui_steps_e] = ramp_stepss[2];
     eeprom[simple_ui_active_e] = simple_ui_active;
     #endif
-    #ifdef USE_RAMP_AFTER_MOON_OPTION
+    #ifdef USE_RAMP_AFTER_MOON_CONFIG
     eeprom[dont_ramp_after_moon_e] = dont_ramp_after_moon;
+    #endif
+    #ifdef USE_2C_STYLE_CONFIG
+    eeprom[ramp_2c_style_e] = ramp_2c_style;
     #endif
     #ifdef USE_MANUAL_MEMORY
         eeprom[manual_memory_e] = manual_memory;

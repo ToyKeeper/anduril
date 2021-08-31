@@ -127,7 +127,7 @@ uint8_t simple_ui_config_state(Event event, uint16_t arg);
 #endif
 #endif
 
-#if defined(USE_MANUAL_MEMORY_TIMER) || defined(USE_RAMP_AFTER_MOON_OPTION) || defined(USE_2C_STYLE_OPTION) || defined(USE_AUTO_SUNSET)
+#if defined(USE_MANUAL_MEMORY_TIMER) || defined(USE_RAMP_AFTER_MOON_CONFIG) || defined(USE_2C_STYLE_CONFIG) || defined(USE_AUTO_SUNSET)
 #define USE_RAMP_EXTRAS_CONFIG
 #endif
 #ifdef USE_RAMP_EXTRAS_CONFIG
@@ -171,10 +171,20 @@ uint8_t simple_ui_active = SIMPLE_UI_ACTIVE;
 #endif
 // smooth vs discrete ramping
 uint8_t ramp_style = RAMP_STYLE;  // 0 = smooth, 1 = discrete
+#ifdef USE_2C_STYLE_CONFIG
+#ifndef DEFAULT_2C_STYLE
+#define DEFAULT_2C_STYLE 2
+#endif
+uint8_t ramp_2c_style = DEFAULT_2C_STYLE;  // 1 = A1 style, 2 = A2 style
+#ifdef USE_2C_MAX_TURBO
+#error Cannot use USE_2C_MAX_TURBO and USE_2C_STYLE_CONFIG at the same time.
+#endif
+#endif
+
 #ifdef USE_RAMP_SPEED_CONFIG
 #define ramp_speed (ramp_stepss[0])
 #endif
-#ifdef USE_RAMP_AFTER_MOON_OPTION
+#ifdef USE_RAMP_AFTER_MOON_CONFIG
 #ifndef DEFAULT_DONT_RAMP_AFTER_MOON
 #define DEFAULT_DONT_RAMP_AFTER_MOON 0
 #endif

@@ -101,7 +101,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
     // 2 clicks: go to/from highest level
     else if (event == EV_2clicks) {
         uint8_t turbo_level;
-        #ifdef USE_2C_MAX_TURBO
+        #ifdef USE_2C_MAX_TURBO  // Anduril 1 style always
             // simple UI: to/from ceiling
             // full UI: to/from turbo (Anduril1 behavior)
             #ifdef USE_SIMPLE_UI
@@ -109,7 +109,18 @@ uint8_t steady_state(Event event, uint16_t arg) {
             else
             #endif
             turbo_level = MAX_LEVEL;
-        #else
+        #elif defined(USE_2C_STYLE_CONFIG)  // user can choose A1 style or A2 style
+            #ifdef USE_SIMPLE_UI
+            // no turbo in simple UI yet (needs its own config)
+            if (simple_ui_active) turbo_level = mode_max;
+            else
+            #endif
+            if (ramp_2c_style <= 1) turbo_level = MAX_LEVEL;
+            else {
+                if (memorized_level < mode_max) { turbo_level = mode_max; }
+                else { turbo_level = MAX_LEVEL; }
+            }
+        #else  // Anduril 2 style always
             // simple UI: to/from ceiling
             // full UI: to/from ceiling if mem < ceiling,
             //          or to/from turbo if mem >= ceiling
@@ -492,7 +503,7 @@ void ramp_extras_config_save(uint8_t step, uint8_t value) {
     else if (2 == step) { manual_memory_timer = value; }
     #endif
 
-    #ifdef USE_RAMP_AFTER_MOON_OPTION
+    #ifdef USE_RAMP_AFTER_MOON_CONFIG
     // item 3: ramp up after hold-from-off for moon?
     // 0 = yes, ramp after moon
     // 1+ = no, stay at moon
@@ -500,20 +511,25 @@ void ramp_extras_config_save(uint8_t step, uint8_t value) {
         dont_ramp_after_moon = value;
     }
     #endif
+
+    #ifdef USE_2C_STYLE_CONFIG
+    // item 4: Anduril 1 2C turbo, or Anduril 2 2C ceiling?
+    // 1 = Anduril 1, 2C turbo
+    // 2+ = Anduril 2, 2C ceiling
+    else if (4 == step) {
+        if (value) ramp_2c_style = value;
+    }
+    #endif
 }
 
 uint8_t ramp_extras_config_state(Event event, uint16_t arg) {
-    return config_state_base(event, arg, 3, ramp_extras_config_save);
+    return config_state_base(event, arg, 4, ramp_extras_config_save);
 }
 #endif
 
 #ifdef USE_GLOBALS_CONFIG
 void globals_config_save(uint8_t step, uint8_t value) {
     if (0) {}
-    #ifdef USE_2C_STYLE_CONFIG
-    // TODO: make double-click style configurable (turbo or ceil)
-    else if (1 == step) {}
-    #endif
     #ifdef USE_JUMP_START
     else { jump_start_level = value; }
     #endif

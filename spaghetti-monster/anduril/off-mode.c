@@ -106,7 +106,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         #else  // B_RELEASE_T or B_TIMEOUT_T
         set_level(nearest_level(1));
         #endif
-        #ifdef USE_RAMP_AFTER_MOON_OPTION
+        #ifdef USE_RAMP_AFTER_MOON_CONFIG
         if (dont_ramp_after_moon) {
             return MISCHIEF_MANAGED;
         }

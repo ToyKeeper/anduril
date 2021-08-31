@@ -72,7 +72,7 @@
 #define USE_RAMP_SPEED_CONFIG
 
 // add runtime option for whether hold-from-off should ramp or stay at moon
-#define USE_RAMP_AFTER_MOON_OPTION
+#define USE_RAMP_AFTER_MOON_CONFIG
 
 // short blip when crossing from "click" to "hold" from off
 // (helps the user hit moon mode exactly, instead of holding too long
@@ -90,6 +90,9 @@
 //   - Ramp 2C goes to ceiling, unless already at ceiling or in simple UI.
 //     (Advanced UI ceiling 2C goes to turbo)
 //#define USE_2C_MAX_TURBO
+// Or uncomment to let the user decide which style they want:
+#define USE_2C_STYLE_CONFIG
+//#define DEFAULT_2C_STYLE 2  // default to Anduril 2 style
 
 // make the ramps configurable by the user
 #define USE_RAMP_CONFIG
