@@ -92,6 +92,10 @@
 //#define USE_2C_MAX_TURBO
 // Or uncomment to let the user decide which style they want:
 #define USE_2C_STYLE_CONFIG
+// 0 = no turbo
+// 1 = A1 style: Off 2C = ceil, On 2C = turbo
+// 2 = A2 style: Off 2C = ceil, On 2C = ceil, Ramped ceil 2C = turbo
+// All styles allow momentary turbo in advanced UI
 //#define DEFAULT_2C_STYLE 2  // default to Anduril 2 style
 
 // make the ramps configurable by the user

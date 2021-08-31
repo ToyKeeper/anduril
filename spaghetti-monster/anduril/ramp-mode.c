@@ -115,7 +115,11 @@ uint8_t steady_state(Event event, uint16_t arg) {
             if (simple_ui_active) turbo_level = mode_max;
             else
             #endif
-            if (ramp_2c_style <= 1) turbo_level = MAX_LEVEL;
+            // 0 = no turbo
+            // 1 = Anduril 1 direct to turbo
+            // 2 = Anduril 2 direct to ceiling, or turbo if already at ceiling
+            if (0 == ramp_2c_style) turbo_level = mode_max;
+            else if (1 == ramp_2c_style) turbo_level = MAX_LEVEL;
             else {
                 if (memorized_level < mode_max) { turbo_level = mode_max; }
                 else { turbo_level = MAX_LEVEL; }
@@ -517,7 +521,7 @@ void ramp_extras_config_save(uint8_t step, uint8_t value) {
     // 1 = Anduril 1, 2C turbo
     // 2+ = Anduril 2, 2C ceiling
     else if (4 == step) {
-        if (value) ramp_2c_style = value;
+        ramp_2c_style = value;
     }
     #endif
 }
