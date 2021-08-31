@@ -29,9 +29,18 @@ void load_config() {
         #ifdef USE_RAMP_CONFIG
         ramp_floors[0] = eeprom[ramp_smooth_floor_e];
         ramp_ceils[0] = eeprom[ramp_smooth_ceil_e];
+        #ifdef USE_RAMP_SPEED_CONFIG
+        ramp_speed = eeprom[ramp_speed_e];
+        #endif
         ramp_floors[1] = eeprom[ramp_discrete_floor_e];
         ramp_ceils[1] = eeprom[ramp_discrete_ceil_e];
         ramp_stepss[1] = eeprom[ramp_discrete_steps_e];
+        #endif
+        #ifdef USE_SIMPLE_UI
+        ramp_floors[2] = eeprom[simple_ui_floor_e];
+        ramp_ceils[2] = eeprom[simple_ui_ceil_e];
+        ramp_stepss[2] = eeprom[simple_ui_steps_e];
+        simple_ui_active = eeprom[simple_ui_active_e];
         #endif
         #ifdef USE_MANUAL_MEMORY
             manual_memory = eeprom[manual_memory_e];
@@ -58,12 +67,6 @@ void load_config() {
         #endif
         #ifdef USE_BEACON_MODE
         beacon_seconds = eeprom[beacon_seconds_e];
-        #endif
-        #ifdef USE_SIMPLE_UI
-        simple_ui_active = eeprom[simple_ui_active_e];
-        ramp_floors[2] = eeprom[simple_ui_floor_e];
-        ramp_ceils[2] = eeprom[simple_ui_ceil_e];
-        ramp_stepss[2] = eeprom[simple_ui_steps_e];
         #endif
         #ifdef USE_THERMAL_REGULATION
         therm_ceil = eeprom[therm_ceil_e];
@@ -95,9 +98,18 @@ void save_config() {
     #ifdef USE_RAMP_CONFIG
     eeprom[ramp_smooth_floor_e] = ramp_floors[0];
     eeprom[ramp_smooth_ceil_e] = ramp_ceils[0];
+    #ifdef USE_RAMP_SPEED_CONFIG
+    eeprom[ramp_speed_e] = ramp_speed;
+    #endif
     eeprom[ramp_discrete_floor_e] = ramp_floors[1];
     eeprom[ramp_discrete_ceil_e] = ramp_ceils[1];
     eeprom[ramp_discrete_steps_e] = ramp_stepss[1];
+    #endif
+    #ifdef USE_SIMPLE_UI
+    eeprom[simple_ui_floor_e] = ramp_floors[2];
+    eeprom[simple_ui_ceil_e] = ramp_ceils[2];
+    eeprom[simple_ui_steps_e] = ramp_stepss[2];
+    eeprom[simple_ui_active_e] = simple_ui_active;
     #endif
     #ifdef USE_MANUAL_MEMORY
         eeprom[manual_memory_e] = manual_memory;
@@ -124,12 +136,6 @@ void save_config() {
     #endif
     #ifdef USE_BEACON_MODE
     eeprom[beacon_seconds_e] = beacon_seconds;
-    #endif
-    #ifdef USE_SIMPLE_UI
-    eeprom[simple_ui_active_e] = simple_ui_active;
-    eeprom[simple_ui_floor_e] = ramp_floors[2];
-    eeprom[simple_ui_ceil_e] = ramp_ceils[2];
-    eeprom[simple_ui_steps_e] = ramp_stepss[2];
     #endif
     #ifdef USE_THERMAL_REGULATION
     eeprom[therm_ceil_e] = therm_ceil;

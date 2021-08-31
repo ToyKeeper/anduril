@@ -75,6 +75,9 @@
 #ifndef RAMP_STYLE
 #define RAMP_STYLE 0  // smooth default
 #endif
+#ifndef DEFAULT_RAMP_SPEED
+#define DEFAULT_RAMP_SPEED 1  // WDT ticks per "frame", must be 1 or more
+#endif
 #ifndef RAMP_SMOOTH_FLOOR
   #define RAMP_SMOOTH_FLOOR 1
 #endif
@@ -165,6 +168,9 @@ uint8_t simple_ui_active = SIMPLE_UI_ACTIVE;
 #endif
 // smooth vs discrete ramping
 uint8_t ramp_style = RAMP_STYLE;  // 0 = smooth, 1 = discrete
+#ifdef USE_RAMP_SPEED_CONFIG
+#define ramp_speed (ramp_stepss[0])
+#endif
 // current values, regardless of style
 uint8_t ramp_floor = RAMP_SMOOTH_FLOOR;
 uint8_t ramp_ceil = RAMP_SMOOTH_CEIL;
@@ -184,7 +190,7 @@ uint8_t ramp_ceils[] = {
     #endif
     };
 uint8_t ramp_stepss[] = {
-    0,
+    DEFAULT_RAMP_SPEED,
     RAMP_DISCRETE_STEPS,
     #ifdef USE_SIMPLE_UI
     SIMPLE_UI_STEPS,

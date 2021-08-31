@@ -149,6 +149,12 @@ uint8_t steady_state(Event event, uint16_t arg) {
         if (ramp_style  &&  (arg % HOLD_TIMEOUT != 0)) {
             return MISCHIEF_MANAGED;
         }
+        #ifdef USE_RAMP_SPEED_CONFIG
+        // ramp slower if user configured things that way
+        if ((! ramp_style) && (arg % ramp_speed)) {
+            return MISCHIEF_MANAGED;
+        }
+        #endif
         // fix ramp direction on first frame if necessary
         if (!arg) {
             // click, hold should always go down if possible
@@ -160,12 +166,24 @@ uint8_t steady_state(Event event, uint16_t arg) {
             else if (actual_level <= mode_min) { ramp_direction = 1; }
         }
         // if the button is stuck, err on the side of safety and ramp down
-        else if ((arg > TICKS_PER_SECOND * 5) && (actual_level >= mode_max)) {
+        else if ((arg > TICKS_PER_SECOND * 5
+                    #ifdef USE_RAMP_SPEED_CONFIG
+                    // FIXME: count from time actual_level hits mode_max,
+                    //   not from beginning of button hold
+                    * ramp_speed
+                    #endif
+                    ) && (actual_level >= mode_max)) {
             ramp_direction = -1;
         }
         #ifdef USE_LOCKOUT_MODE
         // if the button is still stuck, lock the light
-        else if ((arg > TICKS_PER_SECOND * 10) && (actual_level <= mode_min)) {
+        else if ((arg > TICKS_PER_SECOND * 10
+                    #ifdef USE_RAMP_SPEED_CONFIG
+                    // FIXME: count from time actual_level hits mode_min,
+                    //   not from beginning of button hold
+                    * ramp_speed
+                    #endif
+                    ) && (actual_level <= mode_min)) {
             blink_once();
             set_state(lockout_state, 0);
         }
@@ -445,7 +463,11 @@ void ramp_config_save(uint8_t step, uint8_t value) {
 }
 
 uint8_t ramp_config_state(Event event, uint16_t arg) {
+    #ifdef USE_RAMP_SPEED_CONFIG
+    const uint8_t num_config_steps = 3;
+    #else
     uint8_t num_config_steps = ramp_style + 2;
+    #endif
     return config_state_base(event, arg,
                              num_config_steps, ramp_config_save);
 }
