@@ -106,6 +106,11 @@ uint8_t off_state(Event event, uint16_t arg) {
         #else  // B_RELEASE_T or B_TIMEOUT_T
         set_level(nearest_level(1));
         #endif
+        #ifdef USE_RAMP_AFTER_MOON_OPTION
+        if (dont_ramp_after_moon) {
+            return MISCHIEF_MANAGED;
+        }
+        #endif
         // don't start ramping immediately;
         // give the user time to release at moon level
         //if (arg >= HOLD_TIMEOUT) {  // smaller

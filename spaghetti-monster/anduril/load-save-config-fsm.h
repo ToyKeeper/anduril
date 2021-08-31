@@ -40,6 +40,9 @@ typedef enum {
     simple_ui_steps_e,
     simple_ui_active_e,
     #endif
+    #ifdef USE_RAMP_AFTER_MOON_OPTION
+    dont_ramp_after_moon_e,
+    #endif
     #ifdef USE_MANUAL_MEMORY
         manual_memory_e,
         #ifdef USE_MANUAL_MEMORY_TIMER

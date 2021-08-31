@@ -127,8 +127,11 @@ uint8_t simple_ui_config_state(Event event, uint16_t arg);
 #endif
 #endif
 
-#if defined(USE_MANUAL_MEMORY) && defined(USE_MANUAL_MEMORY_TIMER)
-uint8_t manual_memory_timer_config_state(Event event, uint16_t arg);
+#if defined(USE_MANUAL_MEMORY_TIMER) || defined(USE_RAMP_AFTER_MOON_OPTION) || defined(USE_2C_STYLE_OPTION) || defined(USE_AUTO_SUNSET)
+#define USE_RAMP_EXTRAS_CONFIG
+#endif
+#ifdef USE_RAMP_EXTRAS_CONFIG
+uint8_t ramp_extras_config_state(Event event, uint16_t arg);
 #endif
 
 // calculate the nearest ramp level which would be valid at the moment
@@ -170,6 +173,12 @@ uint8_t simple_ui_active = SIMPLE_UI_ACTIVE;
 uint8_t ramp_style = RAMP_STYLE;  // 0 = smooth, 1 = discrete
 #ifdef USE_RAMP_SPEED_CONFIG
 #define ramp_speed (ramp_stepss[0])
+#endif
+#ifdef USE_RAMP_AFTER_MOON_OPTION
+#ifndef DEFAULT_DONT_RAMP_AFTER_MOON
+#define DEFAULT_DONT_RAMP_AFTER_MOON 0
+#endif
+uint8_t dont_ramp_after_moon = DEFAULT_DONT_RAMP_AFTER_MOON;
 #endif
 // current values, regardless of style
 uint8_t ramp_floor = RAMP_SMOOTH_FLOOR;

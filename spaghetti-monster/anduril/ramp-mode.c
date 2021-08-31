@@ -419,9 +419,9 @@ uint8_t steady_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     else if (event == EV_click10_hold) {
-        #ifdef USE_MANUAL_MEMORY_TIMER
-        // let user configure timer for manual / hybrid memory
-        push_state(manual_memory_timer_config_state, 0);
+        #ifdef USE_RAMP_EXTRAS_CONFIG
+        // let user configure a bunch of extra ramp options
+        push_state(ramp_extras_config_state, 0);
         #else  // manual mem, but no timer
         // turn off manual memory; go back to automatic
         if (0 == arg) {
@@ -479,19 +479,31 @@ uint8_t simple_ui_config_state(Event event, uint16_t arg) {
 #endif
 #endif  // #ifdef USE_RAMP_CONFIG
 
-#ifdef USE_MANUAL_MEMORY_TIMER
-void manual_memory_timer_config_save(uint8_t step, uint8_t value) {
+#ifdef USE_RAMP_EXTRAS_CONFIG
+void ramp_extras_config_save(uint8_t step, uint8_t value) {
     // item 1: disable manual memory, go back to automatic
-    if (step == 1) { manual_memory = 0; }
+    if (1 == step) { manual_memory = 0; }
+
+    #ifdef USE_MANUAL_MEMORY_TIMER
     // item 2: set manual memory timer duration
     // FIXME: should be limited to (65535 / SLEEP_TICKS_PER_MINUTE)
     //   to avoid overflows or impossibly long timeouts
     //   (by default, the effective limit is 145, but it allows up to 255)
-    else { manual_memory_timer = value; }
+    else if (2 == step) { manual_memory_timer = value; }
+    #endif
+
+    #ifdef USE_RAMP_AFTER_MOON_OPTION
+    // item 3: ramp up after hold-from-off for moon?
+    // 0 = yes, ramp after moon
+    // 1+ = no, stay at moon
+    else if (3 == step) {
+        dont_ramp_after_moon = value;
+    }
+    #endif
 }
 
-uint8_t manual_memory_timer_config_state(Event event, uint16_t arg) {
-    return config_state_base(event, arg, 2, manual_memory_timer_config_save);
+uint8_t ramp_extras_config_state(Event event, uint16_t arg) {
+    return config_state_base(event, arg, 3, ramp_extras_config_save);
 }
 #endif
 

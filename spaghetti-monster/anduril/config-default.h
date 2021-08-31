@@ -71,6 +71,9 @@
 // smooth ramp speed: 1, 2, 3, 4, ...  for 1X speed, 1/2, 1/3rd, 1/4th, ...
 #define USE_RAMP_SPEED_CONFIG
 
+// add runtime option for whether hold-from-off should ramp or stay at moon
+#define USE_RAMP_AFTER_MOON_OPTION
+
 // short blip when crossing from "click" to "hold" from off
 // (helps the user hit moon mode exactly, instead of holding too long
 //  or too short)
