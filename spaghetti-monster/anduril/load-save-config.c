@@ -41,6 +41,9 @@ void load_config() {
         ramp_ceils[2] = eeprom[simple_ui_ceil_e];
         ramp_stepss[2] = eeprom[simple_ui_steps_e];
         simple_ui_active = eeprom[simple_ui_active_e];
+        #ifdef USE_2C_STYLE_CONFIG
+        ramp_2c_style_simple = eeprom[ramp_2c_style_simple_e];
+        #endif
         #endif
         #ifdef USE_RAMP_AFTER_MOON_CONFIG
         dont_ramp_after_moon = eeprom[dont_ramp_after_moon_e];
@@ -116,6 +119,9 @@ void save_config() {
     eeprom[simple_ui_ceil_e] = ramp_ceils[2];
     eeprom[simple_ui_steps_e] = ramp_stepss[2];
     eeprom[simple_ui_active_e] = simple_ui_active;
+    #ifdef USE_2C_STYLE_CONFIG
+    eeprom[ramp_2c_style_simple_e] = ramp_2c_style_simple;
+    #endif
     #endif
     #ifdef USE_RAMP_AFTER_MOON_CONFIG
     eeprom[dont_ramp_after_moon_e] = dont_ramp_after_moon;

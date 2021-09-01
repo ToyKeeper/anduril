@@ -39,6 +39,9 @@ typedef enum {
     simple_ui_ceil_e,
     simple_ui_steps_e,
     simple_ui_active_e,
+    #ifdef USE_2C_STYLE_CONFIG
+    ramp_2c_style_simple_e,
+    #endif
     #endif
     #ifdef USE_RAMP_AFTER_MOON_CONFIG
     dont_ramp_after_moon_e,

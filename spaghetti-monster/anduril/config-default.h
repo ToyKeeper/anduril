@@ -97,6 +97,7 @@
 // 2 = A2 style: Off 2C = ceil, On 2C = ceil, Ramped ceil 2C = turbo
 // All styles allow momentary turbo in advanced UI
 //#define DEFAULT_2C_STYLE 2  // default to Anduril 2 style
+//#define DEFAULT_2C_STYLE_SIMPLE 0  // no turbo at all
 
 // make the ramps configurable by the user
 #define USE_RAMP_CONFIG

@@ -155,14 +155,29 @@ uint8_t off_state(Event event, uint16_t arg) {
     }
     // click, hold: momentary at ceiling or turbo
     else if (event == EV_click2_hold) {
-        #ifdef USE_SIMPLE_UI
-        if (simple_ui_active) {
-            set_level(nearest_level(MAX_LEVEL));
-        } else
+        uint8_t turbo_level;  // how bright is "turbo"?
+
+        #if defined(USE_2C_STYLE_CONFIG)  // user can choose 2C behavior
+            uint8_t style_2c = ramp_2c_style;
+            #ifdef USE_SIMPLE_UI
+            // simple UI has its own turbo config
+            if (simple_ui_active) style_2c = ramp_2c_style_simple;
+            #endif
+            // 0  = ceiling
+            // 1+ = full power
+            if (0 == style_2c) turbo_level = nearest_level(MAX_LEVEL);
+            else turbo_level = MAX_LEVEL;
+        #else
+            // simple UI: ceiling
+            // full UI: full power
+            #ifdef USE_SIMPLE_UI
+            if (simple_ui_active) turbo_level = nearest_level(MAX_LEVEL);
+            else
+            #endif
+            turbo_level = MAX_LEVEL;
         #endif
-        {
-            set_level(MAX_LEVEL);
-        }
+
+        set_level(turbo_level);
         return MISCHIEF_MANAGED;
     }
     else if (event == EV_click2_hold_release) {

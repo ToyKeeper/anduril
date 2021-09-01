@@ -45,6 +45,43 @@ uint8_t steady_state(Event event, uint16_t arg) {
     if (ramp_style) { step_size = ramp_discrete_step_size; }
     else { step_size = 1; }
 
+    // how bright is "turbo"?
+    uint8_t turbo_level;
+    #if defined(USE_2C_STYLE_CONFIG)  // user can choose 2C behavior
+        uint8_t style_2c = ramp_2c_style;
+        #ifdef USE_SIMPLE_UI
+        // simple UI has its own turbo config
+        if (simple_ui_active) style_2c = ramp_2c_style_simple;
+        #endif
+        // 0 = no turbo
+        // 1 = Anduril 1 direct to turbo
+        // 2 = Anduril 2 direct to ceiling, or turbo if already at ceiling
+        if (0 == style_2c) turbo_level = mode_max;
+        else if (1 == style_2c) turbo_level = MAX_LEVEL;
+        else {
+            if (memorized_level < mode_max) { turbo_level = mode_max; }
+            else { turbo_level = MAX_LEVEL; }
+        }
+    #elif defined(USE_2C_MAX_TURBO)  // Anduril 1 style always
+        // simple UI: to/from ceiling
+        // full UI: to/from turbo (Anduril1 behavior)
+        #ifdef USE_SIMPLE_UI
+        if (simple_ui_active) turbo_level = mode_max;
+        else
+        #endif
+        turbo_level = MAX_LEVEL;
+    #else  // Anduril 2 style always
+        // simple UI: to/from ceiling
+        // full UI: to/from ceiling if mem < ceiling,
+        //          or to/from turbo if mem >= ceiling
+        if ((memorized_level < mode_max)
+            #ifdef USE_SIMPLE_UI
+            || simple_ui_active
+            #endif
+           ) { turbo_level = mode_max; }
+        else { turbo_level = MAX_LEVEL; }
+    #endif
+
     #ifdef USE_SUNSET_TIMER
     // handle the shutoff timer first
     static uint8_t timer_orig_level = 0;
@@ -100,42 +137,6 @@ uint8_t steady_state(Event event, uint16_t arg) {
     }
     // 2 clicks: go to/from highest level
     else if (event == EV_2clicks) {
-        uint8_t turbo_level;
-        #ifdef USE_2C_MAX_TURBO  // Anduril 1 style always
-            // simple UI: to/from ceiling
-            // full UI: to/from turbo (Anduril1 behavior)
-            #ifdef USE_SIMPLE_UI
-            if (simple_ui_active) turbo_level = mode_max;
-            else
-            #endif
-            turbo_level = MAX_LEVEL;
-        #elif defined(USE_2C_STYLE_CONFIG)  // user can choose A1 style or A2 style
-            #ifdef USE_SIMPLE_UI
-            // no turbo in simple UI yet (needs its own config)
-            if (simple_ui_active) turbo_level = mode_max;
-            else
-            #endif
-            // 0 = no turbo
-            // 1 = Anduril 1 direct to turbo
-            // 2 = Anduril 2 direct to ceiling, or turbo if already at ceiling
-            if (0 == ramp_2c_style) turbo_level = mode_max;
-            else if (1 == ramp_2c_style) turbo_level = MAX_LEVEL;
-            else {
-                if (memorized_level < mode_max) { turbo_level = mode_max; }
-                else { turbo_level = MAX_LEVEL; }
-            }
-        #else  // Anduril 2 style always
-            // simple UI: to/from ceiling
-            // full UI: to/from ceiling if mem < ceiling,
-            //          or to/from turbo if mem >= ceiling
-            if ((memorized_level < mode_max)
-                #ifdef USE_SIMPLE_UI
-                || simple_ui_active
-                #endif
-               ) { turbo_level = mode_max; }
-            else { turbo_level = MAX_LEVEL; }
-        #endif
-
         if (actual_level < turbo_level) {
             set_level_and_therm_target(turbo_level);
         }
@@ -395,7 +396,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
     // 3H: momentary turbo (on lights with no tint ramping)
     else if (event == EV_click3_hold) {
         if (! arg) {  // first frame only, to allow thermal regulation to work
-            set_level_and_therm_target(MAX_LEVEL);
+            set_level_and_therm_target(turbo_level);
         }
         return MISCHIEF_MANAGED;
     }
@@ -462,6 +463,15 @@ void ramp_config_save(uint8_t step, uint8_t value) {
     if (current_state == simple_ui_config_state)  style = 2;
     #endif
 
+    #if defined(USE_SIMPLE_UI) && defined(USE_2C_STYLE_CONFIG)
+    // simple UI config is weird...
+    // has some ramp extras after floor/ceil/steps
+    if (4 == step) {
+        ramp_2c_style_simple = value;
+    }
+    else
+    #endif
+
     // save adjusted value to the correct slot
     if (value) {
         // ceiling value is inverted
@@ -489,7 +499,14 @@ uint8_t ramp_config_state(Event event, uint16_t arg) {
 
 #ifdef USE_SIMPLE_UI
 uint8_t simple_ui_config_state(Event event, uint16_t arg) {
-    return config_state_base(event, arg, 3, ramp_config_save);
+    #if defined(USE_2C_STYLE_CONFIG)
+    #define SIMPLE_UI_NUM_MENU_ITEMS 4
+    #else
+    #define SIMPLE_UI_NUM_MENU_ITEMS 3
+    #endif
+    return config_state_base(event, arg,
+                             SIMPLE_UI_NUM_MENU_ITEMS,
+                             ramp_config_save);
 }
 #endif
 #endif  // #ifdef USE_RAMP_CONFIG

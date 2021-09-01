@@ -166,8 +166,14 @@ uint8_t manual_memory_timer = DEFAULT_MANUAL_MEMORY_TIMER;
 #endif
 #endif
 #ifdef USE_SIMPLE_UI
-// whether to enable the simplified interface or not
-uint8_t simple_ui_active = SIMPLE_UI_ACTIVE;
+    // whether to enable the simplified interface or not
+    uint8_t simple_ui_active = SIMPLE_UI_ACTIVE;
+    #ifdef USE_2C_STYLE_CONFIG
+        #ifndef DEFAULT_2C_STYLE_SIMPLE
+        #define DEFAULT_2C_STYLE_SIMPLE 0
+        #endif
+        uint8_t ramp_2c_style_simple = DEFAULT_2C_STYLE_SIMPLE;  // 0 = no turbo, 1 = A1 style, 2 = A2 style
+    #endif
 #endif
 // smooth vs discrete ramping
 uint8_t ramp_style = RAMP_STYLE;  // 0 = smooth, 1 = discrete
