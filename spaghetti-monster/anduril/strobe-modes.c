@@ -153,7 +153,7 @@ uint8_t strobe_state(Event event, uint16_t arg) {
     // clock tick: bump the random seed
     else if (event == EV_tick) {
         // un-reverse after 1 second
-        if (arg == TICKS_PER_SECOND) ramp_direction = 1;
+        if (arg == AUTO_REVERSE_TIME) ramp_direction = 1;
 
         pseudo_rand_seed += arg;
         return MISCHIEF_MANAGED;

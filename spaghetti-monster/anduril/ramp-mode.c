@@ -258,7 +258,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
 
     else if (event == EV_tick) {
         // un-reverse after 1 second
-        if (arg == TICKS_PER_SECOND) ramp_direction = 1;
+        if (arg == AUTO_REVERSE_TIME) ramp_direction = 1;
 
         #ifdef USE_SUNSET_TIMER
         // reduce output if shutoff timer is active
