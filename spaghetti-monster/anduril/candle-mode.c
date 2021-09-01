@@ -98,7 +98,7 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
     // clock tick: animate candle brightness
     else if (event == EV_tick) {
         // un-reverse after 1 second
-        if (arg == TICKS_PER_SECOND) ramp_direction = 1;
+        if (arg == AUTO_REVERSE_TIME) ramp_direction = 1;
 
         // 3-oscillator synth for a relatively organic pattern
         uint8_t add;

@@ -41,3 +41,5 @@
 #undef BLINK_AT_RAMP_MIDDLE
 #undef BLINK_AT_RAMP_CEIL
 
+// too big, remove stuff to make room
+#undef USE_RAMP_AFTER_MOON_CONFIG

@@ -45,6 +45,43 @@ uint8_t steady_state(Event event, uint16_t arg) {
     if (ramp_style) { step_size = ramp_discrete_step_size; }
     else { step_size = 1; }
 
+    // how bright is "turbo"?
+    uint8_t turbo_level;
+    #if defined(USE_2C_STYLE_CONFIG)  // user can choose 2C behavior
+        uint8_t style_2c = ramp_2c_style;
+        #ifdef USE_SIMPLE_UI
+        // simple UI has its own turbo config
+        if (simple_ui_active) style_2c = ramp_2c_style_simple;
+        #endif
+        // 0 = no turbo
+        // 1 = Anduril 1 direct to turbo
+        // 2 = Anduril 2 direct to ceiling, or turbo if already at ceiling
+        if (0 == style_2c) turbo_level = mode_max;
+        else if (1 == style_2c) turbo_level = MAX_LEVEL;
+        else {
+            if (memorized_level < mode_max) { turbo_level = mode_max; }
+            else { turbo_level = MAX_LEVEL; }
+        }
+    #elif defined(USE_2C_MAX_TURBO)  // Anduril 1 style always
+        // simple UI: to/from ceiling
+        // full UI: to/from turbo (Anduril1 behavior)
+        #ifdef USE_SIMPLE_UI
+        if (simple_ui_active) turbo_level = mode_max;
+        else
+        #endif
+        turbo_level = MAX_LEVEL;
+    #else  // Anduril 2 style always
+        // simple UI: to/from ceiling
+        // full UI: to/from ceiling if mem < ceiling,
+        //          or to/from turbo if mem >= ceiling
+        if ((memorized_level < mode_max)
+            #ifdef USE_SIMPLE_UI
+            || simple_ui_active
+            #endif
+           ) { turbo_level = mode_max; }
+        else { turbo_level = MAX_LEVEL; }
+    #endif
+
     #ifdef USE_SUNSET_TIMER
     // handle the shutoff timer first
     static uint8_t timer_orig_level = 0;
@@ -100,27 +137,6 @@ uint8_t steady_state(Event event, uint16_t arg) {
     }
     // 2 clicks: go to/from highest level
     else if (event == EV_2clicks) {
-        uint8_t turbo_level;
-        #ifdef USE_2C_MAX_TURBO
-            // simple UI: to/from ceiling
-            // full UI: to/from turbo (Anduril1 behavior)
-            #ifdef USE_SIMPLE_UI
-            if (simple_ui_active) turbo_level = mode_max;
-            else
-            #endif
-            turbo_level = MAX_LEVEL;
-        #else
-            // simple UI: to/from ceiling
-            // full UI: to/from ceiling if mem < ceiling,
-            //          or to/from turbo if mem >= ceiling
-            if ((memorized_level < mode_max)
-                #ifdef USE_SIMPLE_UI
-                || simple_ui_active
-                #endif
-               ) { turbo_level = mode_max; }
-            else { turbo_level = MAX_LEVEL; }
-        #endif
-
         if (actual_level < turbo_level) {
             set_level_and_therm_target(turbo_level);
         }
@@ -149,6 +165,12 @@ uint8_t steady_state(Event event, uint16_t arg) {
         if (ramp_style  &&  (arg % HOLD_TIMEOUT != 0)) {
             return MISCHIEF_MANAGED;
         }
+        #ifdef USE_RAMP_SPEED_CONFIG
+        // ramp slower if user configured things that way
+        if ((! ramp_style) && (arg % ramp_speed)) {
+            return MISCHIEF_MANAGED;
+        }
+        #endif
         // fix ramp direction on first frame if necessary
         if (!arg) {
             // click, hold should always go down if possible
@@ -160,12 +182,24 @@ uint8_t steady_state(Event event, uint16_t arg) {
             else if (actual_level <= mode_min) { ramp_direction = 1; }
         }
         // if the button is stuck, err on the side of safety and ramp down
-        else if ((arg > TICKS_PER_SECOND * 5) && (actual_level >= mode_max)) {
+        else if ((arg > TICKS_PER_SECOND * 5
+                    #ifdef USE_RAMP_SPEED_CONFIG
+                    // FIXME: count from time actual_level hits mode_max,
+                    //   not from beginning of button hold
+                    * ramp_speed
+                    #endif
+                    ) && (actual_level >= mode_max)) {
             ramp_direction = -1;
         }
         #ifdef USE_LOCKOUT_MODE
         // if the button is still stuck, lock the light
-        else if ((arg > TICKS_PER_SECOND * 10) && (actual_level <= mode_min)) {
+        else if ((arg > TICKS_PER_SECOND * 10
+                    #ifdef USE_RAMP_SPEED_CONFIG
+                    // FIXME: count from time actual_level hits mode_min,
+                    //   not from beginning of button hold
+                    * ramp_speed
+                    #endif
+                    ) && (actual_level <= mode_min)) {
             blink_once();
             set_state(lockout_state, 0);
         }
@@ -224,7 +258,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
 
     else if (event == EV_tick) {
         // un-reverse after 1 second
-        if (arg == TICKS_PER_SECOND) ramp_direction = 1;
+        if (arg == AUTO_REVERSE_TIME) ramp_direction = 1;
 
         #ifdef USE_SUNSET_TIMER
         // reduce output if shutoff timer is active
@@ -362,7 +396,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
     // 3H: momentary turbo (on lights with no tint ramping)
     else if (event == EV_click3_hold) {
         if (! arg) {  // first frame only, to allow thermal regulation to work
-            set_level_and_therm_target(MAX_LEVEL);
+            set_level_and_therm_target(turbo_level);
         }
         return MISCHIEF_MANAGED;
     }
@@ -401,9 +435,9 @@ uint8_t steady_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     else if (event == EV_click10_hold) {
-        #ifdef USE_MANUAL_MEMORY_TIMER
-        // let user configure timer for manual / hybrid memory
-        push_state(manual_memory_timer_config_state, 0);
+        #ifdef USE_RAMP_EXTRAS_CONFIG
+        // let user configure a bunch of extra ramp options
+        push_state(ramp_extras_config_state, 0);
         #else  // manual mem, but no timer
         // turn off manual memory; go back to automatic
         if (0 == arg) {
@@ -429,6 +463,15 @@ void ramp_config_save(uint8_t step, uint8_t value) {
     if (current_state == simple_ui_config_state)  style = 2;
     #endif
 
+    #if defined(USE_SIMPLE_UI) && defined(USE_2C_STYLE_CONFIG)
+    // simple UI config is weird...
+    // has some ramp extras after floor/ceil/steps
+    if (4 == step) {
+        ramp_2c_style_simple = value;
+    }
+    else
+    #endif
+
     // save adjusted value to the correct slot
     if (value) {
         // ceiling value is inverted
@@ -445,41 +488,69 @@ void ramp_config_save(uint8_t step, uint8_t value) {
 }
 
 uint8_t ramp_config_state(Event event, uint16_t arg) {
+    #ifdef USE_RAMP_SPEED_CONFIG
+    const uint8_t num_config_steps = 3;
+    #else
     uint8_t num_config_steps = ramp_style + 2;
+    #endif
     return config_state_base(event, arg,
                              num_config_steps, ramp_config_save);
 }
 
 #ifdef USE_SIMPLE_UI
 uint8_t simple_ui_config_state(Event event, uint16_t arg) {
-    return config_state_base(event, arg, 3, ramp_config_save);
+    #if defined(USE_2C_STYLE_CONFIG)
+    #define SIMPLE_UI_NUM_MENU_ITEMS 4
+    #else
+    #define SIMPLE_UI_NUM_MENU_ITEMS 3
+    #endif
+    return config_state_base(event, arg,
+                             SIMPLE_UI_NUM_MENU_ITEMS,
+                             ramp_config_save);
 }
 #endif
 #endif  // #ifdef USE_RAMP_CONFIG
 
-#ifdef USE_MANUAL_MEMORY_TIMER
-void manual_memory_timer_config_save(uint8_t step, uint8_t value) {
+#ifdef USE_RAMP_EXTRAS_CONFIG
+void ramp_extras_config_save(uint8_t step, uint8_t value) {
     // item 1: disable manual memory, go back to automatic
-    if (step == 1) { manual_memory = 0; }
+    if (1 == step) { manual_memory = 0; }
+
+    #ifdef USE_MANUAL_MEMORY_TIMER
     // item 2: set manual memory timer duration
     // FIXME: should be limited to (65535 / SLEEP_TICKS_PER_MINUTE)
     //   to avoid overflows or impossibly long timeouts
     //   (by default, the effective limit is 145, but it allows up to 255)
-    else { manual_memory_timer = value; }
+    else if (2 == step) { manual_memory_timer = value; }
+    #endif
+
+    #ifdef USE_RAMP_AFTER_MOON_CONFIG
+    // item 3: ramp up after hold-from-off for moon?
+    // 0 = yes, ramp after moon
+    // 1+ = no, stay at moon
+    else if (3 == step) {
+        dont_ramp_after_moon = value;
+    }
+    #endif
+
+    #ifdef USE_2C_STYLE_CONFIG
+    // item 4: Anduril 1 2C turbo, or Anduril 2 2C ceiling?
+    // 1 = Anduril 1, 2C turbo
+    // 2+ = Anduril 2, 2C ceiling
+    else if (4 == step) {
+        ramp_2c_style = value;
+    }
+    #endif
 }
 
-uint8_t manual_memory_timer_config_state(Event event, uint16_t arg) {
-    return config_state_base(event, arg, 2, manual_memory_timer_config_save);
+uint8_t ramp_extras_config_state(Event event, uint16_t arg) {
+    return config_state_base(event, arg, 4, ramp_extras_config_save);
 }
 #endif
 
 #ifdef USE_GLOBALS_CONFIG
 void globals_config_save(uint8_t step, uint8_t value) {
     if (0) {}
-    #ifdef USE_2C_STYLE_CONFIG
-    // TODO: make double-click style configurable (turbo or ceil)
-    else if (1 == step) {}
-    #endif
     #ifdef USE_JUMP_START
     else { jump_start_level = value; }
     #endif

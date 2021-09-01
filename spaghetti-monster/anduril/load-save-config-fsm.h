@@ -27,9 +27,27 @@ typedef enum {
     #ifdef USE_RAMP_CONFIG
     ramp_smooth_floor_e,
     ramp_smooth_ceil_e,
+    #ifdef USE_RAMP_SPEED_CONFIG
+    ramp_speed_e,
+    #endif
     ramp_discrete_floor_e,
     ramp_discrete_ceil_e,
     ramp_discrete_steps_e,
+    #endif
+    #ifdef USE_SIMPLE_UI
+    simple_ui_floor_e,
+    simple_ui_ceil_e,
+    simple_ui_steps_e,
+    simple_ui_active_e,
+    #ifdef USE_2C_STYLE_CONFIG
+    ramp_2c_style_simple_e,
+    #endif
+    #endif
+    #ifdef USE_RAMP_AFTER_MOON_CONFIG
+    dont_ramp_after_moon_e,
+    #endif
+    #ifdef USE_2C_STYLE_CONFIG
+    ramp_2c_style_e,
     #endif
     #ifdef USE_MANUAL_MEMORY
         manual_memory_e,
@@ -58,12 +76,6 @@ typedef enum {
     #endif
     #ifdef USE_BEACON_MODE
     beacon_seconds_e,
-    #endif
-    #ifdef USE_SIMPLE_UI
-    simple_ui_active_e,
-    simple_ui_floor_e,
-    simple_ui_ceil_e,
-    simple_ui_steps_e,
     #endif
     #ifdef USE_THERMAL_REGULATION
     therm_ceil_e,

@@ -50,3 +50,7 @@
 
 
 #define THERM_FASTER_LEVEL 130  // throttle back faster when high
+
+
+// too big, remove stuff to make room
+#undef USE_RAMP_SPEED_CONFIG
