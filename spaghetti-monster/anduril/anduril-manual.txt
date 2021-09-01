@@ -51,8 +51,8 @@ light to someone else, or if you just don't want to bother with any
 crazy disco modes.
 
 Simple UI has all the basic functions needed to work as a flashlight, 
-but the minimum and maximum brightness are limited to make it safer, and 
-any complex or advanced functions are blocked.
+but the minimum and maximum brightness are limited by default to make it 
+safer, and any complex or advanced functions are blocked.
 
 Functions available in Simple UI include:
 
@@ -112,6 +112,29 @@ counting it like music to make it easier:
 
 Simple UI is enabled after each factory reset.
 
+Simple UI can be configured in several ways, but not while Simple UI is 
+active.  So go to the Advanced UI, configure things, then go back to 
+Simple UI.
+
+Configurable options include:
+
+  - floor level
+  - ceiling level
+  - number of steps (in stepped ramp)
+  - turbo style
+
+Other options are inherited from Advanced UI:
+
+  - ramp style (smooth / stepped)
+  - smooth ramp speed
+  - ramp-after-moon style
+  - memory settings
+  - auto-lock settings
+  - aux LED settings
+  - voltage calibration
+  - thermal regulation settings
+  - hardware-specific "misc menu" settings
+
 
 Advanced UI
 -----------
@@ -168,15 +191,30 @@ While the light is on, a few actions are available:
   - 7H: Ramp config menu.
     - Item 1: Floor level.
     - Item 2: Ceiling level.
-    - Item 3: Number of steps (except for smooth ramp).
+    - Item 3:
+      Stepped ramp: Number of steps.  Can be 1 to 150.
+      Smooth ramp: Ramp speed.
+        1 = Full speed, ~2.5s from end to end.
+        2 = Half speed, ~5s from end to end.
+        3 = Third speed, ~7.5s.
+        4 = Quarter speed, ~10s.
 
   - 10C: Activate manual memory and save the current brightness.
-  - 10H: Manual memory config menu.
+  - 10H: Ramp extras config menu.
     - Item 1: Disable manual memory and go back to automatic memory.
               (doesn't matter what value the user enters at the prompt)
     - Item 2: Configure the manual memory timer.
               Sets the timer to N minutes, where N is the number of 
               clicks.  A value of 0 (no clicks) turns the timer off.
+    - Item 3: Configure whether to ramp up after "Off -> 1H".
+              0: Ramp up after moon.
+              1: Don't ramp up, just stay at the floor level.
+    - Item 4: Configure Advanced UI's turbo style:
+              0: No turbo, only ceiling.
+              1: Anduril 1 style.  Ramp -> 2C goes to full power.
+              2: Anduril 2 style.  Ramp -> 2C goes to ceiling,
+                 or goes to full power if user ramped up to ceiling first.
+              This value also affects momentary turbo in Ramp and Off modes.
 
 Memory determines which brightness level the light goes to with 1 click 
 from off.  There are three types of brightness memory to choose from:
@@ -240,6 +278,7 @@ more than 2 times when the light is off:
   - 4C: Lockout mode.
   - 5C: Momentary mode.
   - 7C / 7H: Aux LED configuration.
+  - 9H: Misc configuration menu. (only on some lights)
   - 10H: Simple UI configuration menu.
   - 13H: Factory reset (on some lights).
   - 15C or more: Version check.
@@ -508,10 +547,11 @@ final click) to access the config menu for the current ramp.
 Or, to access the ramp config for Simple UI, make sure the Simple UI is 
 not active, then do a 10H action from Off.
 
-For smooth ramping mode, there are two menu options:
+For smooth ramping mode, there are three menu options:
 
   1. Floor.  (default = 1/150)
   2. Ceiling.  (default = 120/150)
+  3. Ramp speed.  (default = 1, fastest speed)
 
 For the stepped ramping mode, there are three menu options:
 
@@ -519,12 +559,13 @@ For the stepped ramping mode, there are three menu options:
   2. Ceiling.  (default = 120/150)
   3. Number of steps.  (default = 7)
 
-For the Simple UI mode, there are three menu options.  They are the same 
-as stepped ramping mode.
+For the Simple UI mode, there are four menu options.  The first three 
+are the same as stepped ramping mode.
 
   1. Floor.  (default = 20/150)
   2. Ceiling.  (default = 120/150)
   3. Number of steps.  (default = 5)
+  4. Turbo style.  (default = 0, no turbo)
 
 Default values are different for each model of flashlight.  The numbers 
 above are only examples.
@@ -639,16 +680,11 @@ when the main emitters are on, and when the light is otherwise awake.
 The aux LEDs on most lights only turn on when the light is asleep.
 
 
-Global Config Menu
-------------------
+Misc Config Menu
+----------------
 
 Some models may have an extra config menu for settings which don't fit 
 anywhere else.  These settings are, in order:
-
-  - 2C style:  (not yet implemented)
-
-    1: 2C goes to turbo         (Anduril V1 style)
-    2: 2C goes to ramp ceiling  (Anduril V2 style)
 
   - Jump Start level:
 
@@ -657,9 +693,9 @@ anywhere else.  These settings are, in order:
     level for a few milliseconds when changing from off to a low level.  
     This setting specifies how bright that pulse should be.
 
-    The value can be from 1 to 150, but is usually between 10 and 30.
+    The value can be from 1 to 150, but is usually between 20 and 50.
 
-Some settings are hardware-specific and may not be present on all 
+These settings are hardware-specific and may not be present on all 
 lights.  The number of settings in the global menu depends on the 
 hardware model and the firmware version.
 
@@ -705,10 +741,14 @@ Off		Any	4C	Lockout mode
 Off		Full	5C	Momentary mode
 Off		Full	7C	Aux LEDs: Next pattern
 Off		Full	7H	Aux LEDs: Next color
-Off		Full	9H	Global config menu
+Off		Full	9H	Misc config menu (varies per light)
 Off		Full	10C	Enable Simple UI
 Off		Simple	10H	Disable Simple UI
-Off		Full	10H	Simple UI ramp config menu (1: floor, 2: ceiling, [3: steps])
+Off		Full	10H	Simple UI ramp config menu:
+				1: floor
+				2: ceiling
+				3: steps
+				4: turbo style
 Off		Any	13H	Factory reset (on some lights)
 Off		Any	15+C	Version check
 
@@ -723,9 +763,13 @@ Ramp		Full	3H	Momentary turbo (on lights without tint ramping)
 Ramp		Any	4C	Lockout mode
 Ramp		Full	5C	Momentary mode
 Ramp		Full	5H	Sunset timer on, and add 5 minutes
-Ramp		Full	7H	Ramp config menu (1: floor, 2: ceiling, [3: steps])
+Ramp		Full	7H	Ramp config menu (1: floor, 2: ceiling, 3: speed/steps)
 Ramp		Full	10C	Turn on manual memory and save current brightness
-Ramp		Full	10H	Manual memory config menu (1: off, 2: set timeout)
+Ramp		Full	10H	Ramp Extras config menu:
+				1: enable automatic mem
+				2: set manual mem timeout
+				3: ramp after moon or not
+				4: advanced UI turbo style
 
 Lockout		Any	1C/1H	Momentary moon (lowest floor)
 Lockout		Any	2C/2H	Momentary moon (highest floor, or manual mem level)
