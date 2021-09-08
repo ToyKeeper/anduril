@@ -132,7 +132,7 @@ inline void hwdef_setup() {
   // configure PWM
   // Setup PWM. F_pwm = F_clkio / 2 / N / TOP, where N = prescale factor, TOP = top of counter
   // pre-scale for timer: N = 1
-  // WGM1[3:0]: 0,0,1,1: PWM, Phase Correct, 10-bit (DS table 12-5)
+  // WGM1[3:0]: 1,0,1,0: PWM, Phase Correct, adjustable (DS table 12-5)
   // CS1[2:0]:    0,0,1: clk/1 (No prescaling) (DS table 12-6)
   // COM1A[1:0]:    1,0: PWM OC1A in the normal direction (DS table 12-4)
   // COM1B[1:0]:    1,0: PWM OC1B in the normal direction (DS table 12-4)
