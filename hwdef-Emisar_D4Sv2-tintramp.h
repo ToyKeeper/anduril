@@ -40,11 +40,12 @@
 #define ATTINY 1634
 #include <avr/io.h>
 
-#define PWM_CHANNELS 2  // 1 for main LEDs, 1 for 2nd LEDs
+#define PWM_CHANNELS 1  // 1 virtual channel (1 for main LEDs + 1 for 2nd LEDs)
 #define PWM_BITS 12  // 0 to 4095 at 1 kHz, not 0 to 255 at 16 kHz
 #define PWM_TOP 4095
-// TODO: dynamic PWM with tint ramping
-//#define USE_DYN_PWM  // dynamic frequency and speed
+// dynamic PWM with tint ramping
+#define USE_DYN_PWM  // dynamic frequency and speed
+#define PWM_DATATYPE2 uint16_t  // doesn't need 32-bit math
 
 #define SWITCH_PIN   PA7     // pin 20
 #define SWITCH_PCINT PCINT7  // pin 20 pin change interrupt
@@ -53,15 +54,20 @@
 #define SWITCH_PORT  PINA    // PINA or PINB or PINC
 #define PCINT_vect   PCINT0_vect  // ISR for PCINT[7:0]
 
+// usually PWM1_LVL would be a hardware register, but we need to abstract
+// it out to a soft brightness value, in order to handle tint ramping
+// (this allows smooth thermal regulation to work, and makes things
+//  otherwise simpler and easier)
+uint16_t PWM1_LVL;
 #define PWM1_PIN PB3        // pin 16, Opamp reference
-#define PWM1_LVL OCR1A      // OCR1A is the output compare register for PB3
+#define TINT1_LVL OCR1A     // OCR1A is the output compare register for PB3
 #define PWM1_CNT TCNT1      // for dynamic PWM, reset phase
 
 #define PWM2_PIN PA6        // pin 1, 2nd LED Opamp reference
-#define PWM2_LVL OCR1B      // OCR1B is the output compare register for PA6
+#define TINT2_LVL OCR1B     // OCR1B is the output compare register for PA6
 
-#define PWM3_PIN PC0        // pin 15, DD FET PWM
-#define PWM3_LVL OCR0A      // OCR0A is the output compare register for PC0
+//#define PWM3_PIN PC0        // pin 15, DD FET PWM
+//#define PWM3_LVL OCR0A      // OCR0A is the output compare register for PC0
 
 // PWM parameters of both channels are tied together because they share a counter
 #define PWM1_TOP ICR1       // holds the TOP value for for variable-resolution PWM
@@ -120,7 +126,7 @@
 // ... so just hardcode it in each hwdef file instead
 inline void hwdef_setup() {
   // enable output ports
-  DDRC = (1 << PWM3_PIN);
+  //DDRC = (1 << PWM3_PIN);
   DDRB = (1 << PWM1_PIN);
   DDRA = (1 << PWM2_PIN)
        | (1 << AUXLED_R_PIN)

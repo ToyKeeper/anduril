@@ -89,6 +89,10 @@ void set_level(uint8_t level) {
         #if PWM_CHANNELS >= 4
         PWM4_LVL = 0;
         #endif
+        #ifdef USE_TINT_RAMPING
+        TINT1_LVL = 0;
+        TINT2_LVL = 0;
+        #endif
         // disable the power channel, if relevant
         #ifdef LED_ENABLE_PIN
         LED_ENABLE_PORT &= ~(1 << LED_ENABLE_PIN);
@@ -117,44 +121,6 @@ void set_level(uint8_t level) {
         // PWM array index = level - 1
         level --;
 
-        #ifdef USE_TINT_RAMPING
-        #ifndef TINT_RAMPING_CORRECTION
-        #define TINT_RAMPING_CORRECTION 26  // 140% brightness at middle tint
-        #endif
-        // calculate actual PWM levels based on a single-channel ramp
-        // and a global tint value
-        uint8_t brightness = PWM_GET(pwm1_levels, level);
-        uint8_t warm_PWM, cool_PWM;
-
-        // auto-tint modes
-        uint8_t mytint;
-        #if 1
-        // perceptual by ramp level
-        if (tint == 0) { mytint = 255 * (uint16_t)level / RAMP_SIZE; }
-        else if (tint == 255) { mytint = 255 - (255 * (uint16_t)level / RAMP_SIZE); }
-        #else
-        // linear with power level
-        //if (tint == 0) { mytint = brightness; }
-        //else if (tint == 255) { mytint = 255 - brightness; }
-        #endif
-        // stretch 1-254 to fit 0-255 range (hits every value except 98 and 198)
-        else { mytint = (tint * 100 / 99) - 1; }
-
-        // middle tints sag, so correct for that effect
-        uint16_t base_PWM = brightness;
-        // correction is only necessary when PWM is fast
-        if (level > HALFSPEED_LEVEL) {
-            base_PWM = brightness
-                     + ((((uint16_t)brightness) * TINT_RAMPING_CORRECTION / 64) * triangle_wave(mytint) / 255);
-        }
-
-        cool_PWM = (((uint16_t)mytint * (uint16_t)base_PWM) + 127) / 255;
-        warm_PWM = base_PWM - cool_PWM;
-
-        PWM1_LVL = warm_PWM;
-        PWM2_LVL = cool_PWM;
-        #else  // ifdef USE_TINT_RAMPING
-
         #if PWM_CHANNELS >= 1
         PWM1_LVL = PWM_GET(pwm1_levels, level);
         #endif
@@ -167,8 +133,6 @@ void set_level(uint8_t level) {
         #if PWM_CHANNELS >= 4
         PWM4_LVL = PWM_GET(pwm4_levels, level);
         #endif
-
-        #endif  // ifdef USE_TINT_RAMPING
 
         #ifdef USE_DYN_PWM
             uint16_t top = PWM_GET(pwm_tops, level);
@@ -214,6 +178,10 @@ void set_level(uint8_t level) {
             }
         #endif
     }
+    #ifdef USE_TINT_RAMPING
+    update_tint();
+    #endif
+
     #ifdef PWM1_CNT
     prev_level = api_level;
     #endif
@@ -289,12 +257,72 @@ void gradual_tick() {
     {
         actual_level = gt + 1;
     }
+    #ifdef USE_TINT_RAMPING
+    update_tint();
+    #endif
     #ifdef USE_DYNAMIC_UNDERCLOCKING
     auto_clock_speed();
     #endif
 }
 #endif  // ifdef OVERRIDE_GRADUAL_TICK
 #endif  // ifdef USE_SET_LEVEL_GRADUALLY
+
+
+#ifdef USE_TINT_RAMPING
+void update_tint() {
+    #ifndef TINT_RAMPING_CORRECTION
+    #define TINT_RAMPING_CORRECTION 26  // 140% brightness at middle tint
+    #endif
+
+    // calculate actual PWM levels based on a single-channel ramp
+    // and a global tint value
+    //PWM_DATATYPE brightness = PWM_GET(pwm1_levels, level);
+    PWM_DATATYPE brightness = PWM1_LVL;
+    PWM_DATATYPE warm_PWM, cool_PWM;
+
+    // auto-tint modes
+    uint8_t mytint;
+    uint8_t level = actual_level - 1;
+    #if 1
+    // perceptual by ramp level
+    if (tint == 0) { mytint = 255 * (uint16_t)level / RAMP_SIZE; }
+    else if (tint == 255) { mytint = 255 - (255 * (uint16_t)level / RAMP_SIZE); }
+    #else
+    // linear with power level
+    //if (tint == 0) { mytint = brightness; }
+    //else if (tint == 255) { mytint = 255 - brightness; }
+    #endif
+    // stretch 1-254 to fit 0-255 range (hits every value except 98 and 198)
+    else { mytint = (tint * 100 / 99) - 1; }
+
+    // middle tints sag, so correct for that effect
+    PWM_DATATYPE2 base_PWM = brightness;
+    // correction is only necessary when PWM is fast
+    #if defined(TINT_RAMPING_CORRECTION) && (TINT_RAMPING_CORRECTION > 0)
+        if (level > HALFSPEED_LEVEL) {
+            base_PWM = brightness
+                     + ((((PWM_DATATYPE2)brightness) * TINT_RAMPING_CORRECTION / 64) * triangle_wave(mytint) / 255);
+        }
+    #endif
+
+    cool_PWM = (((PWM_DATATYPE2)mytint * (PWM_DATATYPE2)base_PWM) + 127) / 255;
+    warm_PWM = base_PWM - cool_PWM;
+
+    TINT1_LVL = warm_PWM;
+    TINT2_LVL = cool_PWM;
+
+    // disable the power channel, if relevant
+    #ifdef LED_ENABLE_PIN
+    if (! warm_PWM)
+        LED_ENABLE_PORT &= ~(1 << LED_ENABLE_PIN);
+    #endif
+    #ifdef LED2_ENABLE_PIN
+    if (! cool_PWM)
+        LED2_ENABLE_PORT &= ~(1 << LED2_ENABLE_PIN);
+    #endif
+}
+#endif  // ifdef USE_TINT_RAMPING
+
 
 #endif  // ifdef USE_RAMPING
 #endif
