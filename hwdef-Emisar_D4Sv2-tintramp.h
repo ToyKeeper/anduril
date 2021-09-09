@@ -41,8 +41,8 @@
 #include <avr/io.h>
 
 #define PWM_CHANNELS 1  // 1 virtual channel (1 for main LEDs + 1 for 2nd LEDs)
-#define PWM_BITS 12  // 0 to 4095 at 1 kHz, not 0 to 255 at 16 kHz
-#define PWM_TOP 4095
+#define PWM_BITS 14     // 0 to 16383 at variable Hz, not 0 to 255 at 16 kHz
+#define PWM_TOP 255
 // dynamic PWM with tint ramping
 #define USE_DYN_PWM  // dynamic frequency and speed
 #define PWM_DATATYPE2 uint16_t  // doesn't need 32-bit math
