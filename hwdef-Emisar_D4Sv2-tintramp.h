@@ -42,10 +42,10 @@
 
 #define PWM_CHANNELS 1  // 1 virtual channel (1 for main LEDs + 1 for 2nd LEDs)
 #define PWM_BITS 14     // 0 to 16383 at variable Hz, not 0 to 255 at 16 kHz
-#define PWM_TOP 255
+#define PWM_TOP 511
 // dynamic PWM with tint ramping
 #define USE_DYN_PWM  // dynamic frequency and speed
-#define PWM_DATATYPE2 uint16_t  // doesn't need 32-bit math
+#define PWM_DATATYPE2 uint32_t  // only needs 32-bit if ramp values go over 255
 
 #define SWITCH_PIN   PA7     // pin 20
 #define SWITCH_PCINT PCINT7  // pin 20 pin change interrupt
