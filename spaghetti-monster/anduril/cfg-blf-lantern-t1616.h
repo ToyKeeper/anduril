@@ -1,12 +1,6 @@
 // BLF Lantern config options for Anduril using the Attiny1616
 #define MODEL_NUMBER "0622"
-/* BLF Lantern pinout
- * PB0 is 5000K channel
- * PB1 is 3000K channel
- */
-
-// basically the same as a Q8...  sort of
-#include "hwdef-BLF_Q8-T1616.h"
+#include "hwdef-BLF_LT1-t1616.h"
 // ATTINY: 1616
 
 // the button lights up
@@ -53,7 +47,7 @@
 
 // LT1 can handle heat well, so don't limit simple mode
 #define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
-#define SIMPLE_UI_CEIL RAMP_DISCRETE_CEIL
+#define SIMPLE_UI_CEIL  RAMP_DISCRETE_CEIL
 #define SIMPLE_UI_STEPS RAMP_DISCRETE_STEPS
 
 #define USE_SOS_MODE
@@ -63,14 +57,6 @@
 // so thermal regulation can't work
 #ifdef USE_THERMAL_REGULATION
 #undef USE_THERMAL_REGULATION
-#endif
-
-// also, the set_level_gradually() thing isn't compatible with tint ramping
-// (but unsetting it here doesn't actually do anything, because the thermal
-//  regulation define enables it later...  so this is mostly just a note to
-//  make this compatibility issue explicit)
-#ifdef USE_SET_LEVEL_GRADUALLY
-#undef USE_SET_LEVEL_GRADUALLY
 #endif
 
 // don't blink while ramping
