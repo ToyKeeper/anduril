@@ -19,7 +19,7 @@
  *  12    PC3   RESET
  *  13    PC2   (none)
  *  14    PC1   SCK
- *  15    PC0   main LED PWM (FET) (PWM0A) (unused because tint ramping)
+ *  15    PC0   main LED PWM (FET) (PWM0A) (unused on some models because tint ramping)
  *  16    PB3   main LED PWM (linear) (PWM1A)
  *  17    PB2   MISO
  *  18    PB1   MOSI / battery voltage (ADC6)
@@ -63,11 +63,15 @@ uint16_t PWM1_LVL;
 #define TINT1_LVL OCR1A     // OCR1A is the output compare register for PB3
 #define PWM1_CNT TCNT1      // for dynamic PWM, reset phase
 
-#define PWM2_PIN PA6        // pin 1, 2nd LED Opamp reference
+// gah, this driver is weird...
+// two linear channels are treated as one,
+// while there's also a FET on one channel for turbo on half the LEDs
+// so the FET needs to be "PWM2" but the second linear is "TINT2"
+#define PWM3_PIN PA6        // pin 1, 2nd LED Opamp reference
 #define TINT2_LVL OCR1B     // OCR1B is the output compare register for PA6
 
-//#define PWM3_PIN PC0        // pin 15, DD FET PWM
-//#define PWM3_LVL OCR0A      // OCR0A is the output compare register for PC0
+#define PWM2_PIN PC0        // pin 15, DD FET PWM
+#define PWM2_LVL OCR0A      // OCR0A is the output compare register for PC0
 
 // PWM parameters of both channels are tied together because they share a counter
 #define PWM1_TOP ICR1       // holds the TOP value for for variable-resolution PWM
@@ -126,9 +130,9 @@ uint16_t PWM1_LVL;
 // ... so just hardcode it in each hwdef file instead
 inline void hwdef_setup() {
   // enable output ports
-  //DDRC = (1 << PWM3_PIN);
+  DDRC = (1 << PWM2_PIN);
   DDRB = (1 << PWM1_PIN);
-  DDRA = (1 << PWM2_PIN)
+  DDRA = (1 << PWM3_PIN)
        | (1 << AUXLED_R_PIN)
        | (1 << AUXLED_G_PIN)
        | (1 << AUXLED_B_PIN)

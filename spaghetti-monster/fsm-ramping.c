@@ -204,6 +204,7 @@ void gradual_tick() {
     if (gt < actual_level) gt = actual_level - 1;
     else if (gt > actual_level) gt = actual_level + 1;
 
+    /*
     #ifdef LED_ENABLE_PIN_LEVEL_MIN
     // only enable during part of the ramp
     if ((gt >= LED_ENABLE_PIN_LEVEL_MIN)
@@ -212,6 +213,7 @@ void gradual_tick() {
     else  // disable during other parts of the ramp
         LED_ENABLE_PORT &= ~(1 << LED_ENABLE_PIN);
     #endif
+    */
 
     gt --;  // convert 1-based number to 0-based
 
@@ -255,14 +257,17 @@ void gradual_tick() {
         #endif
         )
     {
-        actual_level = gt + 1;
+        //actual_level = gt + 1;
+        set_level(gt + 1);
     }
-    #ifdef USE_TINT_RAMPING
-    update_tint();
-    #endif
-    #ifdef USE_DYNAMIC_UNDERCLOCKING
-    auto_clock_speed();
-    #endif
+    // is handled in set_level()
+    //#ifdef USE_TINT_RAMPING
+    //update_tint();
+    //#endif
+    // is handled in set_level()
+    //#ifdef USE_DYNAMIC_UNDERCLOCKING
+    //auto_clock_speed();
+    //#endif
 }
 #endif  // ifdef OVERRIDE_GRADUAL_TICK
 #endif  // ifdef USE_SET_LEVEL_GRADUALLY
