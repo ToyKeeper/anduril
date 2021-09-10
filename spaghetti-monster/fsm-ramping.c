@@ -221,14 +221,23 @@ void gradual_tick() {
 
     #if PWM_CHANNELS >= 1
     target = PWM_GET(pwm1_levels, gt);
-    if ((gt < actual_level)     // special case for FET-only turbo
-            && (PWM1_LVL == 0)  // (bypass adjustment period for first step)
-            && (target == PWM_TOP)) PWM1_LVL = PWM_TOP;
-    else if (PWM1_LVL < target) PWM1_LVL ++;
+        #if PWM_CHANNELS > 1
+        if ((gt < actual_level)     // special case for FET-only turbo
+                && (PWM1_LVL == 0)  // (bypass adjustment period for first step)
+                && (target == PWM_TOP)) PWM1_LVL = PWM_TOP;
+        else
+        #endif
+    if (PWM1_LVL < target) PWM1_LVL ++;
     else if (PWM1_LVL > target) PWM1_LVL --;
     #endif
     #if PWM_CHANNELS >= 2
     target = PWM_GET(pwm2_levels, gt);
+        #if PWM_CHANNELS > 2
+        if ((gt < actual_level)     // special case for FET-only turbo
+                && (PWM2_LVL == 0)  // (bypass adjustment period for first step)
+                && (target == PWM_TOP)) PWM2_LVL = PWM_TOP;
+        else
+        #endif
     if (PWM2_LVL < target) PWM2_LVL ++;
     else if (PWM2_LVL > target) PWM2_LVL --;
     #endif
