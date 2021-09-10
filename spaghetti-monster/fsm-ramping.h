@@ -42,7 +42,7 @@ inline void set_level_gradually(uint8_t lvl);
 void gradual_tick();
 #endif
 
-#ifdef USE_TINT_RAMPING
+#if defined(USE_TINT_RAMPING) && (!defined(TINT_RAMP_TOGGLE_ONLY))
 void update_tint();
 #endif
 
