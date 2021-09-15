@@ -181,6 +181,10 @@
 #define USE_MOMENTARY_MODE
 
 
+// enable a shortcut for +10 in number entry mode
+// (click for +1, hold for +10)
+#define USE_NUMBER_ENTRY_PLUS10
+
 // cut clock speed at very low modes for better efficiency
 // (defined here so config files can override it)
 #define USE_DYNAMIC_UNDERCLOCKING
