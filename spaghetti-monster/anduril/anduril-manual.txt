@@ -533,6 +533,11 @@ menu item, the light follows the same pattern:
       to enter a number.  It will keep buzzing until the user stops 
       clicking, so there is no need to hurry.
 
+      The actions here are:
+      - click: add 1
+      - hold: add 10  (only in versions 2021-09 or later)
+      - wait: exit
+
 After entering a number, or after skipping every menu item, it waits 
 until the button is released then exits the menu.  It should return to 
 whatever mode the light was in before entering the config menu.
