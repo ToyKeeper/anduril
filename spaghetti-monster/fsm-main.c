@@ -47,7 +47,9 @@ static inline void hw_setup() {
     TCCR0B = 0x01; // pre-scaler for timer (1 => 1, 2 => 8, 3 => 64...)
     TCCR0A = PHASE;
     #endif
-    #if PWM_CHANNELS >= 2
+    // tint ramping needs second channel enabled,
+    // despite PWM_CHANNELS being only 1
+    #if (PWM_CHANNELS >= 2) || defined(USE_TINT_RAMPING)
     DDRB |= (1 << PWM2_PIN);
     #endif
     #if PWM_CHANNELS >= 3

@@ -1,16 +1,7 @@
 // BLF Lantern config options for Anduril
 #define MODEL_NUMBER "0621"
-/* BLF Lantern pinout
- *           ----
- *   Reset -|1  8|- VCC
- * eswitch -|2  7|- powerbank enable?
- * aux LED -|3  6|- PWM (5000K)
- *     GND -|4  5|- PWM (3000K)
- *           ----
- */
-
-// basically the same as a Q8...  sort of
-#include "hwdef-BLF_Q8.h"
+#include "hwdef-BLF_LT1.h"
+// ATTINY: 85
 
 // the button lights up
 #define USE_INDICATOR_LED
@@ -56,7 +47,7 @@
 
 // LT1 can handle heat well, so don't limit simple mode
 #define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
-#define SIMPLE_UI_CEIL RAMP_DISCRETE_CEIL
+#define SIMPLE_UI_CEIL  RAMP_DISCRETE_CEIL
 #define SIMPLE_UI_STEPS RAMP_DISCRETE_STEPS
 
 #define USE_SOS_MODE
@@ -66,14 +57,6 @@
 // so thermal regulation can't work
 #ifdef USE_THERMAL_REGULATION
 #undef USE_THERMAL_REGULATION
-#endif
-
-// also, the set_level_gradually() thing isn't compatible with tint ramping
-// (but unsetting it here doesn't actually do anything, because the thermal
-//  regulation define enables it later...  so this is mostly just a note to
-//  make this compatibility issue explicit)
-#ifdef USE_SET_LEVEL_GRADUALLY
-#undef USE_SET_LEVEL_GRADUALLY
 #endif
 
 // don't blink while ramping

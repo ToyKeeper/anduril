@@ -11,6 +11,8 @@ Model numbers:
 0132	emisar-d4s-219c
 0133	emisar-d4sv2
 0134	emisar-d4sv2-219
+0135	emisar-d4sv2-tintramp
+0136	emisar-d4sv2-tintramp-fet
 0141	emisar-d18
 0142	emisar-d18-219
 0211	noctigon-kr4
@@ -23,6 +25,9 @@ Model numbers:
 0261	noctigon-k9.3
 0262	noctigon-k9.3-nofet
 0263	noctigon-k9.3-219
+0265	noctigon-k9.3-tintramp-nofet
+0266	noctigon-k9.3-tintramp-fet
+0267	noctigon-k9.3-tintramp-219
 0311	fw3a
 0312	fw3a-219
 0313	fw3a-nofet
