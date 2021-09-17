@@ -406,8 +406,9 @@ In more detail, this is what each blinky / utility mode does:
      stays off until the next blink.  The brightness and the number of 
      seconds between pulses are configurable:
 
-       - Brightness is the user's last-ramped level, so set this in 
-         ramping mode before starting beacon mode.
+       - Brightness is the user's memorized ramp level, so set this in 
+         ramping mode before activating beacon mode.  Follows the same 
+         memory rules as ramping -- automatic, manual, or hybrid.
 
        - Speed is configured by holding the button.  The light should 
          blink once per second while holding the button.  Release it 
@@ -421,8 +422,7 @@ In more detail, this is what each blinky / utility mode does:
     Blinks out a distress signal.  Three short, three long, three short.  
     Repeats until light is turned off or until battery is low.
 
-    The last-ramped brightness in Ramping Mode determines the brightness 
-    of SOS Mode.
+    The memorized ramp level determines the brightness of SOS Mode.
 
 
 Strobe / Mood Modes
@@ -505,8 +505,8 @@ depending on which was active before going to momentary mode.  To select
 which one, go to the mode you want to use, adjust the brightness and 
 speed and other settings, then click 5 times to enter momentary mode.
 
-In steady mode, brightness is the last-ramped level, so adjust that 
-before entering momentary mode.
+In steady mode, brightness is the memorized ramp level, so adjust that 
+in Ramp Mode before entering momentary mode.
 
 In momentary strobe mode, the settings are copied from the last-used 
 strobe mode, such as party strobe, tactical strobe, or lightning.
