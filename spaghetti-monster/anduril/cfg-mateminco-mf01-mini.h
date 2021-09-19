@@ -50,3 +50,9 @@
 
 
 #define THERM_FASTER_LEVEL 130  // throttle back faster when high
+
+
+// too big, remove stuff to make room
+#undef USE_RAMP_AFTER_MOON_CONFIG
+#undef USE_RAMP_SPEED_CONFIG
+//#undef USE_2C_STYLE_CONFIG

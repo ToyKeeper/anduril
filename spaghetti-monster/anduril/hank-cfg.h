@@ -16,6 +16,6 @@
 
 
 // double click while on goes to full-power turbo, not ramp ceiling
-#define USE_2C_MAX_TURBO
+#define DEFAULT_2C_STYLE 1
 
 #endif  // ifndef HANK_CFG

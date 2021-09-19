@@ -146,9 +146,17 @@ uint8_t number_entry_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
 
-    // count clicks
-    else if (event == EV_click1_release) {
+    // count clicks: click = +1, hold = +10
+    else if ((event == EV_click1_release)
+            #ifdef USE_NUMBER_ENTRY_PLUS10
+            || (event == EV_click1_hold_release)
+            #endif
+            ) {
         entry_step = 1;  // in case user clicked during initial delay
+        #ifdef USE_NUMBER_ENTRY_PLUS10
+            if (event == EV_click1_hold_release) number_entry_value += 10;
+            else
+        #endif
         number_entry_value ++;  // update the result
         empty_event_sequence();  // reset FSM's click count
         set_level(RAMP_SIZE/2);  // flash briefly

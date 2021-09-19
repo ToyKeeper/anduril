@@ -49,3 +49,6 @@
 
 // the default of 26 looks a bit flat, so increase it
 #define CANDLE_AMPLITUDE 40
+
+// enable 2 click turbo
+#define DEFAULT_2C_STYLE 1

@@ -52,7 +52,9 @@ static inline void hw_setup() {
     OCR1C = 255;  // Set ceiling value to maximum
     #endif
     #endif
-    #if PWM_CHANNELS >= 2
+    // tint ramping needs second channel enabled,
+    // despite PWM_CHANNELS being only 1
+    #if (PWM_CHANNELS >= 2) || defined(USE_TINT_RAMPING)
     DDRB |= (1 << PWM2_PIN);
     #if (PWM2_PIN == PB4) // Second PWM counter is ... weird
     TCCR1 = _BV (CS10);
