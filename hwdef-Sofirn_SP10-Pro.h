@@ -30,6 +30,9 @@ PA1 : Boost Enable
 #endif
 
 #define PWM_CHANNELS 2
+#define PWM_BITS 16  // data type needs 16 bits, not 8
+#define PWM_TOP  255 // highest value used in top half of ramp
+#define USE_DYN_PWM  // dynamic frequency and speed
 
 // Small channel
 #ifndef PWM1_PIN
@@ -43,12 +46,15 @@ PA1 : Boost Enable
 #define PWM2_LVL TCA0.SINGLE.CMP0  // PB0 is TCA Compare 0
 #endif
 
+// PWM parameters of both channels are tied together because they share a counter
+#define PWM1_TOP TCA0.SINGLE.PER   // holds the TOP value for for variable-resolution PWM
+
 #define LED_ENABLE_PIN   PIN1_bp
 #define LED_ENABLE_PORT  PORTA_OUT
 
 #define USE_VOLTAGE_DIVIDER       // use a dedicated pin, not VCC, because VCC input is flattened
 #define DUAL_VOLTAGE_FLOOR    20  // for AA/14500 boost drivers, don't indicate low voltage if below this level
-#define DUAL_VOLTAGE_LOW_LOW   9  // the lower voltage range's danger zone 0.9 volts (NiMH)
+#define DUAL_VOLTAGE_LOW_LOW   8  // the lower voltage range's danger zone 0.8 volts (NiMH)
 #define ADMUX_VOLTAGE_DIVIDER ADC_MUXPOS_AIN9_gc  // which ADC channel to read
 
 // Raw ADC readings at 4.4V and 2.2V
@@ -108,7 +114,7 @@ inline void hwdef_setup() {
     // See the manual for other pins, clocks, configs, portmux, etc
     PORTMUX.CTRLC = PORTMUX_TCA02_ALTERNATE_gc;  // Use alternate pin for TCA0:WO2
     TCA0.SINGLE.CTRLB = TCA_SINGLE_CMP0EN_bm | TCA_SINGLE_CMP2EN_bm | TCA_SINGLE_WGMODE_DSBOTTOM_gc;
-    TCA0.SINGLE.PER = 255;
+    PWM1_TOP = PWM_TOP;
     TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc | TCA_SINGLE_ENABLE_bm;
 }
 
