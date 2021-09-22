@@ -1,55 +1,58 @@
-Model numbers:
-0111	emisar-d4
-0112	emisar-d4-219c
-0113	emisar-d4v2
-0114	emisar-d4v2-219
-0115	emisar-d4v2-nofet
-0121	emisar-d1
-0122	emisar-d1s
-0123	emisar-d1v2
-0131	emisar-d4s
-0132	emisar-d4s-219c
-0133	emisar-d4sv2
-0134	emisar-d4sv2-219
-0135	emisar-d4sv2-tintramp
-0136	emisar-d4sv2-tintramp-fet
-0141	emisar-d18
-0142	emisar-d18-219
-0211	noctigon-kr4
-0212	noctigon-kr4-nofet
-0213	noctigon-kr4-219
-0214	noctigon-kr4-219b
-0251	noctigon-k1
-0252	noctigon-k1-sbt90
-0253	noctigon-k1-12v
-0261	noctigon-k9.3
-0262	noctigon-k9.3-nofet
-0263	noctigon-k9.3-219
-0265	noctigon-k9.3-tintramp-nofet
-0266	noctigon-k9.3-tintramp-fet
-0267	noctigon-k9.3-tintramp-219
-0311	fw3a
-0312	fw3a-219
-0313	fw3a-nofet
-0314	fw3x-lume1
-0321	blf-gt
-0322	blf-gt-mini
-0411	ff-rot66
-0412	ff-rot66-219
-0413	ff-rot66g2
-0421	ff-pl47
-0422	ff-pl47-219
-0423	ff-pl47g2
-0441	ff-e01
-0511	mateminco-mf01s
-0521	mateminco-mf01-mini
-0611	blf-q8
-0612	sofirn-sp36
-0613	blf-q8-t1616
-0614	sofirn-sp36-t1616
-0621	blf-lantern
-0622	blf-lantern-t1616
-0631	sofirn-sp10s
-1618	gchart-fet1-t1616
+Model	Name                          	MCU
+-----	----                          	---
+0111	emisar-d4                     	attiny85
+0112	emisar-d4-219c                	attiny85
+0113	emisar-d4v2                   	attiny1634
+0114	emisar-d4v2-219               	attiny1634
+0115	emisar-d4v2-nofet             	attiny1634
+0121	emisar-d1                     	attiny85
+0122	emisar-d1s                    	attiny85
+0123	emisar-d1v2                   	attiny1634
+0131	emisar-d4s                    	attiny85
+0132	emisar-d4s-219c               	attiny85
+0133	emisar-d4sv2                  	attiny1634
+0134	emisar-d4sv2-219              	attiny1634
+0135	emisar-d4sv2-tintramp         	attiny1634
+0136	emisar-d4sv2-tintramp-fet     	attiny1634
+0141	emisar-d18                    	attiny85
+0142	emisar-d18-219                	attiny85
+0211	noctigon-kr4                  	attiny1634
+0212	noctigon-kr4-nofet            	attiny1634
+0213	noctigon-kr4-219              	attiny1634
+0214	noctigon-kr4-219b             	attiny1634
+0251	noctigon-k1                   	attiny1634
+0252	noctigon-k1-sbt90             	attiny1634
+0253	noctigon-k1-12v               	attiny1634
+0261	noctigon-k9.3                 	attiny1634
+0262	noctigon-k9.3-nofet           	attiny1634
+0263	noctigon-k9.3-219             	attiny1634
+0265	noctigon-k9.3-tintramp-nofet  	attiny1634
+0266	noctigon-k9.3-tintramp-fet    	attiny1634
+0267	noctigon-k9.3-tintramp-219    	attiny1634
+0311	fw3a                          	attiny85
+0312	fw3a-219                      	attiny85
+0313	fw3a-nofet                    	attiny85
+0314	fw3x-lume1                    	attiny1634
+0321	blf-gt                        	attiny85
+0322	blf-gt-mini                   	attiny85
+0411	ff-rot66                      	attiny85
+0412	ff-rot66-219                  	attiny85
+0413	ff-rot66g2                    	attiny85
+0421	ff-pl47                       	attiny85
+0422	ff-pl47-219                   	attiny85
+0423	ff-pl47g2                     	attiny85
+0441	ff-e01                        	attiny85
+0511	mateminco-mf01s               	attiny85
+0521	mateminco-mf01-mini           	attiny85
+0611	blf-q8                        	attiny85
+0612	sofirn-sp36                   	attiny85
+0613	blf-q8-t1616                  	attiny1616
+0614	sofirn-sp36-t1616             	attiny1616
+0621	blf-lantern                   	attiny85
+0622	blf-lantern-t1616             	attiny1616
+0631	sofirn-sp10s                  	attiny1616
+1618	gchart-fet1-t1616             	attiny1616
+
 Duplicates:
+
 Missing:
