@@ -48,10 +48,11 @@
 #define SIMPLE_UI_STEPS 5
 
 // make candle mode wobble more
-#define CANDLE_AMPLITUDE 32
+#define CANDLE_AMPLITUDE 30
 
 // stop panicking at ~70% power or ~600 lm
 #define THERM_FASTER_LEVEL 130
+#define MIN_THERM_STEPDOWN 66  // must be > end of dynamic PWM range
 
 //#define THERM_RESPONSE_MAGNITUDE 32  // smaller adjustments, this host changes temperature slowly
 //#define THERM_NEXT_WARNING_THRESHOLD 32  // more error tolerance before adjusting
@@ -64,8 +65,8 @@
 
 // the power regulator is a bit slow, so push it harder for a quick response from off
 #define DEFAULT_JUMP_START_LEVEL 21
-//#define BLINK_BRIGHTNESS DEFAULT_LEVEL
-//#define BLINK_ONCE_TIME 12
+#define BLINK_BRIGHTNESS DEFAULT_LEVEL
+#define BLINK_ONCE_TIME 12
 
 // can't reset the normal way because power is connected before the button
 #define USE_SOFT_FACTORY_RESET
