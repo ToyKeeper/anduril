@@ -1,15 +1,15 @@
-#ifndef HWDEF_NOCTIGON_K1_H
-#define HWDEF_NOCTIGON_K1_H
+#ifndef HWDEF_NOCTIGON_MD11_H
+#define HWDEF_NOCTIGON_MD11_H
 
-/* Noctigon K1 driver layout (attiny1634)
- * (originally known as Emisar D1S V2)
+/* Noctigon MD11 driver layout (attiny1634)
+ * (based on Noctigon K1)
  *
  * Pin / Name / Function
  *   1    PA6   (none) (PWM1B) (reserved for DD drivers)
  *   2    PA5   R: red aux LED (PWM0B)
  *   3    PA4   G: green aux LED
  *   4    PA3   B: blue aux LED
- *   5    PA2   (none) (reserved for L: button LED (on some models))
+ *   5    PA2   L: button LED
  *   6    PA1   (none)
  *   7    PA0   (none)
  *   8    GND   GND
@@ -95,6 +95,11 @@
 #define AUXLED_RGB_DDR  DDRA   // DDRA or DDRB or DDRC
 #define AUXLED_RGB_PUE  PUEA   // PUEA or PUEB or PUEC
 
+#define BUTTON_LED_PIN  PA2    // pin 5
+#define BUTTON_LED_PORT PORTA  // for all "PA" pins
+#define BUTTON_LED_DDR  DDRA   // for all "PA" pins
+#define BUTTON_LED_PUE  PUEA   // for all "PA" pins
+
 // with so many pins, doing this all with #ifdefs gets awkward...
 // ... so just hardcode it in each hwdef file instead
 inline void hwdef_setup() {
@@ -106,6 +111,7 @@ inline void hwdef_setup() {
   DDRA = (1 << AUXLED_R_PIN)
        | (1 << AUXLED_G_PIN)
        | (1 << AUXLED_B_PIN)
+       | (1 << BUTTON_LED_PIN)
        ;
 
   // configure PWM

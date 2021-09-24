@@ -1,18 +1,17 @@
-// Noctigon K1 config options for Anduril
-#define MODEL_NUMBER "0251"
-// (originally known as Emisar D1S v2)
-#include "hwdef-Noctigon_K1.h"
+// Noctigon MD11 config options for Anduril
+#define MODEL_NUMBER "0271"
+#include "hwdef-Noctigon_MD11.h"
 #include "hank-cfg.h"
 // ATTINY: 1634
 
-// this light can safely run a bit hotter than most
-#undef DEFAULT_THERM_CEIL
-#define DEFAULT_THERM_CEIL 55
-
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
-#define USE_AUX_RGB_LEDS_WHILE_ON
-#define USE_INDICATOR_LED_WHILE_RAMPING
+// ... and a single LED in the button
+#define USE_BUTTON_LED
+// don't use aux LEDs while main LED is on
+#ifdef USE_INDICATOR_LED_WHILE_RAMPING
+#undef USE_INDICATOR_LED_WHILE_RAMPING
+#endif
 
 
 // ../../bin/level_calc.py cube 1 150 7135 1 4 1300
@@ -51,8 +50,8 @@
 // stop panicking at ~70% power or ~600 lm
 #define THERM_FASTER_LEVEL 130
 
-#define THERM_RESPONSE_MAGNITUDE 32  // smaller adjustments, this host changes temperature slowly
-#define THERM_NEXT_WARNING_THRESHOLD 32  // more error tolerance before adjusting
+//#define THERM_RESPONSE_MAGNITUDE 32  // smaller adjustments, this host changes temperature slowly
+//#define THERM_NEXT_WARNING_THRESHOLD 32  // more error tolerance before adjusting
 
 // slow down party strobe; this driver can't pulse for 1ms or less
 #define PARTY_STROBE_ONTIME 2
