@@ -21,10 +21,10 @@
  *  14    PC1   SCK
  *  15    PC0   (none) PWM0A
  *  16    PB3   main LED PWM (PWM1A)
- *  17    PB2   MISO
+ *  17    PB2   MISO / e-switch? (PCINT10)
  *  18    PB1   MOSI / battery voltage (ADC6)
  *  19    PB0   Opamp power
- *  20    PA7   e-switch  (PCINT7)
+ *  20    PA7   e-switch?  (PCINT7)
  *      ADC12   thermal sensor
  *
  * Main LED power uses one pin to turn the Opamp on/off,
@@ -45,6 +45,13 @@
 #define PWM_BITS 16  // data type needs 16 bits, not 8
 #define PWM_TOP  255 // highest value used in top half of ramp
 #define USE_DYN_PWM  // dynamic frequency and speed
+
+//#define SWITCH_PIN   PB2     // pin 17
+//#define SWITCH_PCINT PCINT10 // pin 17 pin change interrupt
+//#define SWITCH_PCIE  PCIE1   // PCIE1 is for PCINT[11:8]
+//#define SWITCH_PCMSK PCMSK1  // PCMSK1 is for PCINT[11:8]
+//#define SWITCH_PORT  PINB    // PINA or PINB or PINC
+//#define PCINT_vect   PCINT1_vect  // ISR for PCINT[11:8]
 
 #define SWITCH_PIN   PA7    // pin 20
 #define SWITCH_PCINT PCINT7 // pin 20 pin change interrupt
@@ -143,6 +150,8 @@ inline void hwdef_setup() {
   PWM1_TOP = PWM_TOP;
 
   // set up e-switch
+  ////PORTB = (1 << SWITCH_PIN);  // TODO: configure PORTA / PORTB / PORTC?
+  //PUEB = (1 << SWITCH_PIN);  // pull-up for e-switch
   //PORTA = (1 << SWITCH_PIN);  // TODO: configure PORTA / PORTB / PORTC?
   PUEA = (1 << SWITCH_PIN);  // pull-up for e-switch
   SWITCH_PCMSK = (1 << SWITCH_PCINT);  // enable pin change interrupt
