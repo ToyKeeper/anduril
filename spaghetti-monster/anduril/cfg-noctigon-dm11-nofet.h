@@ -1,5 +1,5 @@
-// Noctigon MD11-noFET config options for Anduril
-#include "cfg-noctigon-md11.h"
+// Noctigon DM11-noFET config options for Anduril
+#include "cfg-noctigon-dm11.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0272"
 // ATTINY: 1634

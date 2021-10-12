@@ -1,6 +1,6 @@
-// Noctigon MD11 config options for Anduril
+// Noctigon DM11 config options for Anduril
 #define MODEL_NUMBER "0271"
-#include "hwdef-Noctigon_MD11.h"
+#include "hwdef-Noctigon_DM11.h"
 #include "hank-cfg.h"
 // ATTINY: 1634
 
