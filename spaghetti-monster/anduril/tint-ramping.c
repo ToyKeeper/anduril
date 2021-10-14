@@ -31,7 +31,7 @@ uint8_t tint_ramping_state(Event event, uint16_t arg) {
         if (! arg) {
             tint = !tint;
             set_level(actual_level);
-            blink_once();
+            //blink_once();  // unnecessary, and kind of annoying on moon
         }
         return EVENT_HANDLED;
     }
