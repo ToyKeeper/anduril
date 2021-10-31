@@ -66,7 +66,7 @@
 #define PARTY_STROBE_ONTIME 2
 
 // the default of 26 looks a bit flat, so increase it
-#define CANDLE_AMPLITUDE 40
+#define CANDLE_AMPLITUDE 33
 
 // the power regulator is a bit slow, so push it harder for a quick response from off
 #define DEFAULT_JUMP_START_LEVEL 21
