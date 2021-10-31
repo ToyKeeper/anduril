@@ -819,3 +819,4 @@ Config menus	Full	Hold	Skip current item with no changes
 Config menus	Full	Release	Configure current item
 
 Number entry	Full	Click	Add 1 to value for current item
+Number entry	Full	Hold	Add 10 to value for current item
