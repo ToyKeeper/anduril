@@ -14,7 +14,7 @@
 #include <avr/io.h>
 
 #define PWM_CHANNELS 1  // 1 virtual channel (1 for main LEDs + 1 for 2nd LEDs)
-#define PWM_BITS 8      // 0 to 255 at 15.6 kHz
+#define PWM_BITS 9      // 0 to 255 at 15.6 kHz, but goes to 510 for "200%" turbo
 #define PWM_TOP 255
 
 // dynamic PWM with tint ramping (not supported on attiny85)
@@ -25,7 +25,7 @@
 // it out to a soft brightness value, in order to handle tint ramping
 // (this allows smooth thermal regulation to work, and makes things
 //  otherwise simpler and easier)
-uint8_t PWM1_LVL;
+uint16_t PWM1_LVL;
 
 #define PWM1_PIN PB0        // pin 5, warm tint PWM
 #define TINT1_LVL OCR0A     // OCR0A is the output compare register for PB0
