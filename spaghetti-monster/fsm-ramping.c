@@ -102,6 +102,7 @@ void set_level(uint8_t level) {
         #endif
     } else {
         // enable the power channel, if relevant
+        #ifndef USE_TINT_RAMPING  // update_tint handles this better
         #ifdef LED_ENABLE_PIN
             #ifndef LED_ENABLE_PIN_LEVEL_MIN
             LED_ENABLE_PORT |= (1 << LED_ENABLE_PIN);
@@ -117,6 +118,7 @@ void set_level(uint8_t level) {
         #ifdef LED2_ENABLE_PIN
         LED2_ENABLE_PORT |= (1 << LED2_ENABLE_PIN);
         #endif
+        #endif  // ifndef USE_TINT_RAMPING
 
         // PWM array index = level - 1
         level --;
@@ -354,11 +356,15 @@ void update_tint() {
 
     // disable the power channel, if relevant
     #ifdef LED_ENABLE_PIN
-    if (! warm_PWM)
+    if (warm_PWM)
+        LED_ENABLE_PORT |= (1 << LED_ENABLE_PIN);
+    else
         LED_ENABLE_PORT &= ~(1 << LED_ENABLE_PIN);
     #endif
     #ifdef LED2_ENABLE_PIN
-    if (! cool_PWM)
+    if (cool_PWM)
+        LED2_ENABLE_PORT |= (1 << LED2_ENABLE_PIN);
+    else
         LED2_ENABLE_PORT &= ~(1 << LED2_ENABLE_PIN);
     #endif
 }
