@@ -20,6 +20,14 @@
 #ifndef TINT_RAMPING_H
 #define TINT_RAMPING_H
 
+// 0: smooth tint ramp
+// 1: toggle tint only between two extremes
+#ifdef TINT_RAMP_TOGGLE_ONLY
+uint8_t tint_style = 1;
+#else
+uint8_t tint_style = 0;
+#endif
+
 #ifdef USE_MANUAL_MEMORY
 uint8_t manual_memory_tint;
 #endif

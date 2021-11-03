@@ -62,6 +62,7 @@ void load_config() {
         #endif
         #ifdef USE_TINT_RAMPING
             tint = eeprom[tint_e];
+            tint_style = eeprom[tint_style_e];
         #endif
         #ifdef USE_JUMP_START
             jump_start_level = eeprom[jump_start_level_e],
@@ -140,6 +141,7 @@ void save_config() {
     #endif
     #ifdef USE_TINT_RAMPING
         eeprom[tint_e] = tint;
+        eeprom[tint_style_e] = tint_style;
     #endif
     #ifdef USE_JUMP_START
         eeprom[jump_start_level_e] = jump_start_level,
