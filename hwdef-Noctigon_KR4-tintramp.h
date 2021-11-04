@@ -28,16 +28,10 @@
  *      ADC12   thermal sensor
  */
 
-#include "hwdef-Emisar_D4Sv2-tintramp.h"
+#define ATTINY 1634
+#include <avr/io.h>
 
 // move the switch to a different pin
-#undef SWITCH_PIN
-#undef SWITCH_PCINT
-#undef SWITCH_PCIE
-#undef SWITCH_PCMSK
-#undef SWITCH_PORT
-#undef SWITCH_PUE
-#undef PCINT_vect
 #define SWITCH_PIN   PB2     // pin 17
 #define SWITCH_PCINT PCINT10 // pin 17 pin change interrupt
 #define SWITCH_PCIE  PCIE1   // PCIE1 is for PCINT[11:8]
@@ -45,5 +39,8 @@
 #define SWITCH_PORT  PINB    // PINA or PINB or PINC
 #define SWITCH_PUE   PUEB    // pullup group B
 #define PCINT_vect   PCINT1_vect  // ISR for PCINT[11:8]
+
+// the rest of the config is the same as D4Sv2-tintramp
+#include "hwdef-Emisar_D4Sv2-tintramp.h"
 
 #endif

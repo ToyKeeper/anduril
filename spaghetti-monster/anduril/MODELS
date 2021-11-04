@@ -20,6 +20,7 @@ Model	Name                          	MCU
 0212	noctigon-kr4-nofet            	attiny1634
 0213	noctigon-kr4-219              	attiny1634
 0214	noctigon-kr4-219b             	attiny1634
+0215	noctigon-kr4-tintramp         	attiny1634
 0251	noctigon-k1                   	attiny1634
 0252	noctigon-k1-sbt90             	attiny1634
 0253	noctigon-k1-12v               	attiny1634
