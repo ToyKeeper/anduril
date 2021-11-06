@@ -38,6 +38,7 @@ PA1 : Boost Enable
 #ifndef PWM1_PIN
 #define PWM1_PIN PB5
 #define PWM1_LVL TCA0.SINGLE.CMP2  // PB5 is Alternate MUX for TCA Compare 2
+#define PWM1_CNT TCA0.SINGLE.CNT   // for resetting phase after each TOP adjustment
 #endif
 
 // Big channel
