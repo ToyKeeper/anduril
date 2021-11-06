@@ -267,7 +267,9 @@ void gradual_tick() {
         )
     {
         //actual_level = gt + 1;
+        uint8_t orig = gradual_target;
         set_level(gt + 1);
+        gradual_target = orig;
     }
     // is handled in set_level()
     //#ifdef USE_TINT_RAMPING

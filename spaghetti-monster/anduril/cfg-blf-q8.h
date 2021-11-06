@@ -33,8 +33,8 @@
 #define SIMPLE_UI_CEIL 150
 #define SIMPLE_UI_STEPS 5
 
-// also at Sofirn's request, enable 2 click turbo
-#define USE_2C_MAX_TURBO
+// also at Sofirn's request, enable 2 click turbo (Anduril 1 style)
+#define DEFAULT_2C_STYLE 1
 
 // enable SOS in the blinkies group
 #define USE_SOS_MODE
