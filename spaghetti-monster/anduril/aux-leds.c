@@ -64,7 +64,7 @@ uint8_t voltage_to_rgb() {
         255, 6, // 7, R+G+B
     };
     uint8_t volts = voltage;
-    if (volts < 29) return 0;
+    if (volts < VOLTAGE_LOW) return 0;
 
     uint8_t i;
     for (i = 0;  volts >= levels[i];  i += 2) {}

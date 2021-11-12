@@ -173,8 +173,9 @@ There are four ways to access ramping mode when the light is off:
 While the light is on, a few actions are available:
 
   - 1C: Turn off.
-  - 2C: Go to or from the ceiling level.
-        (or if already at ceiling, and not in Simple UI, go to/from turbo)
+  - 2C: Go to or from the turbo level.
+        (or if it has regulated down, "bump" back up to turbo)
+        (turbo level / behavior is configurable)
   - 1H: Change brightness (up).  If the button was released less than a 
     second ago, or if it's already at the ceiling, it goes down instead.
   - 2H: Change brightness (down).
@@ -691,6 +692,11 @@ Misc Config Menu
 Some models may have an extra config menu for settings which don't fit 
 anywhere else.  These settings are, in order:
 
+  - Tint ramp style:
+
+    0 = smooth (blend channels in any proportion)
+    1 = toggle (only one channel active at a time)
+
   - Jump Start level:
 
     Some lights are prone to starting up slowly at low levels, so they 
@@ -727,6 +733,11 @@ be warm white while dim, or cool white while bright.  Or vice-versa.  To
 access this, ramp to the end of the tint range, then keep holding until 
 the light blinks a second time.
 
+The misc config menu also has a setting to choose a tint ramp style.  
+This can be smooth, allowing the user to smoothly blend both channels in 
+whatever ratio they desire...  or it can be "tint toggle" style, where 
+only one channel is active at a time.
+
 
 UI Reference Table
 ------------------
@@ -760,8 +771,7 @@ Off		Any	15+C	Version check
 Ramp		Any	1C	Off
 Ramp		Any	1H	Ramp (up, with reversing)
 Ramp		Any	2H	Ramp (down)
-Ramp		Simple	2C	Go to/from ceiling
-Ramp		Full	2C	Go to/from ceiling (or turbo if at ceil already)
+Ramp		Any	2C	Go to/from ceiling or turbo (configurable)
 Ramp		Full	3C	Change ramp style (smooth / stepped)
 Ramp		Any	3H	Tint ramping (on some lights)
 Ramp		Full	3H	Momentary turbo (on lights without tint ramping)
@@ -819,3 +829,4 @@ Config menus	Full	Hold	Skip current item with no changes
 Config menus	Full	Release	Configure current item
 
 Number entry	Full	Click	Add 1 to value for current item
+Number entry	Full	Hold	Add 10 to value for current item

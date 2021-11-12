@@ -551,14 +551,21 @@ uint8_t ramp_extras_config_state(Event event, uint16_t arg) {
 #ifdef USE_GLOBALS_CONFIG
 void globals_config_save(uint8_t step, uint8_t value) {
     if (0) {}
+    #ifdef USE_TINT_RAMPING
+    else if (step == 1+tint_style_config_step) {
+        tint_style = !(!(value));
+        // set tint to middle or edge depending on style being smooth or toggle
+        tint = tint_style ? 1 : 127;
+    }
+    #endif
     #ifdef USE_JUMP_START
-    else { jump_start_level = value; }
+    else if (step == 1+jump_start_config_step) { jump_start_level = value; }
     #endif
 }
 
 uint8_t globals_config_state(Event event, uint16_t arg) {
     // TODO: set number of steps based on how many configurable options
-    return config_state_base(event, arg, 1, globals_config_save);
+    return config_state_base(event, arg, globals_config_num_steps, globals_config_save);
 }
 #endif
 

@@ -47,7 +47,7 @@
 #endif
 
 // include an extra config mode for random stuff which doesn't fit elsewhere
-#if defined(USE_JUMP_START)
+#if defined(USE_TINT_RAMPING) || defined(USE_JUMP_START)
 #define USE_GLOBALS_CONFIG
 #endif
 

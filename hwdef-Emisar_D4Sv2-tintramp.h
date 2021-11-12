@@ -47,12 +47,15 @@
 #define USE_DYN_PWM  // dynamic frequency and speed
 #define PWM_DATATYPE2 uint32_t  // only needs 32-bit if ramp values go over 255
 
+#ifndef SWITCH_PIN
 #define SWITCH_PIN   PA7     // pin 20
 #define SWITCH_PCINT PCINT7  // pin 20 pin change interrupt
 #define SWITCH_PCIE  PCIE0   // PCIE1 is for PCINT[7:0]
 #define SWITCH_PCMSK PCMSK0  // PCMSK1 is for PCINT[7:0]
 #define SWITCH_PORT  PINA    // PINA or PINB or PINC
+#define SWITCH_PUE   PUEA    // pullup group A
 #define PCINT_vect   PCINT0_vect  // ISR for PCINT[7:0]
+#endif
 
 // usually PWM1_LVL would be a hardware register, but we need to abstract
 // it out to a soft brightness value, in order to handle tint ramping
@@ -173,7 +176,7 @@ inline void hwdef_setup() {
   PWM1_TOP = PWM_TOP;
 
   // set up e-switch
-  PUEA = (1 << SWITCH_PIN);  // pull-up for e-switch
+  SWITCH_PUE = (1 << SWITCH_PIN);  // pull-up for e-switch
   SWITCH_PCMSK = (1 << SWITCH_PCINT);  // enable pin change interrupt
 }
 
