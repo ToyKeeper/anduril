@@ -37,6 +37,12 @@
 #define SIMPLE_UI_CEIL 150
 #define SIMPLE_UI_STEPS 5
 
+// turn on at ~6 lm by default (level 50/150, or ramp step 2/5 or 3/7)
+// (also sets lockout mode 2H to a useful level)
+#define DEFAULT_MANUAL_MEMORY 50
+// reset to default after being off for 10 minutes
+#define DEFAULT_MANUAL_MEMORY_TIMER 10
+
 // enable SOS in the blinkies group
 #define USE_SOS_MODE
 #define USE_SOS_MODE_IN_BLINKY_GROUP
