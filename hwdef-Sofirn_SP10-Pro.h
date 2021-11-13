@@ -37,18 +37,19 @@ PA1 : Boost Enable
 // Small channel
 #ifndef PWM1_PIN
 #define PWM1_PIN PB5
-#define PWM1_LVL TCA0.SINGLE.CMP2  // PB5 is Alternate MUX for TCA Compare 2
-#define PWM1_CNT TCA0.SINGLE.CNT   // for resetting phase after each TOP adjustment
+#define PWM1_LVL TCA0.SINGLE.CMP2BUF  // PB5 is Alternate MUX for TCA Compare 2
 #endif
 
 // Big channel
 #ifndef PWM2_PIN
 #define PWM2_PIN PB0
-#define PWM2_LVL TCA0.SINGLE.CMP0  // PB0 is TCA Compare 0
+#define PWM2_LVL TCA0.SINGLE.CMP0BUF  // PB0 is TCA Compare 0
 #endif
 
 // PWM parameters of both channels are tied together because they share a counter
-#define PWM1_TOP TCA0.SINGLE.PER   // holds the TOP value for for variable-resolution PWM
+#define PWM1_TOP TCA0.SINGLE.PERBUF   // holds the TOP value for for variable-resolution PWM
+// not necessary when double-buffered "BUF" registers are used
+//#define PWM1_CNT TCA0.SINGLE.CNT   // for resetting phase after each TOP adjustment
 
 #define LED_ENABLE_PIN   PIN1_bp
 #define LED_ENABLE_PORT  PORTA_OUT
