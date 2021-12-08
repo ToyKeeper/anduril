@@ -306,10 +306,28 @@ static inline void ADC_voltage_handler() {
     uint16_t measurement;
 
     // latest ADC value
-    if (adc_reset) {  // while asleep, or just after waking, don't lowpass
+    if (adc_reset) {  // just after waking, don't lowpass
         measurement = adc_raw[0];
-        adc_smooth[0] = measurement;  // no lowpass while asleep
+        adc_smooth[0] = measurement;  // no lowpass, just use the latest value
     }
+    #ifdef USE_LOWPASS_WHILE_ASLEEP
+    else if (go_to_standby) {  // weaker lowpass while asleep
+        // occasionally the aux LED color can oscillate during standby,
+        // while using "voltage" mode ... so try to reduce the oscillation
+        uint16_t m = adc_raw[0];
+        uint16_t v = adc_smooth[0];
+        #if 0
+        // fixed-rate lowpass, slow, more stable but takes longer to settle
+        if (m < v) { v -= 64; }
+        if (m > v) { v += 64; }
+        #else
+        // weighted lowpass, faster but less stable
+        v = (m>>1) + (v>>1);
+        #endif
+        adc_smooth[0] = v;
+        measurement = v;
+    }
+    #endif
     else measurement = adc_smooth[0];
 
     // values stair-step between intervals of 64, with random variations

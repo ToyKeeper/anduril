@@ -49,5 +49,6 @@
 //#undef USE_TACTICAL_STROBE_MODE
 
 // reduce size a bit
-#define NO_LOWPASS_WHILE_ASLEEP
-
+#ifdef USE_LOWPASS_WHILE_ASLEEP
+#undef USE_LOWPASS_WHILE_ASLEEP
+#endif

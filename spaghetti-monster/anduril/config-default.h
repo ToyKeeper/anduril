@@ -189,5 +189,9 @@
 // (defined here so config files can override it)
 #define USE_DYNAMIC_UNDERCLOCKING
 
+// if the aux LEDs oscillate between "full battery" and "empty battery"
+// while in "voltage" mode, enable this to reduce the amplitude of
+// those oscillations
+//#define USE_LOWPASS_WHILE_ASLEEP
 
 #endif
