@@ -166,9 +166,9 @@
 // (these replace the fun strobe group,
 //  so don't enable them at the same time as any of the above strobes)
 //#define USE_POLICE_STROBE_MODE
-//#define USE_SOS_MODE
+#define USE_SOS_MODE
 //#define USE_SOS_MODE_IN_FF_GROUP  // put SOS in the "boring strobes" mode
-//#define USE_SOS_MODE_IN_BLINKY_GROUP  // put SOS in the blinkies mode group
+#define USE_SOS_MODE_IN_BLINKY_GROUP  // put SOS in the blinkies mode group
 
 // enable a mode for locking the light for safe carry
 #define USE_LOCKOUT_MODE

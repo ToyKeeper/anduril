@@ -42,6 +42,7 @@
 #undef BLINK_AT_RAMP_CEIL
 
 // too big, remove stuff to make room
+#undef USE_SOS_MODE
 #undef USE_RAMP_AFTER_MOON_CONFIG
 #undef USE_RAMP_SPEED_CONFIG
 #undef USE_VOLTAGE_CORRECTION
