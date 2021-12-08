@@ -55,4 +55,9 @@
 // too big, remove stuff to make room
 #undef USE_RAMP_AFTER_MOON_CONFIG
 #undef USE_RAMP_SPEED_CONFIG
+#undef USE_VOLTAGE_CORRECTION
 //#undef USE_2C_STYLE_CONFIG
+
+// reduce size a bit
+#define NO_LOWPASS_WHILE_ASLEEP
+

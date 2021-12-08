@@ -396,7 +396,12 @@ uint8_t steady_state(Event event, uint16_t arg) {
     // 3H: momentary turbo (on lights with no tint ramping)
     else if (event == EV_click3_hold) {
         if (! arg) {  // first frame only, to allow thermal regulation to work
+            #ifdef USE_2C_STYLE_CONFIG
+            uint8_t tl = style_2c ? MAX_LEVEL : turbo_level;
+            set_level_and_therm_target(tl);
+            #else
             set_level_and_therm_target(turbo_level);
+            #endif
         }
         return MISCHIEF_MANAGED;
     }
