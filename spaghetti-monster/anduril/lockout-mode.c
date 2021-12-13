@@ -88,9 +88,16 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     }
     #endif
 
+    // 3 clicks: exit and turn off
+    else if (event == EV_3clicks) {
+        blink_once();
+        set_state(off_state, 0);
+        return MISCHIEF_MANAGED;
+    }
     // 4 clicks: exit and turn on
     else if (event == EV_4clicks) {
         #ifdef USE_MANUAL_MEMORY
+        // FIXME: memory timer is totally ignored
         if (manual_memory)
             set_state(steady_state, manual_memory);
         else
@@ -100,7 +107,8 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     }
     // 4 clicks, but hold last: exit and start at floor
     else if (event == EV_click4_hold) {
-        blink_once();
+        //blink_once();
+        blip();
         // reset button sequence to avoid activating anything in ramp mode
         current_event = 0;
         // ... and back to ramp mode
