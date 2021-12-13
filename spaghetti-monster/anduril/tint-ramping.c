@@ -22,7 +22,6 @@
 
 #include "tint-ramping.h"
 
-
 uint8_t tint_ramping_state(Event event, uint16_t arg) {
     static int8_t tint_ramp_direction = 1;
     static uint8_t prev_tint = 0;
@@ -92,6 +91,9 @@ uint8_t tint_ramping_state(Event event, uint16_t arg) {
         else if (tint >= 254) tint_ramp_direction = -1;
         // remember tint after battery change
         save_config();
+        // bug?: for some reason, brightness can seemingly change
+        // from 1/150 to 2/150 without this next line... not sure why
+        set_level(actual_level);
         return EVENT_HANDLED;
     }
 
