@@ -75,6 +75,7 @@ In Lockout mode with Simple UI, there are a few functions:
 
   - 1H: Momentary moon
   - 2H: Momentary low
+  - 3C: Unlock and turn off
   - 4C: Unlock and turn on
   - 4H: Unlock and turn on at low level
   - 5C: Unlock and turn on at high level
@@ -295,6 +296,8 @@ the button might be pressed by accident.
 To exit lockout mode, click 4 times.  The light should blink briefly and 
 then turn on at the memorized level.  Or hold the final press to turn on 
 at the floor level instead:
+
+  - 3C: Unlock and go to "Off" mode
 
   - 4C: Go to ramp mode (memorized level).
     (uses manual mem level if there is one)
@@ -788,6 +791,7 @@ Ramp		Full	10H	Ramp Extras config menu:
 
 Lockout		Any	1C/1H	Momentary moon (lowest floor)
 Lockout		Any	2C/2H	Momentary moon (highest floor, or manual mem level)
+Lockout		Any	3C	Unlock (go to "Off" mode)
 Lockout		Any	4C	On (ramp mode, memorized level)
 Lockout		Any	4H	On (ramp mode, floor level)
 Lockout		Any	5C	On (ramp mode, ceiling level)

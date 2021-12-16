@@ -30,6 +30,9 @@ Model	Name                          	MCU
 0265	noctigon-k9.3-tintramp-nofet  	attiny1634
 0266	noctigon-k9.3-tintramp-fet    	attiny1634
 0267	noctigon-k9.3-tintramp-219    	attiny1634
+0271	noctigon-dm11                 	attiny1634
+0272	noctigon-dm11-nofet           	attiny1634
+0273	noctigon-dm11-12v             	attiny1634
 0311	fw3a                          	attiny85
 0312	fw3a-219                      	attiny85
 0313	fw3a-nofet                    	attiny85
