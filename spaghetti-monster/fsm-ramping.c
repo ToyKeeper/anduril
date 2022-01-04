@@ -103,6 +103,10 @@ void set_level(uint8_t level) {
     } else {
         // enable the power channel, if relevant
         #ifdef LED_ENABLE_PIN
+            #ifdef LED_ENABLE_DELAY
+            uint8_t led_enable_port_save = LED_ENABLE_PORT;
+            #endif
+            
             #ifndef LED_ENABLE_PIN_LEVEL_MIN
             LED_ENABLE_PORT |= (1 << LED_ENABLE_PIN);
             #else
@@ -112,6 +116,12 @@ void set_level(uint8_t level) {
                 LED_ENABLE_PORT |= (1 << LED_ENABLE_PIN);
             else  // disable during other parts of the ramp
                 LED_ENABLE_PORT &= ~(1 << LED_ENABLE_PIN);
+            #endif
+            
+            // for drivers with a slow regulator chip (eg, boost converter, delay before lighting up to prevent flashes
+            #ifdef LED_ENABLE_DELAY
+            if (LED_ENABLE_PORT != led_enable_port_save) // only delay if the pin status changed
+                delay_4ms(LED_ENABLE_DELAY/4);
             #endif
         #endif
         #ifdef LED2_ENABLE_PIN

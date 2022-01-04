@@ -43,6 +43,7 @@ Read voltage from VCC pin, has PFET so no drop
 #define LED_ENABLE_PORT  PORTB_OUT
 #define LED_ENABLE_PIN_LEVEL_MIN 35
 #define LED_ENABLE_PIN_LEVEL_MAX 150
+#define LED_ENABLE_DELAY 80  // how many ms to delay turning on the lights after enabling the channel
 
 // For turning on and off the op-amp
 #define LED2_ENABLE_PIN   PIN7_bp
