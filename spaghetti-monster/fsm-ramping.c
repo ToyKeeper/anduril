@@ -125,7 +125,17 @@ void set_level(uint8_t level) {
             #endif
         #endif
         #ifdef LED2_ENABLE_PIN
-        LED2_ENABLE_PORT |= (1 << LED2_ENABLE_PIN);
+            #ifdef LED2_ENABLE_DELAY
+            uint8_t led2_enable_port_save = LED2_ENABLE_PORT;
+            #endif
+            
+            LED2_ENABLE_PORT |= (1 << LED2_ENABLE_PIN);
+            
+            // for drivers with a slow regulator chip (eg, boost converter, delay before lighting up to prevent flashes
+            #ifdef LED2_ENABLE_DELAY
+            if (LED2_ENABLE_PORT != led2_enable_port_save) // only delay if the pin status changed
+                delay_4ms(LED2_ENABLE_DELAY/4);
+            #endif
         #endif
 
         // PWM array index = level - 1
