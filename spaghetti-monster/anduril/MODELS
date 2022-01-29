@@ -44,6 +44,7 @@ Model	Name                          	MCU
 0441	ff-e01                        	attiny85
 0511	mateminco-mf01s               	attiny85
 0521	mateminco-mf01-mini           	attiny85
+0531	mateminco-mf35-mini           	attiny85
 0611	blf-q8                        	attiny85
 0612	sofirn-sp36                   	attiny85
 0613	blf-q8-t1616                  	attiny1616
