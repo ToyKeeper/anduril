@@ -1,11 +1,11 @@
-#ifndef HWDEF_NOCTIGON_DM11_H
-#define HWDEF_NOCTIGON_DM11_H
+#ifndef HWDEF_NOCTIGON_DM11SBT90_H
+#define HWDEF_NOCTIGON_DM11SBT90_H
 
-/* Noctigon DM11 driver layout (attiny1634)
- * (based on Noctigon K1)
+/* Noctigon DM11-SBT90.2 driver layout (attiny1634)
+ * (based on Noctigon K1 and DM11)
  *
  * Pin / Name / Function
- *   1    PA6   FET PWM (direct drive) (PWM1B) (on some models)
+ *   1    PA6   FET PWM (direct drive) (PWM1B)
  *   2    PA5   R: red aux LED (PWM0B)
  *   3    PA4   G: green aux LED
  *   4    PA3   B: blue aux LED
@@ -21,10 +21,10 @@
  *  14    PC1   SCK
  *  15    PC0   (none) PWM0A
  *  16    PB3   main LED PWM (PWM1A)
- *  17    PB2   MISO / (none) (PCINT10)
+ *  17    PB2   MISO / e-switch (PCINT10)
  *  18    PB1   MOSI / battery voltage (ADC6)
  *  19    PB0   Opamp power
- *  20    PA7   e-switch  (PCINT7)
+ *  20    PA7   (none)  (PCINT7)
  *      ADC12   thermal sensor
  *
  * Main LED power uses one pin to turn the Opamp on/off,
@@ -32,7 +32,7 @@
  * Linear brightness control uses the power level pin, with dynamic PWM.
  * The on/off pin is only used to turn the main LED on and off,
  * not to change brightness.
- * Some models also have a direct-drive FET for turbo.
+ * Also has a direct-drive FET for turbo.
  */
 
 #ifdef ATTINY
@@ -46,11 +46,12 @@
 #define PWM_TOP  255 // highest value used in top half of ramp
 #define USE_DYN_PWM  // dynamic frequency and speed
 
-#define SWITCH_PIN   PA7    // pin 20
-#define SWITCH_PCINT PCINT7 // pin 20 pin change interrupt
-#define SWITCH_PCIE  PCIE0  // PCIE0 is for PCINT[7:0]
-#define SWITCH_PCMSK PCMSK0 // PCMSK0 is for PCINT[7:0]
-#define SWITCH_PORT  PINA   // PINA or PINB or PINC
+#define SWITCH_PIN   PB2     // pin 17
+#define SWITCH_PCINT PCINT10 // pin 17 pin change interrupt
+#define SWITCH_PCIE  PCIE1   // PCIE1 is for PCINT[11:8]
+#define SWITCH_PCMSK PCMSK1  // PCMSK1 is for PCINT[11:8]
+#define SWITCH_PORT  PINB    // PINA or PINB or PINC
+#define PCINT_vect   PCINT1_vect  // ISR for PCINT[11:8]
 
 #define PWM1_PIN PB3        // pin 16, Opamp reference
 #define PWM1_LVL OCR1A      // OCR1A is the output compare register for PB3
@@ -143,8 +144,8 @@ inline void hwdef_setup() {
   PWM1_TOP = PWM_TOP;
 
   // set up e-switch
-  //PORTA = (1 << SWITCH_PIN);  // TODO: configure PORTA / PORTB / PORTC?
-  PUEA = (1 << SWITCH_PIN);  // pull-up for e-switch
+  //PORTB = (1 << SWITCH_PIN);  // TODO: configure PORTA / PORTB / PORTC?
+  PUEB = (1 << SWITCH_PIN);  // pull-up for e-switch
   SWITCH_PCMSK = (1 << SWITCH_PCINT);  // enable pin change interrupt
 }
 
