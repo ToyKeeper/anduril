@@ -21,6 +21,7 @@ Model	Name                          	MCU
 0213	noctigon-kr4-219              	attiny1634
 0214	noctigon-kr4-219b             	attiny1634
 0215	noctigon-kr4-tintramp         	attiny1634
+0216	noctigon-kr4-12v              	attiny1634
 0251	noctigon-k1                   	attiny1634
 0252	noctigon-k1-sbt90             	attiny1634
 0253	noctigon-k1-12v               	attiny1634
@@ -33,6 +34,7 @@ Model	Name                          	MCU
 0271	noctigon-dm11                 	attiny1634
 0272	noctigon-dm11-nofet           	attiny1634
 0273	noctigon-dm11-12v             	attiny1634
+0274	noctigon-dm11-sbt90           	attiny1634
 0311	fw3a                          	attiny85
 0312	fw3a-219                      	attiny85
 0313	fw3a-nofet                    	attiny85

@@ -1,5 +1,5 @@
 // Noctigon DM11-SBT90.2 config options for Anduril
-#define MODEL_NUMBER "0273"
+#define MODEL_NUMBER "0274"
 #include "hwdef-Noctigon_DM11-SBT90.h"
 #include "hank-cfg.h"
 // ATTINY: 1634
