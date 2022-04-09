@@ -1,3 +1,4 @@
+#error This build is broken.
 /*
  * K9.3 has unusual power channels, so it must override some of FSM's code.
  * There are two sets of LEDs:

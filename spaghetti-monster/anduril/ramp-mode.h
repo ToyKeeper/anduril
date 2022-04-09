@@ -26,6 +26,7 @@
 
 // thermal properties, if not defined per-driver
 #ifndef MIN_THERM_STEPDOWN
+// TODO: Replace MAX_Xx7135 with MAX_CH1, MAX_CH2, MAX_REGULATED, etc
 #define MIN_THERM_STEPDOWN MAX_1x7135  // lowest value it'll step down to
 #endif
 #ifndef THERM_FASTER_LEVEL
