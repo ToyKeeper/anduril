@@ -50,6 +50,9 @@
 #define SIMPLE_UI_CEIL  RAMP_DISCRETE_CEIL
 #define SIMPLE_UI_STEPS RAMP_DISCRETE_STEPS
 
+// Allow 3C in Simple UI for switching between smooth and stepped ramping
+#define USE_SIMPLE_UI_RAMPING_TOGGLE
+
 #define USE_SOS_MODE
 #define USE_SOS_MODE_IN_BLINKY_GROUP
 

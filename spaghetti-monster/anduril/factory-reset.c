@@ -43,7 +43,10 @@ void factory_reset() {
     }
     // explode, if button pressed long enough
     if (reset) {
-        #if defined(USE_THERMAL_REGULATION) && defined(USE_THERM_AUTOCALIBRATE)
+        // AVR 1-Series has factory calibrated thermal sensor, always remove the offset on reset
+        #if defined(USE_THERMAL_REGULATION) && defined(AVRXMEGA3)
+        thermal_config_save(1,temperature - therm_cal_offset); // this will cancel out the offset
+        #elif defined(USE_THERMAL_REGULATION) && defined(USE_THERM_AUTOCALIBRATE)
         // auto-calibrate temperature...  assume current temperature is 21 C
         thermal_config_save(1, 21);
         #endif

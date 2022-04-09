@@ -215,7 +215,7 @@ inline void party_tactical_strobe_mode_iter(uint8_t st) {
         nice_delay_ms(del >> 1);
     }
     #endif
-    set_level(0);
+    set_level(STROBE_OFF_LEVEL);
     nice_delay_ms(del);  // no return check necessary on final delay
 }
 #endif

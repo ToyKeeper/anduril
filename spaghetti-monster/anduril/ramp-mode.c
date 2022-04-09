@@ -370,7 +370,8 @@ uint8_t steady_state(Event event, uint16_t arg) {
     #endif  // ifdef USE_THERMAL_REGULATION
 
     ////////// Every action below here is blocked in the simple UI //////////
-    #ifdef USE_SIMPLE_UI
+    // That is, unless we specifically want to enable 3C for smooth/stepped selection in Simple UI
+    #if defined(USE_SIMPLE_UI) && !defined(USE_SIMPLE_UI_RAMPING_TOGGLE)
     if (simple_ui_active) {
         return EVENT_NOT_HANDLED;
     }
@@ -391,6 +392,13 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #endif
         return MISCHIEF_MANAGED;
     }
+
+    // If we allowed 3C in Simple UI, now block further actions
+    #if defined(USE_SIMPLE_UI) && defined(USE_SIMPLE_UI_RAMPING_TOGGLE)
+    if (simple_ui_active) {
+        return EVENT_NOT_HANDLED;
+    }
+    #endif
 
     #ifndef USE_TINT_RAMPING
     // 3H: momentary turbo (on lights with no tint ramping)

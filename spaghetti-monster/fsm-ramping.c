@@ -146,8 +146,8 @@ void set_level(uint8_t level) {
             //  the timing of changing the TOP value (section 12.8.4))
             // (but don't wait when turning on from zero, because
             //  it'll reset the phase below anyway)
-            // to be safe, allow at least 64 cycles to update TOP
-            while(prev_level && (PWM1_CNT > (top - 64))) {}
+            // to be safe, allow at least 32 cycles to update TOP
+            while(prev_level && (PWM1_CNT > (top - 32))) {}
             #endif
             // pulse frequency modulation, a.k.a. dynamic PWM
             PWM1_TOP = top;
@@ -155,13 +155,13 @@ void set_level(uint8_t level) {
             // repeat for other channels if necessary
             #ifdef PMW2_TOP
                 #ifdef PWM2_CNT
-                while(prev_level && (PWM2_CNT > (top - 64))) {}
+                while(prev_level && (PWM2_CNT > (top - 32))) {}
                 #endif
                 PWM2_TOP = top;
             #endif
             #ifdef PMW3_TOP
                 #ifdef PWM3_CNT
-                while(prev_level && (PWM3_CNT > (top - 64))) {}
+                while(prev_level && (PWM3_CNT > (top - 32))) {}
                 #endif
                 PWM3_TOP = top;
             #endif

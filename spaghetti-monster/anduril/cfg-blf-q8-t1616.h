@@ -29,10 +29,20 @@
 #define RAMP_DISCRETE_CEIL RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 7
 
-// safe limit ~50% power
+// at Sofirn's request, use max (150) for the Simple UI ceiling
 #define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
-#define SIMPLE_UI_CEIL RAMP_DISCRETE_CEIL
+#define SIMPLE_UI_CEIL 150
 #define SIMPLE_UI_STEPS 5
+
+// also at Sofirn's request, enable 2 click turbo (Anduril 1 style)
+#define DEFAULT_2C_STYLE 1
+
+// enable SOS in the blinkies group
+#define USE_SOS_MODE
+#define USE_SOS_MODE_IN_BLINKY_GROUP
+
+// Allow 3C in Simple UI for switching between smooth and stepped ramping
+#define USE_SIMPLE_UI_RAMPING_TOGGLE
 
 // stop panicking at ~75% power or ~3000 lm, this light has high thermal mass
 #define THERM_FASTER_LEVEL (RAMP_SIZE*9/10)  // throttle back faster when high

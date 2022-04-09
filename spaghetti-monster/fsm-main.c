@@ -46,18 +46,29 @@ static inline void hw_setup() {
     DDRB |= (1 << PWM1_PIN);
     TCCR0B = 0x01; // pre-scaler for timer (1 => 1, 2 => 8, 3 => 64...)
     TCCR0A = PHASE;
+    #if (PWM1_PIN == PB4) // Second PWM counter is ... weird
+    TCCR1 = _BV (CS10);
+    GTCCR = _BV (COM1B1) | _BV (PWM1B);
+    OCR1C = 255;  // Set ceiling value to maximum
+    #endif
     #endif
     // tint ramping needs second channel enabled,
     // despite PWM_CHANNELS being only 1
     #if (PWM_CHANNELS >= 2) || defined(USE_TINT_RAMPING)
     DDRB |= (1 << PWM2_PIN);
-    #endif
-    #if PWM_CHANNELS >= 3
-    // Second PWM counter is ... weird
-    DDRB |= (1 << PWM3_PIN);
+    #if (PWM2_PIN == PB4) // Second PWM counter is ... weird
     TCCR1 = _BV (CS10);
     GTCCR = _BV (COM1B1) | _BV (PWM1B);
     OCR1C = 255;  // Set ceiling value to maximum
+    #endif
+    #endif
+    #if PWM_CHANNELS >= 3
+    DDRB |= (1 << PWM3_PIN);
+    #if (PWM3_PIN == PB4) // Second PWM counter is ... weird
+    TCCR1 = _BV (CS10);
+    GTCCR = _BV (COM1B1) | _BV (PWM1B);
+    OCR1C = 255;  // Set ceiling value to maximum
+    #endif
     #endif
     #if PWM_CHANNELS >= 4
     // 4th PWM channel is ... not actually supported in hardware  :(

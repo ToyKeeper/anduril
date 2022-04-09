@@ -1,5 +1,6 @@
 Model	Name                          	MCU
 -----	----                          	---
+0000	thefreeman-lin16dac           	attiny1616
 0111	emisar-d4                     	attiny85
 0112	emisar-d4-219c                	attiny85
 0113	emisar-d4v2                   	attiny1634
@@ -56,7 +57,7 @@ Model	Name                          	MCU
 0614	sofirn-sp36-t1616             	attiny1616
 0621	blf-lantern                   	attiny85
 0622	blf-lantern-t1616             	attiny1616
-0631	sofirn-sp10s                  	attiny1616
+0631	sofirn-sp10-pro               	attiny1616
 1618	gchart-fet1-t1616             	attiny1616
 
 Duplicates:
