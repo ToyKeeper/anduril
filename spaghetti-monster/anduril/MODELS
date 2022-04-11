@@ -1,5 +1,6 @@
 Model	Name                          	MCU
 -----	----                          	---
+0000	thefreeman-lin16dac           	attiny1616
 0111	emisar-d4                     	attiny85
 0112	emisar-d4-219c                	attiny85
 0113	emisar-d4v2                   	attiny1634
@@ -20,6 +21,8 @@ Model	Name                          	MCU
 0212	noctigon-kr4-nofet            	attiny1634
 0213	noctigon-kr4-219              	attiny1634
 0214	noctigon-kr4-219b             	attiny1634
+0215	noctigon-kr4-tintramp         	attiny1634
+0216	noctigon-kr4-12v              	attiny1634
 0251	noctigon-k1                   	attiny1634
 0252	noctigon-k1-sbt90             	attiny1634
 0253	noctigon-k1-12v               	attiny1634
@@ -29,6 +32,10 @@ Model	Name                          	MCU
 0265	noctigon-k9.3-tintramp-nofet  	attiny1634
 0266	noctigon-k9.3-tintramp-fet    	attiny1634
 0267	noctigon-k9.3-tintramp-219    	attiny1634
+0271	noctigon-dm11                 	attiny1634
+0272	noctigon-dm11-nofet           	attiny1634
+0273	noctigon-dm11-12v             	attiny1634
+0274	noctigon-dm11-sbt90           	attiny1634
 0311	fw3a                          	attiny85
 0312	fw3a-219                      	attiny85
 0313	fw3a-nofet                    	attiny85
@@ -51,7 +58,7 @@ Model	Name                          	MCU
 0614	sofirn-sp36-t1616             	attiny1616
 0621	blf-lantern                   	attiny85
 0622	blf-lantern-t1616             	attiny1616
-0631	sofirn-sp10s                  	attiny1616
+0631	sofirn-sp10-pro               	attiny1616
 1618	gchart-fet1-t1616             	attiny1616
 
 Duplicates:

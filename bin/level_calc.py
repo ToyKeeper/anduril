@@ -65,10 +65,16 @@ def main(args):
             dpwm_steps = int(parts[1])
             dpwn_max = int(parts[2])
             dpwn_min = int(parts[3])
+            dpwm_shape = 'linear'
+            if parts[4]:
+                dpwm_shape = float(parts[4])
             max_pwms = [dpwn_min] * answers.num_levels
             for i in range(dpwm_steps):
                 span = dpwn_max - dpwn_min
-                x = dpwn_min + (span * (float(dpwm_steps - i) / dpwm_steps))
+                if dpwm_shape == 'linear':
+                    x = dpwn_min + (span * (float(dpwm_steps - i) / dpwm_steps))
+                else:  # variable curve
+                    x = dpwn_min + (span * ((float(dpwm_steps - i) / dpwm_steps) ** dpwm_shape))
                 max_pwms[i] = int(x)
             max_pwm = dpwn_min
 

@@ -62,6 +62,13 @@ strobe_mode_te strobe_type = 0;
 #endif
 #endif
 
+// some drivers need to keep the regulator chip on between pulses,
+// so set this to 1 to keep the light on at moon mode between pulses,
+// and thus keep the regulator powered up for the next flash
+#ifndef STROBE_OFF_LEVEL
+#define STROBE_OFF_LEVEL 0
+#endif
+
 // party and tactical strobes
 #ifdef USE_STROBE_STATE
 uint8_t strobe_state(Event event, uint16_t arg);

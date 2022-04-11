@@ -102,6 +102,7 @@ void set_level(uint8_t level) {
         #endif
     } else {
         // enable the power channel, if relevant
+        #ifndef USE_TINT_RAMPING  // update_tint handles this better
         #ifdef LED_ENABLE_PIN
             #ifdef LED_ENABLE_DELAY
             uint8_t led_enable_port_save = LED_ENABLE_PORT;
@@ -137,6 +138,7 @@ void set_level(uint8_t level) {
                 delay_4ms(LED2_ENABLE_DELAY/4);
             #endif
         #endif
+        #endif  // ifndef USE_TINT_RAMPING
 
         // PWM array index = level - 1
         level --;
@@ -164,8 +166,8 @@ void set_level(uint8_t level) {
             //  the timing of changing the TOP value (section 12.8.4))
             // (but don't wait when turning on from zero, because
             //  it'll reset the phase below anyway)
-            // to be safe, allow at least 64 cycles to update TOP
-            while(prev_level && (PWM1_CNT > (top - 64))) {}
+            // to be safe, allow at least 32 cycles to update TOP
+            while(prev_level && (PWM1_CNT > (top - 32))) {}
             #endif
             // pulse frequency modulation, a.k.a. dynamic PWM
             PWM1_TOP = top;
@@ -173,13 +175,13 @@ void set_level(uint8_t level) {
             // repeat for other channels if necessary
             #ifdef PMW2_TOP
                 #ifdef PWM2_CNT
-                while(prev_level && (PWM2_CNT > (top - 64))) {}
+                while(prev_level && (PWM2_CNT > (top - 32))) {}
                 #endif
                 PWM2_TOP = top;
             #endif
             #ifdef PMW3_TOP
                 #ifdef PWM3_CNT
-                while(prev_level && (PWM3_CNT > (top - 64))) {}
+                while(prev_level && (PWM3_CNT > (top - 32))) {}
                 #endif
                 PWM3_TOP = top;
             #endif
@@ -313,8 +315,14 @@ void update_tint() {
     // calculate actual PWM levels based on a single-channel ramp
     // and a global tint value
     //PWM_DATATYPE brightness = PWM_GET(pwm1_levels, level);
-    PWM_DATATYPE brightness = PWM1_LVL;
-    PWM_DATATYPE warm_PWM, cool_PWM;
+    uint16_t brightness = PWM1_LVL;
+    uint16_t warm_PWM, cool_PWM;
+    #ifdef USE_DYN_PWM
+        uint16_t top = PWM1_TOP;
+        //uint16_t top = PWM_GET(pwm_tops, actual_level-1);
+    #else
+        const uint16_t top = PWM_TOP;
+    #endif
 
     // auto-tint modes
     uint8_t mytint;
@@ -331,29 +339,52 @@ void update_tint() {
     // stretch 1-254 to fit 0-255 range (hits every value except 98 and 198)
     else { mytint = (tint * 100 / 99) - 1; }
 
-    // middle tints sag, so correct for that effect
     PWM_DATATYPE2 base_PWM = brightness;
-    // correction is only necessary when PWM is fast
     #if defined(TINT_RAMPING_CORRECTION) && (TINT_RAMPING_CORRECTION > 0)
+        // middle tints sag, so correct for that effect
+        // by adding extra power which peaks at the middle tint
+        // (correction is only necessary when PWM is fast)
         if (level > HALFSPEED_LEVEL) {
             base_PWM = brightness
                      + ((((PWM_DATATYPE2)brightness) * TINT_RAMPING_CORRECTION / 64) * triangle_wave(mytint) / 255);
         }
+        // fade the triangle wave out when above 100% power,
+        // so it won't go over 200%
+        if (brightness > top) {
+            base_PWM -= 2 * (
+                             ((brightness - top) * TINT_RAMPING_CORRECTION / 64)
+                             * triangle_wave(mytint) / 255
+                        );
+        }
+        // guarantee no more than 200% power
+        if (base_PWM > (top << 1)) { base_PWM = top << 1; }
     #endif
 
     cool_PWM = (((PWM_DATATYPE2)mytint * (PWM_DATATYPE2)base_PWM) + 127) / 255;
     warm_PWM = base_PWM - cool_PWM;
+    // when running at > 100% power, spill extra over to other channel
+    if (cool_PWM > top) {
+        warm_PWM += (cool_PWM - top);
+        cool_PWM = top;
+    } else if (warm_PWM > top) {
+        cool_PWM += (warm_PWM - top);
+        warm_PWM = top;
+    }
 
     TINT1_LVL = warm_PWM;
     TINT2_LVL = cool_PWM;
 
     // disable the power channel, if relevant
     #ifdef LED_ENABLE_PIN
-    if (! warm_PWM)
+    if (warm_PWM)
+        LED_ENABLE_PORT |= (1 << LED_ENABLE_PIN);
+    else
         LED_ENABLE_PORT &= ~(1 << LED_ENABLE_PIN);
     #endif
     #ifdef LED2_ENABLE_PIN
-    if (! cool_PWM)
+    if (cool_PWM)
+        LED2_ENABLE_PORT |= (1 << LED2_ENABLE_PIN);
+    else
         LED2_ENABLE_PORT &= ~(1 << LED2_ENABLE_PIN);
     #endif
 }

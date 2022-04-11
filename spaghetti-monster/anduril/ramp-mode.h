@@ -26,6 +26,7 @@
 
 // thermal properties, if not defined per-driver
 #ifndef MIN_THERM_STEPDOWN
+// TODO: Replace MAX_Xx7135 with MAX_CH1, MAX_CH2, MAX_REGULATED, etc
 #define MIN_THERM_STEPDOWN MAX_1x7135  // lowest value it'll step down to
 #endif
 #ifndef THERM_FASTER_LEVEL
@@ -224,6 +225,16 @@ uint8_t ramp_stepss[] = {
 uint8_t ramp_discrete_step_size;  // don't set this
 
 #ifdef USE_GLOBALS_CONFIG
+typedef enum {
+    #ifdef USE_TINT_RAMPING
+    tint_style_config_step,
+    #endif
+    #ifdef USE_JUMP_START
+    jump_start_config_step,
+    #endif
+    globals_config_num_steps
+} globals_config_steps_e;
+
 void globals_config_save(uint8_t step, uint8_t value);
 uint8_t globals_config_state(Event event, uint16_t arg);
 #endif
