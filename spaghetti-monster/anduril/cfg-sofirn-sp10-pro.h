@@ -71,3 +71,18 @@
 // enable factory reset on 13H without loosening tailcap
 #define USE_SOFT_FACTORY_RESET
 
+
+// set fuses, these carry over to the ELF file but not the HEX file
+// we need this for enabling BOD in Active Mode from the factory.
+// settings can be verified / dumped from the ELF file using this
+// command: avr-objdump -d -S -j .fuse anduril.elf
+FUSES = {
+    .WDTCFG  = FUSE_WDTCFG_DEFAULT,   /* Watchdog Configuration */
+    .BODCFG  = FUSE_ACTIVE0_bm,       /* BOD Configuration */
+    .OSCCFG  = FUSE_OSCCFG_DEFAULT,   /* Oscillator Configuration */
+    .TCD0CFG = FUSE_TCD0CFG_DEFAULT,  /* TCD0 Configuration */
+    .SYSCFG0 = FUSE_SYSCFG0_DEFAULT,  /* System Configuration 0 */
+    .SYSCFG1 = FUSE_SYSCFG1_DEFAULT,  /* System Configuration 1 */
+    .APPEND  = FUSE_APPEND_DEFAULT,   /* Application Code Section End */
+    .BOOTEND = FUSE_BOOTEND_DEFAULT,  /* Boot Section End */
+};

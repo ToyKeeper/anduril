@@ -55,7 +55,7 @@ PA1 : Boost Enable
 #define LED_ENABLE_PORT  PORTA_OUT
 
 #define USE_VOLTAGE_DIVIDER       // use a dedicated pin, not VCC, because VCC input is flattened
-#define DUAL_VOLTAGE_FLOOR    20  // for AA/14500 boost drivers, don't indicate low voltage if below this level
+#define DUAL_VOLTAGE_FLOOR    21  // for AA/14500 boost drivers, don't indicate low voltage if below this level
 #define DUAL_VOLTAGE_LOW_LOW   7  // the lower voltage range's danger zone 0.7 volts (NiMH)
 #define ADMUX_VOLTAGE_DIVIDER ADC_MUXPOS_AIN9_gc  // which ADC channel to read
 
