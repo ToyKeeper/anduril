@@ -93,6 +93,10 @@ void set_level(uint8_t level) {
         TINT1_LVL = 0;
         TINT2_LVL = 0;
         #endif
+        // for drivers with a slow regulator chip (eg, boost converter, delay before turning off to prevent flashes
+        #ifdef LED_DISABLE_DELAY
+            delay_4ms(LED_DISABLE_DELAY/4);
+        #endif
         // disable the power channel, if relevant
         #ifdef LED_ENABLE_PIN
         LED_ENABLE_PORT &= ~(1 << LED_ENABLE_PIN);

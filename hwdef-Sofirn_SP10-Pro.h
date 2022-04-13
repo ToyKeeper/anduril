@@ -53,6 +53,7 @@ PA1 : Boost Enable
 
 #define LED_ENABLE_PIN   PIN1_bp
 #define LED_ENABLE_PORT  PORTA_OUT
+#define LED_DISABLE_DELAY 4
 
 #define USE_VOLTAGE_DIVIDER       // use a dedicated pin, not VCC, because VCC input is flattened
 #define DUAL_VOLTAGE_FLOOR    21  // for AA/14500 boost drivers, don't indicate low voltage if below this level
