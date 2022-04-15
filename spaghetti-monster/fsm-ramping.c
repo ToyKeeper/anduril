@@ -93,9 +93,10 @@ void set_level(uint8_t level) {
         TINT1_LVL = 0;
         TINT2_LVL = 0;
         #endif
-        // for drivers with a slow regulator chip (eg, boost converter, delay before turning off to prevent flashes
-        #ifdef LED_DISABLE_DELAY
-            delay_4ms(LED_DISABLE_DELAY/4);
+        #ifdef LED_OFF_DELAY
+            // for drivers with a slow regulator chip (eg, boost converter),
+            // delay before turning off to prevent flashes
+            delay_4ms(LED_OFF_DELAY/4);
         #endif
         // disable the power channel, if relevant
         #ifdef LED_ENABLE_PIN
@@ -108,10 +109,10 @@ void set_level(uint8_t level) {
         // enable the power channel, if relevant
         #ifndef USE_TINT_RAMPING  // update_tint handles this better
         #ifdef LED_ENABLE_PIN
-            #ifdef LED_ENABLE_DELAY
+            #ifdef LED_ON_DELAY
             uint8_t led_enable_port_save = LED_ENABLE_PORT;
             #endif
-            
+
             #ifndef LED_ENABLE_PIN_LEVEL_MIN
             LED_ENABLE_PORT |= (1 << LED_ENABLE_PIN);
             #else
@@ -122,24 +123,28 @@ void set_level(uint8_t level) {
             else  // disable during other parts of the ramp
                 LED_ENABLE_PORT &= ~(1 << LED_ENABLE_PIN);
             #endif
-            
-            // for drivers with a slow regulator chip (eg, boost converter, delay before lighting up to prevent flashes
-            #ifdef LED_ENABLE_DELAY
-            if (LED_ENABLE_PORT != led_enable_port_save) // only delay if the pin status changed
-                delay_4ms(LED_ENABLE_DELAY/4);
+
+            // for drivers with a slow regulator chip (eg, boost converter),
+            // delay before lighting up to prevent flashes
+            #ifdef LED_ON_DELAY
+            // only delay if the pin status changed
+            if (LED_ENABLE_PORT != led_enable_port_save)
+                delay_4ms(LED_ON_DELAY/4);
             #endif
         #endif
         #ifdef LED2_ENABLE_PIN
-            #ifdef LED2_ENABLE_DELAY
+            #ifdef LED2_ON_DELAY
             uint8_t led2_enable_port_save = LED2_ENABLE_PORT;
             #endif
-            
+
             LED2_ENABLE_PORT |= (1 << LED2_ENABLE_PIN);
-            
-            // for drivers with a slow regulator chip (eg, boost converter, delay before lighting up to prevent flashes
-            #ifdef LED2_ENABLE_DELAY
-            if (LED2_ENABLE_PORT != led2_enable_port_save) // only delay if the pin status changed
-                delay_4ms(LED2_ENABLE_DELAY/4);
+
+            // for drivers with a slow regulator chip (eg, boost converter),
+            // delay before lighting up to prevent flashes
+            #ifdef LED2_ON_DELAY
+            // only delay if the pin status changed
+            if (LED2_ENABLE_PORT != led2_enable_port_save)
+                delay_4ms(LED2_ON_DELAY/4);
             #endif
         #endif
         #endif  // ifndef USE_TINT_RAMPING
