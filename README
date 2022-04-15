@@ -120,6 +120,10 @@ Other useful tools are in bin/ too, so they might be worth a look.
 ATtiny Series 1 (tiny1616) Support
 ==================================
 
+In Feb 2022, avr-libc merged in new devices from Atmel's DFP (Device Family
+Pack).  Depending on how recent your avr-libc package is, support may already
+be included.  If not, the info below applies:
+
 As of early 2021, the Debian packages for gcc-avr and avrdude do not include
 support for the Tiny1 series chips.  Extra steps are required to get these
 working.
@@ -140,6 +144,15 @@ working.
     This requires debian/bullseye or newer; buster has 3.6.1.
 
 This should at least allow the code to compile.
+
+Flashing:
+
+PyMCUProg
+
+The recommended solution is to use pymcuprog instead of avrdude.  Details are
+still being worked out for how to actually set this up though.
+
+AvrDude
 
 Some extra steps are also needed to make flashing (avrdude) work:
 
