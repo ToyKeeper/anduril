@@ -49,11 +49,14 @@ PA1 : Boost Enable
 // PWM parameters of both channels are tied together because they share a counter
 #define PWM1_TOP TCA0.SINGLE.PERBUF   // holds the TOP value for for variable-resolution PWM
 // not necessary when double-buffered "BUF" registers are used
-//#define PWM1_CNT TCA0.SINGLE.CNT   // for resetting phase after each TOP adjustment
+#define PWM1_CNT TCA0.SINGLE.CNT   // for resetting phase after each TOP adjustment
+#define PWM1_PHASE_RESET_OFF  // force reset while shutting off
+#define PWM1_PHASE_RESET_ON   // force reset while turning on
+//#define PWM1_PHASE_SYNC       // manual sync while changing level
 
 #define LED_ENABLE_PIN   PIN1_bp
 #define LED_ENABLE_PORT  PORTA_OUT
-#define LED_OFF_DELAY 4
+//#define LED_OFF_DELAY 4  // only needed when PWM1_PHASE_RESET_OFF not used
 
 #define USE_VOLTAGE_DIVIDER       // use a dedicated pin, not VCC, because VCC input is flattened
 #define DUAL_VOLTAGE_FLOOR    21  // for AA/14500 boost drivers, don't indicate low voltage if below this level

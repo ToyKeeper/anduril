@@ -70,7 +70,7 @@ void set_level(uint8_t level) {
         set_level_override(level);
     #else
 
-    #ifdef PWM1_CNT
+    #if defined(PWM1_CNT) && defined(PWM1_PHASE_RESET_ON) || defined(PWM1_PHASE_SYNC)
     static uint8_t prev_level = 0;
     uint8_t api_level = level;
     #endif
@@ -92,6 +92,15 @@ void set_level(uint8_t level) {
         #ifdef USE_TINT_RAMPING
         TINT1_LVL = 0;
         TINT2_LVL = 0;
+        #endif
+        #if defined(PWM1_CNT) && defined(PWM1_PHASE_RESET_OFF)
+            PWM1_CNT = 0;
+        #endif
+        #if defined(PWM2_CNT) && defined(PWM2_PHASE_RESET_OFF)
+            PWM2_CNT = 0;
+        #endif
+        #if defined(PWM3_CNT) && defined(PWM3_PHASE_RESET_OFF)
+            PWM3_CNT = 0;
         #endif
         #ifdef LED_OFF_DELAY
             // for drivers with a slow regulator chip (eg, boost converter),
@@ -167,7 +176,7 @@ void set_level(uint8_t level) {
 
         #ifdef USE_DYN_PWM
             uint16_t top = PWM_GET(pwm_tops, level);
-            #ifdef PWM1_CNT
+            #if defined(PWM1_CNT) && defined(PWM1_PHASE_SYNC)
             // wait to ensure compare match won't be missed
             // (causes visible flickering when missed, because the counter
             //  goes all the way to 65535 before returning)
@@ -183,27 +192,27 @@ void set_level(uint8_t level) {
 
             // repeat for other channels if necessary
             #ifdef PMW2_TOP
-                #ifdef PWM2_CNT
+                #if defined(PWM2_CNT) && defined(PWM2_PHASE_SYNC)
                 while(prev_level && (PWM2_CNT > (top - 32))) {}
                 #endif
                 PWM2_TOP = top;
             #endif
             #ifdef PMW3_TOP
-                #ifdef PWM3_CNT
+                #if defined(PWM3_CNT) && defined(PWM3_PHASE_SYNC)
                 while(prev_level && (PWM3_CNT > (top - 32))) {}
                 #endif
                 PWM3_TOP = top;
             #endif
         #endif  // ifdef USE_DYN_PWM
-        #ifdef PWM1_CNT
+        #if defined(PWM1_CNT) && defined(PWM1_PHASE_RESET_ON)
             // force reset phase when turning on from zero
             // (because otherwise the initial response is inconsistent)
             if (! prev_level) {
                 PWM1_CNT = 0;
-                #ifdef PWM2_CNT
+                #if defined(PWM2_CNT) && defined(PWM2_PHASE_RESET_ON)
                 PWM2_CNT = 0;
                 #endif
-                #ifdef PWM3_CNT
+                #if defined(PWM3_CNT) && defined(PWM3_PHASE_RESET_ON)
                 PWM3_CNT = 0;
                 #endif
             }
@@ -213,7 +222,7 @@ void set_level(uint8_t level) {
     update_tint();
     #endif
 
-    #ifdef PWM1_CNT
+    #if defined(PWM1_CNT) && defined(PWM1_PHASE_RESET_ON) || defined(PWM1_PHASE_SYNC)
     prev_level = api_level;
     #endif
     #endif  // ifdef OVERRIDE_SET_LEVEL
