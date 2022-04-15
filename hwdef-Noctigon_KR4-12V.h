@@ -55,6 +55,9 @@
 #define PWM1_PIN PB3        // pin 16, Opamp reference
 #define PWM1_LVL OCR1A      // OCR1A is the output compare register for PB3
 #define PWM1_CNT TCNT1      // for dynamic PWM, reset phase
+#define PWM1_PHASE_RESET_OFF  // force reset while shutting off
+#define PWM1_PHASE_RESET_ON   // force reset while turning on
+#define PWM1_PHASE_SYNC       // manual sync while changing level
 
 // PWM parameters of both channels are tied together because they share a counter
 #define PWM1_TOP ICR1       // holds the TOP value for for variable-resolution PWM

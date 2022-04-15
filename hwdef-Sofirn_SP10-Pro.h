@@ -49,13 +49,17 @@ PA1 : Boost Enable
 // PWM parameters of both channels are tied together because they share a counter
 #define PWM1_TOP TCA0.SINGLE.PERBUF   // holds the TOP value for for variable-resolution PWM
 // not necessary when double-buffered "BUF" registers are used
-//#define PWM1_CNT TCA0.SINGLE.CNT   // for resetting phase after each TOP adjustment
+#define PWM1_CNT TCA0.SINGLE.CNT   // for resetting phase after each TOP adjustment
+#define PWM1_PHASE_RESET_OFF  // force reset while shutting off
+#define PWM1_PHASE_RESET_ON   // force reset while turning on
+//#define PWM1_PHASE_SYNC       // manual sync while changing level
 
 #define LED_ENABLE_PIN   PIN1_bp
 #define LED_ENABLE_PORT  PORTA_OUT
+//#define LED_OFF_DELAY 4  // only needed when PWM1_PHASE_RESET_OFF not used
 
 #define USE_VOLTAGE_DIVIDER       // use a dedicated pin, not VCC, because VCC input is flattened
-#define DUAL_VOLTAGE_FLOOR    20  // for AA/14500 boost drivers, don't indicate low voltage if below this level
+#define DUAL_VOLTAGE_FLOOR    21  // for AA/14500 boost drivers, don't indicate low voltage if below this level
 #define DUAL_VOLTAGE_LOW_LOW   7  // the lower voltage range's danger zone 0.7 volts (NiMH)
 #define ADMUX_VOLTAGE_DIVIDER ADC_MUXPOS_AIN9_gc  // which ADC channel to read
 
@@ -119,6 +123,22 @@ inline void hwdef_setup() {
     PWM1_TOP = PWM_TOP;
     TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc | TCA_SINGLE_ENABLE_bm;
 }
+
+
+// set fuses, these carry over to the ELF file
+// we need this for enabling BOD in Active Mode from the factory.
+// settings can be verified / dumped from the ELF file using this
+// command: avr-objdump -d -S -j .fuse anduril.elf
+FUSES = {
+    .WDTCFG  = FUSE_WDTCFG_DEFAULT,   // Watchdog Configuration
+    .BODCFG  = FUSE_ACTIVE0_bm,       // BOD Configuration
+    .OSCCFG  = FUSE_OSCCFG_DEFAULT,   // Oscillator Configuration
+    .TCD0CFG = FUSE_TCD0CFG_DEFAULT,  // TCD0 Configuration
+    .SYSCFG0 = FUSE_SYSCFG0_DEFAULT,  // System Configuration 0
+    .SYSCFG1 = FUSE_SYSCFG1_DEFAULT,  // System Configuration 1
+    .APPEND  = FUSE_APPEND_DEFAULT,   // Application Code Section End
+    .BOOTEND = FUSE_BOOTEND_DEFAULT,  // Boot Section End
+};
 
 
 #endif

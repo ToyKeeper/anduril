@@ -47,7 +47,7 @@ Read voltage from VCC pin, has PFET so no drop
 // For turning on and off the op-amp
 #define LED2_ENABLE_PIN   PIN7_bp
 #define LED2_ENABLE_PORT  PORTA_OUT
-
+#define LED2_ON_DELAY 80  // how many ms to delay turning on the lights after enabling the channel
 
 // average drop across diode on this hardware
 #ifndef VOLTAGE_FUDGE_FACTOR

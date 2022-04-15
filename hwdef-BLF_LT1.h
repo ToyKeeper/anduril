@@ -20,6 +20,9 @@
 // dynamic PWM with tint ramping (not supported on attiny85)
 //#define USE_DYN_PWM     // dynamic frequency and speed
 //#define PWM1_CNT TCNT0  // for dynamic PWM, reset phase
+//#define PWM1_PHASE_RESET_OFF  // force reset while shutting off
+//#define PWM1_PHASE_RESET_ON   // force reset while turning on
+//#define PWM1_PHASE_SYNC       // manual sync while changing level
 
 // usually PWM1_LVL would be a hardware register, but we need to abstract
 // it out to a soft brightness value, in order to handle tint ramping
