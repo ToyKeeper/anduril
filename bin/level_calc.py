@@ -66,7 +66,7 @@ def main(args):
             dpwn_max = int(parts[2])
             dpwn_min = int(parts[3])
             dpwm_shape = 'linear'
-            if parts[4]:
+            if len(parts) > 4:
                 dpwm_shape = float(parts[4])
             max_pwms = [dpwn_min] * answers.num_levels
             for i in range(dpwm_steps):
