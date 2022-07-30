@@ -1,6 +1,5 @@
 Model	Name                          	MCU
 -----	----                          	---
-0000	thefreeman-lin16dac           	attiny1616
 0111	emisar-d4                     	attiny85
 0112	emisar-d4-219c                	attiny85
 0113	emisar-d4v2                   	attiny1634
@@ -8,7 +7,9 @@ Model	Name                          	MCU
 0115	emisar-d4v2-nofet             	attiny1634
 0121	emisar-d1                     	attiny85
 0122	emisar-d1s                    	attiny85
-0123	emisar-d1v2                   	attiny1634
+0123	emisar-d1v2-7135-fet          	attiny1634
+0124	emisar-d1v2-linear-fet        	attiny1634
+0125	emisar-d1v2-nofet             	attiny1634
 0131	emisar-d4s                    	attiny85
 0132	emisar-d4s-219c               	attiny85
 0133	emisar-d4sv2                  	attiny1634

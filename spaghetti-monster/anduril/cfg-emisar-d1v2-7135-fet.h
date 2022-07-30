@@ -1,14 +1,17 @@
-// Emisar D1v2 config options for Anduril (D1 w/ D4v2 driver)
+// Emisar D1v2 (7135+FET) config options for Anduril
+// (was only made for a short time, not many people have one)
 // ATTINY: 1634
 // same as Emisar D4v2, mostly
 #include "cfg-emisar-d4v2.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0123"
 
-// there are no aux LEDs on a D1
-#undef USE_AUX_RGB_LEDS
-// ... and no button LED
+// ... there is no separate button LED, only the RGB LEDs
 #undef USE_BUTTON_LED
+// the aux LEDs are in the button, so use them while main LEDs are on
+// (early short run had no button LEDs at all, later run uses linear+FET instead,
+//  so it's unlikely that anyone needs this, but it doesn't hurt anything)
+#define USE_INDICATOR_LED_WHILE_RAMPING
 
 // safe limit ~50% power
 #undef SIMPLE_UI_CEIL
