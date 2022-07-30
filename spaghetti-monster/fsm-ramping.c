@@ -43,14 +43,19 @@ void set_level(uint8_t level) {
     #endif
 
     #ifdef USE_INDICATOR_LED_WHILE_RAMPING
+        // use side-facing aux LEDs while main LEDs are on
+        if (! go_to_standby) {
         #ifdef USE_INDICATOR_LED
-        if (! go_to_standby)
             indicator_led((level > 0) + (level > DEFAULT_LEVEL));
         #endif
+        #ifdef USE_BUTTON_LED
+            button_led_set((level > 0) + (level > DEFAULT_LEVEL));
+        #endif
+        }
         //if (level > MAX_1x7135) indicator_led(2);
         //else if (level > 0) indicator_led(1);
         //else if (! go_to_standby) indicator_led(0);
-    #else
+    #else  // turn off front-facing aux LEDs while main LEDs are on
         #if defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS)
         if (! go_to_standby) {
             #ifdef USE_INDICATOR_LED
