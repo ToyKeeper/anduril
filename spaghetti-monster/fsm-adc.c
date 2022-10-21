@@ -146,12 +146,12 @@ static inline uint8_t calc_voltage_divider(uint16_t value) {
     // use 9.7 fixed-point to get sufficient precision
     uint16_t adc_per_volt = ((ADC_44<<5) - (ADC_22<<5)) / (44-22);
     // shift incoming value into a matching position
-    uint8_t result = ((value>>1) / adc_per_volt)
+    uint8_t result = ((value / adc_per_volt)
                      + VOLTAGE_FUDGE_FACTOR
                      #ifdef USE_VOLTAGE_CORRECTION
                      + voltage_correction - 7
                      #endif
-                     ;
+                     ) >> 1;
     return result;
 }
 #endif
