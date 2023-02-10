@@ -21,7 +21,7 @@
 #define AUX_LEDS_H
 
 #if defined(USE_INDICATOR_LED) && defined(TICK_DURING_STANDBY)
-void indicator_blink(uint8_t arg);
+void indicator_led_update(uint8_t mode, uint8_t tick);
 #endif
 #if defined(USE_AUX_RGB_LEDS) && defined(TICK_DURING_STANDBY)
 uint8_t setting_rgb_mode_now = 0;

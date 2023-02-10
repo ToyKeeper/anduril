@@ -23,30 +23,44 @@
 #include "aux-leds.h"
 
 
-#if defined(USE_INDICATOR_LED) && defined(TICK_DURING_STANDBY)
-// beacon-like mode for the indicator LED
-void indicator_blink(uint8_t arg) {
-    // turn off aux LEDs when battery is empty
-    if (voltage < VOLTAGE_LOW) { indicator_led(0); return; }
-
-    #ifdef USE_OLD_BLINKING_INDICATOR
-
-    // basic blink, 1/8th duty cycle
-    if (! (arg & 7)) {
-        indicator_led(2);
-    }
-    else {
+#if defined(USE_INDICATOR_LED)
+void indicator_led_update(uint8_t mode, uint8_t tick) {
+    //uint8_t volts = voltage;  // save a few bytes by caching volatile value
+    // turn off when battery is too low
+    if (voltage < VOLTAGE_LOW) {
         indicator_led(0);
     }
+    //#ifdef USE_INDICATOR_LOW_BAT_WARNING
+    // fast blink a warning when battery is low but not critical
+    else if (voltage < VOLTAGE_RED) {
+        indicator_led(mode & (((tick & 0b0010)>>1) - 3));
+    }
+    //#endif
+    // normal steady output, 0/1/2 = off / low / high
+    else if ((mode & 0b00001111) < 3) {
+        indicator_led(mode);
+    }
+    // beacon-like blinky mode
+    else {
+        #ifdef USE_OLD_BLINKING_INDICATOR
 
-    #else
+        // basic blink, 1/8th duty cycle
+        if (! (tick & 7)) {
+            indicator_led(2);
+        }
+        else {
+            indicator_led(0);
+        }
 
-    // fancy blink, set off/low/high levels here:
-    static const uint8_t seq[] = {0, 1, 2, 1,  0, 0, 0, 0,
-                                  0, 0, 1, 0,  0, 0, 0, 0};
-    indicator_led(seq[arg & 15]);
+        #else
 
-    #endif  // ifdef USE_OLD_BLINKING_INDICATOR
+        // fancy blink, set off/low/high levels here:
+        static const uint8_t seq[] = {0, 1, 2, 1,  0, 0, 0, 0,
+                                      0, 0, 1, 0,  0, 0, 0, 0};
+        indicator_led(seq[tick & 15]);
+
+        #endif  // ifdef USE_OLD_BLINKING_INDICATOR
+    }
 }
 #endif
 

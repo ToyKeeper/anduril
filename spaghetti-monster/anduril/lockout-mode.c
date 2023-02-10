@@ -56,9 +56,10 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     //  be persistent about going back to sleep every few seconds
     //  even if the user keeps pressing the button)
     #ifdef USE_INDICATOR_LED
-    if (event == EV_enter_state) {
-        indicator_led(indicator_led_mode >> 2);
-    } else
+    // redundant, sleep tick does the same thing
+    //if (event == EV_enter_state) {
+    //    indicator_led_update(indicator_led_mode >> 2, 0);
+    //} else
     #elif defined(USE_AUX_RGB_LEDS)
     if (event == EV_enter_state) {
         rgb_led_update(rgb_led_lockout_mode, 0);
@@ -68,7 +69,8 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         if (arg > HOLD_TIMEOUT) {
             go_to_standby = 1;
             #ifdef USE_INDICATOR_LED
-            indicator_led(indicator_led_mode >> 2);
+            // redundant, sleep tick does the same thing
+            //indicator_led_update(indicator_led_mode >> 2, arg);
             #elif defined(USE_AUX_RGB_LEDS)
             rgb_led_update(rgb_led_lockout_mode, arg);
             #endif
@@ -78,9 +80,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     #if defined(TICK_DURING_STANDBY) && (defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS))
     else if (event == EV_sleep_tick) {
         #if defined(USE_INDICATOR_LED)
-        if ((indicator_led_mode & 0b00001100) == 0b00001100) {
-            indicator_blink(arg);
-        }
+        indicator_led_update(indicator_led_mode >> 2, arg);
         #elif defined(USE_AUX_RGB_LEDS)
         rgb_led_update(rgb_led_lockout_mode, arg);
         #endif
@@ -150,7 +150,8 @@ uint8_t lockout_state(Event event, uint16_t arg) {
             if (mode == 1) { mode ++; }
             #endif
             indicator_led_mode = (mode << 2) + (indicator_led_mode & 0x03);
-            indicator_led(mode);
+            // redundant, sleep tick does the same thing
+            //indicator_led_update(indicator_led_mode >> 2, arg);
         #elif defined(USE_AUX_RGB_LEDS)
         #endif
         save_config();
