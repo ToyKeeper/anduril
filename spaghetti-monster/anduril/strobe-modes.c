@@ -58,6 +58,12 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         save_config();
         return MISCHIEF_MANAGED;
     }
+    // 4 clicks: rotate backward through strobe/flasher modes
+    else if (event == EV_4clicks) {
+        strobe_type = (st - 1 + NUM_STROBES) % NUM_STROBES;
+        save_config();
+        return MISCHIEF_MANAGED;
+    }
     // hold: change speed (go faster)
     //       or change brightness (brighter)
     else if (event == EV_click1_hold) {
