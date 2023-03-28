@@ -192,7 +192,7 @@ ISR(ADC_vect) {
             temp += 0x80; // Add 1/2 to get correct rounding on division below
             temp >>= 8; // Divide result to get Kelvin
             m = (temp << 6); // left align it
-        } 
+        }
         else { m = (ADC0.RES << 6); } // voltage, force left-alignment
 
         #else

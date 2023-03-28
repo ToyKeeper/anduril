@@ -138,8 +138,8 @@ void indicator_led(uint8_t lvl) {
             AUXLED2_PORT.OUTSET = (1 << AUXLED2_PIN); // set as high
             #endif
             break;
-      
-        #else
+
+        #else  // MCU is old tiny style, not newer mega style
 
         case 0:  // indicator off
             DDRB &= 0xff ^ (1 << AUXLED_PIN);
