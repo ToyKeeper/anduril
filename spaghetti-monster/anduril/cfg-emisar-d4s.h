@@ -43,3 +43,6 @@
 #endif
 #define MIN_THERM_STEPDOWN 60  // lowest value it'll step down to
 #define THERM_FASTER_LEVEL (RAMP_SIZE-20)  // don't throttle back faster when high
+
+// too big, turn off extra features
+#undef USE_TACTICAL_MODE

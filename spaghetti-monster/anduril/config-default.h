@@ -180,6 +180,9 @@
 // enable momentary mode
 #define USE_MOMENTARY_MODE
 
+// enable tactical mode
+#define USE_TACTICAL_MODE
+
 
 // enable a shortcut for +10 in number entry mode
 // (click for +1, hold for +10)

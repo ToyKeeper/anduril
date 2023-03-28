@@ -25,7 +25,7 @@
 uint8_t momentary_state(Event event, uint16_t arg) {
     // init strobe mode, if relevant
     #ifdef USE_STROBE_STATE
-    if ((event == EV_enter_state) && (momentary_mode == 1)) {
+    if ((event == EV_enter_state) && (momentary_mode != 0)) {
         strobe_state(event, arg);
     }
     #endif
@@ -56,8 +56,8 @@ uint8_t momentary_state(Event event, uint16_t arg) {
     else if (event == EV_tick) {
         #ifdef USE_STROBE_STATE
         if (momentary_active) {
-            // 0 = ramping, 1 = strobes
-            if (momentary_mode == 1) {
+            // 0 = ramping, non-zero = strobes
+            if (momentary_mode != 0) {
                 return strobe_state(event, arg);
             }
         }

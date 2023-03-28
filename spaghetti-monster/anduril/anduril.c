@@ -134,6 +134,10 @@
 #include "momentary-mode.h"
 #endif
 
+#ifdef USE_TACTICAL_MODE
+#include "tactical-mode.h"
+#endif
+
 #ifdef USE_TINT_RAMPING
 #include "tint-ramping.h"
 #endif
@@ -187,6 +191,10 @@
 
 #ifdef USE_MOMENTARY_MODE
 #include "momentary-mode.c"
+#endif
+
+#ifdef USE_TACTICAL_MODE
+#include "tactical-mode.c"
 #endif
 
 #ifdef USE_TINT_RAMPING
@@ -282,7 +290,13 @@ void loop() {
     else if ((state == strobe_state)
          #ifdef USE_MOMENTARY_MODE
          // also handle momentary strobes
-         ||  ((state == momentary_state) && (momentary_mode == 1) && (momentary_active))
+         || ((
+              (state == momentary_state)
+              #ifdef USE_TACTICAL_MODE
+              || (state == tactical_state)
+              #endif
+             )
+             && (momentary_mode == 1) && (momentary_active))
          #endif
          ) {
         strobe_state_iter();

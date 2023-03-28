@@ -14,3 +14,6 @@
 #undef THERM_FASTER_LEVEL
 #endif
 #define THERM_FASTER_LEVEL 144  // throttle back faster when high
+
+// too big, turn off extra features
+#undef USE_TACTICAL_MODE

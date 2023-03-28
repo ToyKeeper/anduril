@@ -95,6 +95,11 @@ typedef enum {
     #ifdef USE_AUTOLOCK
     autolock_time_e,
     #endif
+    #ifdef USE_TACTICAL_MODE
+    tactical_lvl_1_e,
+    tactical_lvl_2_e,
+    tactical_lvl_3_e,
+    #endif
     eeprom_indexes_e_END
 } eeprom_indexes_e;
 #define EEPROM_BYTES eeprom_indexes_e_END

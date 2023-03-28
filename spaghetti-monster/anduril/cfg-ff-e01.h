@@ -19,3 +19,5 @@
 #define SIMPLE_UI_CEIL 130
 #define SIMPLE_UI_STEPS 4
 
+// too big, turn off extra features
+#undef USE_TACTICAL_MODE

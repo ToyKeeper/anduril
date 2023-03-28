@@ -82,3 +82,6 @@
 #ifndef BLINK_AT_RAMP_CEIL
 #define BLINK_AT_RAMP_CEIL
 #endif
+
+// too big, turn off extra features
+#undef USE_TACTICAL_MODE

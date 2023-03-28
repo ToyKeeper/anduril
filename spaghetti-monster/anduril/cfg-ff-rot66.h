@@ -53,3 +53,6 @@
 #ifdef USE_LOWPASS_WHILE_ASLEEP
 #undef USE_LOWPASS_WHILE_ASLEEP
 #endif
+
+// too big, turn off extra features
+#undef USE_TACTICAL_MODE

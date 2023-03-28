@@ -49,3 +49,6 @@
 
 // Allow 3C in Simple UI for switching between smooth and stepped ramping
 #define USE_SIMPLE_UI_RAMPING_TOGGLE
+
+// too big, turn off extra features
+#undef USE_TACTICAL_MODE

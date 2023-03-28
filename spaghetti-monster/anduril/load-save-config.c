@@ -95,6 +95,11 @@ void load_config() {
         #ifdef USE_AUTOLOCK
         autolock_time = eeprom[autolock_time_e];
         #endif
+        #ifdef USE_TACTICAL_MODE
+        tactical_levels[0] = eeprom[tactical_lvl_1_e];
+        tactical_levels[1] = eeprom[tactical_lvl_2_e];
+        tactical_levels[2] = eeprom[tactical_lvl_3_e];
+        #endif
     }
     #ifdef START_AT_MEMORIZED_LEVEL
     if (load_eeprom_wl()) {
@@ -173,6 +178,11 @@ void save_config() {
     #endif
     #ifdef USE_AUTOLOCK
     eeprom[autolock_time_e] = autolock_time;
+    #endif
+    #ifdef USE_TACTICAL_MODE
+    eeprom[tactical_lvl_1_e] = tactical_levels[0];
+    eeprom[tactical_lvl_2_e] = tactical_levels[1];
+    eeprom[tactical_lvl_3_e] = tactical_levels[2];
     #endif
 
     save_eeprom();

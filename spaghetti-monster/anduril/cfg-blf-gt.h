@@ -44,3 +44,5 @@
 // stop panicking at 80% power, this light has plenty of thermal mass
 #define THERM_FASTER_LEVEL POWER_80PX  // throttle back faster when high
 
+// too big, turn off extra features
+#undef USE_TACTICAL_MODE

@@ -28,3 +28,5 @@
 // stop panicking at ~30% power or ~1200 lm
 #define THERM_FASTER_LEVEL 105
 
+// too big, turn off extra features
+#undef USE_TACTICAL_MODE

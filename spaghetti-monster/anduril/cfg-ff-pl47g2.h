@@ -51,3 +51,5 @@
 #undef BLINK_AT_RAMP_MIDDLE
 #undef BLINK_AT_RAMP_CEIL
 
+// too big, turn off extra features
+#undef USE_TACTICAL_MODE

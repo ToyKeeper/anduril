@@ -45,3 +45,5 @@
 #define THERM_FASTER_LEVEL 125  // throttle back faster when high (>6000 lm)
 #define THERM_HARD_TURBO_DROP  // this light is massively overpowered
 
+// too big, turn off extra features
+#undef USE_TACTICAL_MODE
