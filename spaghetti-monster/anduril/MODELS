@@ -59,7 +59,11 @@ Model	Name                          	MCU
 0614	sofirn-sp36-t1616             	attiny1616
 0621	blf-lantern                   	attiny85
 0622	blf-lantern-t1616             	attiny1616
+0623	sofirn-lt1s-pro               	attiny1616
 0631	sofirn-sp10-pro               	attiny1616
+0632	sofirn-sc21-pro               	attiny1616
+0714	wurkkos-ts10                  	attiny1616
+0715	wurkkos-ts25                  	attiny1616
 1618	gchart-fet1-t1616             	attiny1616
 
 Duplicates:

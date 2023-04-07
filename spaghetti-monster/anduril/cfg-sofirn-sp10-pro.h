@@ -3,7 +3,13 @@
 #include "hwdef-Sofirn_SP10-Pro.h"
 // ATTINY: 1616
 
+// don't blink during the ramp or at the ceiling
+#ifdef BLINK_AT_RAMP_MIDDLE
 #undef BLINK_AT_RAMP_MIDDLE
+#endif
+#ifdef BLINK_AT_RAMP_CEIL
+#undef BLINK_AT_RAMP_CEIL
+#endif
 
 #define USE_DYNAMIC_UNDERCLOCKING
 

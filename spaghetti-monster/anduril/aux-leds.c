@@ -27,14 +27,21 @@
 void indicator_led_update(uint8_t mode, uint8_t tick) {
     //uint8_t volts = voltage;  // save a few bytes by caching volatile value
     // turn off when battery is too low
+    #ifdef DUAL_VOLTAGE_FLOOR
+    if (((voltage < VOLTAGE_LOW) && (voltage > DUAL_VOLTAGE_FLOOR))
+        || (voltage < DUAL_VOLTAGE_LOW_LOW)) {
+    #else
     if (voltage < VOLTAGE_LOW) {
+    #endif
         indicator_led(0);
     }
     //#ifdef USE_INDICATOR_LOW_BAT_WARNING
+    #ifndef DUAL_VOLTAGE_FLOOR // this isn't set up for dual-voltage lights like the Sofirn SP10 Pro
     // fast blink a warning when battery is low but not critical
     else if (voltage < VOLTAGE_RED) {
         indicator_led(mode & (((tick & 0b0010)>>1) - 3));
     }
+    #endif
     //#endif
     // normal steady output, 0/1/2 = off / low / high
     else if ((mode & 0b00001111) < 3) {
@@ -96,7 +103,11 @@ void rgb_led_update(uint8_t mode, uint8_t arg) {
     // turn off aux LEDs when battery is empty
     // (but if voltage==0, that means we just booted and don't know yet)
     uint8_t volts = voltage;  // save a few bytes by caching volatile value
+    #ifdef DUAL_VOLTAGE_FLOOR
+    if ((volts) && (((voltage < VOLTAGE_LOW) && (voltage > DUAL_VOLTAGE_FLOOR)) || (voltage < DUAL_VOLTAGE_LOW_LOW))) {
+    #else
     if ((volts) && (volts < VOLTAGE_LOW)) {
+    #endif
         rgb_led_set(0);
         #ifdef USE_BUTTON_LED
         button_led_set(0);
