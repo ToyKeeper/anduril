@@ -184,6 +184,12 @@ inline void strobe_state_iter() {
             break;
         #endif
 
+        #ifdef USE_POLICE_COLOR_STROBE_MODE
+        case police_color_strobe_e:
+            police_color_strobe_iter();
+            break;
+        #endif
+
         #ifdef USE_LIGHTNING_MODE
         case lightning_storm_e:
             lightning_storm_iter();
@@ -205,7 +211,7 @@ inline void party_tactical_strobe_mode_iter(uint8_t st) {
     uint8_t del = strobe_delays[st];
     // TODO: make tac strobe brightness configurable?
     set_level(STROBE_BRIGHTNESS);
-    if (0) {}  // placeholde0
+    if (0) {}  // placeholder
     #ifdef USE_PARTY_STROBE_MODE
     else if (st == party_strobe_e) {  // party strobe
         #ifdef PARTY_STROBE_ONTIME
@@ -223,6 +229,28 @@ inline void party_tactical_strobe_mode_iter(uint8_t st) {
     #endif
     set_level(STROBE_OFF_LEVEL);
     nice_delay_ms(del);  // no return check necessary on final delay
+}
+#endif
+
+#ifdef USE_POLICE_COLOR_STROBE_MODE
+inline void police_color_strobe_iter() {
+    // one iteration of main loop()
+    uint8_t del = 66;
+    // TODO: make police strobe brightness configurable
+    uint8_t bright = memorized_level;
+    uint8_t channel = channel_mode;
+
+    for (uint8_t i=0; i<10; i++) {
+        if (0 == i) set_channel_mode(POLICE_COLOR_STROBE_CH1);
+        else if (5 == i) set_channel_mode(POLICE_COLOR_STROBE_CH2);
+        set_level(bright);
+        nice_delay_ms(del >> 1);
+        set_level(STROBE_OFF_LEVEL);
+        nice_delay_ms(del);
+    }
+
+    // restore this when done
+    set_channel_mode(channel);
 }
 #endif
 

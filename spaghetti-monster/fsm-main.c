@@ -39,6 +39,7 @@ ISR(TIMER1_COMPA_vect) {
 }
 #endif
 
+// FIXME: hw_setup() shouldn't be here ... move it entirely to hwdef files
 #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
 static inline void hw_setup() {
     // configure PWM channels

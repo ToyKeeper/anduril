@@ -54,10 +54,10 @@
 
 /********* specific settings for known driver types *********/
 // Anduril config file name (set it here or define it at the gcc command line)
-//#define CONFIGFILE cfg-blf-q8.h
+//#define CFG_H cfg-blf-q8.h
 
 #include "tk.h"
-#include incfile(CONFIGFILE)
+#include incfile(CFG_H)
 
 
 /********* Include headers which need to be before FSM *********/
@@ -92,8 +92,11 @@
 #include "spaghetti-monster.h"
 
 /********* does this build target have special code to include? *********/
-#ifdef OVERRIDES_FILE
-#include incfile(OVERRIDES_FILE)
+#ifdef HWDEF_C_FILE
+#include incfile(HWDEF_C_FILE)
+#endif
+#ifdef CFG_C_FILE
+#include incfile(CFG_C_FILE)
 #endif
 
 
@@ -138,8 +141,10 @@
 #include "tactical-mode.h"
 #endif
 
-#ifdef USE_TINT_RAMPING
-#include "tint-ramping.h"
+// allow the channel mode handler even when only 1 mode
+// (so a tint ramp light could still use 3H even if there's no other mode)
+#if defined(USE_CHANNEL_MODES)
+#include "channel-modes.h"
 #endif
 
 #ifdef USE_FACTORY_RESET
@@ -197,8 +202,8 @@
 #include "tactical-mode.c"
 #endif
 
-#ifdef USE_TINT_RAMPING
-#include "tint-ramping.c"
+#if defined(USE_CHANNEL_MODES)
+#include "channel-modes.c"
 #endif
 
 #ifdef USE_FACTORY_RESET
@@ -234,13 +239,13 @@ void setup() {
         #if defined(USE_MANUAL_MEMORY) && defined(USE_MANUAL_MEMORY_TIMER)
         // without this, initial boot-up brightness is wrong
         // when manual mem is enabled with a non-zero timer
-        if (manual_memory) memorized_level = manual_memory;
+        if (manual_memory) manual_memory_restore();
         #endif
 
-        #ifdef USE_TINT_RAMPING
-        // add tint ramping underneath every other state
-        push_state(tint_ramping_state, 0);
-        #endif  // ifdef USE_TINT_RAMPING
+        #if defined(USE_CHANNEL_MODES)
+        // add channel mode functions underneath every other state
+        push_state(channel_mode_state, 0);
+        #endif
 
         push_state(off_state, 1);
 
@@ -250,10 +255,10 @@ void setup() {
         // power clicky acts as a momentary mode
         load_config();
 
-        #ifdef USE_TINT_RAMPING
-        // add tint ramping underneath every other state
-        push_state(tint_ramping_state, 0);
-        #endif  // ifdef USE_TINT_RAMPING
+        #if defined(USE_CHANNEL_MODES)
+        // add channel mode functions underneath every other state
+        push_state(channel_mode_state, 0);
+        #endif
 
         if (button_is_pressed())
             // hold button to go to moon

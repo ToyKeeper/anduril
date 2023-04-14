@@ -2,46 +2,28 @@
  * fsm-ramping.c: Ramping functions for SpaghettiMonster.
  * Handles 1- to 4-channel smooth ramping on a single LED.
  *
- * Copyright (C) 2017 Selene ToyKeeper
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2017-2023 Selene ToyKeeper
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#ifndef FSM_RAMPING_C
-#define FSM_RAMPING_C
+#pragma once
 
 #ifdef USE_RAMPING
 
-void set_level(uint8_t level) {
-    #ifdef USE_JUMP_START
-    // maybe "jump start" the engine, if it's prone to slow starts
-    // (pulse the output high for a moment to wake up the power regulator)
-    // (only do this when starting from off and going to a low level)
-    if ((! actual_level)
-            && level
-            && (level < jump_start_level)) {
-        set_level(jump_start_level);
-        delay_4ms(JUMP_START_TIME/4);
-    }
-    #endif  // ifdef USE_JUMP_START
+void set_channel_mode(uint8_t mode) {
+    uint8_t cur_level = actual_level;
+    // turn off old LEDs before changing channel
+    set_level(0);
 
-    actual_level = level;
+    // change the channel
+    channel_mode = mode;
 
-    #ifdef USE_SET_LEVEL_GRADUALLY
-    gradual_target = level;
-    #endif
+    // update the LEDs
+    set_level(cur_level);
+}
 
+#ifdef HAS_AUX_LEDS
+inline void set_level_aux_leds(uint8_t level) {
     #ifdef USE_INDICATOR_LED_WHILE_RAMPING
         // use side-facing aux LEDs while main LEDs are on
         if (! go_to_standby) {
@@ -52,9 +34,6 @@ void set_level(uint8_t level) {
             button_led_set((level > 0) + (level > DEFAULT_LEVEL));
         #endif
         }
-        //if (level > MAX_1x7135) indicator_led(2);
-        //else if (level > 0) indicator_led(1);
-        //else if (! go_to_standby) indicator_led(0);
     #else  // turn off front-facing aux LEDs while main LEDs are on
         #if defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS)
         if (! go_to_standby) {
@@ -70,33 +49,173 @@ void set_level(uint8_t level) {
         }
         #endif
     #endif
+}
+#endif  // ifdef HAS_AUX_LEDS
 
-    #ifdef OVERRIDE_SET_LEVEL
-        set_level_override(level);
-    #else
 
-    #if defined(PWM1_CNT) && defined(PWM1_PHASE_RESET_ON) || defined(PWM1_PHASE_SYNC)
-    static uint8_t prev_level = 0;
-    uint8_t api_level = level;
+void set_level(uint8_t level) {
+    #ifdef USE_JUMP_START
+    // maybe "jump start" the engine, if it's prone to slow starts
+    // (pulse the output high for a moment to wake up the power regulator)
+    // (only do this when starting from off and going to a low level)
+    // TODO: allow different jump start behavior per channel mode
+    if ((! actual_level)
+            && level
+            && (level < jump_start_level)) {
+        set_level(jump_start_level);
+        delay_4ms(JUMP_START_TIME/4);
+    }
     #endif
 
-    //TCCR0A = PHASE;
+    #ifdef HAS_AUX_LEDS
+    set_level_aux_leds(level);
+    #endif
+
+    // call the relevant hardware-specific set_level_*()
+    SetLevelFuncPtr set_level_func = channel_modes[channel_mode];
+    set_level_func(level);
+
+    actual_level = level;
+
+    #ifdef USE_SET_LEVEL_GRADUALLY
+    gradual_target = level;
+    #endif
+
+    #ifdef USE_DYNAMIC_UNDERCLOCKING
+    auto_clock_speed();
+    #endif
+}
+
+///// Common set_level_*() functions shared by multiple lights /////
+// (unique lights should use their own,
+//  but these common versions cover most of the common hardware designs)
+
+#ifdef USE_SET_LEVEL_1CH
+// single set of LEDs with 1 power channel
+void set_level_1ch(uint8_t level) {
+    if (level == 0) {
+        LOW_PWM_LVL  = 0;
+    } else {
+        level --;  // PWM array index = level - 1
+        LOW_PWM_LVL  = PWM_GET(low_pwm_levels, level);
+    }
+}
+#endif
+
+#ifdef USE_SET_LEVEL_2CH_STACKED
+// single set of LEDs with 2 stacked power channels, DDFET+1 or DDFET+linear
+void set_level_2ch_stacked(uint8_t level) {
+    if (level == 0) {
+        LOW_PWM_LVL  = 0;
+        HIGH_PWM_LVL = 0;
+    } else {
+        level --;  // PWM array index = level - 1
+        LOW_PWM_LVL  = PWM_GET(low_pwm_levels,  level);
+        HIGH_PWM_LVL = PWM_GET(high_pwm_levels, level);
+    }
+}
+#endif
+
+#ifdef USE_SET_LEVEL_3CH_STACKED
+// single set of LEDs with 3 stacked power channels, like DDFET+N+1
+void set_level_3ch_stacked(uint8_t level) {
+    if (level == 0) {
+        LOW_PWM_LVL  = 0;
+        MED_PWM_LVL  = 0;
+        HIGH_PWM_LVL = 0;
+    } else {
+        level --;  // PWM array index = level - 1
+        LOW_PWM_LVL  = PWM_GET(low_pwm_levels,  level);
+        MED_PWM_LVL  = PWM_GET(med_pwm_levels,  level);
+        HIGH_PWM_LVL = PWM_GET(high_pwm_levels, level);
+    }
+}
+#endif
+
+// TODO: upgrade some older lights to dynamic PWM
+// TODO: 1ch w/ dynamic PWM
+// TODO: 1ch w/ dynamic PWM and opamp enable pins?
+// TODO: 2ch stacked w/ dynamic PWM
+// TODO: 2ch stacked w/ dynamic PWM and opamp enable pins?
+
+#ifdef USE_SET_LEVEL_2CH_BLEND
+// warm + cool blend w/ middle sag correction
+void set_level_2ch_blend(uint8_t level) {
+    #ifndef TINT_RAMPING_CORRECTION
+    #define TINT_RAMPING_CORRECTION 26  // 140% brightness at middle tint
+    #endif
+
+    BLEND_PWM_DATATYPE vpwm;
+
+    if (level == 0) {
+        vpwm  = 0;
+    } else {
+        level --;  // PWM array index = level - 1
+        vpwm  = PWM_GET(blend_pwm_levels, level);
+    }
+
+    // calculate actual PWM levels based on a single-channel ramp
+    // and a global tint value
+    uint16_t brightness = vpwm;
+    uint16_t warm_PWM, cool_PWM;
+    const uint16_t top = PWM_TOP;
+
+    // auto-tint modes
+    uint8_t mytint = channel_mode_args[channel_mode];
+
+    PWM_DATATYPE2 base_PWM = brightness;
+    #if defined(TINT_RAMPING_CORRECTION) && (TINT_RAMPING_CORRECTION > 0)
+        // middle tints sag, so correct for that effect
+        // by adding extra power which peaks at the middle tint
+        // (correction is only necessary when PWM is fast)
+        if (level > HALFSPEED_LEVEL) {
+            base_PWM = brightness
+                     + ((((PWM_DATATYPE2)brightness) * TINT_RAMPING_CORRECTION / 64)
+                        * triangle_wave(mytint) / 255);
+        }
+        // fade the triangle wave out when above 100% power,
+        // so it won't go over 200%
+        if (brightness > top) {
+            base_PWM -= 2 * (
+                             ((brightness - top) * TINT_RAMPING_CORRECTION / 64)
+                             * triangle_wave(mytint) / 255
+                        );
+        }
+        // guarantee no more than 200% power
+        if (base_PWM > (top << 1)) { base_PWM = top << 1; }
+    #endif
+
+    cool_PWM = (((PWM_DATATYPE2)mytint * (PWM_DATATYPE2)base_PWM) + 127) / 255;
+    warm_PWM = base_PWM - cool_PWM;
+    // when running at > 100% power, spill extra over to other channel
+    if (cool_PWM > top) {
+        warm_PWM += (cool_PWM - top);
+        cool_PWM = top;
+    } else if (warm_PWM > top) {
+        cool_PWM += (warm_PWM - top);
+        warm_PWM = top;
+    }
+
+    WARM_PWM_LVL = warm_PWM;
+    COOL_PWM_LVL = cool_PWM;
+}
+#endif  // ifdef USE_TINT_RAMPING
+
+#ifdef USE_LEGACY_SET_LEVEL
+// (this is mostly just here for reference, temporarily)
+// single set of LEDs with 1 to 3 stacked power channels,
+// like linear, FET+1, and FET+N+1
+// (default set_level_*() function for most lights)
+void set_level_legacy(uint8_t level) {
     if (level == 0) {
         #if PWM_CHANNELS >= 1
-        PWM1_LVL = 0;
+            PWM1_LVL = 0;
         #endif
         #if PWM_CHANNELS >= 2
-        PWM2_LVL = 0;
+            PWM2_LVL = 0;
         #endif
         #if PWM_CHANNELS >= 3
-        PWM3_LVL = 0;
-        #endif
-        #if PWM_CHANNELS >= 4
-        PWM4_LVL = 0;
-        #endif
-        #ifdef USE_TINT_RAMPING
-        TINT1_LVL = 0;
-        TINT2_LVL = 0;
+            PWM3_LVL = 0;
         #endif
         #if defined(PWM1_CNT) && defined(PWM1_PHASE_RESET_OFF)
             PWM1_CNT = 0;
@@ -121,7 +240,6 @@ void set_level(uint8_t level) {
         #endif
     } else {
         // enable the power channel, if relevant
-        #ifndef USE_TINT_RAMPING  // update_tint handles this better
         #ifdef LED_ENABLE_PIN
             #ifdef LED_ON_DELAY
             uint8_t led_enable_port_save = LED_ENABLE_PORT;
@@ -161,7 +279,6 @@ void set_level(uint8_t level) {
                 delay_4ms(LED2_ON_DELAY/4);
             #endif
         #endif
-        #endif  // ifndef USE_TINT_RAMPING
 
         // PWM array index = level - 1
         level --;
@@ -175,9 +292,6 @@ void set_level(uint8_t level) {
         #if PWM_CHANNELS >= 3
         PWM3_LVL = PWM_GET(pwm3_levels, level);
         #endif
-        #if PWM_CHANNELS >= 4
-        PWM4_LVL = PWM_GET(pwm4_levels, level);
-        #endif
 
         #ifdef USE_DYN_PWM
             uint16_t top = PWM_GET(pwm_tops, level);
@@ -190,29 +304,15 @@ void set_level(uint8_t level) {
             // (but don't wait when turning on from zero, because
             //  it'll reset the phase below anyway)
             // to be safe, allow at least 32 cycles to update TOP
-            while(prev_level && (PWM1_CNT > (top - 32))) {}
+            while(actual_level && (PWM1_CNT > (top - 32))) {}
             #endif
             // pulse frequency modulation, a.k.a. dynamic PWM
             PWM1_TOP = top;
-
-            // repeat for other channels if necessary
-            #ifdef PMW2_TOP
-                #if defined(PWM2_CNT) && defined(PWM2_PHASE_SYNC)
-                while(prev_level && (PWM2_CNT > (top - 32))) {}
-                #endif
-                PWM2_TOP = top;
-            #endif
-            #ifdef PMW3_TOP
-                #if defined(PWM3_CNT) && defined(PWM3_PHASE_SYNC)
-                while(prev_level && (PWM3_CNT > (top - 32))) {}
-                #endif
-                PWM3_TOP = top;
-            #endif
         #endif  // ifdef USE_DYN_PWM
         #if defined(PWM1_CNT) && defined(PWM1_PHASE_RESET_ON)
             // force reset phase when turning on from zero
             // (because otherwise the initial response is inconsistent)
-            if (! prev_level) {
+            if (! actual_level) {
                 PWM1_CNT = 0;
                 #if defined(PWM2_CNT) && defined(PWM2_PHASE_RESET_ON)
                 PWM2_CNT = 0;
@@ -223,114 +323,117 @@ void set_level(uint8_t level) {
             }
         #endif
     }
-    #ifdef USE_TINT_RAMPING
-    update_tint();
-    #endif
-
-    #if defined(PWM1_CNT) && defined(PWM1_PHASE_RESET_ON) || defined(PWM1_PHASE_SYNC)
-    prev_level = api_level;
-    #endif
-    #endif  // ifdef OVERRIDE_SET_LEVEL
     #ifdef USE_DYNAMIC_UNDERCLOCKING
     auto_clock_speed();
     #endif
 }
+#endif
+
 
 #ifdef USE_SET_LEVEL_GRADUALLY
 inline void set_level_gradually(uint8_t lvl) {
     gradual_target = lvl;
 }
 
-#ifndef OVERRIDE_GRADUAL_TICK
+
 // call this every frame or every few frames to change brightness very smoothly
 void gradual_tick() {
-    // go by only one ramp level at a time instead of directly to the target
-    uint8_t gt = gradual_target;
-    if (gt < actual_level) gt = actual_level - 1;
-    else if (gt > actual_level) gt = actual_level + 1;
+    // call the relevant hardware-specific function
+    GradualTickFuncPtr gradual_tick_func = gradual_tick_modes[channel_mode];
+    gradual_tick_func();
+}
 
-    /*
-    #ifdef LED_ENABLE_PIN_LEVEL_MIN
-    // only enable during part of the ramp
-    if ((gt >= LED_ENABLE_PIN_LEVEL_MIN)
-            && (gt <= LED_ENABLE_PIN_LEVEL_MAX))
-        LED_ENABLE_PORT |= (1 << LED_ENABLE_PIN);
-    else  // disable during other parts of the ramp
-        LED_ENABLE_PORT &= ~(1 << LED_ENABLE_PIN);
-    #endif
-    */
 
-    gt --;  // convert 1-based number to 0-based
-
+// reduce repetition with macros
+// common code at the beginning of every gradual tick handler
+#define GRADUAL_TICK_SETUP()  \
+    uint8_t gt = gradual_target;  \
+    if (gt < actual_level) gt = actual_level - 1;  \
+    else if (gt > actual_level) gt = actual_level + 1;  \
+    gt --;  \
     PWM_DATATYPE target;
 
-    #if PWM_CHANNELS >= 1
-    target = PWM_GET(pwm1_levels, gt);
-        #if PWM_CHANNELS > 1
-        if ((gt < actual_level)     // special case for FET-only turbo
-                && (PWM1_LVL == 0)  // (bypass adjustment period for first step)
-                && (target == PWM_TOP)) PWM1_LVL = PWM_TOP;
-        else
-        #endif
-    if (PWM1_LVL < target) PWM1_LVL ++;
-    else if (PWM1_LVL > target) PWM1_LVL --;
-    #endif
-    #if PWM_CHANNELS >= 2
-    target = PWM_GET(pwm2_levels, gt);
-        #if PWM_CHANNELS > 2
-        if ((gt < actual_level)     // special case for FET-only turbo
-                && (PWM2_LVL == 0)  // (bypass adjustment period for first step)
-                && (target == PWM_TOP)) PWM2_LVL = PWM_TOP;
-        else
-        #endif
-    if (PWM2_LVL < target) PWM2_LVL ++;
-    else if (PWM2_LVL > target) PWM2_LVL --;
-    #endif
-    #if PWM_CHANNELS >= 3
-    target = PWM_GET(pwm3_levels, gt);
-    if (PWM3_LVL < target) PWM3_LVL ++;
-    else if (PWM3_LVL > target) PWM3_LVL --;
-    #endif
-    #if PWM_CHANNELS >= 4
-    target = PWM_GET(pwm4_levels, gt);
-    if (PWM4_LVL < target) PWM4_LVL ++;
-    else if (PWM4_LVL > target) PWM4_LVL --;
-    #endif
+// tick the top layer of the stack
+#define GRADUAL_ADJUST_1CH(TABLE,PWM)  \
+    target = PWM_GET(TABLE, gt);  \
+    if (PWM < target) PWM ++;  \
+    else if (PWM > target) PWM --;
+
+// tick a base level of the stack
+// (with support for special DD FET behavior
+//  like "low=0, high=255" --> "low=255, high=254")
+#define GRADUAL_ADJUST(TABLE,PWM,TOP)  \
+    target = PWM_GET(TABLE, gt);  \
+    if ((gt < actual_level)  \
+        && (PWM == 0)  \
+        && (target == TOP)) PWM = TOP;  \
+    else  \
+    if (PWM < target) PWM ++;  \
+    else if (PWM > target) PWM --;
+
+// do this when output exactly matches a ramp level
+#define GRADUAL_IS_ACTUAL()  \
+    uint8_t orig = gradual_target;  \
+    set_level(gt + 1);  \
+    gradual_target = orig;
+
+#ifdef USE_GRADUAL_TICK_1CH
+void gradual_tick_1ch() {
+    GRADUAL_TICK_SETUP();
+
+    GRADUAL_ADJUST_1CH(low_pwm_levels, LOW_PWM_LVL);
 
     // did we go far enough to hit the next defined ramp level?
     // if so, update the main ramp level tracking var
-    if ((PWM1_LVL == PWM_GET(pwm1_levels, gt))
-        #if PWM_CHANNELS >= 2
-            && (PWM2_LVL == PWM_GET(pwm2_levels, gt))
-        #endif
-        #if PWM_CHANNELS >= 3
-            && (PWM3_LVL == PWM_GET(pwm3_levels, gt))
-        #endif
-        #if PWM_CHANNELS >= 4
-            && (PWM4_LVL == PWM_GET(pwm4_levels, gt))
-        #endif
+    if ((LOW_PWM_LVL  == PWM_GET(low_pwm_levels,  gt)))
+    {
+        GRADUAL_IS_ACTUAL();
+    }
+}
+#endif
+
+#ifdef USE_GRADUAL_TICK_2CH_STACKED
+void gradual_tick_2ch_stacked() {
+    GRADUAL_TICK_SETUP();
+
+    GRADUAL_ADJUST(low_pwm_levels, LOW_PWM_LVL, PWM_TOP);
+    GRADUAL_ADJUST_1CH(high_pwm_levels, HIGH_PWM_LVL);
+
+    // did we go far enough to hit the next defined ramp level?
+    // if so, update the main ramp level tracking var
+    if (   (LOW_PWM_LVL  == PWM_GET(low_pwm_levels,  gt))
+        && (HIGH_PWM_LVL == PWM_GET(high_pwm_levels, gt))
+       )
+    {
+        GRADUAL_IS_ACTUAL();
+    }
+}
+#endif
+
+#ifdef USE_GRADUAL_TICK_3CH_STACKED
+void gradual_tick_3ch_stacked() {
+    GRADUAL_TICK_SETUP();
+
+    GRADUAL_ADJUST(low_pwm_levels, LOW_PWM_LVL, PWM_TOP);
+    GRADUAL_ADJUST(med_pwm_levels, MED_PWM_LVL, PWM_TOP);
+    GRADUAL_ADJUST_1CH(high_pwm_levels, HIGH_PWM_LVL);
+
+    // did we go far enough to hit the next defined ramp level?
+    // if so, update the main ramp level tracking var
+    if (   (LOW_PWM_LVL  == PWM_GET(low_pwm_levels,  gt))
+        && (MED_PWM_LVL  == PWM_GET(med_pwm_levels,  gt))
+        && (HIGH_PWM_LVL == PWM_GET(high_pwm_levels, gt))
         )
     {
-        //actual_level = gt + 1;
-        uint8_t orig = gradual_target;
-        set_level(gt + 1);
-        gradual_target = orig;
+        GRADUAL_IS_ACTUAL();
     }
-    // is handled in set_level()
-    //#ifdef USE_TINT_RAMPING
-    //update_tint();
-    //#endif
-    // is handled in set_level()
-    //#ifdef USE_DYNAMIC_UNDERCLOCKING
-    //auto_clock_speed();
-    //#endif
 }
-#endif  // ifdef OVERRIDE_GRADUAL_TICK
+#endif
 #endif  // ifdef USE_SET_LEVEL_GRADUALLY
 
 
 #if defined(USE_TINT_RAMPING) && (!defined(TINT_RAMP_TOGGLE_ONLY))
-void update_tint() {
+void set_level_2ch_blend() {
     #ifndef TINT_RAMPING_CORRECTION
     #define TINT_RAMPING_CORRECTION 26  // 140% brightness at middle tint
     #endif
@@ -340,7 +443,7 @@ void update_tint() {
     //PWM_DATATYPE brightness = PWM_GET(pwm1_levels, level);
     uint16_t brightness = PWM1_LVL;
     uint16_t warm_PWM, cool_PWM;
-    #ifdef USE_DYN_PWM
+    #ifdef USE_STACKED_DYN_PWM
         uint16_t top = PWM1_TOP;
         //uint16_t top = PWM_GET(pwm_tops, actual_level-1);
     #else
@@ -414,5 +517,12 @@ void update_tint() {
 #endif  // ifdef USE_TINT_RAMPING
 
 
-#endif  // ifdef USE_RAMPING
+// define the channel mode lists
+// TODO: move to progmem
+SetLevelFuncPtr channel_modes[NUM_CHANNEL_MODES] = { SET_LEVEL_MODES };
+#ifdef USE_SET_LEVEL_GRADUALLY
+GradualTickFuncPtr gradual_tick_modes[NUM_CHANNEL_MODES] = { GRADUAL_TICK_MODES };
 #endif
+
+
+#endif  // ifdef USE_RAMPING

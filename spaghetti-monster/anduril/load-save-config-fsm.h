@@ -54,13 +54,6 @@ typedef enum {
         #ifdef USE_MANUAL_MEMORY_TIMER
             manual_memory_timer_e,
         #endif
-        #ifdef USE_TINT_RAMPING
-            manual_memory_tint_e,
-        #endif
-    #endif
-    #ifdef USE_TINT_RAMPING
-        tint_e,
-        tint_style_e,
     #endif
     #ifdef USE_JUMP_START
         jump_start_level_e,
@@ -100,7 +93,28 @@ typedef enum {
     tactical_lvl_2_e,
     tactical_lvl_3_e,
     #endif
-    eeprom_indexes_e_END
+    #if NUM_CHANNEL_MODES > 1
+        channel_mode_e,
+        channel_modes_enabled_e,
+        #if defined(USE_MANUAL_MEMORY)
+            manual_memory_channel_mode_e,
+        #endif
+    #endif
+    #ifdef USE_CHANNEL_MODE_ARGS
+        // this is an array, needs a few bytes
+        channel_mode_args_e,
+        #if defined(USE_MANUAL_MEMORY)
+            // this is an array, needs a few bytes
+            manual_memory_channel_args_e = channel_mode_args_e + NUM_CHANNEL_MODES,
+            // and this is an ugly ugly kludge
+            // FIXME: use a struct for eeprom, not an array
+            eeprom_indexes_e_END = manual_memory_channel_args_e + NUM_CHANNEL_MODES
+        #else
+            eeprom_indexes_e_END = channel_mode_args_e + NUM_CHANNEL_MODES
+        #endif
+    #else
+        eeprom_indexes_e_END
+    #endif
 } eeprom_indexes_e;
 #define EEPROM_BYTES eeprom_indexes_e_END
 

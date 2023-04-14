@@ -65,10 +65,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         // reset to manual memory level when timer expires
         if (manual_memory &&
                 (arg >= (manual_memory_timer * SLEEP_TICKS_PER_MINUTE))) {
-            memorized_level = manual_memory;
-            #ifdef USE_TINT_RAMPING
-            tint = manual_memory_tint;
-            #endif
+            manual_memory_restore();
         }
         #endif
         #ifdef USE_INDICATOR_LED
@@ -131,10 +128,7 @@ uint8_t off_state(Event event, uint16_t arg) {
             // this clause probably isn't used by any configs any more
             // but is included just in case someone configures it this way
             if (manual_memory) {
-                memorized_level = manual_memory;
-                #ifdef USE_TINT_RAMPING
-                tint = manual_memory_tint;
-                #endif
+                manual_memory_restore();
             }
         #endif
         set_level(nearest_level(memorized_level));

@@ -1,7 +1,8 @@
-#ifndef HWDEF_EMISAR_D4V2_H
-#define HWDEF_EMISAR_D4V2_H
+#pragma once
 
-/* Emisar D4v2 driver layout (attiny1634)
+/* hwdef for Emisar D4v2 (attiny1634)
+ * Copyright (C) 2019 Selene ToyKeeper
+ * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * Pin / Name / Function
  *   1    PA6   FET PWM (PWM1B)
@@ -33,6 +34,16 @@
 #define ATTINY 1634
 #include <avr/io.h>
 
+// TODO: add aux red and aux blue as disabled channel modes,
+// so they can be used for the police strobe?
+#define NUM_CHANNEL_MODES 1
+#define DEFAULT_CHANNEL_MODE 0
+#define SET_LEVEL_MODES      set_level_2ch_stacked
+#define GRADUAL_TICK_MODES   gradual_tick_2ch_stacked
+// no special handlers needed, can use common handlers
+#define USE_SET_LEVEL_2CH_STACKED
+#define USE_GRADUAL_TICK_2CH_STACKED
+
 #define PWM_CHANNELS 2
 
 #define SWITCH_PIN   PA2    // pin 5
@@ -41,12 +52,17 @@
 #define SWITCH_PCMSK PCMSK0 // PCMSK0 is for PCINT[7:0]
 #define SWITCH_PORT  PINA   // PINA or PINB or PINC
 
-#define PWM1_PIN PB3        // pin 16, 1x7135 PWM
-#define PWM1_LVL OCR1A      // OCR1A is the output compare register for PB3
+#define LOW_PWM_PIN PB3     // pin 16, 1x7135 PWM
+#define LOW_PWM_LVL OCR1A   // OCR1A is the output compare register for PB3
+#define PWM1_BITS 8
 
-#define PWM2_PIN PA6        // pin 1, FET PWM
-#define PWM2_LVL OCR1B      // OCR1B is the output compare register for PB1
+#define HIGH_PWM_PIN PA6    // pin 1, FET PWM
+#define HIGH_PWM_LVL OCR1B  // OCR1B is the output compare register for PB1
+#define PWM2_BITS 8
 
+// only using 8-bit on this light
+#define PWM_GET       PWM_GET8
+#define PWM_DATATYPE  uint8_t
 
 #define ADC_PRSCL   0x07    // clk/128
 
@@ -68,37 +84,46 @@
 #define BUTTON_LED_DDR  DDRA   // for all "PA" pins
 #define BUTTON_LED_PUE  PUEA   // for all "PA" pins
 
-// with so many pins, doing this all with #ifdefs gets awkward...
-// ... so just hardcode it in each hwdef file instead
+// this light has three aux LED channels: R, G, B
+#define USE_AUX_RGB_LEDS
+// it also has an independent LED in the button
+#define USE_BUTTON_LED
+// the aux LEDs are front-facing, so turn them off while main LEDs are on
+// TODO: the whole "indicator LED" thing needs to be refactored into
+//       "aux LED(s)" and "button LED(s)" since they work a bit differently
+#ifdef USE_INDICATOR_LED_WHILE_RAMPING
+#undef USE_INDICATOR_LED_WHILE_RAMPING
+#endif
+
 inline void hwdef_setup() {
-  // enable output ports
-  // 7135
-  DDRB = (1 << PWM1_PIN);
-  // FET, aux R/G/B, button LED
-  DDRA = (1 << PWM2_PIN)
-       | (1 << AUXLED_R_PIN)
-       | (1 << AUXLED_G_PIN)
-       | (1 << AUXLED_B_PIN)
-       | (1 << BUTTON_LED_PIN)
-       ;
+    // enable output ports
+    // 7135
+    DDRB = (1 << LOW_PWM_PIN);
+    // FET, aux R/G/B, button LED
+    DDRA = (1 << HIGH_PWM_PIN)
+         | (1 << AUXLED_R_PIN)
+         | (1 << AUXLED_G_PIN)
+         | (1 << AUXLED_B_PIN)
+         | (1 << BUTTON_LED_PIN)
+         ;
 
-  // configure PWM
-  // Setup PWM. F_pwm = F_clkio / 2 / N / TOP, where N = prescale factor, TOP = top of counter
-  // pre-scale for timer: N = 1
-  TCCR1A  = (0<<WGM11)  | (1<<WGM10)   // 8-bit (TOP=0xFF) (DS table 12-5)
-          | (1<<COM1A1) | (0<<COM1A0)  // PWM 1A in normal direction (DS table 12-4)
-          | (1<<COM1B1) | (0<<COM1B0)  // PWM 1B in normal direction (DS table 12-4)
-          ;
-  TCCR1B  = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
-          | (0<<WGM13)  | (0<<WGM12)  // phase-correct PWM (DS table 12-5)
-          ;
+    // configure PWM
+    // Setup PWM. F_pwm = F_clkio / 2 / N / TOP, where N = prescale factor, TOP = top of counter
+    // pre-scale for timer: N = 1
+    TCCR1A  = (0<<WGM11)  | (1<<WGM10)   // 8-bit (TOP=0xFF) (DS table 12-5)
+            | (1<<COM1A1) | (0<<COM1A0)  // PWM 1A in normal direction (DS table 12-4)
+            | (1<<COM1B1) | (0<<COM1B0)  // PWM 1B in normal direction (DS table 12-4)
+            ;
+    TCCR1B  = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
+            | (0<<WGM13)  | (0<<WGM12)  // phase-correct PWM (DS table 12-5)
+            ;
 
-  // set up e-switch
-  //PORTA = (1 << SWITCH_PIN);  // TODO: configure PORTA / PORTB / PORTC?
-  PUEA = (1 << SWITCH_PIN);  // pull-up for e-switch
-  SWITCH_PCMSK = (1 << SWITCH_PCINT);  // enable pin change interrupt
+    // set up e-switch
+    //PORTA = (1 << SWITCH_PIN);  // TODO: configure PORTA / PORTB / PORTC?
+    PUEA = (1 << SWITCH_PIN);  // pull-up for e-switch
+    SWITCH_PCMSK = (1 << SWITCH_PCINT);  // enable pin change interrupt
 }
+
 
 #define LAYOUT_DEFINED
 
-#endif

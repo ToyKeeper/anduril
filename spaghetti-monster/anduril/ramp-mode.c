@@ -26,6 +26,7 @@
 #include "sunset-timer.h"
 #endif
 
+
 uint8_t steady_state(Event event, uint16_t arg) {
     static int8_t ramp_direction = 1;
     #if (B_TIMING_OFF == B_RELEASE_T)
@@ -378,7 +379,26 @@ uint8_t steady_state(Event event, uint16_t arg) {
     #endif
 
     // 3 clicks: toggle smooth vs discrete ramping
-    else if (event == EV_3clicks) {
+    // (and/or 6 clicks when there are multiple channel modes)
+    // (handle 3C here anyway, when all but 1 mode is disabled)
+    else if ((event == EV_3clicks)
+        #if NUM_CHANNEL_MODES > 1
+             || (event == EV_6clicks)
+        ) {
+            // detect if > 1 channel mode is enabled,
+            // and if so, fall through so channel mode code can handle it
+            // otherwise, change the ramp style
+            if (event == EV_3clicks) {
+                uint8_t enabled = 0;
+                for (uint8_t m=0; m<NUM_CHANNEL_MODES; m++)
+                    enabled += channel_mode_enabled(m);
+                if (enabled > 1)
+                    return EVENT_NOT_HANDLED;
+            }
+        #else
+        ) {
+        #endif
+
         ramp_style = !ramp_style;
         save_config();
         #ifdef START_AT_MEMORIZED_LEVEL
@@ -400,9 +420,9 @@ uint8_t steady_state(Event event, uint16_t arg) {
     }
     #endif
 
-    #ifndef USE_TINT_RAMPING
     // 3H: momentary turbo (on lights with no tint ramping)
-    else if (event == EV_click3_hold) {
+    // (or 4H on lights with tint ramping)
+    else if (event == EV_MOMENTARY_TURBO) {
         if (! arg) {  // first frame only, to allow thermal regulation to work
             #ifdef USE_2C_STYLE_CONFIG
             uint8_t tl = style_2c ? MAX_LEVEL : turbo_level;
@@ -413,11 +433,10 @@ uint8_t steady_state(Event event, uint16_t arg) {
         }
         return MISCHIEF_MANAGED;
     }
-    else if (event == EV_click3_hold_release) {
+    else if (event == EV_MOMENTARY_TURBO_RELEASE) {
         set_level_and_therm_target(memorized_level);
         return MISCHIEF_MANAGED;
     }
-    #endif  // ifndef USE_TINT_RAMPING
 
     #ifdef USE_MOMENTARY_MODE
     // 5 clicks: shortcut to momentary mode
@@ -439,10 +458,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
     #ifdef USE_MANUAL_MEMORY
     else if (event == EV_10clicks) {
         // turn on manual memory and save current brightness
-        manual_memory = actual_level;
-        #ifdef USE_TINT_RAMPING
-        manual_memory_tint = tint;  // remember tint too
-        #endif
+        manual_memory_save();
         save_config();
         blink_once();
         return MISCHIEF_MANAGED;
@@ -643,6 +659,27 @@ void set_level_and_therm_target(uint8_t level) {
 #define set_level_and_therm_target(level) set_level(level)
 #endif
 
+void manual_memory_restore() {
+    memorized_level = manual_memory;
+    #if NUM_CHANNEL_MODES > 1
+        channel_mode = manual_memory_channel_mode;
+    #endif
+    #ifdef USE_CHANNEL_MODE_ARGS
+        for (uint8_t i=0; i<NUM_CHANNEL_MODES; i++)
+          channel_mode_args[i] = manual_memory_channel_args[i];
+    #endif
+}
+
+void manual_memory_save() {
+    manual_memory = actual_level;
+    #if NUM_CHANNEL_MODES > 1
+        manual_memory_channel_mode = channel_mode;
+    #endif
+    #ifdef USE_CHANNEL_MODE_ARGS
+        for (uint8_t i=0; i<NUM_CHANNEL_MODES; i++)
+          manual_memory_channel_args[i] = channel_mode_args[i];
+    #endif
+}
 
 #endif
 

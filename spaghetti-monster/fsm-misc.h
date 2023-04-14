@@ -53,6 +53,11 @@ void indicator_led(uint8_t lvl);
 void button_led_set(uint8_t lvl);
 #endif
 
+// if any type of aux LEDs exist, define a shorthand flag for it
+#if defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS) || defined(USE_BUTTON_LED)
+#define HAS_AUX_LEDS
+#endif
+
 #ifdef USE_AUX_RGB_LEDS
 // value: 0b00BBGGRR
 // each pair of bits: 0=off, 1=low, 2=high

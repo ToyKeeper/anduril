@@ -56,13 +56,6 @@ void load_config() {
             #ifdef USE_MANUAL_MEMORY_TIMER
                 manual_memory_timer = eeprom[manual_memory_timer_e];
             #endif
-            #ifdef USE_TINT_RAMPING
-                manual_memory_tint = eeprom[manual_memory_tint_e];
-            #endif
-        #endif
-        #ifdef USE_TINT_RAMPING
-            tint = eeprom[tint_e];
-            tint_style = eeprom[tint_style_e];
         #endif
         #ifdef USE_JUMP_START
             jump_start_level = eeprom[jump_start_level_e],
@@ -99,6 +92,21 @@ void load_config() {
         tactical_levels[0] = eeprom[tactical_lvl_1_e];
         tactical_levels[1] = eeprom[tactical_lvl_2_e];
         tactical_levels[2] = eeprom[tactical_lvl_3_e];
+        #endif
+        #if NUM_CHANNEL_MODES > 1
+            channel_mode = eeprom[channel_mode_e];
+            channel_modes_enabled = eeprom[channel_modes_enabled_e];
+            #if defined(USE_MANUAL_MEMORY)
+                manual_memory_channel_mode = eeprom[manual_memory_channel_mode_e];
+            #endif
+        #endif
+        #ifdef USE_CHANNEL_MODE_ARGS
+            for (uint8_t i=0; i<NUM_CHANNEL_MODES; i++)
+                channel_mode_args[i] = eeprom[i + channel_mode_args_e];
+            #if defined(USE_MANUAL_MEMORY)
+                for (uint8_t i=0; i<NUM_CHANNEL_MODES; i++)
+                    manual_memory_channel_args[i] = eeprom[i + manual_memory_channel_args_e];
+            #endif
         #endif
     }
     #ifdef START_AT_MEMORIZED_LEVEL
@@ -140,13 +148,6 @@ void save_config() {
         #ifdef USE_MANUAL_MEMORY_TIMER
             eeprom[manual_memory_timer_e] = manual_memory_timer;
         #endif
-        #ifdef USE_TINT_RAMPING
-            eeprom[manual_memory_tint_e] = manual_memory_tint;
-        #endif
-    #endif
-    #ifdef USE_TINT_RAMPING
-        eeprom[tint_e] = tint;
-        eeprom[tint_style_e] = tint_style;
     #endif
     #ifdef USE_JUMP_START
         eeprom[jump_start_level_e] = jump_start_level,
@@ -183,6 +184,21 @@ void save_config() {
     eeprom[tactical_lvl_1_e] = tactical_levels[0];
     eeprom[tactical_lvl_2_e] = tactical_levels[1];
     eeprom[tactical_lvl_3_e] = tactical_levels[2];
+    #endif
+    #if NUM_CHANNEL_MODES > 1
+        eeprom[channel_mode_e] = channel_mode;
+        eeprom[channel_modes_enabled_e] = channel_modes_enabled;
+        #if defined(USE_MANUAL_MEMORY)
+            eeprom[manual_memory_channel_mode_e] = manual_memory_channel_mode;
+        #endif
+    #endif
+    #ifdef USE_CHANNEL_MODE_ARGS
+        for (uint8_t i=0; i<NUM_CHANNEL_MODES; i++)
+            eeprom[i + channel_mode_args_e] = channel_mode_args[i];
+        #if defined(USE_MANUAL_MEMORY)
+            for (uint8_t i=0; i<NUM_CHANNEL_MODES; i++)
+                eeprom[i + manual_memory_channel_args_e] = manual_memory_channel_args[i];
+        #endif
     #endif
 
     save_eeprom();

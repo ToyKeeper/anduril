@@ -72,6 +72,17 @@
 #define B_TIMING_OFF B_TIMEOUT_T
 #endif
 
+
+// move a couple actions depending on whether there are channel modes
+#ifdef USE_CHANNEL_MODE_ARGS
+  #define EV_MOMENTARY_TURBO          EV_click4_hold
+  #define EV_MOMENTARY_TURBO_RELEASE  EV_click4_hold_release
+#else
+  #define EV_MOMENTARY_TURBO          EV_click3_hold
+  #define EV_MOMENTARY_TURBO_RELEASE  EV_click3_hold_release
+#endif
+
+
 // default ramp options if not overridden earlier per-driver
 #ifndef RAMP_STYLE
 #define RAMP_STYLE 0  // smooth default
@@ -102,6 +113,7 @@
 // mile marker(s) partway up the ramp
 // default: blink only at border between regulated and FET
 #ifdef BLINK_AT_RAMP_MIDDLE
+  // FIXME: remove PWM_CHANNELS, use some other abstraction
   #if PWM_CHANNELS >= 3
     #ifndef BLINK_AT_RAMP_MIDDLE_1
       #define BLINK_AT_RAMP_MIDDLE_1 MAX_Nx7135
@@ -166,6 +178,9 @@ uint8_t manual_memory = DEFAULT_MANUAL_MEMORY;
 uint8_t manual_memory_timer = DEFAULT_MANUAL_MEMORY_TIMER;
 #endif
 #endif
+void manual_memory_restore();
+void manual_memory_save();
+
 #ifdef USE_SIMPLE_UI
     // whether to enable the simplified interface or not
     uint8_t simple_ui_active = SIMPLE_UI_ACTIVE;
