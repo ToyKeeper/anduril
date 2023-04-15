@@ -344,39 +344,6 @@ void gradual_tick() {
 }
 
 
-// reduce repetition with macros
-// common code at the beginning of every gradual tick handler
-#define GRADUAL_TICK_SETUP()  \
-    uint8_t gt = gradual_target;  \
-    if (gt < actual_level) gt = actual_level - 1;  \
-    else if (gt > actual_level) gt = actual_level + 1;  \
-    gt --;  \
-    PWM_DATATYPE target;
-
-// tick the top layer of the stack
-#define GRADUAL_ADJUST_1CH(TABLE,PWM)  \
-    target = PWM_GET(TABLE, gt);  \
-    if (PWM < target) PWM ++;  \
-    else if (PWM > target) PWM --;
-
-// tick a base level of the stack
-// (with support for special DD FET behavior
-//  like "low=0, high=255" --> "low=255, high=254")
-#define GRADUAL_ADJUST(TABLE,PWM,TOP)  \
-    target = PWM_GET(TABLE, gt);  \
-    if ((gt < actual_level)  \
-        && (PWM == 0)  \
-        && (target == TOP)) PWM = TOP;  \
-    else  \
-    if (PWM < target) PWM ++;  \
-    else if (PWM > target) PWM --;
-
-// do this when output exactly matches a ramp level
-#define GRADUAL_IS_ACTUAL()  \
-    uint8_t orig = gradual_target;  \
-    set_level(gt + 1);  \
-    gradual_target = orig;
-
 #ifdef USE_GRADUAL_TICK_1CH
 void gradual_tick_1ch() {
     GRADUAL_TICK_SETUP();

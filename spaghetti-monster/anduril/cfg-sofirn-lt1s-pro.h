@@ -16,6 +16,16 @@
 // (it seriously would be more practical to just use moon instead)
 #define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
 
+// channel modes...
+// CM_WHITE, CM_AUTO, CM_RED, CM_WHITE_RED
+#define DEFAULT_CHANNEL_MODE           CM_AUTO
+
+#define FACTORY_RESET_WARN_CHANNEL     CM_RED
+#define FACTORY_RESET_SUCCESS_CHANNEL  CM_WHITE
+
+#define POLICE_COLOR_STROBE_CH1        CM_RED
+#define POLICE_COLOR_STROBE_CH2        CM_WHITE
+
 // how much to increase total brightness at middle tint
 // (0 = 100% brightness, 64 = 200% brightness)
 // seems unnecessary on this light
@@ -32,6 +42,7 @@
 // shared table for white and red
 #define PWM1_LEVELS PWM_LEVELS
 #define MAX_1x7135 75
+#define MIN_THERM_STEPDOWN 75  // should be above highest dyn_pwm level
 // FIXME: clock at 5 MHz w/ full+half+quarter speeds,
 // instead of 10 MHz with w/ only half+quarter
 // (10 MHz is just wasting power)
@@ -76,11 +87,6 @@
 #define USE_POLICE_COLOR_STROBE_MODE
 #undef  TACTICAL_LEVELS
 #define TACTICAL_LEVELS 120,30,(RAMP_SIZE+3)  // high, low, police strobe
-
-// FIXME: thermal regulation should actually work fine on this light
-#ifdef USE_THERMAL_REGULATION
-#undef USE_THERMAL_REGULATION
-#endif
 
 // don't blink while ramping
 #ifdef BLINK_AT_RAMP_MIDDLE

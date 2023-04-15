@@ -38,33 +38,18 @@ Driver pinout:
 // TODO: or maybe if args are defined, the USE_ should be auto-set?
 // 128=middle CCT, N/A, N/A, 255=100% red
 #define CHANNEL_MODE_ARGS 128,0,0,255
-#define SET_LEVEL_MODES      set_level_2ch_dyn_blend, \
-                             set_level_auto_3ch_dyn_blend, \
-                             set_level_1ch_dyn, \
+#define SET_LEVEL_MODES      set_level_white_blend, \
+                             set_level_auto_3ch_blend, \
+                             set_level_red, \
                              set_level_red_white_blend
-// TODO: gradual ticking for thermal regulation
-#define GRADUAL_TICK_MODES   gradual_tick_2ch_blend, \
+// gradual ticking for thermal regulation
+#define GRADUAL_TICK_MODES   gradual_tick_white_blend, \
                              gradual_tick_auto_3ch_blend, \
-                             gradual_tick_1ch, \
+                             gradual_tick_red, \
                              gradual_tick_red_white_blend
-// can use some of the common handlers?
-//#define USE_SET_LEVEL_2CH_BLEND
-//#define USE_SET_LEVEL_AUTO_3CH_BLEND
-//#define USE_SET_LEVEL_1CH
-//#define USE_SET_LEVEL_RED_WHITE_BLEND
-// TODO:
-//#define USE_GRADUAL_TICK_2CH_BLEND
-//#define USE_GRADUAL_TICK_AUTO_3CH_BLEND
-//#define USE_GRADUAL_TICK_1CH
-//#define USE_GRADUAL_TICK_RED_WHITE_BLEND
-
-#define DEFAULT_CHANNEL_MODE           CM_AUTO
-
-#define FACTORY_RESET_WARN_CHANNEL     CM_RED
-#define FACTORY_RESET_SUCCESS_CHANNEL  CM_WHITE
-
-#define POLICE_COLOR_STROBE_CH1        CM_RED
-#define POLICE_COLOR_STROBE_CH2        CM_WHITE
+// can use some of the common handlers
+//#define USE_CALC_2CH_BLEND
+//#define USE_CALC_AUTO_3CH_BLEND
 
 // TODO: remove this as soon as it's not needed
 #define PWM_CHANNELS 1
@@ -119,10 +104,15 @@ Driver pinout:
 
 
 // custom channel modes
-void set_level_1ch_dyn(uint8_t level);
-void set_level_2ch_dyn_blend(uint8_t level);
-void set_level_auto_3ch_dyn_blend(uint8_t level);
+void set_level_red(uint8_t level);
+void set_level_white_blend(uint8_t level);
+void set_level_auto_3ch_blend(uint8_t level);
 void set_level_red_white_blend(uint8_t level);
+
+void gradual_tick_red();
+void gradual_tick_white_blend();
+void gradual_tick_auto_3ch_blend();
+void gradual_tick_red_white_blend();
 
 
 inline void hwdef_setup() {
