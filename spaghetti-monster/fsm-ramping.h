@@ -168,7 +168,7 @@ PROGMEM const PWM_DATATYPE blend_pwm_levels[] = { BLEND_PWM_LEVELS };
 // pulse frequency modulation, a.k.a. dynamic PWM
 // (different ceiling / frequency at each ramp level)
 // FIXME: dynamic PWM should be a per-channel option, not global
-#ifdef USE_DYN_PWM
+#ifdef PWM_TOPS
 PROGMEM const PWM_DATATYPE pwm_tops[] = { PWM_TOPS };
 #endif
 

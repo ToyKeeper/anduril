@@ -15,9 +15,6 @@ Driver pinout:
 
 #define HWDEF_C_FILE hwdef-Sofirn_LT1S-Pro.c
 
-#ifdef ATTINY
-#undef ATTINY
-#endif
 #define ATTINY 1616
 #include <avr/io.h>
 
@@ -39,20 +36,21 @@ Driver pinout:
 // TODO: blend mode should enable this automatically?
 #define USE_CHANNEL_MODE_ARGS
 // TODO: or maybe if args are defined, the USE_ should be auto-set?
+// 128=middle CCT, N/A, N/A, 255=100% red
 #define CHANNEL_MODE_ARGS 128,0,0,255
-#define SET_LEVEL_MODES      set_level_2ch_blend, \
-                             set_level_auto_3ch_blend, \
-                             set_level_1ch, \
+#define SET_LEVEL_MODES      set_level_2ch_dyn_blend, \
+                             set_level_auto_3ch_dyn_blend, \
+                             set_level_1ch_dyn, \
                              set_level_red_white_blend
 // TODO: gradual ticking for thermal regulation
 #define GRADUAL_TICK_MODES   gradual_tick_2ch_blend, \
                              gradual_tick_auto_3ch_blend, \
                              gradual_tick_1ch, \
                              gradual_tick_red_white_blend
-// can use some of the common handlers
-#define USE_SET_LEVEL_2CH_BLEND
+// can use some of the common handlers?
+//#define USE_SET_LEVEL_2CH_BLEND
 //#define USE_SET_LEVEL_AUTO_3CH_BLEND
-#define USE_SET_LEVEL_1CH
+//#define USE_SET_LEVEL_1CH
 //#define USE_SET_LEVEL_RED_WHITE_BLEND
 // TODO:
 //#define USE_GRADUAL_TICK_2CH_BLEND
@@ -78,27 +76,30 @@ Driver pinout:
 #define SWITCH_INTFLG  VPORTA.INTFLAGS
 
 
+// dynamic PWM
+// PWM parameters of all channels are tied together because they share a counter
+#define PWM_TOP_INIT 511  // highest value used in the top half of the ramp
+#define PWM_TOP TCA0.SINGLE.PERBUF   // holds the TOP value for for variable-resolution PWM
+#define PWM_CNT TCA0.SINGLE.CNT   // for resetting phase after each TOP adjustment
+
 // warm tint channel
-#define WARM_PWM_PIN PB0
-#define WARM_PWM_LVL TCA0.SINGLE.CMP0  // CMP1 is the output compare register for PB0
+//#define WARM_PWM_PIN PB0
+#define WARM_PWM_LVL TCA0.SINGLE.CMP0BUF  // CMP1 is the output compare register for PB0
 
 // cold tint channel
-#define COOL_PWM_PIN PB1
-#define COOL_PWM_LVL TCA0.SINGLE.CMP1  // CMP0 is the output compare register for PB1
+//#define COOL_PWM_PIN PB1
+#define COOL_PWM_LVL TCA0.SINGLE.CMP1BUF  // CMP0 is the output compare register for PB1
 
 // red channel
-#define RED_PWM_PIN PB0                //
-#define RED_PWM_LVL TCA0.SINGLE.CMP2   // CMP2 is the output compare register for PB2
+//#define RED_PWM_PIN PB2
+#define RED_PWM_LVL TCA0.SINGLE.CMP2BUF   // CMP2 is the output compare register for PB2
 
-// translate cfg names to FSM names
-#define LOW_PWM_LEVELS  RED_PWM_LEVELS
-#define LOW_PWM_LVL     RED_PWM_LVL
-#define LOW_PWM_PIN     RED_PWM_PIN
-
-// only using 8-bit on this light
-#define PWM_GET       PWM_GET8
-#define PWM_DATATYPE  uint8_t
-#define BLEND_PWM_DATATYPE  uint8_t
+// only using 16-bit PWM on this light
+#define PWM_BITS 16
+#define PWM_GET       PWM_GET16
+#define PWM_DATATYPE  uint16_t
+#define PWM1_DATATYPE uint16_t
+#define PWM_DATATYPE2 uint32_t
 
 
 // average drop across diode on this hardware
@@ -118,7 +119,9 @@ Driver pinout:
 
 
 // custom channel modes
-void set_level_auto_3ch_blend(uint8_t level);
+void set_level_1ch_dyn(uint8_t level);
+void set_level_2ch_dyn_blend(uint8_t level);
+void set_level_auto_3ch_dyn_blend(uint8_t level);
 void set_level_red_white_blend(uint8_t level);
 
 
@@ -128,7 +131,11 @@ inline void hwdef_setup() {
     _PROTECTED_WRITE( CLKCTRL.MCLKCTRLB, CLKCTRL_PDIV_2X_gc | CLKCTRL_PEN_bm );
 
     //VPORTA.DIR = ...;
-    VPORTB.DIR = PIN0_bm | PIN1_bm | PIN2_bm | PIN5_bm;  // Outputs: Aux LED and PWMs
+    // Outputs:
+    VPORTB.DIR = PIN0_bm   // warm white
+               | PIN1_bm   // cool white
+               | PIN2_bm   // red
+               | PIN5_bm;  // aux LED
     //VPORTC.DIR = ...;
 
     // enable pullups on the unused pins to reduce power
@@ -154,10 +161,20 @@ inline void hwdef_setup() {
     PORTC.PIN3CTRL = PORT_PULLUPEN_bm;
 
     // set up the PWM
+    // https://ww1.microchip.com/downloads/en/DeviceDoc/ATtiny1614-16-17-DataSheet-DS40002204A.pdf
+    // PB0 is TCA0:WO0, use TCA_SINGLE_CMP0EN_bm
+    // PB1 is TCA0:WO1, use TCA_SINGLE_CMP1EN_bm
+    // PB2 is TCA0:WO2, use TCA_SINGLE_CMP2EN_bm
+    // For Fast (Single Slope) PWM use TCA_SINGLE_WGMODE_SINGLESLOPE_gc
+    // For Phase Correct (Dual Slope) PWM use TCA_SINGLE_WGMODE_DSBOTTOM_gc
     // TODO: add references to MCU documentation
-    TCA0.SINGLE.CTRLB = TCA_SINGLE_CMP0EN_bm | TCA_SINGLE_CMP1EN_bm | TCA_SINGLE_CMP2EN_bm | TCA_SINGLE_WGMODE_DSBOTTOM_gc;
-    TCA0.SINGLE.PER = 255;
-    TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc | TCA_SINGLE_ENABLE_bm;
+    TCA0.SINGLE.CTRLB = TCA_SINGLE_CMP0EN_bm
+                      | TCA_SINGLE_CMP1EN_bm
+                      | TCA_SINGLE_CMP2EN_bm
+                      | TCA_SINGLE_WGMODE_DSBOTTOM_gc;
+    PWM_TOP = PWM_TOP_INIT;
+    TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc
+                      | TCA_SINGLE_ENABLE_bm;
 }
 
 

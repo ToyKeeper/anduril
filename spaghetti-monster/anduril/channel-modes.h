@@ -7,7 +7,6 @@
 #pragma once
 
 #if defined(USE_MANUAL_MEMORY) && defined(USE_CHANNEL_MODE_ARGS)
-// TODO: save to eeprom
 // remember and reset 1 extra parameter per channel mode (like tint)
 uint8_t manual_memory_channel_args[NUM_CHANNEL_MODES] = { CHANNEL_MODE_ARGS };
 #endif
