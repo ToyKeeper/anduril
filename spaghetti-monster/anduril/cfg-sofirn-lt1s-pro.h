@@ -4,9 +4,17 @@
 #include "hwdef-Sofirn_LT1S-Pro.h"
 // ATTINY: 1616
 
-// off mode: high (2)
+// off mode: low (1)
 // lockout: blinking (3)
-#define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 2)
+// Standby power usage:
+// - aux high: 6.9 mA (30 days)
+// - aux low:  0.16 mA (3.5 years)
+// - red moon: 2.17 mA (96 days)
+// - white moon: 1.47 mA (141 days)
+// Low mode isn't bright enough to be useful on this light,
+// but at least it doesn't drain the battery 3X faster than moon mode.
+// (it seriously would be more practical to just use moon instead)
+#define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
 
 // how much to increase total brightness at middle tint
 // (0 = 100% brightness, 64 = 200% brightness)
