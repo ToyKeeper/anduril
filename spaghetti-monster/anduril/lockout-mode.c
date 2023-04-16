@@ -65,6 +65,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         rgb_led_update(rgb_led_lockout_mode, 0);
     } else
     #endif
+
     if (event == EV_tick) {
         if (arg > HOLD_TIMEOUT) {
             go_to_standby = 1;
@@ -77,6 +78,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         }
         return MISCHIEF_MANAGED;
     }
+
     #if defined(TICK_DURING_STANDBY) && (defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS))
     else if (event == EV_sleep_tick) {
         #if defined(USE_INDICATOR_LED)
@@ -94,6 +96,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         set_state(off_state, 0);
         return MISCHIEF_MANAGED;
     }
+
     // 4 clicks: exit and turn on
     else if (event == EV_4clicks) {
         #ifdef USE_MANUAL_MEMORY
@@ -105,6 +108,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         set_state(steady_state, memorized_level);
         return MISCHIEF_MANAGED;
     }
+
     // 4 clicks, but hold last: exit and start at floor
     else if (event == EV_click4_hold) {
         //blink_once();
@@ -115,26 +119,20 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         set_state(steady_state, 1);
         return MISCHIEF_MANAGED;
     }
+
     // 5 clicks: exit and turn on at ceiling level
     else if (event == EV_5clicks) {
         set_state(steady_state, MAX_LEVEL);
         return MISCHIEF_MANAGED;
     }
 
-    ////////// Every action below here is blocked in the simple UI //////////
-    #ifdef USE_SIMPLE_UI
+    ////////// Every action below here is blocked in the (non-Extended) Simple UI //////////
+
+    #if defined(USE_SIMPLE_UI) && !defined(USE_EXTENDED_SIMPLE_UI)
     if (simple_ui_active) {
         return EVENT_NOT_HANDLED;
     }
-    #endif
-
-    #ifdef USE_AUTOLOCK
-    // 10H: configure the autolock option
-    else if (event == EV_click10_hold) {
-        push_state(autolock_config_state, 0);
-        return MISCHIEF_MANAGED;
-    }
-    #endif
+    #endif  // if simple UI but not extended simple UI
 
     #if defined(USE_INDICATOR_LED)
     // 7 clicks: rotate through indicator LED modes (lockout mode)
@@ -184,6 +182,21 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     else if (event == EV_click7_hold_release) {
         setting_rgb_mode_now = 0;
         save_config();
+        return MISCHIEF_MANAGED;
+    }
+    #endif
+
+    #if defined(USE_EXTENDED_SIMPLE_UI) && defined(USE_SIMPLE_UI)
+    ////////// Every action below here is blocked in the Extended Simple UI //////////
+    if (simple_ui_active) {
+        return EVENT_NOT_HANDLED;
+    }
+    #endif  // if extended simple UI
+
+    #ifdef USE_AUTOLOCK
+    // 10H: configure the autolock option
+    else if (event == EV_click10_hold) {
+        push_state(autolock_config_state, 0);
         return MISCHIEF_MANAGED;
     }
     #endif

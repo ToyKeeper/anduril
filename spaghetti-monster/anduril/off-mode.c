@@ -45,6 +45,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         if (! arg) { go_to_standby = 1; }
         return MISCHIEF_MANAGED;
     }
+
     // go back to sleep eventually if we got bumped but didn't leave "off" state
     else if (event == EV_tick) {
         if (arg > HOLD_TIMEOUT) {
@@ -58,6 +59,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         }
         return MISCHIEF_MANAGED;
     }
+
     #if defined(TICK_DURING_STANDBY)
     // blink the indicator LED, maybe
     else if (event == EV_sleep_tick) {
@@ -84,6 +86,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif
+
     #if (B_TIMING_ON == B_PRESS_T)
     // hold (initially): go to lowest level (floor), but allow abort for regular click
     else if (event == EV_click1_press) {
@@ -91,6 +94,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif  // B_TIMING_ON == B_PRESS_T
+
     // hold: go to lowest level
     else if (event == EV_click1_hold) {
         #if (B_TIMING_ON == B_PRESS_T)
@@ -116,11 +120,13 @@ uint8_t off_state(Event event, uint16_t arg) {
         }
         return MISCHIEF_MANAGED;
     }
+
     // hold, release quickly: go to lowest level (floor)
     else if (event == EV_click1_hold_release) {
         set_state(steady_state, 1);
         return MISCHIEF_MANAGED;
     }
+
     #if (B_TIMING_ON != B_TIMEOUT_T)
     // 1 click (before timeout): go to memorized level, but allow abort for double click
     else if (event == EV_click1_release) {
@@ -135,6 +141,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif  // if (B_TIMING_ON != B_TIMEOUT_T)
+
     // 1 click: regular mode
     else if (event == EV_1click) {
         #if (B_TIMING_ON != B_TIMEOUT_T)
@@ -147,6 +154,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         #endif
         return MISCHIEF_MANAGED;
     }
+
     // click, hold: momentary at ceiling or turbo
     else if (event == EV_click2_hold) {
         uint8_t turbo_level;  // how bright is "turbo"?
@@ -178,16 +186,19 @@ uint8_t off_state(Event event, uint16_t arg) {
         set_level(0);
         return MISCHIEF_MANAGED;
     }
+
     // 2 clicks: highest mode (ceiling)
     else if (event == EV_2clicks) {
         set_state(steady_state, MAX_LEVEL);
         return MISCHIEF_MANAGED;
     }
+
     // 3 clicks (initial press): off, to prep for later events
     else if (event == EV_click3_press) {
         set_level(0);
         return MISCHIEF_MANAGED;
     }
+
     #ifdef USE_BATTCHECK
     // 3 clicks: battcheck mode / blinky mode group 1
     else if (event == EV_3clicks) {
@@ -195,6 +206,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif
+
     #ifdef USE_LOCKOUT_MODE
     // 4 clicks: soft lockout
     else if (event == EV_4clicks) {
@@ -203,6 +215,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif
+
     #if defined(USE_FACTORY_RESET) && defined(USE_SOFT_FACTORY_RESET)
     // 13 clicks and hold the last click: invoke factory reset (reboot)
     else if (event == EV_click13_hold) {
@@ -210,6 +223,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif
+
     #ifdef USE_VERSION_CHECK
     // 15+ clicks: show the version number
     else if (event == EV_15clicks) {
@@ -232,18 +246,14 @@ uint8_t off_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
 
-    ////////// Every action below here is blocked in the simple UI //////////
+    ////////// Every action below here is blocked in the (non-Extended) Simple UI //////////
+
+    #ifndef USE_EXTENDED_SIMPLE_UI
     if (simple_ui_active) {
         return EVENT_NOT_HANDLED;
     }
-    // 10 clicks: enable simple UI
-    else if (event == EV_10clicks) {
-        blink_once();
-        simple_ui_active = 1;
-        save_config();
-        return MISCHIEF_MANAGED;
-    }
-    #endif
+    #endif  // ifndef USE_EXTENDED_SIMPLE_UI
+    #endif  // ifdef USE_SIMPLE_UI
 
     // click, click, long-click: strobe mode
     #ifdef USE_STROBE_STATE
@@ -257,22 +267,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif
-    #ifdef USE_MOMENTARY_MODE
-    // 5 clicks: momentary mode
-    else if (event == EV_5clicks) {
-        blink_once();
-        set_state(momentary_state, 0);
-        return MISCHIEF_MANAGED;
-    }
-    #endif
-    #ifdef USE_TACTICAL_MODE
-    // 6 clicks: tactical mode
-    else if (event == EV_6clicks) {
-        blink_once();
-        set_state(tactical_state, 0);
-        return MISCHIEF_MANAGED;
-    }
-    #endif
+
     #ifdef USE_INDICATOR_LED
     // 7 clicks: change indicator LED mode
     else if (event == EV_7clicks) {
@@ -321,6 +316,42 @@ uint8_t off_state(Event event, uint16_t arg) {
     }
     #endif  // end 7 clicks
 
+    ////////// Every action below here is blocked in the Extended Simple UI //////////
+
+    #ifdef USE_SIMPLE_UI
+    #ifdef USE_EXTENDED_SIMPLE_UI
+    if (simple_ui_active) {
+        return EVENT_NOT_HANDLED;
+    }
+    #endif  // ifdef USE_EXTENDED_SIMPLE_UI
+
+    // 10 clicks: enable simple UI
+    else if (event == EV_10clicks) {
+        blink_once();
+        simple_ui_active = 1;
+        save_config();
+        return MISCHIEF_MANAGED;
+    }
+    #endif  // ifdef USE_SIMPLE_UI
+
+    #ifdef USE_MOMENTARY_MODE
+    // 5 clicks: momentary mode
+    else if (event == EV_5clicks) {
+        blink_once();
+        set_state(momentary_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    #endif
+
+    #ifdef USE_TACTICAL_MODE
+    // 6 clicks: tactical mode
+    else if (event == EV_6clicks) {
+        blink_once();
+        set_state(tactical_state, 0);
+        return MISCHIEF_MANAGED;
+    }
+    #endif
+
     #ifdef USE_GLOBALS_CONFIG
     // 9 clicks, but hold last click: configure misc global settings
     else if ((event == EV_click9_hold) && (!arg)) {
@@ -328,6 +359,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     #endif
+
     return EVENT_NOT_HANDLED;
 }
 
