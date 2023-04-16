@@ -1,24 +1,8 @@
-/*
- * ramp-mode.c: Ramping functions for Anduril.
- *
- * Copyright (C) 2017 Selene ToyKeeper
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// ramp-mode.c: Ramping functions for Anduril.
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef RAMP_MODE_C
-#define RAMP_MODE_C
+#pragma once
 
 #include "ramp-mode.h"
 
@@ -85,13 +69,12 @@ uint8_t steady_state(Event event, uint16_t arg) {
 
     #ifdef USE_SUNSET_TIMER
     // handle the shutoff timer first
-    static uint8_t timer_orig_level = 0;
     uint8_t sunset_active = sunset_timer;  // save for comparison
     // clock tick
     sunset_timer_state(event, arg);
     // if the timer was just turned on
     if (sunset_timer  &&  (! sunset_active)) {
-        timer_orig_level = actual_level;
+        sunset_timer_orig_level = actual_level;
     }
     // if the timer just expired, shut off
     else if (sunset_active  &&  (! sunset_timer)) {
@@ -145,7 +128,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
             set_level_and_therm_target(memorized_level);
         }
         #ifdef USE_SUNSET_TIMER
-        timer_orig_level = actual_level;
+        reset_sunset_timer();
         #endif
         return MISCHIEF_MANAGED;
     }
@@ -243,7 +226,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #endif
         set_level_and_therm_target(memorized_level);
         #ifdef USE_SUNSET_TIMER
-        timer_orig_level = actual_level;
+        reset_sunset_timer();
         #endif
         return MISCHIEF_MANAGED;
     }
@@ -264,8 +247,12 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #ifdef USE_SUNSET_TIMER
         // reduce output if shutoff timer is active
         if (sunset_timer) {
-            uint8_t dimmed_level = timer_orig_level * (sunset_timer-1) / sunset_timer_peak;
+            uint8_t dimmed_level = sunset_timer_orig_level * sunset_timer / sunset_timer_peak;
+            uint8_t dimmed_level_next = sunset_timer_orig_level * (sunset_timer-1) / sunset_timer_peak;
+            uint8_t dimmed_level_delta = dimmed_level - dimmed_level_next;
+            dimmed_level -= dimmed_level_delta * (sunset_ticks/TICKS_PER_SECOND) / 60;
             if (dimmed_level < 1) dimmed_level = 1;
+
             #ifdef USE_SET_LEVEL_GRADUALLY
             set_level_gradually(dimmed_level);
             target_level = dimmed_level;
@@ -408,7 +395,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         memorized_level = nearest_level(actual_level);
         set_level_and_therm_target(memorized_level);
         #ifdef USE_SUNSET_TIMER
-        timer_orig_level = actual_level;
+        reset_sunset_timer();
         #endif
         return MISCHIEF_MANAGED;
     }
@@ -681,5 +668,13 @@ void manual_memory_save() {
     #endif
 }
 
+#ifdef USE_SUNSET_TIMER
+void reset_sunset_timer() {
+    if (sunset_timer) {
+        sunset_timer_orig_level = actual_level;
+        sunset_timer_peak = sunset_timer;
+        sunset_ticks = 0;
+    }
+}
 #endif
 
