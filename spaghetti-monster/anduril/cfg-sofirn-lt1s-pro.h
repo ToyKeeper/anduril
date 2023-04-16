@@ -76,6 +76,12 @@
 // allow Aux Config and Strobe Modes in Simple UI
 #define USE_EXTENDED_SIMPLE_UI
 
+// turn on at med-low brightness by default (level 50/150, or ramp step 3/7)
+// (also sets lockout mode 2H to a useful level)
+#define DEFAULT_MANUAL_MEMORY 50
+// reset to default after being off for 10 minutes
+#define DEFAULT_MANUAL_MEMORY_TIMER 10
+
 // enable 2 click turbo (Anduril 1 style)
 #define DEFAULT_2C_STYLE 1
 
