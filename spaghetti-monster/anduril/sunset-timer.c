@@ -8,7 +8,7 @@
 
 uint8_t sunset_timer_state(Event event, uint16_t arg) {
 
-    #ifdef USE_SIMPLE_UI
+    #if defined(USE_SIMPLE_UI) && !defined(USE_EXTENDED_SIMPLE_UI)
     // No timer functions in Simple UI
     if (simple_ui_active) return EVENT_NOT_HANDLED;
     #endif
