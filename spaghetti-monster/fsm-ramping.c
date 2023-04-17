@@ -16,7 +16,7 @@ void set_channel_mode(uint8_t mode) {
     set_level(0);
 
     // change the channel
-    channel_mode = mode;
+    CH_MODE = mode;
 
     // update the LEDs
     set_level(cur_level);
@@ -61,8 +61,8 @@ void set_level(uint8_t level) {
     // TODO: allow different jump start behavior per channel mode
     if ((! actual_level)
             && level
-            && (level < jump_start_level)) {
-        set_level(jump_start_level);
+            && (level < JUMP_START_LEVEL)) {
+        set_level(JUMP_START_LEVEL);
         delay_4ms(JUMP_START_TIME/4);
     }
     #endif
@@ -72,7 +72,7 @@ void set_level(uint8_t level) {
     #endif
 
     // call the relevant hardware-specific set_level_*()
-    SetLevelFuncPtr set_level_func = channel_modes[channel_mode];
+    SetLevelFuncPtr set_level_func = channel_modes[CH_MODE];
     set_level_func(level);
 
     actual_level = level;
@@ -138,54 +138,52 @@ void set_level_3ch_stacked(uint8_t level) {
 // TODO: 2ch stacked w/ dynamic PWM
 // TODO: 2ch stacked w/ dynamic PWM and opamp enable pins?
 
-#ifdef USE_SET_LEVEL_2CH_BLEND
-// warm + cool blend w/ middle sag correction
-void set_level_2ch_blend(uint8_t level) {
+#ifdef USE_CALC_2CH_BLEND
+// calculate a "tint ramp" blend between 2 channels
+// results are placed in *warm and *cool vars
+// brightness : total amount of light units to distribute
+// top : maximum allowed brightness per channel
+// blend : ratio between warm and cool (0 = warm, 128 = 50%, 255 = cool)
+void calc_2ch_blend(
+    PWM_DATATYPE *warm,
+    PWM_DATATYPE *cool,
+    PWM_DATATYPE brightness,
+    PWM_DATATYPE top,
+    uint8_t blend) {
+
     #ifndef TINT_RAMPING_CORRECTION
     #define TINT_RAMPING_CORRECTION 26  // 140% brightness at middle tint
     #endif
 
-    BLEND_PWM_DATATYPE vpwm;
-
-    if (level == 0) {
-        vpwm  = 0;
-    } else {
-        level --;  // PWM array index = level - 1
-        vpwm  = PWM_GET(blend_pwm_levels, level);
-    }
-
     // calculate actual PWM levels based on a single-channel ramp
-    // and a global tint value
-    uint16_t brightness = vpwm;
-    uint16_t warm_PWM, cool_PWM;
-    const uint16_t top = PWM_TOP;
-
-    // auto-tint modes
-    uint8_t mytint = channel_mode_args[channel_mode];
-
+    // and a blend value
+    PWM_DATATYPE warm_PWM, cool_PWM;
     PWM_DATATYPE2 base_PWM = brightness;
+
     #if defined(TINT_RAMPING_CORRECTION) && (TINT_RAMPING_CORRECTION > 0)
+        uint8_t level = actual_level - 1;
+
         // middle tints sag, so correct for that effect
         // by adding extra power which peaks at the middle tint
         // (correction is only necessary when PWM is fast)
         if (level > HALFSPEED_LEVEL) {
             base_PWM = brightness
                      + ((((PWM_DATATYPE2)brightness) * TINT_RAMPING_CORRECTION / 64)
-                        * triangle_wave(mytint) / 255);
+                        * triangle_wave(blend) / 255);
         }
         // fade the triangle wave out when above 100% power,
         // so it won't go over 200%
         if (brightness > top) {
             base_PWM -= 2 * (
                              ((brightness - top) * TINT_RAMPING_CORRECTION / 64)
-                             * triangle_wave(mytint) / 255
+                             * triangle_wave(blend) / 255
                         );
         }
         // guarantee no more than 200% power
         if (base_PWM > (top << 1)) { base_PWM = top << 1; }
     #endif
 
-    cool_PWM = (((PWM_DATATYPE2)mytint * (PWM_DATATYPE2)base_PWM) + 127) / 255;
+    cool_PWM = (((PWM_DATATYPE2)blend * (PWM_DATATYPE2)base_PWM) + 127) / 255;
     warm_PWM = base_PWM - cool_PWM;
     // when running at > 100% power, spill extra over to other channel
     if (cool_PWM > top) {
@@ -196,10 +194,76 @@ void set_level_2ch_blend(uint8_t level) {
         warm_PWM = top;
     }
 
-    WARM_PWM_LVL = warm_PWM;
-    COOL_PWM_LVL = cool_PWM;
+    *warm = warm_PWM;
+    *cool = cool_PWM;
 }
-#endif  // ifdef USE_TINT_RAMPING
+#endif  // ifdef USE_CALC_2CH_BLEND
+
+#ifdef USE_HSV2RGB
+RGB_t hsv2rgb(uint8_t h, uint8_t s, uint8_t v) {
+    RGB_t color;
+
+    uint16_t region, fpart, high, low, rising, falling;
+
+    if (s == 0) {  // grey
+        color.r = color.g = color.b = v;
+        return color;
+    }
+
+    // make hue 0-5
+    region = ((uint16_t)h * 6) >> 8;
+    // find remainder part, make it from 0-255
+    fpart = ((uint16_t)h * 6) - (region << 8);
+
+    // calculate graph segments, doing integer multiplication
+    high    = v;
+    low     = (v * (255 - s)) >> 8;
+    falling = (v * (255 - ((s * fpart) >> 8))) >> 8;
+    rising  = (v * (255 - ((s * (255 - fpart)) >> 8))) >> 8;
+
+    // default floor
+    color.r = low;
+    color.g = low;
+    color.b = low;
+
+    // assign graph shapes based on color cone region
+    switch (region) {
+        case 0:
+            color.r = high;
+            color.g = rising;
+            //color.b = low;
+            break;
+        case 1:
+            color.r = falling;
+            color.g = high;
+            //color.b = low;
+            break;
+        case 2:
+            //color.r = low;
+            color.g = high;
+            color.b = rising;
+            break;
+        case 3:
+            //color.r = low;
+            color.g = falling;
+            color.b = high;
+            break;
+        case 4:
+            color.r = rising;
+            //color.g = low;
+            color.b = high;
+            break;
+        default:
+            color.r = high;
+            //color.g = low;
+            color.b = falling;
+            break;
+    }
+
+    return color;
+}
+#endif  // ifdef USE_HSV2RGB
+
 
 #ifdef USE_LEGACY_SET_LEVEL
 // (this is mostly just here for reference, temporarily)
@@ -339,7 +403,7 @@ inline void set_level_gradually(uint8_t lvl) {
 // call this every frame or every few frames to change brightness very smoothly
 void gradual_tick() {
     // call the relevant hardware-specific function
-    GradualTickFuncPtr gradual_tick_func = gradual_tick_modes[channel_mode];
+    GradualTickFuncPtr gradual_tick_func = gradual_tick_modes[CH_MODE];
     gradual_tick_func();
 }
 

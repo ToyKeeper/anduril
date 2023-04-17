@@ -63,9 +63,14 @@ void adc_deferred();  // do the actual ADC-related calculations
 static inline void ADC_voltage_handler();
 uint8_t voltage = 0;
 #ifdef USE_VOLTAGE_CORRECTION
-// same 0.05V units as fudge factor,
-// but 7 is neutral, and the expected range is from 1 to 13
-uint8_t voltage_correction = 7;
+    #ifdef USE_CFG
+        #define VOLT_CORR cfg.voltage_correction
+    #else
+        // same 0.05V units as fudge factor,
+        // but 7 is neutral, and the expected range is from 1 to 13
+        uint8_t voltage_correction = 7;
+        #define VOLT_CORR voltage_correction
+    #endif
 #endif
 #ifdef USE_LVP
 void low_voltage();
@@ -98,8 +103,15 @@ void battcheck();
 #endif
 // temperature now, in C (ish)
 int16_t temperature;
-uint8_t therm_ceil = DEFAULT_THERM_CEIL;
-int8_t therm_cal_offset = 0;
+#ifdef USE_CFG
+    #define TH_CEIL cfg.therm_ceil
+    #define TH_CAL cfg.therm_cal_offset
+#else
+    #define TH_CEIL therm_ceil
+    #define TH_CAL therm_cal_offset
+    uint8_t therm_ceil = DEFAULT_THERM_CEIL;
+    int8_t therm_cal_offset = 0;
+#endif
 static inline void ADC_temperature_handler();
 #endif  // ifdef USE_THERMAL_REGULATION
 

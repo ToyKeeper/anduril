@@ -27,7 +27,7 @@ uint8_t strobe_state(Event event, uint16_t arg) {
     static int8_t ramp_direction = 1;
 
     // 'st' reduces ROM size slightly
-    strobe_mode_te st = strobe_type;
+    strobe_mode_te st = cfg.strobe_type;
 
     #ifdef USE_MOMENTARY_MODE
     momentary_mode = 1;  // 0 = ramping, 1 = strobes
@@ -54,13 +54,13 @@ uint8_t strobe_state(Event event, uint16_t arg) {
     }
     // 2 clicks: rotate through strobe/flasher modes
     else if (event == EV_2clicks) {
-        strobe_type = (st + 1) % NUM_STROBES;
+        cfg.strobe_type = (st + 1) % NUM_STROBES;
         save_config();
         return MISCHIEF_MANAGED;
     }
     // 4 clicks: rotate backward through strobe/flasher modes
     else if (event == EV_4clicks) {
-        strobe_type = (st - 1 + NUM_STROBES) % NUM_STROBES;
+        cfg.strobe_type = (st - 1 + NUM_STROBES) % NUM_STROBES;
         save_config();
         return MISCHIEF_MANAGED;
     }
@@ -77,11 +77,11 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         else if (st == party_strobe_e) {
         #endif
             if ((arg & 1) == 0) {
-                uint8_t d = strobe_delays[st];
+                uint8_t d = cfg.strobe_delays[st];
                 d -= ramp_direction;
                 if (d < 8) d = 8;
                 else if (d > 254) d = 254;
-                strobe_delays[st] = d;
+                cfg.strobe_delays[st] = d;
             }
         }
         #endif
@@ -92,10 +92,10 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         // biking mode brighter
         #ifdef USE_BIKE_FLASHER_MODE
         else if (st == bike_flasher_e) {
-            bike_flasher_brightness += ramp_direction;
-            if (bike_flasher_brightness < 2) bike_flasher_brightness = 2;
-            else if (bike_flasher_brightness > MAX_BIKING_LEVEL) bike_flasher_brightness = MAX_BIKING_LEVEL;
-            set_level(bike_flasher_brightness);
+            cfg.bike_flasher_brightness += ramp_direction;
+            if (cfg.bike_flasher_brightness < 2) cfg.bike_flasher_brightness = 2;
+            else if (cfg.bike_flasher_brightness > MAX_BIKING_LEVEL) cfg.bike_flasher_brightness = MAX_BIKING_LEVEL;
+            set_level(cfg.bike_flasher_brightness);
         }
         #endif
 
@@ -123,7 +123,7 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         else if (st == party_strobe_e) {
         #endif
             if ((arg & 1) == 0) {
-                if (strobe_delays[st] < 255) strobe_delays[st] ++;
+                if (cfg.strobe_delays[st] < 255) cfg.strobe_delays[st] ++;
             }
         }
         #endif
@@ -134,9 +134,9 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         // biking mode dimmer
         #ifdef USE_BIKE_FLASHER_MODE
         else if (st == bike_flasher_e) {
-            if (bike_flasher_brightness > 2)
-                bike_flasher_brightness --;
-            set_level(bike_flasher_brightness);
+            if (cfg.bike_flasher_brightness > 2)
+                cfg.bike_flasher_brightness --;
+            set_level(cfg.bike_flasher_brightness);
         }
         #endif
 
@@ -170,7 +170,7 @@ uint8_t strobe_state(Event event, uint16_t arg) {
 
 // runs repeatedly in FSM loop() whenever UI is in strobe_state or momentary strobe
 inline void strobe_state_iter() {
-    uint8_t st = strobe_type;  // can't use switch() on an enum
+    uint8_t st = cfg.strobe_type;  // can't use switch() on an enum
 
     switch(st) {
         #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
@@ -208,7 +208,7 @@ inline void strobe_state_iter() {
 #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
 inline void party_tactical_strobe_mode_iter(uint8_t st) {
     // one iteration of main loop()
-    uint8_t del = strobe_delays[st];
+    uint8_t del = cfg.strobe_delays[st];
     // TODO: make tac strobe brightness configurable?
     set_level(STROBE_BRIGHTNESS);
     if (0) {}  // placeholder
@@ -238,7 +238,7 @@ inline void police_color_strobe_iter() {
     uint8_t del = 66;
     // TODO: make police strobe brightness configurable
     uint8_t bright = memorized_level;
-    uint8_t channel = channel_mode;
+    uint8_t channel = cfg.channel_mode;
 
     for (uint8_t i=0; i<10; i++) {
         if (0 == i) set_channel_mode(POLICE_COLOR_STROBE_CH1);
@@ -304,12 +304,12 @@ inline void lightning_storm_iter() {
 #ifdef USE_BIKE_FLASHER_MODE
 inline void bike_flasher_iter() {
     // one iteration of main loop()
-    uint8_t burst = bike_flasher_brightness << 1;
+    uint8_t burst = cfg.bike_flasher_brightness << 1;
     if (burst > MAX_LEVEL) burst = MAX_LEVEL;
     for(uint8_t i=0; i<4; i++) {
         set_level(burst);
         nice_delay_ms(5);
-        set_level(bike_flasher_brightness);
+        set_level(cfg.bike_flasher_brightness);
         nice_delay_ms(65);
     }
     nice_delay_ms(720);  // no return check necessary on final delay

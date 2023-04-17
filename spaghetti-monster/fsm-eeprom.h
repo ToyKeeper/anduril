@@ -33,9 +33,10 @@
 #endif
 
 #ifdef USE_EEPROM
-#if EEPROM_BYTES >= (EEPSIZE/2)
-#error Requested EEPROM_BYTES too big.
-#endif
+// this fails when EEPROM_BYTES is a sizeof()
+//#if EEPROM_BYTES >= (EEPSIZE/2)
+//#error Requested EEPROM_BYTES too big.
+//#endif
 #ifdef EEPROM_OVERRIDE
 uint8_t *eeprom;
 #else

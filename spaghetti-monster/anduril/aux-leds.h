@@ -61,8 +61,6 @@ const PROGMEM uint8_t rgb_led_colors[] = {
 #ifndef RGB_RAINBOW_SPEED
 #define RGB_RAINBOW_SPEED 0x0f  // change color every 16 frames
 #endif
-uint8_t rgb_led_off_mode = RGB_LED_OFF_DEFAULT;
-uint8_t rgb_led_lockout_mode = RGB_LED_LOCKOUT_DEFAULT;
 #endif
 
 //#define USE_OLD_BLINKING_INDICATOR
@@ -71,14 +69,11 @@ uint8_t rgb_led_lockout_mode = RGB_LED_LOCKOUT_DEFAULT;
     // bits 2-3 control lockout mode
     // bits 0-1 control "off" mode
     // modes are: 0=off, 1=low, 2=high, 3=blinking (if TICK_DURING_STANDBY enabled)
-    #ifdef INDICATOR_LED_DEFAULT_MODE
-    uint8_t indicator_led_mode = INDICATOR_LED_DEFAULT_MODE;
-    #else
+    #ifndef INDICATOR_LED_DEFAULT_MODE
         #ifdef USE_INDICATOR_LED_WHILE_RAMPING
-        //uint8_t indicator_led_mode = (1<<2) + 2;
-        uint8_t indicator_led_mode = (2<<2) + 1;
+            #define INDICATOR_LED_DEFAULT_MODE ((2<<2) + 1)
         #else
-        uint8_t indicator_led_mode = (3<<2) + 1;
+            #define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
         #endif
     #endif
 #endif

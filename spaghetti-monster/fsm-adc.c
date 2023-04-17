@@ -149,7 +149,7 @@ static inline uint8_t calc_voltage_divider(uint16_t value) {
     uint8_t result = ((value / adc_per_volt)
                      + VOLTAGE_FUDGE_FACTOR
                      #ifdef USE_VOLTAGE_CORRECTION
-                     + voltage_correction - 7
+                        + VOLT_CORR - 7
                      #endif
                      ) >> 1;
     return result;
@@ -349,7 +349,7 @@ static inline void ADC_voltage_handler() {
     voltage = ((uint16_t)(2*1.1*1024*10)/(measurement>>6)
                + VOLTAGE_FUDGE_FACTOR
                #ifdef USE_VOLTAGE_CORRECTION
-               + voltage_correction - 7
+                  + VOLT_CORR - 7
                #endif
                ) >> 1;
     #endif
@@ -428,10 +428,10 @@ static inline void ADC_temperature_handler() {
     // Convert ADC units to Celsius (ish)
     #ifndef USE_EXTERNAL_TEMP_SENSOR
     // onboard sensor for attiny25/45/85/1634
-    temperature = (measurement>>1) + THERM_CAL_OFFSET + (int16_t)therm_cal_offset - 275;
+    temperature = (measurement>>1) + THERM_CAL_OFFSET + (int16_t)TH_CAL - 275;
     #else
     // external sensor
-    temperature = EXTERN_TEMP_FORMULA(measurement>>1) + THERM_CAL_OFFSET + (int16_t)therm_cal_offset;
+    temperature = EXTERN_TEMP_FORMULA(measurement>>1) + THERM_CAL_OFFSET + (int16_t)TH_CAL;
     #endif
 
     // how much has the temperature changed between now and a few seconds ago?
@@ -447,10 +447,10 @@ static inline void ADC_temperature_handler() {
     pt = measurement + (diff * THERM_LOOKAHEAD);
 
     // convert temperature limit from C to raw 16-bit ADC units
-    // C = (ADC>>6) - 275 + THERM_CAL_OFFSET + therm_cal_offset;
+    // C = (ADC>>6) - 275 + THERM_CAL_OFFSET + TH_CAL;
     // ... so ...
-    // (C + 275 - THERM_CAL_OFFSET - therm_cal_offset) << 6 = ADC;
-    uint16_t ceil = (therm_ceil + 275 - therm_cal_offset - THERM_CAL_OFFSET) << 1;
+    // (C + 275 - THERM_CAL_OFFSET - TH_CAL) << 6 = ADC;
+    uint16_t ceil = (TH_CEIL + 275 - TH_CAL - THERM_CAL_OFFSET) << 1;
     int16_t offset = pt - ceil;
 
     // bias small errors toward zero, while leaving large errors mostly unaffected

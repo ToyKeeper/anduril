@@ -33,9 +33,9 @@ uint8_t off_state(Event event, uint16_t arg) {
         set_level(0);
         #ifdef USE_INDICATOR_LED
         // redundant, sleep tick does the same thing
-        //indicator_led_update(indicator_led_mode & 0x03, 0);
+        //indicator_led_update(cfg.indicator_led_mode & 0x03, 0);
         #elif defined(USE_AUX_RGB_LEDS)
-        rgb_led_update(rgb_led_off_mode, 0);
+        rgb_led_update(cfg.rgb_led_off_mode, 0);
         #endif
         #ifdef USE_SUNSET_TIMER
         sunset_timer = 0;  // needs a reset in case previous timer was aborted
@@ -52,9 +52,9 @@ uint8_t off_state(Event event, uint16_t arg) {
             go_to_standby = 1;
             #ifdef USE_INDICATOR_LED
             // redundant, sleep tick does the same thing
-            //indicator_led_update(indicator_led_mode & 0x03, arg);
+            //indicator_led_update(cfg.indicator_led_mode & 0x03, arg);
             #elif defined(USE_AUX_RGB_LEDS)
-            rgb_led_update(rgb_led_off_mode, arg);
+            rgb_led_update(cfg.rgb_led_off_mode, arg);
             #endif
         }
         return MISCHIEF_MANAGED;
@@ -65,21 +65,21 @@ uint8_t off_state(Event event, uint16_t arg) {
     else if (event == EV_sleep_tick) {
         #ifdef USE_MANUAL_MEMORY_TIMER
         // reset to manual memory level when timer expires
-        if (manual_memory &&
-                (arg >= (manual_memory_timer * SLEEP_TICKS_PER_MINUTE))) {
+        if (cfg.manual_memory &&
+                (arg >= (cfg.manual_memory_timer * SLEEP_TICKS_PER_MINUTE))) {
             manual_memory_restore();
         }
         #endif
         #ifdef USE_INDICATOR_LED
-        indicator_led_update(indicator_led_mode & 0x03, arg);
+        indicator_led_update(cfg.indicator_led_mode & 0x03, arg);
         #elif defined(USE_AUX_RGB_LEDS)
-        rgb_led_update(rgb_led_off_mode, arg);
+        rgb_led_update(cfg.rgb_led_off_mode, arg);
         #endif
 
         #ifdef USE_AUTOLOCK
             // lock the light after being off for N minutes
-            uint16_t ticks = autolock_time * SLEEP_TICKS_PER_MINUTE;
-            if ((autolock_time > 0)  && (arg > ticks)) {
+            uint16_t ticks = cfg.autolock_time * SLEEP_TICKS_PER_MINUTE;
+            if ((cfg.autolock_time > 0)  && (arg > ticks)) {
                 set_state(lockout_state, 0);
             }
         #endif  // ifdef USE_AUTOLOCK
@@ -108,14 +108,14 @@ uint8_t off_state(Event event, uint16_t arg) {
         set_level(nearest_level(1));
         #endif
         #ifdef USE_RAMP_AFTER_MOON_CONFIG
-        if (dont_ramp_after_moon) {
+        if (cfg.dont_ramp_after_moon) {
             return MISCHIEF_MANAGED;
         }
         #endif
         // don't start ramping immediately;
         // give the user time to release at moon level
         //if (arg >= HOLD_TIMEOUT) {  // smaller
-        if (arg >= (!ramp_style) * HOLD_TIMEOUT) {  // more consistent
+        if (arg >= (!cfg.ramp_style) * HOLD_TIMEOUT) {  // more consistent
             set_state(steady_state, 1);
         }
         return MISCHIEF_MANAGED;
@@ -133,7 +133,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         #if defined(USE_MANUAL_MEMORY) && !defined(USE_MANUAL_MEMORY_TIMER)
             // this clause probably isn't used by any configs any more
             // but is included just in case someone configures it this way
-            if (manual_memory) {
+            if (cfg.manual_memory) {
                 manual_memory_restore();
             }
         #endif
@@ -160,10 +160,10 @@ uint8_t off_state(Event event, uint16_t arg) {
         uint8_t turbo_level;  // how bright is "turbo"?
 
         #if defined(USE_2C_STYLE_CONFIG)  // user can choose 2C behavior
-            uint8_t style_2c = ramp_2c_style;
+            uint8_t style_2c = cfg.ramp_2c_style;
             #ifdef USE_SIMPLE_UI
             // simple UI has its own turbo config
-            if (simple_ui_active) style_2c = ramp_2c_style_simple;
+            if (cfg.simple_ui_active) style_2c = cfg.ramp_2c_style_simple;
             #endif
             // 0  = ceiling
             // 1+ = full power
@@ -173,7 +173,7 @@ uint8_t off_state(Event event, uint16_t arg) {
             // simple UI: ceiling
             // full UI: full power
             #ifdef USE_SIMPLE_UI
-            if (simple_ui_active) turbo_level = nearest_level(MAX_LEVEL);
+            if (cfg.simple_ui_active) turbo_level = nearest_level(MAX_LEVEL);
             else
             #endif
             turbo_level = MAX_LEVEL;
@@ -235,9 +235,9 @@ uint8_t off_state(Event event, uint16_t arg) {
     #ifdef USE_SIMPLE_UI
     // 10 clicks, but hold last click: turn simple UI off (or configure it)
     else if ((event == EV_click10_hold) && (!arg)) {
-        if (simple_ui_active) {  // turn off simple UI
+        if (cfg.simple_ui_active) {  // turn off simple UI
             blink_once();
-            simple_ui_active = 0;
+            cfg.simple_ui_active = 0;
             save_config();
         }
         else {  // configure simple UI ramp
@@ -249,7 +249,7 @@ uint8_t off_state(Event event, uint16_t arg) {
     ////////// Every action below here is blocked in the (non-Extended) Simple UI //////////
 
     #ifndef USE_EXTENDED_SIMPLE_UI
-    if (simple_ui_active) {
+    if (cfg.simple_ui_active) {
         return EVENT_NOT_HANDLED;
     }
     #endif  // ifndef USE_EXTENDED_SIMPLE_UI
@@ -271,7 +271,7 @@ uint8_t off_state(Event event, uint16_t arg) {
     #ifdef USE_INDICATOR_LED
     // 7 clicks: change indicator LED mode
     else if (event == EV_7clicks) {
-        uint8_t mode = (indicator_led_mode & 3) + 1;
+        uint8_t mode = (cfg.indicator_led_mode & 3) + 1;
         #ifdef TICK_DURING_STANDBY
         mode = mode & 3;
         #else
@@ -280,19 +280,19 @@ uint8_t off_state(Event event, uint16_t arg) {
         #ifdef INDICATOR_LED_SKIP_LOW
         if (mode == 1) { mode ++; }
         #endif
-        indicator_led_mode = (indicator_led_mode & 0b11111100) | mode;
+        cfg.indicator_led_mode = (cfg.indicator_led_mode & 0b11111100) | mode;
         // redundant, sleep tick does the same thing
-        //indicator_led_update(indicator_led_mode & 0x03, arg);
+        //indicator_led_update(cfg.indicator_led_mode & 0x03, arg);
         save_config();
         return MISCHIEF_MANAGED;
     }
     #elif defined(USE_AUX_RGB_LEDS)
     // 7 clicks: change RGB aux LED pattern
     else if (event == EV_7clicks) {
-        uint8_t mode = (rgb_led_off_mode >> 4) + 1;
+        uint8_t mode = (cfg.rgb_led_off_mode >> 4) + 1;
         mode = mode % RGB_LED_NUM_PATTERNS;
-        rgb_led_off_mode = (mode << 4) | (rgb_led_off_mode & 0x0f);
-        rgb_led_update(rgb_led_off_mode, 0);
+        cfg.rgb_led_off_mode = (mode << 4) | (cfg.rgb_led_off_mode & 0x0f);
+        rgb_led_update(cfg.rgb_led_off_mode, 0);
         save_config();
         blink_once();
         return MISCHIEF_MANAGED;
@@ -301,12 +301,12 @@ uint8_t off_state(Event event, uint16_t arg) {
     else if (event == EV_click7_hold) {
         setting_rgb_mode_now = 1;
         if (0 == (arg & 0x3f)) {
-            uint8_t mode = (rgb_led_off_mode & 0x0f) + 1;
+            uint8_t mode = (cfg.rgb_led_off_mode & 0x0f) + 1;
             mode = mode % RGB_LED_NUM_COLORS;
-            rgb_led_off_mode = mode | (rgb_led_off_mode & 0xf0);
+            cfg.rgb_led_off_mode = mode | (cfg.rgb_led_off_mode & 0xf0);
             //save_config();
         }
-        rgb_led_update(rgb_led_off_mode, arg);
+        rgb_led_update(cfg.rgb_led_off_mode, arg);
         return MISCHIEF_MANAGED;
     }
     else if (event == EV_click7_hold_release) {
@@ -320,7 +320,7 @@ uint8_t off_state(Event event, uint16_t arg) {
 
     #ifdef USE_SIMPLE_UI
     #ifdef USE_EXTENDED_SIMPLE_UI
-    if (simple_ui_active) {
+    if (cfg.simple_ui_active) {
         return EVENT_NOT_HANDLED;
     }
     #endif  // ifdef USE_EXTENDED_SIMPLE_UI
@@ -328,7 +328,7 @@ uint8_t off_state(Event event, uint16_t arg) {
     // 10 clicks: enable simple UI
     else if (event == EV_10clicks) {
         blink_once();
-        simple_ui_active = 1;
+        cfg.simple_ui_active = 1;
         save_config();
         return MISCHIEF_MANAGED;
     }

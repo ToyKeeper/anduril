@@ -25,7 +25,7 @@
 uint8_t battcheck_state(Event event, uint16_t arg) {
     ////////// Every action below here is blocked in the simple UI //////////
     #ifdef USE_SIMPLE_UI
-    if (simple_ui_active) {
+    if (cfg.simple_ui_active) {
         return EVENT_NOT_HANDLED;
     }
     #endif
@@ -69,7 +69,7 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
 // ...
 // 13 = add 0.30V
 void voltage_config_save(uint8_t step, uint8_t value) {
-    if (value) voltage_correction = value;
+    if (value) cfg.voltage_correction = value;
 }
 
 uint8_t voltage_config_state(Event event, uint16_t arg) {

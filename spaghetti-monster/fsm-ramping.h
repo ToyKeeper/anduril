@@ -28,11 +28,12 @@ uint8_t actual_level = 0;
 // TODO: size-optimize the case with only 1 channel mode
 // (the arrays and stuff shouldn't be needed)
 
-// current multi-channel mode
-uint8_t channel_mode = DEFAULT_CHANNEL_MODE;
-#ifdef USE_MANUAL_MEMORY
-// reset w/ manual memory
-uint8_t manual_memory_channel_mode = DEFAULT_CHANNEL_MODE;
+#ifdef USE_CFG
+    #define CH_MODE cfg.channel_mode
+#else
+    // current multi-channel mode
+    uint8_t channel_mode = DEFAULT_CHANNEL_MODE;
+    #define CH_MODE channel_mode
 #endif
 
 #if NUM_CHANNEL_MODES > 1
@@ -62,35 +63,48 @@ StatePtr channel_3H_modes[NUM_CHANNEL_MODES];
 //#ifdef USE_CHANNEL_MODE_TOGGLES
 #if NUM_CHANNEL_MODES > 1
 // user can take unwanted modes out of the rotation
-// TODO: save to eeprom
-// array
-//uint8_t channel_modes_enabled[NUM_CHANNEL_MODES] = { CHANNEL_MODES_ENABLED };
 // bitmask
-uint8_t channel_modes_enabled = CHANNEL_MODES_ENABLED;
-#define channel_mode_enabled(n) ((channel_modes_enabled >> n) & 1)
-#define channel_mode_enable(n)  channel_modes_enabled |= (1 << n)
-#define channel_mode_disable(n) channel_modes_enabled &= ((1 << n) ^ 0xff)
+#ifdef USE_CFG
+    #define channel_mode_enabled(n) ((cfg.channel_modes_enabled >> n) & 1)
+    #define channel_mode_enable(n)  cfg.channel_modes_enabled |= (1 << n)
+    #define channel_mode_disable(n) cfg.channel_modes_enabled &= ((1 << n) ^ 0xff)
+#else
+    uint8_t channel_modes_enabled = CHANNEL_MODES_ENABLED;
+    #define channel_mode_enabled(n) ((channel_modes_enabled >> n) & 1)
+    #define channel_mode_enable(n)  channel_modes_enabled |= (1 << n)
+    #define channel_mode_disable(n) channel_modes_enabled &= ((1 << n) ^ 0xff)
+    #endif
 #endif
 
-#ifdef USE_CHANNEL_MODE_ARGS
-// one byte of extra data per channel mode, like for tint value
-uint8_t channel_mode_args[NUM_CHANNEL_MODES] = { CHANNEL_MODE_ARGS };
+#ifndef USE_CFG
+    #ifdef USE_CHANNEL_MODE_ARGS
+    // one byte of extra data per channel mode, like for tint value
+    uint8_t channel_mode_args[NUM_CHANNEL_MODES] = { CHANNEL_MODE_ARGS };
+    #endif
 #endif
-
-// TODO: remove this after implementing channel modes
-//#ifdef USE_TINT_RAMPING
-//#ifdef TINT_RAMP_TOGGLE_ONLY
-//uint8_t tint = 0;
-//#else
-//uint8_t tint = 128;
-//#endif
-//#define USE_TRIANGLE_WAVE
-//#endif
 
 void set_channel_mode(uint8_t mode);
 
 void set_level(uint8_t level);
 //void set_level_smooth(uint8_t level);
+
+#ifdef USE_CALC_2CH_BLEND
+void calc_2ch_blend(
+    PWM_DATATYPE *warm,
+    PWM_DATATYPE *cool,
+    PWM_DATATYPE brightness,
+    PWM_DATATYPE top,
+    uint8_t blend);
+#endif
+
+#ifdef USE_HSV2RGB
+typedef struct RGB_t {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+} RGB_t;
+RGB_t hsv2rgb(uint8_t h, uint8_t s, uint8_t v);
+#endif  // ifdef USE_HSV2RGB
 
 #ifdef USE_SET_LEVEL_GRADUALLY
 // adjust brightness very smoothly
@@ -213,13 +227,18 @@ PROGMEM const PWM_DATATYPE pwm_tops[] = { PWM_TOPS };
 
 // FIXME: jump start should be per channel / channel mode
 #ifdef USE_JUMP_START
-#ifndef JUMP_START_TIME
-#define JUMP_START_TIME 8  // in ms, should be 4, 8, or 12
-#endif
-#ifndef DEFAULT_JUMP_START_LEVEL
-#define DEFAULT_JUMP_START_LEVEL 10
-#endif
-uint8_t jump_start_level = DEFAULT_JUMP_START_LEVEL;
+    #ifndef JUMP_START_TIME
+        #define JUMP_START_TIME 8  // in ms, should be 4, 8, or 12
+    #endif
+    #ifndef DEFAULT_JUMP_START_LEVEL
+        #define DEFAULT_JUMP_START_LEVEL 10
+    #endif
+    #ifdef USE_CFG
+        #define JUMP_START_LEVEL cfg.jump_start_level
+    #else
+        #define JUMP_START_LEVEL jump_start_level
+        uint8_t jump_start_level = DEFAULT_JUMP_START_LEVEL;
+    #endif
 #endif
 
 // RAMP_SIZE / MAX_LVL

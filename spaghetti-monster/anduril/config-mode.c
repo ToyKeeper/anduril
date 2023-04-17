@@ -34,7 +34,7 @@ uint8_t config_state_base(
     #endif
     if (event == EV_enter_state) {
         #ifdef USE_CONFIG_COLORS
-        orig_channel = channel_mode;
+        orig_channel = cfg.channel_mode;
         #endif
         config_step = 0;
         set_level(0);

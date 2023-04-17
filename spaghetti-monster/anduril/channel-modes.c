@@ -20,7 +20,7 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
     // in addition to changing state...  so ignore any tint-ramp events which
     // don't look like they were meant to be here
     static uint8_t active = 0;
-    uint8_t tint = channel_mode_args[channel_mode];
+    uint8_t tint = cfg.channel_mode_args[cfg.channel_mode];
     #endif
 
     // it's possible that a light may need 3H but not 3C,
@@ -28,7 +28,7 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
     #if NUM_CHANNEL_MODES > 1
     // 3 clicks: next channel mode
     if (event == EV_3clicks) {
-        uint8_t next = channel_mode;
+        uint8_t next = cfg.channel_mode;
         // go to next channel mode until we find one which is enabled
         // (and don't do any infinite loops if the user disabled them all)
         uint8_t count = 0;
@@ -39,10 +39,10 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
         //} while ((! channel_modes_enabled[next]) && count < NUM_CHANNEL_MODES);
 
         // undo change if infinite loop detected (redundant?)
-        //if (NUM_CHANNEL_MODES == count) next = channel_mode;
+        //if (NUM_CHANNEL_MODES == count) next = cfg.channel_mode;
 
         // if mode hasn't changed, abort
-        if (channel_mode == next)
+        if (cfg.channel_mode == next)
             return EVENT_NOT_HANDLED;
 
         set_channel_mode(next);
@@ -55,9 +55,9 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
 
     #ifdef USE_CUSTOM_CHANNEL_3H_MODES
     // defer to mode-specific function if defined
-    if (tint_ramp_modes[channel_mode]) {
-        StatePtr tint_func = channel_3H_modes[channel_mode];
-        return tint_func(channel_mode);
+    if (tint_ramp_modes[cfg.channel_mode]) {
+        StatePtr tint_func = channel_3H_modes[cfg.channel_mode];
+        return tint_func(cfg.channel_mode);
     } else
     #endif
     #ifdef USE_CHANNEL_MODE_ARGS
@@ -86,7 +86,7 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
             past_edge_counter = 1;
         }
         prev_tint = tint;
-        channel_mode_args[channel_mode] = tint;
+        cfg.channel_mode_args[cfg.channel_mode] = tint;
         set_level(actual_level);
         return EVENT_HANDLED;
     }
@@ -99,7 +99,7 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
         if (0 == tint) tint_ramp_direction = 1;
         else if (255 == tint) tint_ramp_direction = -1;
         // remember tint after battery change
-        channel_mode_args[channel_mode] = tint;
+        cfg.channel_mode_args[cfg.channel_mode] = tint;
         save_config();
         // bug?: for some reason, brightness can seemingly change
         // from 1/150 to 2/150 without this next line... not sure why
@@ -111,7 +111,7 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
 
     #if defined(USE_SIMPLE_UI)
     // remaining mappings aren't "simple", so stop here
-    if (simple_ui_active) {
+    if (cfg.simple_ui_active) {
         return EVENT_NOT_HANDLED;
     }
     #endif

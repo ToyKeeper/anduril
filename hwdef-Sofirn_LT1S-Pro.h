@@ -48,7 +48,7 @@ Driver pinout:
                              gradual_tick_red, \
                              gradual_tick_red_white_blend
 // can use some of the common handlers
-//#define USE_CALC_2CH_BLEND
+#define USE_CALC_2CH_BLEND
 //#define USE_CALC_AUTO_3CH_BLEND
 
 // TODO: remove this as soon as it's not needed

@@ -22,8 +22,6 @@
 
 #include "tactical-mode.h"
 
-// TODO: save these in eeprom
-uint8_t tactical_levels[] = { TACTICAL_LEVELS };  // high, low, strobe
 
 uint8_t tactical_state(Event event, uint16_t arg) {
     // momentary(ish) tactical mode
@@ -42,14 +40,14 @@ uint8_t tactical_state(Event event, uint16_t arg) {
         if (click <= 3) {
             momentary_active = 1;
             uint8_t lvl;
-            lvl = tactical_levels[click-1];
+            lvl = cfg.tactical_levels[click-1];
             if ((1 <= lvl) && (lvl <= RAMP_SIZE)) {  // steady output
                 memorized_level = lvl;
                 momentary_mode = 0;
             } else {  // momentary strobe mode
                 momentary_mode = 1;
                 if (lvl > RAMP_SIZE) {
-                    strobe_type = (lvl - RAMP_SIZE - 1) % strobe_mode_END;
+                    cfg.strobe_type = (lvl - RAMP_SIZE - 1) % strobe_mode_END;
                 }
             }
         }
@@ -92,7 +90,7 @@ uint8_t tactical_state(Event event, uint16_t arg) {
     // (unnecessary since this entire mode is blocked in simple UI)
     /*
     #ifdef USE_SIMPLE_UI
-    if (simple_ui_active) {
+    if (cfg.simple_ui_active) {
         return EVENT_NOT_HANDLED;
     }
     #endif
@@ -113,7 +111,7 @@ void tactical_config_save(uint8_t step, uint8_t value) {
     // each value is 1 to 150, or other:
     // - 1..150 is a ramp level
     // - other means "strobe mode"
-    tactical_levels[step - 1] = value;
+    cfg.tactical_levels[step - 1] = value;
 }
 
 uint8_t tactical_config_state(Event event, uint16_t arg) {

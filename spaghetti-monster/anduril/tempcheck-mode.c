@@ -51,18 +51,18 @@ void thermal_config_save(uint8_t step, uint8_t value) {
     if (value) {
         // item 1: calibrate room temperature
         if (step == 1) {
-            int8_t rawtemp = temperature - therm_cal_offset;
-            therm_cal_offset = value - rawtemp;
+            int8_t rawtemp = temperature - cfg.therm_cal_offset;
+            cfg.therm_cal_offset = value - rawtemp;
             adc_reset = 2;  // invalidate all recent temperature data
         }
 
         // item 2: set maximum heat limit
         else {
-            therm_ceil = 30 + value - 1;
+            cfg.therm_ceil = 30 + value - 1;
         }
     }
 
-    if (therm_ceil > MAX_THERM_CEIL) therm_ceil = MAX_THERM_CEIL;
+    if (cfg.therm_ceil > MAX_THERM_CEIL) cfg.therm_ceil = MAX_THERM_CEIL;
 }
 
 uint8_t thermal_config_state(Event event, uint16_t arg) {

@@ -20,9 +20,6 @@
 #ifndef BEACON_MODE_H
 #define BEACON_MODE_H
 
-// beacon timing
-uint8_t beacon_seconds = 2;
-
 // beacon mode
 uint8_t beacon_state(Event event, uint16_t arg);
 inline void beacon_mode_iter();

@@ -8,7 +8,6 @@
 
 // allows setting channel mode per animation stage,
 // so it can ramp up in red then explode in white (as one example)
-// TODO: maybe also do the same in menus?
 
 void factory_reset() {
     // display a warning for a few seconds before doing the actual reset,
@@ -38,7 +37,7 @@ void factory_reset() {
         // AVR 1-Series has factory calibrated thermal sensor, always remove the offset on reset
         #if defined(USE_THERMAL_REGULATION) && defined(AVRXMEGA3)
         // this will cancel out the offset
-        thermal_config_save(1, temperature - therm_cal_offset);
+        thermal_config_save(1, temperature - cfg.therm_cal_offset);
         #elif defined(USE_THERMAL_REGULATION) && defined(USE_THERM_AUTOCALIBRATE)
         // assume current temperature is 21 C
         thermal_config_save(1, 21);

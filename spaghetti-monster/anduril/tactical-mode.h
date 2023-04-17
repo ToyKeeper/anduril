@@ -20,14 +20,13 @@
 #ifndef TACTICAL_MODE_H
 #define TACTICAL_MODE_H
 
-// tactical(ish) mode
-uint8_t tactical_state(Event event, uint16_t arg);
-
 #ifndef TACTICAL_LEVELS
 // high, low, tactical strobe
 #define TACTICAL_LEVELS 120,30,(RAMP_SIZE+2)
 #endif
-uint8_t tactical_levels[];
+
+// tactical(ish) mode
+uint8_t tactical_state(Event event, uint16_t arg);
 uint8_t tactical_config_state(Event event, uint16_t arg);
 
 

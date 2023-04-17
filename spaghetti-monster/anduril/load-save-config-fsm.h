@@ -1,127 +1,122 @@
-/*
- * load-save-config-fsm.h: FSM config for eeprom configuration in Anduril.
- *
- * Copyright (C) 2017 Selene ToyKeeper
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// load-save-config-fsm.h: FSM config for eeprom configuration in Anduril.
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef LOAD_SAVE_CONFIG_FSM_H
-#define LOAD_SAVE_CONFIG_FSM_H
+#pragma once
 
-// auto-detect how many eeprom bytes
 #define USE_EEPROM
-typedef enum {
-    ramp_style_e,
-    #ifdef USE_RAMP_CONFIG
-    ramp_smooth_floor_e,
-    ramp_smooth_ceil_e,
-    #ifdef USE_RAMP_SPEED_CONFIG
-    ramp_speed_e,
+// load into a custom RAM location instead of FSM's default byte array
+#define EEPROM_OVERRIDE
+
+#ifdef USE_SIMPLE_UI
+#define NUM_RAMPS 3
+#else
+#define NUM_RAMPS 2
+#endif
+
+// let FSM know this config struct exists
+#define USE_CFG
+
+typedef struct Config {
+
+    ///// ramp vars
+    uint8_t ramp_style;
+    #ifdef USE_2C_STYLE_CONFIG
+        uint8_t ramp_2c_style;
     #endif
-    ramp_discrete_floor_e,
-    ramp_discrete_ceil_e,
-    ramp_discrete_steps_e,
+    #ifdef USE_RAMP_CONFIG
+        uint8_t ramp_floors[NUM_RAMPS];
+        uint8_t ramp_ceils [NUM_RAMPS];
+        uint8_t ramp_stepss[NUM_RAMPS];
     #endif
     #ifdef USE_SIMPLE_UI
-    simple_ui_floor_e,
-    simple_ui_ceil_e,
-    simple_ui_steps_e,
-    simple_ui_active_e,
-    #ifdef USE_2C_STYLE_CONFIG
-    ramp_2c_style_simple_e,
-    #endif
-    #endif
-    #ifdef USE_RAMP_AFTER_MOON_CONFIG
-    dont_ramp_after_moon_e,
-    #endif
-    #ifdef USE_2C_STYLE_CONFIG
-    ramp_2c_style_e,
-    #endif
-    #ifdef USE_MANUAL_MEMORY
-        manual_memory_e,
-        #ifdef USE_MANUAL_MEMORY_TIMER
-            manual_memory_timer_e,
+        uint8_t simple_ui_active;
+        #ifdef USE_2C_STYLE_CONFIG
+            uint8_t ramp_2c_style_simple;
         #endif
     #endif
-    #ifdef USE_JUMP_START
-        jump_start_level_e,
+    #ifdef USE_RAMP_AFTER_MOON_CONFIG
+        uint8_t dont_ramp_after_moon;
     #endif
-    #ifdef USE_STROBE_STATE
-    strobe_type_e,
+    #ifdef USE_MANUAL_MEMORY
+        uint8_t manual_memory;
+        #ifdef USE_MANUAL_MEMORY_TIMER
+            uint8_t manual_memory_timer;
+        #endif
     #endif
-    #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
-    strobe_delays_0_e,
-    strobe_delays_1_e,
-    #endif
-    #ifdef USE_BIKE_FLASHER_MODE
-    bike_flasher_brightness_e,
-    #endif
-    #ifdef USE_BEACON_MODE
-    beacon_seconds_e,
-    #endif
-    #ifdef USE_THERMAL_REGULATION
-    therm_ceil_e,
-    therm_cal_offset_e,
-    #endif
-    #ifdef USE_VOLTAGE_CORRECTION
-    voltage_correction_e,
-    #endif
-    #ifdef USE_INDICATOR_LED
-    indicator_led_mode_e,
-    #endif
-    #ifdef USE_AUX_RGB_LEDS
-    rgb_led_off_mode_e,
-    rgb_led_lockout_mode_e,
-    #endif
-    #ifdef USE_AUTOLOCK
-    autolock_time_e,
-    #endif
-    #ifdef USE_TACTICAL_MODE
-    tactical_lvl_1_e,
-    tactical_lvl_2_e,
-    tactical_lvl_3_e,
-    #endif
+
+    ///// channel modes / color modes
     #if NUM_CHANNEL_MODES > 1
-        channel_mode_e,
-        channel_modes_enabled_e,
-        #if defined(USE_MANUAL_MEMORY)
-            manual_memory_channel_mode_e,
+        uint8_t channel_mode;
+        uint8_t channel_modes_enabled;
+        #ifdef USE_MANUAL_MEMORY
+            uint8_t manual_memory_channel_mode;
         #endif
     #endif
     #ifdef USE_CHANNEL_MODE_ARGS
         // this is an array, needs a few bytes
-        channel_mode_args_e,
-        #if defined(USE_MANUAL_MEMORY)
-            // this is an array, needs a few bytes
-            manual_memory_channel_args_e = channel_mode_args_e + NUM_CHANNEL_MODES,
-            // and this is an ugly ugly kludge
-            // FIXME: use a struct for eeprom, not an array
-            eeprom_indexes_e_END = manual_memory_channel_args_e + NUM_CHANNEL_MODES
-        #else
-            eeprom_indexes_e_END = channel_mode_args_e + NUM_CHANNEL_MODES
+        uint8_t channel_mode_args[NUM_CHANNEL_MODES];
+        #ifdef USE_MANUAL_MEMORY
+            uint8_t manual_memory_channel_args[NUM_CHANNEL_MODES];
         #endif
-    #else
-        eeprom_indexes_e_END
     #endif
-} eeprom_indexes_e;
-#define EEPROM_BYTES eeprom_indexes_e_END
+
+    ///// strobe / blinky mode settings
+    #ifdef USE_STROBE_STATE
+        uint8_t strobe_type;
+    #endif
+    #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
+        uint8_t strobe_delays[2];
+    #endif
+    #ifdef USE_BIKE_FLASHER_MODE
+        uint8_t bike_flasher_brightness;
+    #endif
+    #ifdef USE_BEACON_MODE
+        uint8_t beacon_seconds;
+    #endif
+
+    ///// voltage and temperature
+    #ifdef USE_VOLTAGE_CORRECTION
+        uint8_t voltage_correction;
+    #endif
+    #ifdef USE_THERMAL_REGULATION
+        uint8_t therm_ceil;
+        uint8_t therm_cal_offset;
+    #endif
+
+    ///// aux LEDs
+    #ifdef USE_INDICATOR_LED
+        uint8_t indicator_led_mode;
+    #endif
+    #ifdef USE_AUX_RGB_LEDS
+        uint8_t rgb_led_off_mode;
+        uint8_t rgb_led_lockout_mode;
+    #endif
+
+    ///// misc other mode settings
+    #ifdef USE_AUTOLOCK
+        uint8_t autolock_time;
+    #endif
+    #ifdef USE_TACTICAL_MODE
+        uint8_t tactical_levels[3];
+    #endif
+
+    ///// hardware config / globals menu
+    #ifdef USE_JUMP_START
+        uint8_t jump_start_level;
+    #endif
+
+} Config;
+
+// auto-detect how many eeprom bytes
+#define EEPROM_BYTES sizeof(Config)
+
+// declare this so FSM can see it,
+// but define its values in a file which loads later
+Config cfg;
 
 #ifdef START_AT_MEMORIZED_LEVEL
 #define USE_EEPROM_WL
 #define EEPROM_WL_BYTES 1
 #endif
 
-
-#endif

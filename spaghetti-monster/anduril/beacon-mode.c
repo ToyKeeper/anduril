@@ -28,7 +28,7 @@ inline void beacon_mode_iter() {
         set_level(memorized_level);
         nice_delay_ms(100);
         set_level(0);
-        nice_delay_ms(((beacon_seconds) * 1000) - 100);
+        nice_delay_ms(((cfg.beacon_seconds) * 1000) - 100);
     }
 }
 
@@ -61,7 +61,7 @@ uint8_t beacon_state(Event event, uint16_t arg) {
     }
     // release hold: save new timing
     else if (event == EV_click1_hold_release) {
-        beacon_seconds = 1 + (arg / TICKS_PER_SECOND);
+        cfg.beacon_seconds = 1 + (arg / TICKS_PER_SECOND);
         save_config();
         return MISCHIEF_MANAGED;
     }

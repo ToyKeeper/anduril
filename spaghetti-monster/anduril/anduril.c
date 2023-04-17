@@ -104,7 +104,6 @@
 
 #include "off-mode.h"
 #include "ramp-mode.h"
-#include "load-save-config.h"
 #include "config-mode.h"
 #include "aux-leds.h"
 #include "misc.h"
@@ -157,6 +156,9 @@
 #ifdef USE_SOS_MODE
 #include "sos-mode.h"
 #endif
+
+// this should be last, so other headers have a chance to declare values
+#include "load-save-config.h"
 
 
 /********* Include all the app logic source files *********/
@@ -239,7 +241,7 @@ void setup() {
         #if defined(USE_MANUAL_MEMORY) && defined(USE_MANUAL_MEMORY_TIMER)
         // without this, initial boot-up brightness is wrong
         // when manual mem is enabled with a non-zero timer
-        if (manual_memory) manual_memory_restore();
+        if (cfg.manual_memory) manual_memory_restore();
         #endif
 
         #if defined(USE_CHANNEL_MODES)
@@ -321,7 +323,7 @@ void loop() {
         // in simple mode, turn off after one readout
         // FIXME: can eat the next button press
         //        (state changes in loop() act weird)
-        if (simple_ui_active) set_state_deferred(off_state, 0);
+        if (cfg.simple_ui_active) set_state_deferred(off_state, 0);
         else nice_delay_ms(1000);
         #endif
     }
