@@ -1,7 +1,9 @@
-#ifndef HWDEF_EMISAR_D4_H
-#define HWDEF_EMISAR_D4_H
+// Emisar D4 driver layout
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* Emisar D4 driver layout
+/*
  *           ----
  *   Reset -|1  8|- VCC
  * eswitch -|2  7|-
@@ -44,4 +46,3 @@
 #define FAST 0xA3           // fast PWM both channels
 #define PHASE 0xA1          // phase-correct PWM both channels
 
-#endif

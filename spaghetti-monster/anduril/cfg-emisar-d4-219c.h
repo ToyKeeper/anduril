@@ -1,5 +1,9 @@
 // Emisar D4-219C config options for Anduril
-// same as D4S but with FET modes limited to 80% power
+// Copyright (C) 2018-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
+// same as D4 but with FET modes limited to 80% power
 // to avoid destroying the LEDs
 #include "cfg-emisar-d4.h"
 #undef MODEL_NUMBER

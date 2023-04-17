@@ -1,4 +1,9 @@
-/* lume1 for FW3x config options for Anduril
+// lume1 for FW3x config options for Anduril
+// Copyright (C) 2020-2023 (FIXME)
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
+/*
  * Constant current Buck-Boost + FET driver
  * For more information: www.loneoceans.com/labs/
  * Datasheets:

@@ -1,4 +1,8 @@
 // Noctigon K1 config options for Anduril
+// Copyright (C) 2019-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #define MODEL_NUMBER "0251"
 // (originally known as Emisar D1S v2)
 #include "hwdef-Noctigon_K1.h"

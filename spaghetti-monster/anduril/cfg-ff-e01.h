@@ -1,4 +1,8 @@
 // Fireflies E01 SST-40 thrower config options for Anduril
+// Copyright (C) 2019-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 // most of the good stuff is in the FFUI config; just copy it
 #include "../fireflies-ui/cfg-ff-e01.h"
 #undef MODEL_NUMBER

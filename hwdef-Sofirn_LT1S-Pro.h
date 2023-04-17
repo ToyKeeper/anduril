@@ -1,17 +1,17 @@
-/* BLF LT1S Pro driver layout using the Attiny1616
+// BLF LT1S Pro driver layout using the Attiny1616
+// Copyright (C) 2022-2023 (FIXME)
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-Driver pinout:
+/*
+ * Driver pinout:
  * eSwitch:    PA5
  * Aux LED:    PB5
  * WW PWM:     PB0 (TCA0 WO0)
  * CW PWM:     PB1 (TCA0 WO1)
  * Red PWM:    PB2 (TCA0 WO2)
  * Voltage:    VCC
-
-*/
-
-#pragma once
-
+ */
 
 #define HWDEF_C_FILE hwdef-Sofirn_LT1S-Pro.c
 

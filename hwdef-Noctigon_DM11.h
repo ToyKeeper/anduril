@@ -1,7 +1,9 @@
-#ifndef HWDEF_NOCTIGON_DM11_H
-#define HWDEF_NOCTIGON_DM11_H
+// Noctigon DM11 driver layout (attiny1634)
+// Copyright (C) 2021-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* Noctigon DM11 driver layout (attiny1634)
+/*
  * (based on Noctigon K1)
  *
  * Pin / Name / Function
@@ -153,4 +155,3 @@ inline void hwdef_setup() {
 
 #define LAYOUT_DEFINED
 
-#endif

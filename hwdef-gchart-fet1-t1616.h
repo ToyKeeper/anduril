@@ -1,14 +1,14 @@
-#ifndef HWDEF_GCH_FET1_T1616_H
-#define HWDEF_GCH_FET1_T1616_H
+// gChart's custom FET+1 driver layout
+// Copyright (C) 2020-2023 (FIXME)
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* gChart's custom FET+1 driver layout
-
-PB0 - PWM for FET (TCA - WO0)
-PB1 - PWM for 7135 (TCA - WO1)
-PB2 - Switch pin, internal pullup
-PB3 - Aux LED with 4700 Ohm series resistor
-Read voltage from VCC pin, has diode with ~0.4v drop
-
+/*
+ * PB0 - PWM for FET (TCA - WO0)
+ * PB1 - PWM for 7135 (TCA - WO1)
+ * PB2 - Switch pin, internal pullup
+ * PB3 - Aux LED with 4700 Ohm series resistor
+ * Read voltage from VCC pin, has diode with ~0.4v drop
 */
 
 
@@ -102,5 +102,3 @@ inline void hwdef_setup() {
     TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc | TCA_SINGLE_ENABLE_bm;
 }
 
-
-#endif

@@ -1,4 +1,8 @@
 // Emisar D1S config options for Anduril
+// Copyright (C) 2018-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #include "hwdef-Emisar_D1S.h"
 // same as Emisar D4, mostly
 #include "cfg-emisar-d4.h"

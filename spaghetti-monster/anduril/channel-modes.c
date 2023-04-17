@@ -1,13 +1,10 @@
-/*
- * channel-modes.c: Multi-channel functions for Anduril.
- * Copyright (C) 2017-2023 Selene ToyKeeper
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
+// channel-modes.c: Multi-channel functions for Anduril.
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
 #include "channel-modes.h"
-
 
 uint8_t channel_mode_state(Event event, uint16_t arg) {
     #ifdef USE_CHANNEL_MODE_ARGS
@@ -144,3 +141,4 @@ uint8_t channel_mode_config_state(Event event, uint16_t arg) {
         );
 }
 #endif
+

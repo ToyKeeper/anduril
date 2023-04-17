@@ -1,4 +1,8 @@
 // Mateminco MT35 Mini / Astrolux  FT03
+// Copyright (C) 2022-2023 (FIXME)
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #define MODEL_NUMBER "0531"
 #include "hwdef-Mateminco_MT35-Mini.h"
 // ATTINY: 85

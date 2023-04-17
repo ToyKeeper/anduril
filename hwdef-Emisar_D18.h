@@ -1,7 +1,9 @@
-#ifndef HWDEF_EMISAR_D18_H
-#define HWDEF_EMISAR_D18_H
+// Emisar D18 (FET+13+1) driver layout
+// Copyright (C) 2019-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* Emisar D18 (FET+13+1) driver layout
+/*
  *           ----
  *   Reset -|1  8|- VCC
  * eswitch -|2  7|- aux LED?
@@ -45,4 +47,3 @@
 
 #define LAYOUT_DEFINED
 
-#endif

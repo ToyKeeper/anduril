@@ -1,7 +1,9 @@
-#ifndef HWDEF_FW3A_H
-#define HWDEF_FW3A_H
+// BLF/TLF FW3A driver layout
+// Copyright (C) 2018-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* BLF/TLF FW3A driver layout
+/*
  *           ----
  *   Reset -|1  8|- VCC
  * eswitch -|2  7|- optic nerve
@@ -47,4 +49,3 @@
 
 #define LAYOUT_DEFINED
 
-#endif

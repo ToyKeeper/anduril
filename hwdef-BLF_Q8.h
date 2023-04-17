@@ -1,9 +1,9 @@
-#ifndef HWDEF_BLF_Q8_H
-#define HWDEF_BLF_Q8_H
+// BLF Q8 driver layout
+// Copyright (C) 2018-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* BLF Q8 driver layout
- * Q8 driver is the same as a D4, basically
- */
+// Q8 driver is the same as a D4, basically
 
 // ... except the Q8 has a lighted button
 #ifndef AUXLED_PIN
@@ -18,4 +18,3 @@
 // Q8 driver is the same as a D4, basically
 #include "hwdef-Emisar_D4.h"
 
-#endif

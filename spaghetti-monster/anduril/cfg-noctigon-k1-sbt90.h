@@ -1,4 +1,8 @@
 // Noctigon K1-SBT90.2 config options for Anduril
+// Copyright (C) 2019-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 // (is a K1 host with a KR4-like driver and a really high-powered LED)
 #define MODEL_NUMBER "0252"
 #include "hwdef-Noctigon_K1-SBT90.h"

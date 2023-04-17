@@ -1,7 +1,9 @@
-#ifndef HWDEF_EMISAR_D4SV2_H
-#define HWDEF_EMISAR_D4SV2_H
+// Emisar D4Sv2 driver layout (attiny1634)
+// Copyright (C) 2019-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* Emisar D4Sv2 driver layout (attiny1634)
+/*
  * (same layout as D4v2, except it's a FET+3+1 instead of FET+1)
  *
  * Pin / Name / Function
@@ -119,4 +121,3 @@ inline void hwdef_setup() {
 
 #define LAYOUT_DEFINED
 
-#endif

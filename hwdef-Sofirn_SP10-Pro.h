@@ -1,16 +1,16 @@
-#ifndef HWDEF_SOFIRN_SP10_H
-#define HWDEF_SOFIRN_SP10_H
+// Sofirn SP10 Pro pinout
+// Copyright (C) 2022-2023 (FIXME)
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* Sofirn SP10 Pro pinout
-
-ATTINY1616 Mapping:
-PB5 : PWM small channel (TCA0 - WO2 Alternate MUX)
-PB3 : eSwitch
-PB0 : PWM big channel (TCA0 - WO0)
-PB4 : Voltage divider (ADC0 - AIN9)
-PA1 : Boost Enable
-
-*/
+/*
+ * ATTINY1616 Mapping:
+ * PB5 : PWM small channel (TCA0 - WO2 Alternate MUX)
+ * PB3 : eSwitch
+ * PB0 : PWM big channel (TCA0 - WO0)
+ * PB4 : Voltage divider (ADC0 - AIN9)
+ * PA1 : Boost Enable
+ */
 
 
 #define LAYOUT_DEFINED
@@ -140,5 +140,3 @@ FUSES = {
     .BOOTEND = FUSE_BOOTEND_DEFAULT,  // Boot Section End
 };
 
-
-#endif

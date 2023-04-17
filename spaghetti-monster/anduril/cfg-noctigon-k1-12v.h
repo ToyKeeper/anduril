@@ -1,4 +1,8 @@
 // Noctigon K1 12V config options for Anduril
+// Copyright (C) 2019-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #define MODEL_NUMBER "0253"
 #include "hwdef-Noctigon_K1-12V.h"
 #include "hank-cfg.h"

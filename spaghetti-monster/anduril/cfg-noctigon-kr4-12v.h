@@ -1,5 +1,9 @@
 // Noctigon KR4 (12V) config options for Anduril
 // (and Noctigon KR1)
+// Copyright (C) 2020-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #define MODEL_NUMBER "0216"
 #include "hwdef-Noctigon_KR4-12V.h"
 // ATTINY: 1634

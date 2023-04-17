@@ -1,7 +1,9 @@
-#ifndef HWDEF_KR4_TINTRAMP_H
-#define HWDEF_KR4_TINTRAMP_H
+// Noctigon KR4 w/ tint ramping
+// Copyright (C) 2021-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* Noctigon KR4 w/ tint ramping
+/*
  * (same driver as D4Sv2-tintramp, but with the switch on a different pin)
  *
  * Pin / Name / Function
@@ -43,4 +45,3 @@
 // the rest of the config is the same as D4Sv2-tintramp
 #include "hwdef-Emisar_D4Sv2-tintramp.h"
 
-#endif

@@ -1,7 +1,9 @@
-#ifndef HWDEF_MF01S_H
-#define HWDEF_MF01S_H
+// MF01S driver layout
+// Copyright (C) 2019-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* MF01S driver layout
+/*
  *           ----
  *   Reset -|1  8|- VCC (unused)
  * eswitch -|2  7|- Voltage divider (2S)
@@ -57,4 +59,3 @@
 
 #define LAYOUT_DEFINED
 
-#endif

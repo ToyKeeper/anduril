@@ -1,5 +1,7 @@
-#ifndef TK_H
-#define TK_H
+// tk.h : misc handy stuff
+// Copyright (C) 2015-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
 /////
 // tk.h
@@ -14,4 +16,3 @@
 // use it like this:
 //#include incfile(CONFIGFILE)
 
-#endif

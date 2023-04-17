@@ -1,8 +1,6 @@
-/*
- * channel-modes.h: Multi-channel functions for Anduril.
- * Copyright (C) 2017-2023 Selene ToyKeeper
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
+// channel-modes.h: Multi-channel functions for Anduril.
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 

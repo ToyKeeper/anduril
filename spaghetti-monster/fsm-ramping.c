@@ -1,10 +1,6 @@
-/*
- * fsm-ramping.c: Ramping functions for SpaghettiMonster.
- * Handles 1- to 4-channel smooth ramping on a single LED.
- *
- * Copyright (C) 2017-2023 Selene ToyKeeper
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
+// fsm-ramping.c: Ramping functions for SpaghettiMonster.
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
@@ -557,3 +553,4 @@ GradualTickFuncPtr gradual_tick_modes[NUM_CHANNEL_MODES] = { GRADUAL_TICK_MODES 
 
 
 #endif  // ifdef USE_RAMPING
+

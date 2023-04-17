@@ -1,4 +1,8 @@
 // Emisar D4 config options for Anduril
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #define MODEL_NUMBER "0111"
 #include "hwdef-Emisar_D4.h"
 #include "hank-cfg.h"

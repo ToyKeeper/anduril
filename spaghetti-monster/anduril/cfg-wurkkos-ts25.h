@@ -1,4 +1,8 @@
 // Wurkkos TS25, modelled after the TS10 but with RGB Aux
+// Copyright (C) 2022-2023 (FIXME)
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #define MODEL_NUMBER "0715"
 #include "hwdef-Wurkkos_TS25.h"
 // ATTINY: 1616

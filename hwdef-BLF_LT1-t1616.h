@@ -1,16 +1,16 @@
-#ifndef HWDEF_BLF_LANTERN_T1616_H
-#define HWDEF_BLF_LANTERN_T1616_H
+// BLF LT1 driver layout using the Attiny1616
+// Copyright (C) 2021-2023 (FIXME)
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* BLF LT1 driver layout using the Attiny1616
-
-Driver pinout:
+/*
+ * Driver pinout:
  * eSwitch:    PA5
  * Aux LED:    PB5
  * PWM FET:    PB0 (TCA0 WO0)
  * PWM 1x7135: PB1 (TCA0 WO1)
  * Voltage:    VCC
-
-*/
+ */
 
 
 #define LAYOUT_DEFINED
@@ -103,5 +103,3 @@ inline void hwdef_setup() {
     TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc | TCA_SINGLE_ENABLE_bm;
 }
 
-
-#endif

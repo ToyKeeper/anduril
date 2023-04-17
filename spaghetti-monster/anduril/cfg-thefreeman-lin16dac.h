@@ -1,4 +1,8 @@
 // thefreeman's Linear 16 driver using DAC control
+// Copyright (C) 2021-2023 (FIXME)
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #define MODEL_NUMBER "0000" // TBD
 #include "hwdef-thefreeman-lin16dac.h"
 // ATTINY: 1616

@@ -1,4 +1,6 @@
-// Sofirn LT1S Pro
+// Sofirn LT1S Pro config file for Anduril
+// Copyright (C) 2022-2023 (FIXME)
+// SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
 #define MODEL_NUMBER "0623"

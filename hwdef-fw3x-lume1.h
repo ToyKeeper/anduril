@@ -1,5 +1,7 @@
-#ifndef HWDEF_FW3X_LUME1_H
-#define HWDEF_FW3X_LUME1_H
+// lume1 Driver Rev B for FW3x driver layout (attiny1634)
+// Copyright (C) 2020-2023 (FIXME)
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
 /* lume1 Driver Rev B for FW3x driver layout (attiny1634)
  * www.loneoceans.com/labs/ for more information
@@ -166,4 +168,3 @@ inline void hwdef_setup() {
 
 #define LAYOUT_DEFINED
 
-#endif

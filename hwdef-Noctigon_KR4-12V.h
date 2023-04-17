@@ -1,7 +1,9 @@
-#ifndef HWDEF_NOCTIGON_KR4_12V_H
-#define HWDEF_NOCTIGON_KR4_12V_H
+// Noctigon KR4 (12V) driver layout (attiny1634)
+// Copyright (C) 2020-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* Noctigon KR4 (12V) driver layout (attiny1634)
+/*
  * (based on Noctigon DM11-12V and KR4)
  *
  * Pin / Name / Function
@@ -154,4 +156,3 @@ inline void hwdef_setup() {
 
 #define LAYOUT_DEFINED
 
-#endif

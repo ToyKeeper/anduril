@@ -1,7 +1,9 @@
-#ifndef HWDEF_BLF_GT_H
-#define HWDEF_BLF_GT_H
+// BLF GT driver layout
+// Copyright (C) 2018-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* BLF GT driver layout
+/*
  *           ----
  *   Reset -|1  8|- VCC (unused)
  * eswitch -|2  7|- Voltage divider
@@ -57,4 +59,3 @@
 
 #define LAYOUT_DEFINED
 
-#endif

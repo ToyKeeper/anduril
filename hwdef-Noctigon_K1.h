@@ -1,7 +1,9 @@
-#ifndef HWDEF_NOCTIGON_K1_H
-#define HWDEF_NOCTIGON_K1_H
+// Noctigon K1 driver layout (attiny1634)
+// Copyright (C) 2019-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* Noctigon K1 driver layout (attiny1634)
+/*
  * (originally known as Emisar D1S V2)
  *
  * Pin / Name / Function
@@ -131,4 +133,3 @@ inline void hwdef_setup() {
 
 #define LAYOUT_DEFINED
 
-#endif

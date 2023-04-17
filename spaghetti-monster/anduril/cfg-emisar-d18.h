@@ -1,4 +1,8 @@
 // Emisar D18 (FET+13+1) config options for Anduril
+// Copyright (C) 2019-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #define MODEL_NUMBER "0141"
 #include "hwdef-Emisar_D18.h"
 #include "hank-cfg.h"

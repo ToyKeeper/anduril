@@ -1,7 +1,9 @@
-#ifndef HWDEF_D4SV2_TINTRAMP_H
-#define HWDEF_D4SV2_TINTRAMP_H
+// Emisar D4Sv2 w/ tint ramping
+// Copyright (C) 2021-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* Emisar D4Sv2 w/ tint ramping
+/*
  * (based on the Noctigon K9.3 driver layout (attiny1634))
  *
  * Pin / Name / Function
@@ -185,4 +187,3 @@ inline void hwdef_setup() {
 
 #define LAYOUT_DEFINED
 
-#endif

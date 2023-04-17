@@ -1,17 +1,16 @@
-#ifndef HWDEF_THEFREEMAN_LIN18_H
-#define HWDEF_THEFREEMAN_LIN18_H
+// thefreeman's Linear 16 driver using DAC control
+// Copyright (C) 2021-2023 (FIXME)
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* thefreeman's Linear 16 driver using DAC control
-
-PA6 - DAC for LED brightness control
-PA7 - Op-amp enable pin
-PB5 - Aux LED
-PB4 - Switch pin, internal pullup
-PB3 - HDR control, set High to enable the high power channel, set Low for low power
-Read voltage from VCC pin, has PFET so no drop
-
-*/
-
+/*
+ * PA6 - DAC for LED brightness control
+ * PA7 - Op-amp enable pin
+ * PB5 - Aux LED
+ * PB4 - Switch pin, internal pullup
+ * PB3 - HDR control, set High to enable the high power channel, set Low for low power
+ * Read voltage from VCC pin, has PFET so no drop
+ */
 
 #define LAYOUT_DEFINED
 
@@ -105,5 +104,3 @@ inline void hwdef_setup() {
 
 }
 
-
-#endif

@@ -1,4 +1,8 @@
 // Noctigon KR4 (fetless) config options for Anduril
+// Copyright (C) 2020-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 // (and Noctigon KR1)
 // (and Emisar D4v2 E21A, a.k.a. "D4v2.5")
 #include "cfg-noctigon-kr4.h"

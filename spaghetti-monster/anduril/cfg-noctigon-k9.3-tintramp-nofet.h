@@ -1,4 +1,8 @@
 // Noctigon K9.3 noFET tint-ramping config options for Anduril
+// Copyright (C) 2021-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #define MODEL_NUMBER "0265"
 #include "hwdef-Emisar_D4Sv2-tintramp.h"
 #include "hank-cfg.h"

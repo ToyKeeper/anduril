@@ -1,4 +1,8 @@
 // Noctigon DM11-noFET config options for Anduril
+// Copyright (C) 2021-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #include "cfg-noctigon-dm11.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0272"

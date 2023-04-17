@@ -1,8 +1,8 @@
-#ifndef HWDEF_EMISAR_D4S_H
-#define HWDEF_EMISAR_D4S_H
+// Emisar D4S driver layout
+// Copyright (C) 2018-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* Emisar D4S driver layout
- */
 // same as a D4, basically
 #include "hwdef-Emisar_D4.h"
 
@@ -11,4 +11,3 @@
 #define AUXLED_PIN   PB4    // pin 3
 #endif
 
-#endif

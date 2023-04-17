@@ -1,7 +1,9 @@
-#ifndef HWDEF_NOCTIGON_K1SBT90_H
-#define HWDEF_NOCTIGON_K1SBT90_H
+// Noctigon K1-SBT90.2 driver layout (attiny1634)
+// Copyright (C) 2019-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* Noctigon K1-SBT90.2 driver layout (attiny1634)
+/*
  * (mostly the same as KR4 driver)
  *
  * Pin / Name / Function
@@ -140,4 +142,3 @@ inline void hwdef_setup() {
 
 #define LAYOUT_DEFINED
 
-#endif

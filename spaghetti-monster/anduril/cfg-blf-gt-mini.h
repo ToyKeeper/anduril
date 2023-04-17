@@ -1,4 +1,8 @@
 // BLF/Lumintop GT Mini config options for Anduril
+// Copyright (C) 2018-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #include "hwdef-BLF_GT_Mini.h"
 // Same as an Emisar D1S, except it has a lighted button
 #include "cfg-emisar-d1s.h"

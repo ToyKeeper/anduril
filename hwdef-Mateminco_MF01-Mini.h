@@ -1,7 +1,9 @@
-#ifndef HWDEF_MF01_MINI_H
-#define HWDEF_MF01_MINI_H
+// MF01-Mini driver layout
+// Copyright (C) 2019-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* MF01-Mini driver layout
+/*
  *           ----
  *   Reset -|1  8|- VCC
  * eswitch -|2  7|- aux LEDs
@@ -46,4 +48,3 @@
 
 #define LAYOUT_DEFINED
 
-#endif

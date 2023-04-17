@@ -1,7 +1,9 @@
-#ifndef HWDEF_MT35_MINI_H
-#define HWDEF_MT35_MINI_H
+// Mateminco MT35-Mini / Astrolux FT03
+// Copyright (C) 2022-2023 (FIXME)
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* Mateminco MT35-Mini / Astrolux FT03
+/*
  *           ----
  *   Reset -|1  8|- VCC
  * eswitch -|2  7|- Aux LED
@@ -44,4 +46,3 @@
 
 #define LAYOUT_DEFINED
 
-#endif

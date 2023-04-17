@@ -1,4 +1,8 @@
 // Fireflies ROT66 (14x7135) config options for Anduril
+// Copyright (C) 2018-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #define MODEL_NUMBER "0411"
 #include "hwdef-FF_ROT66.h"
 

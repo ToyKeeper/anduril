@@ -1,8 +1,9 @@
-#ifndef HWDEF_NOCTIGON_K93_H
-#define HWDEF_NOCTIGON_K93_H
+// Noctigon K9.3 driver layout (attiny1634)
+// Copyright (C) 2020-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* Noctigon K9.3 driver layout (attiny1634)
- *
+/*
  * Pin / Name / Function
  *   1    PA6   2nd LED PWM (linear) (PWM1B)
  *   2    PA5   R: red aux LED (PWM0B)
@@ -161,4 +162,3 @@ inline void hwdef_setup() {
 
 #define LAYOUT_DEFINED
 
-#endif

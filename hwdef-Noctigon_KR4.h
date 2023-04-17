@@ -1,8 +1,9 @@
-#ifndef HWDEF_NOCTIGON_KR4_H
-#define HWDEF_NOCTIGON_KR4_H
+// Noctigon KR4 / D4V2.5 driver layout (attiny1634)
+// Copyright (C) 2020-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* Noctigon KR4 / D4V2.5 driver layout (attiny1634)
- *
+/*
  * Pin / Name / Function
  *   1    PA6   FET PWM (direct drive) (PWM1B)
  *   2    PA5   R: red aux LED (PWM0B)
@@ -158,4 +159,3 @@ inline void hwdef_setup() {
 
 #define LAYOUT_DEFINED
 
-#endif

@@ -1,7 +1,9 @@
-#ifndef HWDEF_BLF_LT1_H
-#define HWDEF_BLF_LT1_H
+// BLF LT1 driver layout
+// Copyright (C) 2018-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* BLF LT1 driver layout
+/*
  *           ----
  *   Reset -|1  8|- VCC
  * eswitch -|2  7|- (unused)
@@ -54,5 +56,3 @@ uint16_t PWM1_LVL;
 
 #define LAYOUT_DEFINED
 
-
-#endif

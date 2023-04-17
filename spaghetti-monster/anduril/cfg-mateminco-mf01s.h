@@ -1,4 +1,8 @@
 // Mateminco/Astrolux MF01S options for Anduril
+// Copyright (C) 2019-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #define MODEL_NUMBER "0511"
 #include "hwdef-Mateminco_MF01S.h"
 

@@ -1,7 +1,9 @@
-#ifndef HWDEF_TK_SABER_H
-#define HWDEF_TK_SABER_H
+// TK 4-color lightsaber driver layout
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* TK 4-color lightsaber driver layout
+/*
  *             ----
  *     Reset -|1  8|- VCC
  * PWM 4 (A) -|2  7|- e-switch
@@ -33,4 +35,3 @@
 
 #define LAYOUT_DEFINED
 
-#endif

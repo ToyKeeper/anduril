@@ -1,17 +1,17 @@
-#ifndef HWDEF_BLF_Q8_T1616_H
-#define HWDEF_BLF_Q8_T1616_H
+// Wurkkos TS10 driver layout
+// Copyright (C) 2022-2023 (FIXME)
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* BLF Q8 driver layout using the Attiny1616
-
-Driver pinout:
+/*
+ * (based on BLF Q8-t1616 driver layout)
+ * Driver pinout:
  * eSwitch:    PA5
  * Aux LED:    PB5
  * PWM FET:    PB0 (TCA0 WO0)
  * PWM 1x7135: PB1 (TCA0 WO1)
  * Voltage:    VCC
-
-*/
-
+ */
 
 #define LAYOUT_DEFINED
 
@@ -113,5 +113,3 @@ inline void hwdef_setup() {
     TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc | TCA_SINGLE_ENABLE_bm;
 }
 
-
-#endif

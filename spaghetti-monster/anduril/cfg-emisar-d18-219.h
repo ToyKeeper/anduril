@@ -1,4 +1,8 @@
 // Emisar D18 (FET+13+1) reduced-FET config options for Anduril
+// Copyright (C) 2019-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #include "cfg-emisar-d18.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0142"

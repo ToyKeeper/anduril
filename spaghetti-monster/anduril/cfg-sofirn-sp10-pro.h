@@ -1,4 +1,8 @@
 // Sofirn SP10 Pro config options for Anduril
+// Copyright (C) 2022-2023 (FIXME)
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #define MODEL_NUMBER "0631"
 #include "hwdef-Sofirn_SP10-Pro.h"
 // ATTINY: 1616

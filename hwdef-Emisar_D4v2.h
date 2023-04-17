@@ -1,9 +1,9 @@
+// hwdef for Emisar D4v2 (attiny1634)
+// Copyright (C) 2018 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-/* hwdef for Emisar D4v2 (attiny1634)
- * Copyright (C) 2019 Selene ToyKeeper
- * SPDX-License-Identifier: GPL-3.0-or-later
- *
+/*
  * Pin / Name / Function
  *   1    PA6   FET PWM (PWM1B)
  *   2    PA5   red aux LED (PWM0B)

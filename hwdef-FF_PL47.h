@@ -1,9 +1,9 @@
-#ifndef HWDEF_FF_PL47_H
-#define HWDEF_FF_PL47_H
+// Fireflies PL47 driver layout
+// Copyright (C) 2018-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* Fireflies PL47 driver layout
- * same as a D4S, basically, except ...
- */
+// same as a D4S, basically, except ...
 
 // ... the PL47 has aux LEDs on pin 7
 #ifndef AUXLED_PIN
@@ -24,4 +24,3 @@
 #undef FSM_EMISAR_D4S_DRIVER
 #undef FSM_EMISAR_D4_DRIVER
 
-#endif

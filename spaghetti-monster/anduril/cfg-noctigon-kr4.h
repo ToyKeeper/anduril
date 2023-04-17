@@ -1,5 +1,9 @@
 // Noctigon KR4 config options for Anduril
 // (and Emisar D4v2.5, which uses KR4 driver plus a button LED)
+// Copyright (C) 2020-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #define MODEL_NUMBER "0211"
 #include "hwdef-Noctigon_KR4.h"
 #include "hank-cfg.h"

@@ -1,4 +1,8 @@
 // FW3A-219 config options for Anduril
+// Copyright (C) 2018-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #include "cfg-fw3a.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0312"

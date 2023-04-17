@@ -1,8 +1,8 @@
-#ifndef HWDEF_BLF_GT_MINI_H
-#define HWDEF_BLF_GT_MINI_H
+// BLF/Lumintop GT Mini driver layout
+// Copyright (C) 2018-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* BLF/Lumintop GT Mini driver layout
- */
 // exactly the same as a D1S, but with a lighted button
 #include "hwdef-Emisar_D1S.h"
 
@@ -11,4 +11,3 @@
 #define AUXLED_PIN   PB4    // pin 3
 #endif
 
-#endif

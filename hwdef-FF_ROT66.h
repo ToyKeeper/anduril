@@ -1,9 +1,9 @@
-#ifndef HWDEF_FF_ROT66_H
-#define HWDEF_FF_ROT66_H
+// Fireflies ROT66 driver layout
+// Copyright (C) 2018-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* Fireflies ROT66 driver layout
- * same as a FW3A, basically, except ...
- */
+// same as a FW3A, basically, except ...
 
 // ... except the ROT66 has a lighted button
 #ifndef AUXLED_PIN
@@ -22,4 +22,3 @@
 #undef VISION_PIN
 #endif
 
-#endif

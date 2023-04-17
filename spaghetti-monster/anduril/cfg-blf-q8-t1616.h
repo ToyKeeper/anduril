@@ -1,4 +1,8 @@
 // BLF Q8 config options for Anduril using the Attiny1616
+// Copyright (C) 2021-2023 (FIXME)
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #define MODEL_NUMBER "0613"
 #include "hwdef-BLF_Q8-T1616.h"
 // ATTINY: 1616

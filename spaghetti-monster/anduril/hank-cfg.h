@@ -1,5 +1,5 @@
 // Intl-Outdoor (Hank)'s config options for Anduril
-// Copyright (C) 2021 Selene ToyKeeper
+// Copyright (C) 2021-2023 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 

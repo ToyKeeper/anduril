@@ -1,4 +1,8 @@
 // Wurkkos TS10 (originally used Sofirn SP36-t1616 firmware) config options for Anduril using the Attiny1616
+// Copyright (C) 2022-2023 (FIXME)
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 // same as  the  BLF Q8 T1616, mostly (added Dynamic PWM)
 #define MODEL_NUMBER "0714"
 #include "hwdef-Wurkkos_TS10.h"

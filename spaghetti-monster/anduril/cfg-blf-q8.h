@@ -1,4 +1,8 @@
 // BLF Q8 config options for Anduril
+// Copyright (C) 2018-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #define MODEL_NUMBER "0611"
 #include "hwdef-BLF_Q8.h"
 

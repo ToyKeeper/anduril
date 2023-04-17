@@ -1,4 +1,8 @@
 // gChart's custom FET+1 driver config options for Anduril
+// Copyright (C) 2020-2023 (FIXME)
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #define MODEL_NUMBER "1618" // Golden Ratio... because I can
 #include "hwdef-gchart-fet1-t1616.h"
 // ATTINY: 1616

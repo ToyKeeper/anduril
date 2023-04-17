@@ -1,4 +1,8 @@
 // Noctigon DM11 (12V) config options for Anduril
+// Copyright (C) 2021-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #define MODEL_NUMBER "0273"
 #include "hwdef-Noctigon_DM11-12V.h"
 #include "hank-cfg.h"

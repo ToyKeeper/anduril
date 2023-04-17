@@ -1,4 +1,8 @@
 // Noctigon KR4 (reduced FET) config options for Anduril
+// Copyright (C) 2020-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #include "cfg-noctigon-kr4.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0214"

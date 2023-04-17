@@ -1,8 +1,6 @@
-/*
- * tint-ramping.c: Tint ramping functions for Anduril.
- * Copyright (C) 2017-2023 Selene ToyKeeper
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
+// tint-ramping.c: Tint ramping functions for Anduril.
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
