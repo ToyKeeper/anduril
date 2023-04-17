@@ -25,19 +25,21 @@
 // * 3. red + white blend
 #define NUM_CHANNEL_MODES 4
 //#define CHANNEL_MODES_ENABLED 1,1,1,1
-#define CHANNEL_MODES_ENABLED 0b00001111
 #define CM_WHITE      0
 #define CM_AUTO       1
 #define CM_RED        2
 #define CM_WHITE_RED  3
+
+#define CHANNEL_MODES_ENABLED 0b00001111
+#define CHANNEL_HAS_ARGS      0b00001001
+// 128=middle CCT, N/A, N/A, 255=100% red
+#define CHANNEL_MODE_ARGS     128,0,0,255
 
 // TODO: blend mode should enable this automatically?
 #define USE_CHANNEL_MODES
 // TODO: blend mode should enable this automatically?
 #define USE_CHANNEL_MODE_ARGS
 // TODO: or maybe if args are defined, the USE_ should be auto-set?
-// 128=middle CCT, N/A, N/A, 255=100% red
-#define CHANNEL_MODE_ARGS 128,0,0,255
 #define SET_LEVEL_MODES      set_level_white_blend, \
                              set_level_auto_3ch_blend, \
                              set_level_red, \

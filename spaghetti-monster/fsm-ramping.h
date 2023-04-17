@@ -41,6 +41,7 @@ GradualTickFuncPtr gradual_tick_modes[NUM_CHANNEL_MODES];
 #ifdef USE_CUSTOM_CHANNEL_3H_MODES
 // different 3H behavior per channel?
 // TODO: move to progmem
+// TODO: move to Anduril, not FSM
 StatePtr channel_3H_modes[NUM_CHANNEL_MODES];
 #endif
 
@@ -60,11 +61,14 @@ StatePtr channel_3H_modes[NUM_CHANNEL_MODES];
     #endif
 #endif
 
-#ifndef USE_CFG
-    #ifdef USE_CHANNEL_MODE_ARGS
+#ifdef USE_CHANNEL_MODE_ARGS
+    #ifndef USE_CFG
     // one byte of extra data per channel mode, like for tint value
     uint8_t channel_mode_args[NUM_CHANNEL_MODES] = { CHANNEL_MODE_ARGS };
     #endif
+    // bitmask: which modes respond to their "arg", and which don't?
+    //const uint8_t channel_has_args = CHANNEL_HAS_ARGS;
+    #define channel_has_args(n) ((CHANNEL_HAS_ARGS >> n) & 1)
 #endif
 
 void set_channel_mode(uint8_t mode);

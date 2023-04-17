@@ -57,16 +57,6 @@
 #endif
 
 
-// move a couple actions depending on whether there are channel modes
-#ifdef USE_CHANNEL_MODE_ARGS
-  #define EV_MOMENTARY_TURBO          EV_click4_hold
-  #define EV_MOMENTARY_TURBO_RELEASE  EV_click4_hold_release
-#else
-  #define EV_MOMENTARY_TURBO          EV_click3_hold
-  #define EV_MOMENTARY_TURBO_RELEASE  EV_click3_hold_release
-#endif
-
-
 // default ramp options if not overridden earlier per-driver
 #ifndef RAMP_STYLE
 #define RAMP_STYLE 0  // smooth default

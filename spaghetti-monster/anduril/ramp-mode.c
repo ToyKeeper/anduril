@@ -408,9 +408,18 @@ uint8_t steady_state(Event event, uint16_t arg) {
     #endif
 
     // 3H: momentary turbo (on lights with no tint ramping)
-    // (or 4H on lights with tint ramping)
-    // FIXME: handle 3H if channel mode has no args
-    else if (event == EV_MOMENTARY_TURBO) {
+    // (or 4H when tint ramping is available)
+    else if ((event == EV_click3_hold)
+            #ifdef USE_CHANNEL_MODE_ARGS
+            || (event == EV_click4_hold)
+            #endif
+        ) {
+        #ifdef USE_CHANNEL_MODE_ARGS
+            // ramp tint if tint exists in this mode
+            if ((event == EV_click3_hold)
+                && (channel_has_args(cfg.channel_mode)))
+                return EVENT_NOT_HANDLED;
+        #endif
         if (! arg) {  // first frame only, to allow thermal regulation to work
             #ifdef USE_2C_STYLE_CONFIG
             uint8_t tl = style_2c ? MAX_LEVEL : turbo_level;
@@ -421,7 +430,17 @@ uint8_t steady_state(Event event, uint16_t arg) {
         }
         return MISCHIEF_MANAGED;
     }
-    else if (event == EV_MOMENTARY_TURBO_RELEASE) {
+    else if ((event == EV_click3_hold_release)
+            #ifdef USE_CHANNEL_MODE_ARGS
+            || (event == EV_click4_hold_release)
+            #endif
+        ) {
+        #ifdef USE_CHANNEL_MODE_ARGS
+            // ramp tint if tint exists in this mode
+            if ((event == EV_click3_hold_release)
+                && (channel_has_args(cfg.channel_mode)))
+                return EVENT_NOT_HANDLED;
+        #endif
         set_level_and_therm_target(memorized_level);
         return MISCHIEF_MANAGED;
     }
