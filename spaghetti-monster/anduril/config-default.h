@@ -181,3 +181,7 @@
 // those oscillations
 //#define USE_LOWPASS_WHILE_ASLEEP
 
+// if there's tint ramping, allow user to set it smooth or stepped
+#define USE_STEPPED_TINT_RAMPING
+#define DEFAULT_TINT_RAMP_STYLE 0  // smooth
+

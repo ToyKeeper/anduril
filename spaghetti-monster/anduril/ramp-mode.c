@@ -587,12 +587,8 @@ uint8_t ramp_extras_config_state(Event event, uint16_t arg) {
 #ifdef USE_GLOBALS_CONFIG
 void globals_config_save(uint8_t step, uint8_t value) {
     if (0) {}
-    #ifdef USE_TINT_RAMPING
-    else if (step == 1+tint_style_config_step) {
-        tint_style = !(!(value));
-        // set tint to middle or edge depending on style being smooth or toggle
-        tint = tint_style ? 1 : 127;
-    }
+    #if defined(USE_CHANNEL_MODE_ARGS) && defined(USE_STEPPED_TINT_RAMPING)
+    else if (step == 1+tint_style_config_step) { cfg.tint_ramp_style = value; }
     #endif
     #ifdef USE_JUMP_START
     else if (step == 1+jump_start_config_step) { cfg.jump_start_level = value; }

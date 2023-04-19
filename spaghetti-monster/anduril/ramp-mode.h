@@ -188,7 +188,7 @@ void reset_sunset_timer();
 
 #ifdef USE_GLOBALS_CONFIG
 typedef enum {
-    #ifdef USE_TINT_RAMPING
+    #if defined(USE_CHANNEL_MODE_ARGS) && defined(USE_STEPPED_TINT_RAMPING)
     tint_style_config_step,
     #endif
     #ifdef USE_JUMP_START

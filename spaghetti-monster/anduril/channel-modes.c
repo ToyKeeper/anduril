@@ -70,13 +70,25 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
         // ignore event if we weren't the ones who handled the first frame
         if (! active) return EVENT_NOT_HANDLED;
 
-        // change normal tints
-        if ((tint_ramp_direction > 0) && (tint < 255)) {
-            tint += 1;
-        }
-        else if ((tint_ramp_direction < 0) && (tint > 0)) {
-            tint -= 1;
-        }
+        #ifdef USE_STEPPED_TINT_RAMPING
+            if ((tint_ramp_direction > 0 && tint < 255) ||
+                (tint_ramp_direction < 0 && tint > 0)) {
+                // ramp slower in stepped mode
+                if (cfg.tint_ramp_style && (arg % HOLD_TIMEOUT != 0))
+                    return EVENT_HANDLED;
+
+                const uint8_t step_size = (cfg.tint_ramp_style < 2)
+                                        ? 1 : 254 / (cfg.tint_ramp_style-1);
+                tint = nearest_tint_value(
+                          tint + ((int16_t)step_size * tint_ramp_direction)
+                          );
+            }
+        #else  // smooth tint ramping only
+            if ((tint_ramp_direction > 0) && (tint < 255)) { tint ++; }
+            else
+            if ((tint_ramp_direction < 0) && (tint >   0)) { tint --; }
+        #endif  // ifdef USE_STEPPED_TINT_RAMPING
+
         // if tint change stalled, let user know we hit the edge
         else if (prev_tint == tint) {
             if (past_edge_counter == 0) blip();
@@ -124,6 +136,7 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
     return EVENT_NOT_HANDLED;
 }
 
+
 #if NUM_CHANNEL_MODES > 1
 void channel_mode_config_save(uint8_t step, uint8_t value) {
     // 1 menu item per channel mode, to enable or disable that mode
@@ -139,6 +152,34 @@ uint8_t channel_mode_config_state(Event event, uint16_t arg) {
         NUM_CHANNEL_MODES,
         channel_mode_config_save
         );
+}
+#endif
+
+
+#if defined(USE_CHANNEL_MODE_ARGS) && defined(USE_STEPPED_TINT_RAMPING)
+uint8_t nearest_tint_value(const int16_t target) {
+    // const symbols for more readable code, will be removed by the compiler
+    const uint8_t tint_min = 0;
+    const uint8_t tint_max = 255;
+    const uint8_t tint_range = tint_max - tint_min;
+
+    // only equal mix of both channels
+    if (1 == cfg.tint_ramp_style) return (tint_min + tint_max) >> 1;
+
+    if (target < tint_min) return tint_min;
+    if (target > tint_max) return tint_max;
+    if (0 == cfg.tint_ramp_style) return target;  // smooth ramping
+
+    const uint8_t step_size = tint_range / (cfg.tint_ramp_style-1);
+
+    uint8_t tint_result = tint_min;
+    for (uint8_t i=0; i<cfg.tint_ramp_style; i++) {
+        tint_result = tint_min
+                    + (i * (uint16_t)tint_range / (cfg.tint_ramp_style-1));
+        int16_t diff = target - tint_result;
+        if (diff <= (step_size>>1)) return tint_result;
+    }
+    return tint_result;
 }
 #endif
 

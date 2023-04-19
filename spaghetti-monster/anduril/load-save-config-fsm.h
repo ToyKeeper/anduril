@@ -59,6 +59,9 @@ typedef struct Config {
         #ifdef USE_MANUAL_MEMORY
             uint8_t manual_memory_channel_args[NUM_CHANNEL_MODES];
         #endif
+        #ifdef USE_STEPPED_TINT_RAMPING
+            uint8_t tint_ramp_style;
+        #endif
     #endif
 
     ///// strobe / blinky mode settings

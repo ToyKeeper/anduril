@@ -85,6 +85,9 @@ Config cfg = {
             // remember and reset 1 extra parameter per channel mode (like tint)
             .manual_memory_channel_args = { CHANNEL_MODE_ARGS },
         #endif
+        #ifdef USE_STEPPED_TINT_RAMPING
+            .tint_ramp_style = DEFAULT_TINT_RAMP_STYLE,
+        #endif
     #endif
 
     ///// strobe / blinky mode settings
