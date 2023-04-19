@@ -64,8 +64,33 @@ void set_level_white_blend(uint8_t level) {
 
     PWM_DATATYPE warm_PWM, cool_PWM;
     PWM_DATATYPE brightness = PWM_GET(pwm1_levels, level);
-    PWM_DATATYPE top = PWM_GET(pwm_tops, level);
-    uint8_t blend = cfg.channel_mode_args[cfg.channel_mode];
+    PWM_DATATYPE top        = PWM_GET(pwm_tops, level);
+    uint8_t blend           = cfg.channel_mode_args[cfg.channel_mode];
+
+    calc_2ch_blend(&warm_PWM, &cool_PWM, brightness, top, blend);
+
+    WARM_PWM_LVL = warm_PWM;
+    COOL_PWM_LVL = cool_PWM;
+    PWM_TOP = top;
+    if (! actual_level) PWM_CNT = 0;  // reset phase
+}
+
+
+// same as white blend, but tint is calculated from the ramp level
+void set_level_auto_2ch_blend(uint8_t level) {
+    if (level == 0) {
+        WARM_PWM_LVL = 0;
+        COOL_PWM_LVL = 0;
+        PWM_CNT      = 0;  // reset phase
+        return;
+    }
+
+    level --;  // PWM array index = level - 1
+
+    PWM_DATATYPE warm_PWM, cool_PWM;
+    PWM_DATATYPE brightness = PWM_GET(pwm1_levels, level);
+    PWM_DATATYPE top        = PWM_GET(pwm_tops, level);
+    uint8_t blend           = 255 * (uint16_t)level / RAMP_SIZE;
 
     calc_2ch_blend(&warm_PWM, &cool_PWM, brightness, top, blend);
 
@@ -153,6 +178,35 @@ void gradual_tick_white_blend() {
     PWM_DATATYPE brightness = PWM_GET(pwm1_levels, gt);
     PWM_DATATYPE top        = PWM_GET(pwm_tops, gt);
     uint8_t blend           = cfg.channel_mode_args[cfg.channel_mode];
+
+    calc_2ch_blend(&warm_PWM, &cool_PWM, brightness, top, blend);
+
+    // move up/down if necessary
+    GRADUAL_ADJUST_SIMPLE(warm_PWM, WARM_PWM_LVL);
+    GRADUAL_ADJUST_SIMPLE(cool_PWM, COOL_PWM_LVL);
+
+    // check for completion
+    if (   (WARM_PWM_LVL == warm_PWM)
+        && (COOL_PWM_LVL == cool_PWM)
+       )
+    {
+        GRADUAL_IS_ACTUAL();
+    }
+}
+
+
+// same as white blend, but tint is calculated from the ramp level
+void gradual_tick_auto_2ch_blend() {
+    uint8_t gt = gradual_target;
+    if (gt < actual_level) gt = actual_level - 1;
+    else if (gt > actual_level) gt = actual_level + 1;
+    gt --;
+
+    // figure out what exact PWM levels we're aiming for
+    PWM_DATATYPE warm_PWM, cool_PWM;
+    PWM_DATATYPE brightness = PWM_GET(pwm1_levels, gt);
+    PWM_DATATYPE top        = PWM_GET(pwm_tops, gt);
+    uint8_t blend           = 255 * (uint16_t)gt / RAMP_SIZE;
 
     calc_2ch_blend(&warm_PWM, &cool_PWM, brightness, top, blend);
 

@@ -20,20 +20,21 @@
 
 // channel modes:
 // * 0. warm/cool white blend
-// * 1. auto 3ch blend (red -> warm -> cool by ramp level)
-// * 2. red only
-// * 3. red + white blend
-#define NUM_CHANNEL_MODES 4
-//#define CHANNEL_MODES_ENABLED 1,1,1,1
+// * 1. auto 2ch white blend (warm -> cool by ramp level)
+// * 2. auto 3ch blend (red -> warm -> cool by ramp level)
+// * 3. red only
+// * 4. red + white blend
+#define NUM_CHANNEL_MODES 5
 #define CM_WHITE      0
-#define CM_AUTO       1
-#define CM_RED        2
-#define CM_WHITE_RED  3
+#define CM_AUTO2      1
+#define CM_AUTO3      2
+#define CM_RED        3
+#define CM_WHITE_RED  4
 
-#define CHANNEL_MODES_ENABLED 0b00001111
-#define CHANNEL_HAS_ARGS      0b00001001
-// 128=middle CCT, N/A, N/A, 255=100% red
-#define CHANNEL_MODE_ARGS     128,0,0,255
+#define CHANNEL_MODES_ENABLED 0b00011111
+#define CHANNEL_HAS_ARGS      0b00010001
+// 128=middle CCT, _, _, _, 255=100% red
+#define CHANNEL_MODE_ARGS     128,0,0,0,255
 
 // TODO: blend mode should enable this automatically?
 #define USE_CHANNEL_MODES
@@ -41,11 +42,13 @@
 #define USE_CHANNEL_MODE_ARGS
 // TODO: or maybe if args are defined, the USE_ should be auto-set?
 #define SET_LEVEL_MODES      set_level_white_blend, \
+                             set_level_auto_2ch_blend, \
                              set_level_auto_3ch_blend, \
                              set_level_red, \
                              set_level_red_white_blend
 // gradual ticking for thermal regulation
 #define GRADUAL_TICK_MODES   gradual_tick_white_blend, \
+                             gradual_tick_auto_2ch_blend, \
                              gradual_tick_auto_3ch_blend, \
                              gradual_tick_red, \
                              gradual_tick_red_white_blend
@@ -108,11 +111,13 @@
 // custom channel modes
 void set_level_red(uint8_t level);
 void set_level_white_blend(uint8_t level);
+void set_level_auto_2ch_blend(uint8_t level);
 void set_level_auto_3ch_blend(uint8_t level);
 void set_level_red_white_blend(uint8_t level);
 
 void gradual_tick_red();
 void gradual_tick_white_blend();
+void gradual_tick_auto_2ch_blend();
 void gradual_tick_auto_3ch_blend();
 void gradual_tick_red_white_blend();
 
