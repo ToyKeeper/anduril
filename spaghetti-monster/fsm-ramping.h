@@ -32,7 +32,7 @@ SetLevelFuncPtr channel_modes[NUM_CHANNEL_MODES];
 
 #ifdef USE_SET_LEVEL_GRADUALLY
 // the gradual tick mechanism may be different per channel
-typedef void GradualTickFunc();
+typedef bool GradualTickFunc(uint8_t gt);
 typedef GradualTickFunc * GradualTickFuncPtr;
 // TODO: move to progmem
 GradualTickFuncPtr gradual_tick_modes[NUM_CHANNEL_MODES];
@@ -101,12 +101,7 @@ inline void set_level_gradually(uint8_t lvl);
 void gradual_tick();
 
 // reduce repetition with macros
-// common code at the beginning of every gradual tick handler
 #define GRADUAL_TICK_SETUP()  \
-    uint8_t gt = gradual_target;  \
-    if (gt < actual_level) gt = actual_level - 1;  \
-    else if (gt > actual_level) gt = actual_level + 1;  \
-    gt --;  \
     PWM_DATATYPE target;
 
 // tick to a specific value
@@ -131,12 +126,6 @@ void gradual_tick();
     else  \
     if (PWM < target) PWM ++;  \
     else if (PWM > target) PWM --;
-
-// do this when output exactly matches a ramp level
-#define GRADUAL_IS_ACTUAL()  \
-    uint8_t orig = gradual_target;  \
-    set_level(gt + 1);  \
-    gradual_target = orig;
 
 #endif  // ifdef USE_SET_LEVEL_GRADUALLY
 

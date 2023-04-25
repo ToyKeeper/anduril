@@ -115,11 +115,11 @@ void set_level_auto_2ch_blend(uint8_t level);
 void set_level_auto_3ch_blend(uint8_t level);
 void set_level_red_white_blend(uint8_t level);
 
-void gradual_tick_red();
-void gradual_tick_white_blend();
-void gradual_tick_auto_2ch_blend();
-void gradual_tick_auto_3ch_blend();
-void gradual_tick_red_white_blend();
+bool gradual_tick_red(uint8_t gt);
+bool gradual_tick_white_blend(uint8_t gt);
+bool gradual_tick_auto_2ch_blend(uint8_t gt);
+bool gradual_tick_auto_3ch_blend(uint8_t gt);
+bool gradual_tick_red_white_blend(uint8_t gt);
 
 
 inline void hwdef_setup() {
