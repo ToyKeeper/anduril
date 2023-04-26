@@ -79,7 +79,7 @@ uint8_t voltage_to_rgb() {
 // do fancy stuff with the RGB aux LEDs
 // mode: 0bPPPPCCCC where PPPP is the pattern and CCCC is the color
 // arg: time slice number
-void rgb_led_update(uint8_t mode, uint8_t arg) {
+void rgb_led_update(uint8_t mode, uint16_t arg) {
     static uint8_t rainbow = 0;  // track state of rainbow mode
     static uint8_t frame = 0;  // track state of animation mode
 
@@ -104,6 +104,8 @@ void rgb_led_update(uint8_t mode, uint8_t arg) {
     // preview in blinking mode is awkward... use high instead
     if ((! go_to_standby) && (pattern > 2)) { pattern = 2; }
 
+    // use high mode for a few seconds after initial poweroff
+    if (arg < (SLEEP_TICKS_PER_SECOND*3)) pattern = 2;
 
     const uint8_t *colors = rgb_led_colors;
     uint8_t actual_color = 0;

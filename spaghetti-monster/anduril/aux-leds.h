@@ -8,7 +8,7 @@ void indicator_led_update(uint8_t mode, uint8_t tick);
 #endif
 #if defined(USE_AUX_RGB_LEDS) && defined(TICK_DURING_STANDBY)
 uint8_t setting_rgb_mode_now = 0;
-void rgb_led_update(uint8_t mode, uint8_t arg);
+void rgb_led_update(uint8_t mode, uint16_t arg);
 void rgb_led_voltage_readout(uint8_t bright);
 /*
  * 0: R
