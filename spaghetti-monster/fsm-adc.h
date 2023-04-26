@@ -32,6 +32,9 @@ volatile uint8_t adc_reset = 2;
 #endif
 #endif
 
+#ifdef TICK_DURING_STANDBY
+volatile uint8_t adc_active_now = 0;  // sleep LVP needs a different sleep mode
+#endif
 volatile uint8_t irq_adc = 0;  // ADC interrupt happened?
 uint8_t adc_sample_count = 0;  // skip the first sample; it's junk
 uint8_t adc_channel = 0;  // 0=voltage, 1=temperature

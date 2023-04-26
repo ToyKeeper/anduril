@@ -76,6 +76,3 @@
 // added for convenience
 #define USE_SOFT_FACTORY_RESET
 
-
-// work around bizarre bug: lockout mode fails when set to solid color blinking
-#define USE_K93_LOCKOUT_KLUDGE

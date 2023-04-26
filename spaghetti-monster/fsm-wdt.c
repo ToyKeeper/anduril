@@ -123,9 +123,10 @@ void WDT_inner() {
         return;  // no sleep LVP needed if nothing drains power while off
         #else
         // stop here, usually...  but proceed often enough for sleep LVP to work
-        if (0 != (ticks_since_last & 0x3f)) return;
+        if (0 != (ticks_since_last & 0x07)) return;
 
         adc_trigger = 0;  // make sure a measurement will happen
+        adc_active_now = 1;  // use ADC noise reduction sleep mode
         ADC_on();  // enable ADC voltage measurement functions temporarily
         #endif
     }

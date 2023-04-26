@@ -244,6 +244,8 @@ void adc_deferred() {
         // (and the usual standby level is only ~20 uA)
         if (go_to_standby) {
             ADC_off();
+            // if any measurements were in progress, they're done now
+            adc_active_now = 0;
             // also, only check the battery while asleep, not the temperature
             adc_channel = 0;
         }

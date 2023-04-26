@@ -28,6 +28,3 @@
 #endif
 #define THERM_FASTER_LEVEL (RAMP_SIZE*9/10)  // throttle back faster when high
 
-
-// work around bizarre bug: lockout mode fails when set to solid color blinking
-#define USE_K93_LOCKOUT_KLUDGE

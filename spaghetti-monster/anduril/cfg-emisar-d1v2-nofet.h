@@ -22,6 +22,3 @@
 #undef SIMPLE_UI_CEIL
 #define SIMPLE_UI_CEIL RAMP_SMOOTH_CEIL
 
-
-// work around bizarre bug: lockout mode fails when set to solid color blinking
-#define USE_K93_LOCKOUT_KLUDGE
