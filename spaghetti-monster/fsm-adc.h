@@ -106,3 +106,7 @@ inline void ADC_on();
 inline void ADC_off();
 inline void ADC_start_measurement();
 
+#ifdef TICK_DURING_STANDBY
+inline void adc_sleep_mode();
+#endif
+

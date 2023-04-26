@@ -12,6 +12,8 @@
 #define ADMUX_THERM ADMUX_THERM_EXTERNAL_SENSOR
 #endif
 
+#include <avr/sleep.h>
+
 
 static inline void set_admux_therm() {
     #if (ATTINY == 1634)
@@ -69,6 +71,29 @@ inline void set_admux_voltage() {
     adc_sample_count = 0;  // first result is unstable
     ADC_start_measurement();
 }
+
+
+#ifdef TICK_DURING_STANDBY
+inline void adc_sleep_mode() {
+    // needs a special sleep mode to get accurate measurements quickly 
+    // ... full power-down ends up using more power overall, and causes 
+    // some weird issues when the MCU doesn't stay awake enough cycles 
+    // to complete a reading
+    #ifdef SLEEP_MODE_ADC
+        // attiny1634
+        set_sleep_mode(SLEEP_MODE_ADC);
+    #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc
+        // set the RUNSTDBY bit so ADC will run in standby mode
+        ADC0.CTRLA |= 1;
+        // set a INITDLY value because the AVR manual says so
+        // (section 30.3.5)
+        ADC0.CTRLD |= (1 << 5);
+        set_sleep_mode(SLEEP_MODE_STANDBY);
+    #else
+        #error No ADC sleep mode defined for this hardware.
+    #endif
+}
+#endif
 
 inline void ADC_start_measurement() {
     #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85) || (ATTINY == 841) || (ATTINY == 1634)

@@ -41,12 +41,8 @@ void sleep_until_eswitch_pressed()
 
         // configure sleep mode
         #ifdef TICK_DURING_STANDBY
-            // needs a special sleep mode to get accurate measurements 
-            // quickly ... full power-down ends up using more power 
-            // overall, and causes some weird issues when the MCU 
-            // doesn't stay awake enough cycles to complete a reading
-            if (adc_active_now)
-                set_sleep_mode(SLEEP_MODE_ADC);
+            // needs a special sleep mode during measurements
+            if (adc_active_now) adc_sleep_mode();
             else
         #endif
         set_sleep_mode(SLEEP_MODE_PWR_DOWN);
