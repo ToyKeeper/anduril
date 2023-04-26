@@ -184,7 +184,7 @@ void button_led_set(uint8_t lvl) {
             break;
 
         #else
-        
+
         case 0:  // LED off
             BUTTON_LED_DDR  &= 0xff ^ (1 << BUTTON_LED_PIN);
             BUTTON_LED_PUE  &= 0xff ^ (1 << BUTTON_LED_PIN);
@@ -214,7 +214,7 @@ void rgb_led_set(uint8_t value) {
         uint8_t lvl = (value >> (i<<1)) & 0x03;
         uint8_t pin = pins[i];
         switch (lvl) {
-        
+
             #ifdef AVRXMEGA3  // ATTINY816, 817, etc
 
             case 0:  // LED off
@@ -232,7 +232,7 @@ void rgb_led_set(uint8_t value) {
                 break;
 
             #else
-        
+
             case 0:  // LED off
                 AUXLED_RGB_DDR  &= 0xff ^ (1 << pin);
                 AUXLED_RGB_PUE  &= 0xff ^ (1 << pin);
@@ -248,8 +248,8 @@ void rgb_led_set(uint8_t value) {
                 AUXLED_RGB_PUE  |= (1 << pin);
                 AUXLED_RGB_PORT |= (1 << pin);
                 break;
-                
-            #endif  // MCU type                    
+
+            #endif  // MCU type
         }
     }
 }
