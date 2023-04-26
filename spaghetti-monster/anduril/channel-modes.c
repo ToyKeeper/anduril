@@ -146,12 +146,18 @@ void channel_mode_config_save(uint8_t step, uint8_t value) {
 }
 
 uint8_t channel_mode_config_state(Event event, uint16_t arg) {
+    uint8_t ret;
+    // make config steps match channel modes
+    config_color_per_step = true;
     // 1 menu item per channel mode, to enable or disable that mode
-    return config_state_base(
+    ret = config_state_base(
         event, arg,
         NUM_CHANNEL_MODES,
         channel_mode_config_save
         );
+    // no other menu needs this
+    config_color_per_step = false;
+    return ret;
 }
 #endif
 

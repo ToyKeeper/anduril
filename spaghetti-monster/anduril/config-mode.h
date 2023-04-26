@@ -9,6 +9,11 @@
 #define USE_CONFIG_COLORS
 #endif
 
+#if NUM_CHANNEL_MODES > 1
+// when true, changes the channel mode for each config step
+bool config_color_per_step = false;
+#endif
+
 // config menu
 uint8_t config_state_base(
     Event event,

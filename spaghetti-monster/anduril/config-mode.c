@@ -12,6 +12,13 @@ uint8_t number_entry_state(Event event, uint16_t arg);
 volatile uint8_t number_entry_value;
 
 
+#if defined(USE_CONFIG_COLORS) && (NUM_CHANNEL_MODES > 1)
+void set_chan_if(bool cond, uint8_t chan) {
+    if ((cond) && (chan != cfg.channel_mode))
+        set_channel_mode(chan);
+}
+#endif
+
 // allow the user to set a new value for a config option
 // can be called two ways:
 //   - with a "click" action: Configures first menu item only.
@@ -33,7 +40,7 @@ uint8_t config_state_base(
     static uint8_t orig_channel;
     #endif
     if (event == EV_enter_state) {
-        #ifdef USE_CONFIG_COLORS
+        #if defined(USE_CONFIG_COLORS) && (NUM_CHANNEL_MODES > 1)
         orig_channel = cfg.channel_mode;
         #endif
         config_step = 0;
@@ -52,12 +59,17 @@ uint8_t config_state_base(
     #define B_ANY_HOLD_RELEASE (B_CLICK|B_HOLD|B_RELEASE|B_TIMEOUT)
     else if ((event & B_CLICK_FLAGS) == B_ANY_HOLD) {
         if (config_step <= num_config_steps) {
+            #if defined(USE_CONFIG_COLORS) && (NUM_CHANNEL_MODES > 1)
+                uint8_t chan = config_step - 1;
+                if (chan < NUM_CHANNEL_MODES)
+                    set_chan_if(config_color_per_step, chan);
+            #endif
             if ((TICKS_PER_SECOND/10) == (arg % (TICKS_PER_SECOND*3/2))) {
                 config_step ++;
                 // blink when config step advances
                 if (config_step <= num_config_steps) {
                     #ifdef CONFIG_BLINK_CHANNEL
-                    set_channel_mode(CONFIG_BLINK_CHANNEL);
+                    set_chan_if(!config_color_per_step, CONFIG_BLINK_CHANNEL);
                     #endif
                     set_level(RAMP_SIZE * 3 / 8);
                 }
@@ -65,7 +77,7 @@ uint8_t config_state_base(
             else {
                 // stay on at a low level to indicate menu is active
                 #ifdef CONFIG_WAITING_CHANNEL
-                set_channel_mode(CONFIG_WAITING_CHANNEL);
+                set_chan_if(!config_color_per_step, CONFIG_WAITING_CHANNEL);
                 #endif
                 set_level(RAMP_SIZE * 1 / 8);
             }
@@ -79,6 +91,10 @@ uint8_t config_state_base(
     else if ((event & B_CLICK_FLAGS) == B_ANY_HOLD_RELEASE) {
         // ask the user for a number, if they selected a menu item
         if (config_step && config_step <= num_config_steps) {
+            #if defined(USE_CONFIG_COLORS) && (NUM_CHANNEL_MODES > 1)
+                // put the colors back how they were
+                set_channel_mode(orig_channel);
+            #endif
             push_state(number_entry_state, 0);
         }
         // exit after falling out of end of menu
@@ -96,7 +112,7 @@ uint8_t config_state_base(
         pop_state();
     }
 
-    #ifdef USE_CONFIG_COLORS
+    #if defined(USE_CONFIG_COLORS) && (NUM_CHANNEL_MODES > 1)
     else if (event == EV_leave_state) {
         // put the colors back how they were
         set_channel_mode(orig_channel);
@@ -140,7 +156,7 @@ uint8_t number_entry_state(Event event, uint16_t arg) {
             //  except first frame (so we can see flashes after each click))
             else if (arg) {
                 #ifdef CONFIG_WAITING_CHANNEL
-                set_channel_mode(CONFIG_WAITING_CHANNEL);
+                set_chan_if(1, CONFIG_WAITING_CHANNEL);
                 #endif
                 set_level( (RAMP_SIZE/8)
                            + ((arg&2)<<2) );
