@@ -5,8 +5,12 @@
 #pragma once
 
 #ifndef TACTICAL_LEVELS
-// high, low, tactical strobe
-#define TACTICAL_LEVELS 120,30,(RAMP_SIZE+2)
+    // high, low, tactical strobe
+    #ifdef USE_POLICE_COLOR_STROBE_MODE
+        #define TACTICAL_LEVELS 120,30,(RAMP_SIZE+3)
+    #else
+        #define TACTICAL_LEVELS 120,30,(RAMP_SIZE+2)
+    #endif
 #endif
 
 // tactical(ish) mode
