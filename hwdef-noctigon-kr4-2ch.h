@@ -4,7 +4,7 @@
 #pragma once
 
 /*
- * (same driver as D4Sv2-tintramp, but with the switch on a different pin)
+ * (same driver as emisar-2ch, but with the switch on a different pin)
  *
  * Pin / Name / Function
  *   1    PA6   2nd LED PWM (linear) (PWM1B)
@@ -42,6 +42,6 @@
 #define SWITCH_PUE   PUEB    // pullup group B
 #define PCINT_vect   PCINT1_vect  // ISR for PCINT[11:8]
 
-// the rest of the config is the same as D4Sv2-tintramp
-#include "hwdef-Emisar_D4Sv2-tintramp.h"
+// the rest of the config is the same as the generic Emisar 2ch build
+#include "hwdef-emisar-2ch.h"
 
