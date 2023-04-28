@@ -101,11 +101,14 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
     uint8_t pattern = (mode>>4);  // off, low, high, blinking, ... more?
     uint8_t color = mode & 0x0f;
 
-    // preview in blinking mode is awkward... use high instead
-    if ((! go_to_standby) && (pattern > 2)) { pattern = 2; }
+    // always preview in high mode
+    if (! go_to_standby) { pattern = 2; }
 
-    // use high mode for a few seconds after initial poweroff
-    if (arg < (SLEEP_TICKS_PER_SECOND*3)) pattern = 2;
+    // use voltage high mode for a few seconds after initial poweroff
+    else if (arg < (SLEEP_TICKS_PER_SECOND*3)) {
+        pattern = 2;
+        color = RGB_LED_NUM_COLORS - 1;
+    }
 
     const uint8_t *colors = rgb_led_colors;
     uint8_t actual_color = 0;
