@@ -28,22 +28,45 @@
  *      ADC12   thermal sensor
  */
 
-#ifdef ATTINY
-#undef ATTINY
-#endif
 #define ATTINY 1634
 #include <avr/io.h>
 
-// TODO: add aux red and aux blue as disabled channel modes,
-// so they can be used for the police strobe?
-#define NUM_CHANNEL_MODES 1
-#define DEFAULT_CHANNEL_MODE 0
-#define SET_LEVEL_MODES      set_level_2ch_stacked
-#define GRADUAL_TICK_MODES   gradual_tick_2ch_stacked
-// no special handlers needed, can use common handlers
-#define USE_SET_LEVEL_2CH_STACKED
-#define USE_GRADUAL_TICK_2CH_STACKED
+#define HWDEF_C_FILE hwdef-emisar-d4v2.c
 
+// allow using aux LEDs as extra channel modes
+#include "chan-rgbaux.h"
+
+// channel modes:
+// * 0. FET+7135 stacked
+// * 1. aux red
+// * 2. aux green
+// * 3. aux blue
+#define NUM_CHANNEL_MODES  4
+#define CM_MAIN            0
+#define CM_AUXRED          1
+#define CM_AUXGRN          2
+#define CM_AUXBLU          3
+
+#define DEFAULT_CHANNEL_MODE 0
+
+#define CHANNEL_MODES_ENABLED 0b00000001
+#define CHANNEL_HAS_ARGS      0b00000000
+// _, _, _, 128=middle CCT, 0=warm-to-cool
+//#define CHANNEL_MODE_ARGS     0,0,0,0
+
+#define USE_CHANNEL_MODES
+//#define USE_CHANNEL_MODE_ARGS
+#define SET_LEVEL_MODES      set_level_stacked, \
+                             set_level_auxred, \
+                             set_level_auxgrn, \
+                             set_level_auxblu
+// gradual ticking for thermal regulation
+#define GRADUAL_TICK_MODES   gradual_tick_stacked, \
+                             gradual_tick_null, \
+                             gradual_tick_null, \
+                             gradual_tick_null
+
+// TODO: remove this when possible
 #define PWM_CHANNELS 2
 
 #define SWITCH_PIN   PA2    // pin 5
@@ -52,17 +75,23 @@
 #define SWITCH_PCMSK PCMSK0 // PCMSK0 is for PCINT[7:0]
 #define SWITCH_PORT  PINA   // PINA or PINB or PINC
 
+#define PWM_GET       PWM_GET16
+#define PWM_BITS      16
+#define PWM_DATATYPE  uint16_t
+#define PWM_DATATYPE2 uint32_t  // only needs 32-bit if ramp values go over 255
+#define PWM1_DATATYPE uint16_t
+#define PWM2_DATATYPE uint16_t
+
+// dynamic PWM
+#define PWM_TOP_INIT 255
+#define PWM_TOP ICR1       // holds the TOP value for for variable-resolution PWM
+#define PWM_CNT TCNT1      // for dynamic PWM, reset phase
+
 #define LOW_PWM_PIN PB3     // pin 16, 1x7135 PWM
 #define LOW_PWM_LVL OCR1A   // OCR1A is the output compare register for PB3
-#define PWM1_BITS 8
 
 #define HIGH_PWM_PIN PA6    // pin 1, FET PWM
 #define HIGH_PWM_LVL OCR1B  // OCR1B is the output compare register for PB1
-#define PWM2_BITS 8
-
-// only using 8-bit on this light
-#define PWM_GET       PWM_GET8
-#define PWM_DATATYPE  uint8_t
 
 #define ADC_PRSCL   0x07    // clk/128
 
@@ -95,6 +124,12 @@
 #undef USE_INDICATOR_LED_WHILE_RAMPING
 #endif
 
+// custom channel modes
+void set_level_stacked(uint8_t level);
+
+bool gradual_tick_stacked(uint8_t gt);
+
+
 inline void hwdef_setup() {
     // enable output ports
     // 7135
@@ -110,6 +145,26 @@ inline void hwdef_setup() {
     // configure PWM
     // Setup PWM. F_pwm = F_clkio / 2 / N / TOP, where N = prescale factor, TOP = top of counter
     // pre-scale for timer: N = 1
+    // Linear opamp PWM for both main and 2nd LEDs (10-bit)
+    // WGM1[3:0]: 1,0,1,0: PWM, Phase Correct, adjustable (DS table 12-5)
+    // CS1[2:0]:    0,0,1: clk/1 (No prescaling) (DS table 12-6)
+    // COM1A[1:0]:    1,0: PWM OC1A in the normal direction (DS table 12-4)
+    // COM1B[1:0]:    1,0: PWM OC1B in the normal direction (DS table 12-4)
+    TCCR1A  = (1<<WGM11)  | (0<<WGM10)   // adjustable PWM (TOP=ICR1) (DS table 12-5)
+            | (1<<COM1A1) | (0<<COM1A0)  // PWM 1A in normal direction (DS table 12-4)
+            | (1<<COM1B1) | (0<<COM1B0)  // PWM 1B in normal direction (DS table 12-4)
+            ;
+    TCCR1B  = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
+            | (1<<WGM13)  | (0<<WGM12)  // phase-correct adjustable PWM (DS table 12-5)
+            ;
+
+    // set PWM resolution
+    PWM_TOP = PWM_TOP_INIT;
+
+    #if 0  // old 8-bit PWM setup
+    // configure PWM
+    // Setup PWM. F_pwm = F_clkio / 2 / N / TOP, where N = prescale factor, TOP = top of counter
+    // pre-scale for timer: N = 1
     TCCR1A  = (0<<WGM11)  | (1<<WGM10)   // 8-bit (TOP=0xFF) (DS table 12-5)
             | (1<<COM1A1) | (0<<COM1A0)  // PWM 1A in normal direction (DS table 12-4)
             | (1<<COM1B1) | (0<<COM1B0)  // PWM 1B in normal direction (DS table 12-4)
@@ -117,6 +172,7 @@ inline void hwdef_setup() {
     TCCR1B  = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
             | (0<<WGM13)  | (0<<WGM12)  // phase-correct PWM (DS table 12-5)
             ;
+    #endif
 
     // set up e-switch
     //PORTA = (1 << SWITCH_PIN);  // TODO: configure PORTA / PORTB / PORTC?
