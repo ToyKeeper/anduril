@@ -71,18 +71,9 @@
 #define SIMPLE_UI_CEIL RAMP_DISCRETE_CEIL
 #define SIMPLE_UI_STEPS 5
 
-// Allow 3C (or 6C) in Simple UI (toggle smooth or stepped ramping)
-#define USE_SIMPLE_UI_RAMPING_TOGGLE
-
-// allow Aux Config and Strobe Modes in Simple UI
-#define USE_EXTENDED_SIMPLE_UI
-
 // stop panicking at ~1500 lm
 #define THERM_FASTER_LEVEL 130
 #define MIN_THERM_STEPDOWN 65  // should be above highest dyn_pwm level
-
-// enable 2 click turbo (Anduril 1 style)
-#define DEFAULT_2C_STYLE 1
 
 #define USE_POLICE_COLOR_STROBE_MODE
 #undef  TACTICAL_LEVELS
@@ -106,7 +97,4 @@
 #ifdef BLINK_AT_RAMP_MIDDLE
 #undef BLINK_AT_RAMP_MIDDLE
 #endif
-
-// for consistency with KR4 (not otherwise necessary though)
-#define USE_SOFT_FACTORY_RESET
 

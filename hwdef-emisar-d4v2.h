@@ -5,10 +5,10 @@
 
 /*
  * Pin / Name / Function
- *   1    PA6   FET PWM (PWM1B)
- *   2    PA5   red aux LED (PWM0B)
- *   3    PA4   green aux LED
- *   4    PA3   blue aux LED
+ *   1    PA6   FET PWM (direct drive) (PWM1B)
+ *   2    PA5   R: red aux LED (PWM0B)
+ *   3    PA4   G: green aux LED
+ *   4    PA3   B: blue aux LED
  *   5    PA2   e-switch
  *   6    PA1   button LED
  *   7    PA0   (none)
@@ -36,6 +36,7 @@
 // allow using aux LEDs as extra channel modes
 #include "chan-rgbaux.h"
 
+#define USE_CHANNEL_MODES
 // channel modes:
 // * 0. FET+7135 stacked
 // * 1. aux red
@@ -47,51 +48,56 @@
 #define CM_AUXGRN          2
 #define CM_AUXBLU          3
 
-#define DEFAULT_CHANNEL_MODE 0
+#define DEFAULT_CHANNEL_MODE  CM_MAIN
 
 #define CHANNEL_MODES_ENABLED 0b00000001
 #define CHANNEL_HAS_ARGS      0b00000000
-// _, _, _, 128=middle CCT, 0=warm-to-cool
+// no args
+//#define USE_CHANNEL_MODE_ARGS
 //#define CHANNEL_MODE_ARGS     0,0,0,0
 
-#define USE_CHANNEL_MODES
-//#define USE_CHANNEL_MODE_ARGS
-#define SET_LEVEL_MODES      set_level_stacked, \
+#define SET_LEVEL_MODES      set_level_main, \
                              set_level_auxred, \
                              set_level_auxgrn, \
                              set_level_auxblu
 // gradual ticking for thermal regulation
-#define GRADUAL_TICK_MODES   gradual_tick_stacked, \
+#define GRADUAL_TICK_MODES   gradual_tick_main, \
                              gradual_tick_null, \
                              gradual_tick_null, \
                              gradual_tick_null
 
-// TODO: remove this when possible
-#define PWM_CHANNELS 2
 
+#define PWM_CHANNELS 2  // old, remove this
+
+#define PWM_BITS      16     // 0 to 16383 at variable Hz, not 0 to 255 at 16 kHz
+#define PWM_GET       PWM_GET16
+#define PWM_DATATYPE  uint16_t
+#define PWM_DATATYPE2 uint32_t  // only needs 32-bit if ramp values go over 255
+#define PWM1_DATATYPE uint16_t  // linear ramp
+#define PWM2_DATATYPE uint16_t  // DD FET ramp
+
+// PWM parameters of both channels are tied together because they share a counter
+#define PWM_TOP       ICR1   // holds the TOP value for for variable-resolution PWM
+#define PWM_TOP_INIT  255    // highest value used in top half of ramp
+#define PWM_CNT       TCNT1  // for dynamic PWM, reset phase
+
+// 1x7135 channel
+#define CH1_PIN  PB3            // pin 16, 1x7135 PWM
+#define CH1_PWM  OCR1A          // OCR1A is the output compare register for PB3
+
+// DD FET channel
+#define CH2_PIN  PA6            // pin 1, DD FET PWM
+#define CH2_PWM  OCR1B          // OCR1B is the output compare register for PB1
+
+// e-switch
 #define SWITCH_PIN   PA2    // pin 5
 #define SWITCH_PCINT PCINT2 // pin 5 pin change interrupt
 #define SWITCH_PCIE  PCIE0  // PCIE0 is for PCINT[7:0]
 #define SWITCH_PCMSK PCMSK0 // PCMSK0 is for PCINT[7:0]
 #define SWITCH_PORT  PINA   // PINA or PINB or PINC
+#define SWITCH_PUE   PUEA   // pullup group A
+#define PCINT_vect   PCINT0_vect  // ISR for PCINT[7:0]
 
-#define PWM_GET       PWM_GET16
-#define PWM_BITS      16
-#define PWM_DATATYPE  uint16_t
-#define PWM_DATATYPE2 uint32_t  // only needs 32-bit if ramp values go over 255
-#define PWM1_DATATYPE uint16_t
-#define PWM2_DATATYPE uint16_t
-
-// dynamic PWM
-#define PWM_TOP_INIT 255
-#define PWM_TOP ICR1       // holds the TOP value for for variable-resolution PWM
-#define PWM_CNT TCNT1      // for dynamic PWM, reset phase
-
-#define LOW_PWM_PIN PB3     // pin 16, 1x7135 PWM
-#define LOW_PWM_LVL OCR1A   // OCR1A is the output compare register for PB3
-
-#define HIGH_PWM_PIN PA6    // pin 1, FET PWM
-#define HIGH_PWM_LVL OCR1B  // OCR1B is the output compare register for PB1
 
 #define ADC_PRSCL   0x07    // clk/128
 
@@ -118,24 +124,21 @@
 // it also has an independent LED in the button
 #define USE_BUTTON_LED
 // the aux LEDs are front-facing, so turn them off while main LEDs are on
-// TODO: the whole "indicator LED" thing needs to be refactored into
-//       "aux LED(s)" and "button LED(s)" since they work a bit differently
 #ifdef USE_INDICATOR_LED_WHILE_RAMPING
 #undef USE_INDICATOR_LED_WHILE_RAMPING
 #endif
 
-// custom channel modes
-void set_level_stacked(uint8_t level);
+void set_level_main(uint8_t level);
 
-bool gradual_tick_stacked(uint8_t gt);
+bool gradual_tick_main(uint8_t gt);
 
 
 inline void hwdef_setup() {
     // enable output ports
     // 7135
-    DDRB = (1 << LOW_PWM_PIN);
-    // FET, aux R/G/B, button LED
-    DDRA = (1 << HIGH_PWM_PIN)
+    DDRB = (1 << CH1_PIN);
+    // DD FET, aux R/G/B, button LED
+    DDRA = (1 << CH2_PIN)
          | (1 << AUXLED_R_PIN)
          | (1 << AUXLED_G_PIN)
          | (1 << AUXLED_B_PIN)
@@ -145,7 +148,6 @@ inline void hwdef_setup() {
     // configure PWM
     // Setup PWM. F_pwm = F_clkio / 2 / N / TOP, where N = prescale factor, TOP = top of counter
     // pre-scale for timer: N = 1
-    // Linear opamp PWM for both main and 2nd LEDs (10-bit)
     // WGM1[3:0]: 1,0,1,0: PWM, Phase Correct, adjustable (DS table 12-5)
     // CS1[2:0]:    0,0,1: clk/1 (No prescaling) (DS table 12-6)
     // COM1A[1:0]:    1,0: PWM OC1A in the normal direction (DS table 12-4)
@@ -175,8 +177,7 @@ inline void hwdef_setup() {
     #endif
 
     // set up e-switch
-    //PORTA = (1 << SWITCH_PIN);  // TODO: configure PORTA / PORTB / PORTC?
-    PUEA = (1 << SWITCH_PIN);  // pull-up for e-switch
+    SWITCH_PUE = (1 << SWITCH_PIN);  // pull-up for e-switch
     SWITCH_PCMSK = (1 << SWITCH_PCINT);  // enable pin change interrupt
 }
 

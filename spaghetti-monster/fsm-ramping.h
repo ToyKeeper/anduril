@@ -109,6 +109,13 @@ void gradual_tick();
     if (PWM < TARGET) PWM ++;  \
     else if (PWM > TARGET) PWM --;
 
+// tick to a specific value, except when immediate 0 to 255 is needed
+#define GRADUAL_ADJUST_STACKED(TARGET,PWM,TOP)  \
+    if (   ((PWM ==   0) && (TARGET == TOP))  \
+        || ((PWM == TOP) && (TARGET ==   0)))  \
+        PWM = TOP;  \
+    else GRADUAL_ADJUST_SIMPLE(TARGET,PWM)
+
 // tick the top layer of the stack
 #define GRADUAL_ADJUST_1CH(TABLE,PWM)  \
     target = PWM_GET(TABLE, gt);  \
