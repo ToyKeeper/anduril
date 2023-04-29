@@ -18,13 +18,13 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         // hold: lowest floor
         // click, hold: highest floor (or manual mem level)
         uint8_t lvl = cfg.ramp_floors[0];
-        if ((event & 0x0f) == 2) {  // second click
+        if (1 == (event & 0x0f)) {  // first click
+            if (cfg.ramp_floors[1] < lvl) lvl = cfg.ramp_floors[1];
+        } else {  // 2nd click or later
             if (cfg.ramp_floors[1] > lvl) lvl = cfg.ramp_floors[1];
             #ifdef USE_MANUAL_MEMORY
             if (cfg.manual_memory) lvl = cfg.manual_memory;
             #endif
-        } else {  // anything except second click
-            if (cfg.ramp_floors[1] < lvl) lvl = cfg.ramp_floors[1];
         }
         set_level(lvl);
     }
@@ -65,6 +65,13 @@ uint8_t lockout_state(Event event, uint16_t arg) {
 
     #if defined(TICK_DURING_STANDBY) && (defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS))
     else if (event == EV_sleep_tick) {
+        #ifdef USE_MANUAL_MEMORY_TIMER
+        // reset to manual memory level when timer expires
+        if (cfg.manual_memory &&
+                (arg >= (cfg.manual_memory_timer * SLEEP_TICKS_PER_MINUTE))) {
+            manual_memory_restore();
+        }
+        #endif
         #if defined(USE_INDICATOR_LED)
         indicator_led_update(cfg.indicator_led_mode >> 2, arg);
         #elif defined(USE_AUX_RGB_LEDS)
@@ -83,8 +90,9 @@ uint8_t lockout_state(Event event, uint16_t arg) {
 
     // 4 clicks: exit and turn on
     else if (event == EV_4clicks) {
-        #ifdef USE_MANUAL_MEMORY
-        // FIXME: memory timer is totally ignored
+        #if defined(USE_MANUAL_MEMORY) && !defined(USE_MANUAL_MEMORY_TIMER)
+        // this clause probably isn't used by any configs any more
+        // but is included just in case someone configures it this way
         if (cfg.manual_memory)
             set_state(steady_state, cfg.manual_memory);
         else
@@ -109,6 +117,16 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         set_state(steady_state, MAX_LEVEL);
         return MISCHIEF_MANAGED;
     }
+
+    #if NUM_CHANNEL_MODES > 1
+    // 3H: next channel mode
+    else if (event == EV_click3_hold) {
+        if (0 == (arg % TICKS_PER_SECOND)) {
+            // pretend the user clicked 3 times to change channels
+            return channel_mode_state(EV_3clicks, 0);
+        }
+    }
+    #endif
 
     ////////// Every action below here is blocked in the (non-Extended) Simple UI //////////
 
