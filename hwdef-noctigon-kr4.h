@@ -37,7 +37,9 @@
 #define ATTINY 1634
 #include <avr/io.h>
 
+#ifndef HWDEF_C_FILE
 #define HWDEF_C_FILE hwdef-noctigon-kr4.c
+#endif
 
 // allow using aux LEDs as extra channel modes
 #include "chan-rgbaux.h"
@@ -92,10 +94,6 @@
 #define CH1_PWM  OCR1A          // OCR1A is the output compare register for PB3
 #define CH1_ENABLE_PIN   PB0    // pin 19, Opamp power
 #define CH1_ENABLE_PORT  PORTB  // control port for PB0
-// TODO: remove these
-#define PWM1_PHASE_RESET_OFF    // force reset while shutting off
-#define PWM1_PHASE_RESET_ON     // force reset while turning on
-#define PWM1_PHASE_SYNC         // manual sync while changing level
 
 // DD FET channel
 #define CH2_PIN  PA6            // pin 1, DD FET PWM
