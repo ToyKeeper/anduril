@@ -33,6 +33,7 @@ uint8_t blink_digit(uint8_t num) {
     if (!num) { ontime = 8; num ++; }
 
     for (; num>0; num--) {
+        // TODO: allow setting a blink channel mode per build target
         set_level(BLINK_BRIGHTNESS);
         nice_delay_ms(ontime);
         set_level(0);
