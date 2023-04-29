@@ -1,16 +1,18 @@
-// hwdef for Emisar D4v2 (attiny1634)
-// Copyright (C) 2018-2023 Selene ToyKeeper
+// Emisar D4Sv2 driver layout (attiny1634)
+// Copyright (C) 2019-2023 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
 /*
+ * (same layout as D4v2, except it's a FET+3+1 instead of FET+1)
+ *
  * Pin / Name / Function
- *   1    PA6   FET PWM (direct drive) (PWM1B)
- *   2    PA5   R: red aux LED (PWM0B)
- *   3    PA4   G: green aux LED
- *   4    PA3   B: blue aux LED
+ *   1    PA6   FET PWM (PWM1B)
+ *   2    PA5   red aux LED (PWM0B)
+ *   3    PA4   green aux LED
+ *   4    PA3   blue aux LED
  *   5    PA2   e-switch
- *   6    PA1   button LED
+ *   6    PA1   button LED?
  *   7    PA0   (none)
  *   8    GND   GND
  *   9    VCC   VCC
@@ -19,8 +21,8 @@
  *  12    PC3   RESET
  *  13    PC2   (none)
  *  14    PC1   SCK
- *  15    PC0   (none) PWM0A
- *  16    PB3   7135 PWM (PWM1A)
+ *  15    PC0   3x7135 PWM (PWM0A) (8-bit)
+ *  16    PB3   1x7135 PWM (PWM1A)
  *  17    PB2   MISO
  *  18    PB1   MOSI
  *  19    PB0   (none)
@@ -31,14 +33,14 @@
 #define ATTINY 1634
 #include <avr/io.h>
 
-#define HWDEF_C_FILE hwdef-emisar-d4v2.c
+#define HWDEF_C_FILE hwdef-emisar-d4sv2.c
 
 // allow using aux LEDs as extra channel modes
 #include "chan-rgbaux.h"
 
 #define USE_CHANNEL_MODES
 // channel modes:
-// * 0. FET+7135 stacked
+// * 0. FET+3+1 stacked
 // * 1. aux red
 // * 2. aux green
 // * 3. aux blue
@@ -67,16 +69,17 @@
                              gradual_tick_null
 
 
-#define PWM_CHANNELS 2  // old, remove this
+#define PWM_CHANNELS 3  // old, remove this
 
 #define PWM_BITS      16        // dynamic 16-bit, but never goes over 255
 #define PWM_GET       PWM_GET8
 #define PWM_DATATYPE  uint16_t  // is used for PWM_TOPS (which goes way over 255)
 #define PWM_DATATYPE2 uint16_t  // only needs 32-bit if ramp values go over 255
-#define PWM1_DATATYPE uint8_t   // 1x7135 ramp
-#define PWM2_DATATYPE uint8_t   // DD FET ramp
+#define PWM1_DATATYPE uint8_t   // 1x7135 ramp (16-bit)
+#define PWM2_DATATYPE uint8_t   // 3x7135 ramp (8-bit)
+#define PWM3_DATATYPE uint8_t   // DD FET ramp (16-bit)
 
-// PWM parameters of both channels are tied together because they share a counter
+// PWM parameters of FET and 1x7135 channels are tied together because they share a counter
 #define PWM_TOP       ICR1   // holds the TOP value for for variable-resolution PWM
 #define PWM_TOP_INIT  255    // highest value used in top half of ramp
 #define PWM_CNT       TCNT1  // for dynamic PWM, reset phase
@@ -85,9 +88,13 @@
 #define CH1_PIN  PB3            // pin 16, 1x7135 PWM
 #define CH1_PWM  OCR1A          // OCR1A is the output compare register for PB3
 
+// 3x7135 channel
+#define CH2_PIN  PC0            // pin 15, 3x7135 PWM
+#define CH2_PWM  OCR0A          // OCR0A is the output compare register for PC0
+
 // DD FET channel
-#define CH2_PIN  PA6            // pin 1, DD FET PWM
-#define CH2_PWM  OCR1B          // OCR1B is the output compare register for PB1
+#define CH3_PIN  PA6            // pin 1, DD FET PWM
+#define CH3_PWM  OCR1B          // OCR1B is the output compare register for PB1
 
 // e-switch
 #define SWITCH_PIN   PA2    // pin 5
@@ -135,10 +142,12 @@ bool gradual_tick_main(uint8_t gt);
 
 inline void hwdef_setup() {
     // enable output ports
-    // 7135
+    // 3x7135
+    DDRC = (1 << CH2_PIN);
+    // 1x7135
     DDRB = (1 << CH1_PIN);
-    // DD FET, aux R/G/B, button LED
-    DDRA = (1 << CH2_PIN)
+    // FET, aux R/G/B
+    DDRA = (1 << CH3_PIN)
          | (1 << AUXLED_R_PIN)
          | (1 << AUXLED_G_PIN)
          | (1 << AUXLED_B_PIN)
@@ -160,21 +169,22 @@ inline void hwdef_setup() {
             | (1<<WGM13)  | (0<<WGM12)  // phase-correct adjustable PWM (DS table 12-5)
             ;
 
+    // WGM0[2:0]: 0,0,1: PWM, Phase Correct (DS table 11-8)
+    // CS0[2:0]:  0,0,1: clk/1 (No prescaling) (DS table 11-9)
+    // COM0A[1:0]:  1,0: PWM OC0A in the normal direction (DS table 11-4)
+    // COM0B[1:0]:  0,0: OC0B disabled (DS table 11-7)
+    // TCCR0A: COM0A1, COM0A0, COM0B1, COM0B0, -, -, WGM01, WGM00
+    TCCR0A  = (0<<WGM01)  | (1<<WGM00)   // PWM, Phase Correct, TOP=0xFF (DS table 11-5)
+            | (1<<COM1A1) | (0<<COM1A0)  // PWM 0A in normal direction (DS table 11-4)
+            | (0<<COM1B1) | (0<<COM1B0)  // PWM 0B disabled (DS table 11-7)
+            ;
+    // TCCR0B: FOC0A, FOC0B, -, -, WGM02, CS02, CS01, CS00
+    TCCR0B  = (0<<CS02)   | (0<<CS01) | (1<<CS00)  // clk/1 (no prescaling) (DS table 11-9)
+            | (0<<WGM02)  // PWM, Phase Correct, TOP=0xFF (DS table 11-8)
+            ;
+
     // set PWM resolution
     PWM_TOP = PWM_TOP_INIT;
-
-    #if 0  // old 8-bit PWM setup
-    // configure PWM
-    // Setup PWM. F_pwm = F_clkio / 2 / N / TOP, where N = prescale factor, TOP = top of counter
-    // pre-scale for timer: N = 1
-    TCCR1A  = (0<<WGM11)  | (1<<WGM10)   // 8-bit (TOP=0xFF) (DS table 12-5)
-            | (1<<COM1A1) | (0<<COM1A0)  // PWM 1A in normal direction (DS table 12-4)
-            | (1<<COM1B1) | (0<<COM1B0)  // PWM 1B in normal direction (DS table 12-4)
-            ;
-    TCCR1B  = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
-            | (0<<WGM13)  | (0<<WGM12)  // phase-correct PWM (DS table 12-5)
-            ;
-    #endif
 
     // set up e-switch
     SWITCH_PUE = (1 << SWITCH_PIN);  // pull-up for e-switch
