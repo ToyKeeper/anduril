@@ -75,12 +75,12 @@
 
 #define PWM_CHANNELS 2  // old, remove this
 
-#define PWM_BITS      16     // 0 to 16383 at variable Hz, not 0 to 255 at 16 kHz
-#define PWM_GET       PWM_GET16
-#define PWM_DATATYPE  uint16_t
-#define PWM_DATATYPE2 uint32_t  // only needs 32-bit if ramp values go over 255
-#define PWM1_DATATYPE uint16_t  // linear ramp
-#define PWM2_DATATYPE uint16_t  // DD FET ramp
+#define PWM_BITS      16        // dynamic 16-bit, but never goes over 255
+#define PWM_GET       PWM_GET8
+#define PWM_DATATYPE  uint16_t  // is used for PWM_TOPS
+#define PWM_DATATYPE2 uint16_t  // only needs 32-bit if ramp values go over 255
+#define PWM1_DATATYPE uint8_t   // linear ramp
+#define PWM2_DATATYPE uint8_t   // DD FET ramp
 
 // PWM parameters of both channels are tied together because they share a counter
 #define PWM_TOP       ICR1   // holds the TOP value for for variable-resolution PWM

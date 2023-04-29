@@ -22,7 +22,7 @@ void set_level_main(uint8_t level) {
     PWM_DATATYPE ch1_pwm = PWM_GET(pwm1_levels, level);
     PWM_DATATYPE ch2_pwm = PWM_GET(pwm2_levels, level);
     // pulse frequency modulation, a.k.a. dynamic PWM
-    uint16_t top = PWM_GET(pwm_tops, level);
+    uint16_t top = PWM_GET16(pwm_tops, level);
 
     CH1_PWM = ch1_pwm;
     CH2_PWM = ch2_pwm;

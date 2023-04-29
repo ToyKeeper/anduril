@@ -90,6 +90,11 @@
 // the default of 26 looks a bit rough, so increase it to make it smoother
 #define CANDLE_AMPLITUDE 33
 
+// don't blink while ramping
+#ifdef BLINK_AT_RAMP_MIDDLE
+#undef BLINK_AT_RAMP_MIDDLE
+#endif
+
 // can't reset the normal way because power is connected before the button
 #define USE_SOFT_FACTORY_RESET
 
