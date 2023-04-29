@@ -77,7 +77,7 @@
 
 #define PWM_BITS      16        // dynamic 16-bit, but never goes over 255
 #define PWM_GET       PWM_GET8
-#define PWM_DATATYPE  uint16_t  // is used for PWM_TOPS
+#define PWM_DATATYPE  uint16_t  // is used for PWM_TOPS (which goes way over 255)
 #define PWM_DATATYPE2 uint16_t  // only needs 32-bit if ramp values go over 255
 #define PWM1_DATATYPE uint8_t   // linear ramp
 #define PWM2_DATATYPE uint8_t   // DD FET ramp
