@@ -451,6 +451,7 @@ In all of these modes, a few actions are available:
   - 2C: Next strobe / mood mode.
   - 1H: Increase brightness, or strobe faster.  (except lightning)
   - 2H: Decrease brightness, or strobe slower.  (except lightning)
+  - 4C: Previous strobe / mood mode.
   - 5C: Go to momentary mode, for a momentary strobe.
         (this is useful for light painting)
 
@@ -733,6 +734,9 @@ charge during use in the same manner as the aux LED voltage mode.
 For lights with front-facing aux LEDs, the aux LEDs typically stay off 
 when the main emitters are on, and when the light is otherwise awake.  
 The aux LEDs on most lights only turn on when the light is asleep.
+
+When a light has a single-color aux LED and no RGB, it fast-blinks the 
+aux LED in "off" modes when voltage is low.
 
 
 Misc Config Menu
