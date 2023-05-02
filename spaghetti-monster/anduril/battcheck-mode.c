@@ -31,6 +31,15 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
 
+    #ifdef DEFAULT_BLINK_CHANNEL
+    // 3 clicks: next channel mode (specific to number blinky modes)
+    else if (event == EV_3clicks) {
+        cfg.blink_channel = (cfg.blink_channel + 1) % NUM_CHANNEL_MODES;
+        save_config();
+        return EVENT_HANDLED;
+    }
+    #endif  // ifdef DEFAULT_BLINK_CHANNEL
+
     #ifdef USE_VOLTAGE_CORRECTION
     // 7H: voltage config mode
     else if (event == EV_click7_hold) {

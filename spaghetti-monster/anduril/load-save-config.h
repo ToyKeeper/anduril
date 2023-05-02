@@ -77,6 +77,10 @@ Config cfg = {
             // reset w/ manual memory
             .manual_memory_channel_mode = DEFAULT_CHANNEL_MODE,
         #endif
+        #ifdef DEFAULT_BLINK_CHANNEL
+            // blink numbers in a specific channel (user configurable)
+            .blink_channel = DEFAULT_BLINK_CHANNEL,
+        #endif
     #endif
     #ifdef USE_CHANNEL_MODE_ARGS
         // one byte of extra data per channel mode, like for tint value

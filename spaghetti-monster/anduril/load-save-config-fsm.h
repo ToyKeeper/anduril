@@ -52,6 +52,9 @@ typedef struct Config {
         #ifdef USE_MANUAL_MEMORY
             uint8_t manual_memory_channel_mode;
         #endif
+        #ifdef DEFAULT_BLINK_CHANNEL
+            uint8_t blink_channel;
+        #endif
     #endif
     #ifdef USE_CHANNEL_MODE_ARGS
         // this is an array, needs a few bytes

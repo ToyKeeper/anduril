@@ -55,7 +55,7 @@
 #define RAMP_SMOOTH_CEIL     150
 // 20 38 56 [75] 93 111 130
 #define RAMP_DISCRETE_FLOOR  20
-#define RAMP_DISCRETE_CEIL   RAMP_SMOOTH_CEIL
+#define RAMP_DISCRETE_CEIL   130
 #define RAMP_DISCRETE_STEPS  7
 
 // at Wurkkos's request, reduce the Simple UI ceiling a little bit
@@ -73,6 +73,9 @@
 
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
+
+// blink numbers on the aux LEDs by default
+#define DEFAULT_BLINK_CHANNEL  CM_AUX
 
 // enable SOS in the blinkies group
 #define USE_SOS_MODE

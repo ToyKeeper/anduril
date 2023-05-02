@@ -9,10 +9,15 @@ void auto_clock_speed();
 #endif
 
 #if defined(USE_BLINK_NUM) || defined(USE_BLINK_DIGIT)
-#ifndef BLINK_BRIGHTNESS
-#define BLINK_BRIGHTNESS (MAX_LEVEL/6)
-#endif
-uint8_t blink_digit(uint8_t num);
+    #ifndef BLINK_BRIGHTNESS
+        #define BLINK_BRIGHTNESS (MAX_LEVEL/6)
+    #endif
+    #if defined(USE_CFG) && defined(DEFAULT_BLINK_CHANNEL)
+        #define BLINK_CHANNEL cfg.blink_channel
+    #elif defined(DEFAULT_BLINK_CHANNEL)
+        #define BLINK_CHANNEL DEFAULT_BLINK_CHANNEL
+    #endif
+    uint8_t blink_digit(uint8_t num);
 #endif
 
 #ifdef USE_BLINK_NUM
