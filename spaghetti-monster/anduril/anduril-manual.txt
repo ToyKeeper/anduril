@@ -364,74 +364,80 @@ In more detail, this is what each blinky / utility mode does:
 
   Battery check:
 
-     Blinks out the battery voltage per cell.  Full is 4.2V, empty is 
-     about 3.0V.  The light blinks the whole-number digit first, pauses, 
-     then blinks out the "tenths" digit.  Then a longer pause, and it 
-     repeats.
-     So for 4.2V, it would be "blink-blink-blink-blink .. blink-blink".
+    Blinks out the battery voltage per cell.  Full is 4.2V, empty is 
+    about 3.0V.  The light blinks the whole-number digit first, pauses, 
+    then blinks out the "tenths" digit.  Then a longer pause, and it 
+    repeats.
+    So for 4.2V, it would be "blink-blink-blink-blink .. blink-blink".
 
-     A "zero" digit is represented by a very quick blink.
+    A "zero" digit is represented by a very quick blink.
 
-     On lights with more than one set of LEDs, pressing 3C during batt 
-     check mode can select which set of LEDs (which channel mode) it 
-     uses to blink out numbers.
+    On lights with more than one set of LEDs, pressing 3C during batt 
+    check mode can select which set of LEDs (which channel mode) it uses 
+    to blink out numbers.
 
-     The voltage config menu has one setting:
+    The voltage config menu has these settings:
 
-       1. Voltage correction factor.  This adjusts the battery 
-          measurement sensor, allowing the user to add or subtract up to 
-          0.30V in 0.05V steps.  Click N times to enter a value:
+      1. Voltage correction factor.  This adjusts the battery 
+         measurement sensor, allowing the user to add or subtract up to 
+         0.30V in 0.05V steps.  Click N times to enter a value:
 
-          1C: -0.30V
-          2C: -0.25V
-          3C: -0.20V
-          4C: -0.15V
-          5C: -0.10V
-          6C: -0.05V
-          7C: default, 0V
-          8C: +0.05V
-          9C: +0.10V
-          10C: +0.15V
-          11C: +0.20V
-          12C: +0.25V
-          13C: +0.30V
+         1C: -0.30V
+         2C: -0.25V
+         3C: -0.20V
+         4C: -0.15V
+         5C: -0.10V
+         6C: -0.05V
+         7C: default, 0V
+         8C: +0.05V
+         9C: +0.10V
+         10C: +0.15V
+         11C: +0.20V
+         12C: +0.25V
+         13C: +0.30V
+
+      2. Post-off voltage display timeout.  (only on lights with RGB aux)
+         This setting determines how many seconds the RGB aux LEDs 
+         display the voltage color after the torch goes to sleep.  Click 
+         once per desired second, or zero times to turn this function 
+         off.
 
   Temperature check:
 
-     Blinks out the current temperature in degrees C.  This number 
-     should be pretty close to what a real thermometer says.  If not, it 
-     would be a good idea to enter the thermal config menu and calibrate 
-     the sensor.  Or let the light settle to room temperature, then use 
-     factory reset to auto-calibrate the sensor.
+    Blinks out the current temperature in degrees C.  This number should 
+    be pretty close to what a real thermometer says.  If not, it would 
+    be a good idea to enter the thermal config menu and calibrate the 
+    sensor.  Or let the light settle to room temperature, then use 
+    factory reset to auto-calibrate the sensor.
 
-     The thermal config menu has two settings:
+    The thermal config menu has two settings:
 
-     - Current temperature.  Click once per degree C to calibrate the 
-       sensor.  For example, if the ambient temperature is 21 C, then 
-       click 21 times.
+    - Current temperature.  Click once per degree C to calibrate the 
+      sensor.  For example, if the ambient temperature is 21 C, then 
+      click 21 times.
 
-     - Temperature limit.  This sets the maximum temperature the light 
-       can reach before it will start doing thermal regulation to keep 
-       itself from overheating.  Click once per degree C above 30.  For 
-       example, to set the limit to 50 C, click 20 times.  The default 
-       is 45 C, and the highest value it will allow is 70 C.
+    - Temperature limit.  This sets the maximum temperature the light 
+      can reach before it will start doing thermal regulation to keep 
+      itself from overheating.  Click once per degree C above 30.  For 
+      example, to set the limit to 50 C, click 20 times.  The default is 
+      45 C, and the highest value it will allow is 70 C.
 
   Beacon mode:
 
-     Blinks at a slow speed.  The light stays on for 100ms, and then 
-     stays off until the next blink.  The brightness and the number of 
-     seconds between pulses are configurable:
+    Blinks at a slow speed.  The light stays on for 100ms, and then 
+    stays off until the next blink.  The brightness and the number of 
+    seconds between pulses are configurable:
 
-       - Brightness is the user's memorized ramp level, so set this in 
-         ramping mode before activating beacon mode.  Follows the same 
-         memory rules as ramping -- automatic, manual, or hybrid.
+      - Brightness is the user's memorized ramp level, so set this in 
+        ramping mode before activating beacon mode.  Follows the same 
+        memory rules as ramping -- automatic, manual, or hybrid.
 
-       - Speed is configured by holding the button.  The light should 
-         blink once per second while holding the button.  Release it 
-         after the desired amount of time has passed, to set a new 
-         beacon speed.
-         For example, to do a 10-second alpine beacon, hold the button 
-         for 10 seconds.
+      - Speed is configured by holding the button.  The light should 
+        blink once per second while holding the button.  Release it 
+        after the desired amount of time has passed, to set a new beacon 
+        speed.
+        For example, to do a 10-second alpine beacon, hold the button 
+        for 10 seconds.
 
   SOS mode:
 
@@ -939,6 +945,7 @@ Batt check	Full	7H	Voltage config menu
 				   8: +0.05V
 				   9: +0.10V
 				   ...
+				2: post-off voltage display seconds
 
 Temp check	Full	1C	Off
 Temp check	Full	2C	Next blinky mode (Beacon, SOS, Batt check)
