@@ -61,11 +61,22 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
 // ...
 // 13 = add 0.30V
 void voltage_config_save(uint8_t step, uint8_t value) {
+    #ifdef USE_POST_OFF_VOLTAGE
+        if (2 == step) cfg.post_off_voltage = value;
+        else
+    #endif
     if (value) cfg.voltage_correction = value;
 }
 
 uint8_t voltage_config_state(Event event, uint16_t arg) {
-    return config_state_base(event, arg, 1, voltage_config_save);
+    #ifdef USE_POST_OFF_VOLTAGE
+        #define VOLTAGE_CONFIG_STEPS  2
+    #else
+        #define VOLTAGE_CONFIG_STEPS  1
+    #endif
+    return config_state_base(event, arg,
+                             VOLTAGE_CONFIG_STEPS,
+                             voltage_config_save);
 }
 #endif  // #ifdef USE_VOLTAGE_CORRECTION
 
