@@ -40,13 +40,23 @@
 // channel modes:
 // * 0. FET+7135 stacked
 // * 1. aux red
-// * 2. aux green
-// * 3. aux blue
-#define NUM_CHANNEL_MODES  4
-#define CM_MAIN            0
-#define CM_AUXRED          1
-#define CM_AUXGRN          2
-#define CM_AUXBLU          3
+// * 2. aux yellow
+// * 3. aux green
+// * 4. aux cyan
+// * 5. aux blue
+// * 6. aux purple
+// * 7. aux white
+#define NUM_CHANNEL_MODES  8
+enum CHANNEL_MODES {
+    CM_MAIN = 0,
+    CM_AUXRED,
+    CM_AUXYEL,
+    CM_AUXGRN,
+    CM_AUXCYN,
+    CM_AUXBLU,
+    CM_AUXPRP,
+    CM_AUXWHT,
+};
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
@@ -58,10 +68,18 @@
 
 #define SET_LEVEL_MODES      set_level_main, \
                              set_level_auxred, \
+                             set_level_auxyel, \
                              set_level_auxgrn, \
-                             set_level_auxblu
+                             set_level_auxcyn, \
+                             set_level_auxblu, \
+                             set_level_auxprp, \
+                             set_level_auxwht
 // gradual ticking for thermal regulation
 #define GRADUAL_TICK_MODES   gradual_tick_main, \
+                             gradual_tick_null, \
+                             gradual_tick_null, \
+                             gradual_tick_null, \
+                             gradual_tick_null, \
                              gradual_tick_null, \
                              gradual_tick_null, \
                              gradual_tick_null

@@ -45,6 +45,9 @@
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
 
+// blink numbers on the aux LEDs by default
+#define DEFAULT_BLINK_CHANNEL  CM_AUXWHT
+
 // use aux red + aux blue for police strobe
 #define USE_POLICE_COLOR_STROBE_MODE
 #define POLICE_STROBE_USES_AUX
