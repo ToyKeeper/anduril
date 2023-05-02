@@ -182,8 +182,13 @@ While the light is on, a few actions are available:
   - 2H: Change brightness (down).
 
   - 3C: Switch to the other ramp style.  (smooth / stepped)
-  - 3H: Tint ramping (on lights which have it).
-  - 3H: Momentary turbo (on lights with no tint ramping).
+        (or activate the next channel mode, when more than one is enabled)
+        (then use 6C instead, for smooth / stepped toggle)
+  - 6C: Switch to the other ramp style.  (when 3C is mapped to next channel)
+
+  - 3H: Momentary turbo (when current channel has no tint to ramp).
+  - 3H: Tint ramping (only when current channel has adjustable tint).
+  - 4H: Momentary turbo, when 3H is mapped to tint.
 
   - 4C: Go to lockout mode.
 
@@ -316,6 +321,8 @@ lockout mode has two levels:
   - 2H: Light up at the highest floor level.
         (or the manual mem level, if there is one)
 
+  - 3H: Next channel mode (if more than one is enabled).
+
 It is also possible to make the light lock itself automatically after 
 being turned off.  To enable this, go to lockout mode and use a 10H 
 action to activate the auto-lock config menu.  Release the button after 
@@ -364,6 +371,10 @@ In more detail, this is what each blinky / utility mode does:
      So for 4.2V, it would be "blink-blink-blink-blink .. blink-blink".
 
      A "zero" digit is represented by a very quick blink.
+
+     On lights with more than one set of LEDs, pressing 3C during batt 
+     check mode can select which set of LEDs (which channel mode) it 
+     uses to blink out numbers.
 
      The voltage config menu has one setting:
 
@@ -894,6 +905,7 @@ Any		Full	9H	Channel mode enable/disable menu:
 Lockout		Any	1C/1H	Momentary moon (lowest floor)
 Lockout		Any	2C/2H	Momentary moon (highest floor, or manual mem level)
 Lockout		Any	3C	Unlock (go to "Off" mode)
+Lockout		Any	3H	Next channel mode (if more than one enabled)
 Lockout		Any	4C	On (ramp mode, memorized level)
 Lockout		Any	4H	On (ramp mode, floor level)
 Lockout		Any	5C	On (ramp mode, ceiling level)
@@ -917,6 +929,7 @@ Biking		Full	1H/2H	Brighter / dimmer
 
 Batt check	Any	1C	Off
 Batt check	Full	2C	Next blinky mode (Temp check, Beacon, SOS)
+Batt check	Full	3C	Next channel mode (for number blinks only)
 Batt check	Full	7H	Voltage config menu
 				1: voltage correction factor
 				   ...
