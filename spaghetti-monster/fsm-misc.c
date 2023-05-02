@@ -33,15 +33,29 @@ uint8_t blink_digit(uint8_t num) {
     if (!num) { ontime = 8; num ++; }
 
     #ifdef BLINK_CHANNEL
+    // channel is set per blink, to prevent issues
+    // if another mode interrupts us (like a config menu)
     uint8_t old_channel = CH_MODE;
-    set_channel_mode(BLINK_CHANNEL);
     #endif
 
     for (; num>0; num--) {
         // TODO: allow setting a blink channel mode per build target
+        #ifdef BLINK_CHANNEL
+            set_channel_mode(BLINK_CHANNEL);
+        #endif
         set_level(BLINK_BRIGHTNESS);
+        #ifdef BLINK_CHANNEL
+            CH_MODE = old_channel;
+        #endif
         nice_delay_ms(ontime);
+
+        #ifdef BLINK_CHANNEL
+            set_channel_mode(BLINK_CHANNEL);
+        #endif
         set_level(0);
+        #ifdef BLINK_CHANNEL
+            CH_MODE = old_channel;
+        #endif
         nice_delay_ms(BLINK_SPEED * 3 / 12);
     }
 
