@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Use with Python3, make sure to have the pymcuprog module installed (via pip)
 
 # Read out the pymcuprog version
@@ -74,3 +75,4 @@ print("Verifying the write... ")
 verify_status = backend.verify_hex(hexfile)
 if verify_status is True:
     print("Verification successful!")
+
