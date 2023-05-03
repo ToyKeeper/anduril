@@ -11,4 +11,8 @@
     #ifndef DEFAULT_POST_OFF_VOLTAGE_SECONDS
         #define DEFAULT_POST_OFF_VOLTAGE_SECONDS  4
     #endif
+    #ifndef POST_OFF_VOLTAGE_BRIGHTNESS
+        // level at which to switch from low to high aux brightness
+        #define POST_OFF_VOLTAGE_BRIGHTNESS (RAMP_SIZE/10)
+    #endif
 #endif

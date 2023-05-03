@@ -71,6 +71,7 @@ void set_level(uint8_t level) {
     SetLevelFuncPtr set_level_func = channel_modes[CH_MODE];
     set_level_func(level);
 
+    if (actual_level != level) prev_level = actual_level;
     actual_level = level;
 
     #ifdef USE_SET_LEVEL_GRADUALLY

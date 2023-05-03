@@ -8,6 +8,8 @@
 
 // actual_level: last ramp level set by set_level()
 uint8_t actual_level = 0;
+// the level used before actual
+uint8_t prev_level = 0;
 
 // TODO: size-optimize the case with only 1 channel mode
 // (the arrays and stuff shouldn't be needed)

@@ -15,6 +15,7 @@ uint8_t off_state(Event event, uint16_t arg) {
     // turn emitter off when entering state
     if (event == EV_enter_state) {
         set_level(0);
+        ticks_since_on = 0;
         #ifdef USE_INDICATOR_LED
         // redundant, sleep tick does the same thing
         //indicator_led_update(cfg.indicator_led_mode & 0x03, 0);
@@ -47,6 +48,7 @@ uint8_t off_state(Event event, uint16_t arg) {
     #if defined(TICK_DURING_STANDBY)
     // blink the indicator LED, maybe
     else if (event == EV_sleep_tick) {
+        if (ticks_since_on < 255) ticks_since_on ++;
         #ifdef USE_MANUAL_MEMORY_TIMER
         // reset to manual memory level when timer expires
         if (cfg.manual_memory &&
@@ -141,6 +143,7 @@ uint8_t off_state(Event event, uint16_t arg) {
 
     // click, hold: momentary at ceiling or turbo
     else if (event == EV_click2_hold) {
+        ticks_since_on = 0;  // momentary turbo is definitely "on"
         uint8_t turbo_level;  // how bright is "turbo"?
 
         #if defined(USE_2C_STYLE_CONFIG)  // user can choose 2C behavior

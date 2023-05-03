@@ -39,18 +39,17 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     // (allow staying awake long enough to exit, but otherwise
     //  be persistent about going back to sleep every few seconds
     //  even if the user keeps pressing the button)
-    #ifdef USE_INDICATOR_LED
-    // redundant, sleep tick does the same thing
-    //if (event == EV_enter_state) {
-    //    indicator_led_update(cfg.indicator_led_mode >> 2, 0);
-    //} else
-    #elif defined(USE_AUX_RGB_LEDS)
     if (event == EV_enter_state) {
-        rgb_led_update(cfg.rgb_led_lockout_mode, 0);
-    } else
-    #endif
+        ticks_since_on = 0;
+        #ifdef USE_INDICATOR_LED
+            // redundant, sleep tick does the same thing
+            // indicator_led_update(cfg.indicator_led_mode >> 2, 0);
+        #elif defined(USE_AUX_RGB_LEDS)
+            rgb_led_update(cfg.rgb_led_lockout_mode, 0);
+        #endif
+    }
 
-    if (event == EV_tick) {
+    else if (event == EV_tick) {
         if (arg > HOLD_TIMEOUT) {
             go_to_standby = 1;
             #ifdef USE_INDICATOR_LED
@@ -65,6 +64,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
 
     #if defined(TICK_DURING_STANDBY) && (defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS))
     else if (event == EV_sleep_tick) {
+        if (ticks_since_on < 255) ticks_since_on ++;
         #ifdef USE_MANUAL_MEMORY_TIMER
         // reset to manual memory level when timer expires
         if (cfg.manual_memory &&
