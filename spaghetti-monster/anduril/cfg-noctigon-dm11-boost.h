@@ -1,28 +1,18 @@
-// Noctigon DM11 (12V) config options for Anduril
+// Noctigon DM11 (boost driver) config options for Anduril
 // Copyright (C) 2021-2023 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
 #define MODEL_NUMBER "0273"
-#include "hwdef-Noctigon_DM11-12V.h"
+#include "hwdef-noctigon-dm11-boost.h"
 #include "hank-cfg.h"
 // ATTINY: 1634
 
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
-// ... and a single LED in the button
-#define USE_BUTTON_LED
-// don't use aux LEDs while main LED is on
-#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-#undef USE_INDICATOR_LED_WHILE_RAMPING
-#endif
-
+#define RAMP_SIZE 150
 
 // power channels:
-// - linear: 5A?
+// - boost: 8A?
 // - DD FET: none (can't do DD on a boost driver)
-#define RAMP_LENGTH 150
-#define USE_DYN_PWM
 
 // level_calc.py 5.01 1 149 7135 1 0.3 1740 --pwm dyn:78:16384:255
 // (plus a 0 at the beginning for moon)
@@ -33,11 +23,6 @@
 #define MAX_1x7135 150
 #define HALFSPEED_LEVEL 12
 #define QUARTERSPEED_LEVEL 4
-
-// don't blink halfway up
-#ifdef BLINK_AT_RAMP_MIDDLE
-#undef BLINK_AT_RAMP_MIDDLE
-#endif
 
 #define RAMP_SMOOTH_FLOOR 10  // low levels may be unreliable
 #define RAMP_SMOOTH_CEIL  130
@@ -52,20 +37,32 @@
 #define SIMPLE_UI_CEIL RAMP_DISCRETE_CEIL
 #define SIMPLE_UI_STEPS 5
 
-// make candle mode wobble more
-#define CANDLE_AMPLITUDE 33
-
 // stop panicking at ~70% power or ~600 lm
 #define THERM_FASTER_LEVEL 130
 #define MIN_THERM_STEPDOWN 80  // must be > end of dynamic PWM range
 
+#define THERM_CAL_OFFSET 5
+
 //#define THERM_RESPONSE_MAGNITUDE 32  // smaller adjustments, this host changes temperature slowly
 //#define THERM_NEXT_WARNING_THRESHOLD 32  // more error tolerance before adjusting
 
+// show each channel while it scroll by in the menu
+#define USE_CONFIG_COLORS
+
+// blink numbers on the aux LEDs by default
+#define DEFAULT_BLINK_CHANNEL  CM_AUXWHT
+
+// use aux red + aux blue for police strobe
+#define USE_POLICE_COLOR_STROBE_MODE
+#define POLICE_STROBE_USES_AUX
+#define POLICE_COLOR_STROBE_CH1        CM_AUXRED
+#define POLICE_COLOR_STROBE_CH2        CM_AUXBLU
+
+// the default of 26 looks a bit rough, so increase it to make it smoother
+#define CANDLE_AMPLITUDE 33
+
 // slow down party strobe; this driver can't pulse for 2ms or less
 #define PARTY_STROBE_ONTIME 3
-
-#define THERM_CAL_OFFSET 5
 
 // the power regulator seems to "jump start" the LEDs all on its own,
 // so the firmware doesn't have to
@@ -76,4 +73,9 @@
 
 // added for convenience
 #define USE_SOFT_FACTORY_RESET
+
+// don't blink halfway up
+#ifdef BLINK_AT_RAMP_MIDDLE
+#undef BLINK_AT_RAMP_MIDDLE
+#endif
 
