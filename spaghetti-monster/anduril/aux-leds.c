@@ -102,7 +102,7 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
     uint8_t color = mode & 0x0f;
 
     // always preview in high mode
-    if (! go_to_standby) { pattern = 2; }
+    if (setting_rgb_mode_now) { pattern = 2; }
 
     #ifdef USE_POST_OFF_VOLTAGE
     // use voltage high mode for a few seconds after initial poweroff
