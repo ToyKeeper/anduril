@@ -661,14 +661,17 @@ Version Check Mode
 ------------------
 
 This allows people to see which version of the firmware is installed on 
-their light.  The format for this is (usually) 12 digits -- a date 
-followed by a model number.  YYYYMMDDBBPP
+their light.  The format for this is (usually) 12 digits -- a model 
+number and a date.  BBPP.YYYY-MM-DD
 
+  - BB: Brand ID
+  - PP: Product ID
   - YYYY: Year
   - MM: Month
   - DD: Day
-  - BB: Brand ID
-  - PP: Product ID
+
+Versions before 2023-05-30 used YYYYMMDDBBPP format.
+Anduril 1 used only YYYYMMDD format, or none at all.
 
 The date is when the firmware was compiled.  If the vendor did not set 
 this value, it defaults to 1969-07-20, the date of first human contact 
