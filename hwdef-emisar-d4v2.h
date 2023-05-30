@@ -64,7 +64,7 @@ enum CHANNEL_MODES {
 #define CHANNEL_HAS_ARGS      0b00000000
 // no args
 //#define USE_CHANNEL_MODE_ARGS
-//#define CHANNEL_MODE_ARGS     0,0,0,0
+//#define CHANNEL_MODE_ARGS     0,0,0,0,0,0,0,0
 
 #define SET_LEVEL_MODES      set_level_main, \
                              set_level_auxred, \
@@ -105,7 +105,7 @@ enum CHANNEL_MODES {
 
 // DD FET channel
 #define CH2_PIN  PA6            // pin 1, DD FET PWM
-#define CH2_PWM  OCR1B          // OCR1B is the output compare register for PB1
+#define CH2_PWM  OCR1B          // OCR1B is the output compare register for PA6
 
 // e-switch
 #define SWITCH_PIN   PA2    // pin 5
