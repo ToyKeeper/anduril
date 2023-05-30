@@ -27,9 +27,11 @@ fi
 
 export MCU=attiny$ATTINY
 export CC=avr-gcc
+export CPP=avr-cpp
 export OBJCOPY=avr-objcopy
 export DFPFLAGS="-B $ATTINY_DFP/gcc/dev/$MCU/ -I $ATTINY_DFP/include/"
-export CFLAGS="-Wall -g -Os -mmcu=$MCU -c -std=gnu99 -fgnu89-inline -fwhole-program -DATTINY=$ATTINY -I.. -I../.. -I../../.. -fshort-enums $DFPFLAGS"
+export CFLAGS="  -Wall -g -Os -mmcu=$MCU -c -std=gnu99 -fgnu89-inline -fwhole-program -DATTINY=$ATTINY -I.. -I../.. -I../../.. -fshort-enums $DFPFLAGS"
+export CPPFLAGS="-Wall -g -Os -mmcu=$MCU -C -std=gnu99 -fgnu89-inline -fwhole-program -DATTINY=$ATTINY -I.. -I../.. -I../../.. -fshort-enums $DFPFLAGS"
 export OFLAGS="-Wall -g -Os -mmcu=$MCU -mrelax $DFPFLAGS"
 export LDFLAGS="-fgnu89-inline"
 export OBJCOPYFLAGS='--set-section-flags=.eeprom=alloc,load --change-section-lma .eeprom=0 --no-change-warnings -O ihex --remove-section .fuse'
@@ -45,6 +47,8 @@ function run () {
   if [ x"$?" != x0 ]; then exit 1 ; fi
 }
 
+run $CPP $OTHERFLAGS $CPPFLAGS -o foo.cpp $PROGRAM.c
+grep --text -E -v '^#|^$' foo.cpp > $PROGRAM.cpp ; rm foo.cpp
 run $CC $OTHERFLAGS $CFLAGS -o $PROGRAM.o -c $PROGRAM.c
 run $CC $OFLAGS $LDFLAGS -o $PROGRAM.elf $PROGRAM.o
 run $OBJCOPY $OBJCOPYFLAGS $PROGRAM.elf $PROGRAM.hex
