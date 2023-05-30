@@ -87,7 +87,7 @@ typedef struct Config {
     #endif
     #ifdef USE_THERMAL_REGULATION
         uint8_t therm_ceil;
-        uint8_t therm_cal_offset;
+        int8_t therm_cal_offset;
     #endif
 
     ///// aux LEDs
