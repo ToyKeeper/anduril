@@ -30,7 +30,7 @@ uint8_t blink_digit(uint8_t num) {
 
     // "zero" digit gets a single short blink
     uint8_t ontime = BLINK_SPEED * 2 / 12;
-    if (!num) { ontime = 8; num ++; }
+    if (!num) { ontime = BLINK_ONCE_TIME; num ++; }
 
     #ifdef BLINK_CHANNEL
     // channel is set per blink, to prevent issues
