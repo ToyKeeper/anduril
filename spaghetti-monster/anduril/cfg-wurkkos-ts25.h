@@ -73,6 +73,12 @@
 // blink numbers on the aux LEDs by default
 #define DEFAULT_BLINK_CHANNEL  CM_AUXWHT
 
+// use aux red + aux blue for police strobe
+#define USE_POLICE_COLOR_STROBE_MODE
+#define POLICE_STROBE_USES_AUX
+#define POLICE_COLOR_STROBE_CH1        CM_AUXRED
+#define POLICE_COLOR_STROBE_CH2        CM_AUXBLU
+
 // enable SOS in the blinkies group
 #define USE_SOS_MODE
 #define USE_SOS_MODE_IN_BLINKY_GROUP
