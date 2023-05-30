@@ -115,7 +115,7 @@ void gradual_tick();
 #define GRADUAL_ADJUST_STACKED(TARGET,PWM,TOP)  \
     if (   ((PWM ==   0) && (TARGET == TOP))  \
         || ((PWM == TOP) && (TARGET ==   0)))  \
-        PWM = TOP;  \
+        PWM = TARGET;  \
     else GRADUAL_ADJUST_SIMPLE(TARGET,PWM)
 
 // tick the top layer of the stack
