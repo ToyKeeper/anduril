@@ -13,7 +13,7 @@
 #endif
 
 #include "version.h"
-const PROGMEM uint8_t version_number[] = VERSION_NUMBER MODEL_NUMBER;
+const PROGMEM uint8_t version_number[] = MODEL_NUMBER "." VERSION_NUMBER;
 uint8_t version_check_state(Event event, uint16_t arg);
 inline void version_check_iter();
 

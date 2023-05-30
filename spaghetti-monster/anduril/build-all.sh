@@ -9,7 +9,7 @@ fi
 
 UI=anduril
 
-date '+#define VERSION_NUMBER "%Y%m%d"' > version.h
+date '+#define VERSION_NUMBER "%Y-%m-%d"' > version.h
 
 PASS=0
 FAIL=0
