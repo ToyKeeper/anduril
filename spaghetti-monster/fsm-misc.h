@@ -8,6 +8,11 @@
 void auto_clock_speed();
 #endif
 
+// shortest time (in ms) the light should blink for to indicate a zero
+#ifndef BLINK_ONCE_TIME
+    #define BLINK_ONCE_TIME 10
+#endif
+
 #if defined(USE_BLINK_NUM) || defined(USE_BLINK_DIGIT)
     #ifndef BLINK_BRIGHTNESS
         #define BLINK_BRIGHTNESS (MAX_LEVEL/6)
