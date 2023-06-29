@@ -19,7 +19,7 @@ uint8_t beacon_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // TODO: use sleep ticks to measure time between pulses,
     //       to save power
@@ -33,20 +33,20 @@ uint8_t beacon_state(Event event, uint16_t arg) {
         #elif defined(USE_THERMAL_REGULATION)
         set_state(tempcheck_state, 0);
         #endif
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // hold: configure beacon timing
     else if (event == EV_click1_hold) {
         if (0 == (arg % TICKS_PER_SECOND)) {
             blink_once();
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // release hold: save new timing
     else if (event == EV_click1_hold_release) {
         cfg.beacon_seconds = 1 + (arg / TICKS_PER_SECOND);
         save_config();
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     return EVENT_NOT_HANDLED;
 }

@@ -166,7 +166,7 @@ uint8_t number_entry_state(Event event, uint16_t arg) {
         else {
             pop_state();
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     // count clicks: click = +1, hold = +10
@@ -186,7 +186,7 @@ uint8_t number_entry_state(Event event, uint16_t arg) {
         set_channel_mode(CONFIG_BLINK_CHANNEL);
         #endif
         set_level(RAMP_SIZE/2);  // flash briefly
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     // eat all other events; don't pass any through to parent

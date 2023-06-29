@@ -11,7 +11,7 @@ uint8_t sos_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 2 clicks: next blinky mode
     else if (event == EV_2clicks) {
@@ -22,7 +22,7 @@ uint8_t sos_state(Event event, uint16_t arg) {
         #elif defined(USE_BEACON_MODE)
         set_state(beacon_state, 0);
         #endif
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     return EVENT_NOT_HANDLED;
 }

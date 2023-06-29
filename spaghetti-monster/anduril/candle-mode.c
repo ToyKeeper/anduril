@@ -35,14 +35,14 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
     // if the timer just expired, shut off
     if (sunset_active  &&  (! sunset_timer)) {
         set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif  // ifdef USE_SUNSET_TIMER
 
 
     if (event == EV_enter_state) {
         ramp_direction = 1;
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #ifdef USE_SUNSET_TIMER
     // 2 clicks: cancel timer
@@ -50,7 +50,7 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
         // parent state just rotated through strobe/flasher modes,
         // so cancel timer...  in case any time was left over from earlier
         sunset_timer = 0;
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif  // ifdef USE_SUNSET_TIMER
     // hold: change brightness (brighter)
@@ -64,19 +64,19 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
         candle_mode_brightness += ramp_direction;
         if (candle_mode_brightness < 1) candle_mode_brightness = 1;
         else if (candle_mode_brightness > MAX_CANDLE_LEVEL) candle_mode_brightness = MAX_CANDLE_LEVEL;
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // reverse ramp direction on hold release
     else if (event == EV_click1_hold_release) {
         ramp_direction = -ramp_direction;
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // click, hold: change brightness (dimmer)
     else if (event == EV_click2_hold) {
         ramp_direction = 1;
         if (candle_mode_brightness > 1)
             candle_mode_brightness --;
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // clock tick: animate candle brightness
     else if (event == EV_tick) {
@@ -129,7 +129,7 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
             // random amplitude
             //candle_wave3_depth = 2 + (pseudo_rand() % ((CANDLE_WAVE3_MAXDEPTH * CANDLE_AMPLITUDE / 100) - 2));
             candle_wave3_depth = pseudo_rand() % (CANDLE_WAVE3_MAXDEPTH * CANDLE_AMPLITUDE / 100);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     return EVENT_NOT_HANDLED;
 }

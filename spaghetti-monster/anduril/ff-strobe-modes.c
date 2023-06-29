@@ -12,19 +12,19 @@ uint8_t boring_strobe_state(Event event, uint16_t arg) {
     uint8_t st = boring_strobe_type;
 
     if (event == EV_enter_state) {
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 1 click: off
     else if (event == EV_1click) {
         // reset to police strobe for next time
         boring_strobe_type = 0;
         set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 2 clicks: rotate through strobe/flasher modes
     else if (event == EV_2clicks) {
         boring_strobe_type = (st + 1) % NUM_BORING_STROBES;
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     return EVENT_NOT_HANDLED;
 }

@@ -16,7 +16,7 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     // 2 clicks: next blinky mode
@@ -28,7 +28,7 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
         #elif defined(USE_SOS_MODE) && defined(USE_SOS_MODE_IN_BLINKY_GROUP)
         set_state(sos_state, 0);
         #endif
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     #ifdef DEFAULT_BLINK_CHANNEL
@@ -44,7 +44,7 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
     // 7H: voltage config mode
     else if (event == EV_click7_hold) {
         push_state(voltage_config_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
 

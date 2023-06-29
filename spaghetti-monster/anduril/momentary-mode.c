@@ -22,14 +22,14 @@ uint8_t momentary_state(Event event, uint16_t arg) {
         if (momentary_mode == 0) {
             set_level(memorized_level);
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // button was released
     else if ((event & (B_CLICK | B_PRESS)) == (B_CLICK)) {
         momentary_active = 0;
         set_level(0);
         //go_to_standby = 1;  // sleep while light is off
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     // Sleep, dammit!  (but wait a few seconds first)
@@ -59,7 +59,7 @@ uint8_t momentary_state(Event event, uint16_t arg) {
         #ifdef USE_STROBE_STATE
         }
         #endif
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     return EVENT_NOT_HANDLED;

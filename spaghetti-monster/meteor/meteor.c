@@ -262,7 +262,7 @@ uint8_t base_on_state(Event event, uint16_t arg, uint8_t *mode, uint8_t *group) 
     // 1 click: off
     if (event == EV_1click) {
         set_state(base_off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #ifdef USE_THERMAL_REGULATION
     // overheating: drop by an amount proportional to how far we are above the ceiling
@@ -312,17 +312,17 @@ uint8_t ui1_on_state(Event event, uint16_t arg) {
     else if (event == EV_2clicks) {
         *mode ^= 1;
         set_any_mode(*mode, group);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // hold: turbo
     else if (event == EV_hold) {
         if (arg == 0) set_level(MAX_LEVEL);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // release: exit turbo
     else if (event == EV_click1_hold_release) {
         set_any_mode(*mode, group);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     return base_on_state(event, arg, mode, group);
 }
@@ -361,7 +361,7 @@ uint8_t ui2_on_state(Event event, uint16_t arg) {
     else if (event == EV_2clicks) {
         *mode ^= 1;
         set_any_mode(*mode, group);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // hold: rotate through low/mid/high/turbo
     else if (event == EV_hold) {
@@ -371,7 +371,7 @@ uint8_t ui2_on_state(Event event, uint16_t arg) {
         else if (arg % HOLD_TIMEOUT == 1) {
             set_any_mode(*mode, group);
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     return base_on_state(event, arg, mode, group);
 }
@@ -413,7 +413,7 @@ uint8_t ui3_on_state(Event event, uint16_t arg) {
     /*
     else if (event == EV_click1_hold) {
         set_level(levels[*mode]);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     */
     // hold: turbo
@@ -427,7 +427,7 @@ uint8_t blinky_base_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(base_off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     return EVENT_NOT_HANDLED;
 }

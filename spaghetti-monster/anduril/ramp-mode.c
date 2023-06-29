@@ -79,7 +79,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
     // if the timer just expired, shut off
     else if (sunset_active  &&  (! sunset_timer)) {
         set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif  // ifdef USE_SUNSET_TIMER
 
@@ -99,25 +99,25 @@ uint8_t steady_state(Event event, uint16_t arg) {
         arg = nearest_level(arg);
         set_level_and_therm_target(arg);
         ramp_direction = 1;
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #if (B_TIMING_OFF == B_RELEASE_T)
     // 1 click (early): off, if configured for early response
     else if (event == EV_click1_release) {
         level_before_off = actual_level;
         set_level_and_therm_target(0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 2 clicks (early): abort turning off, if configured for early response
     else if (event == EV_click2_press) {
         set_level_and_therm_target(level_before_off);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif  // if (B_TIMING_OFF == B_RELEASE_T)
     // 1 click: off
     else if (event == EV_1click) {
         set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 2 clicks: go to/from highest level
     else if (event == EV_2clicks) {
@@ -130,7 +130,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #ifdef USE_SUNSET_TIMER
         reset_sunset_timer();
         #endif
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     #ifdef USE_LOCKOUT_MODE
@@ -138,7 +138,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
     else if (event == EV_4clicks) {
         set_level(0);
         set_state(lockout_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
 
@@ -147,12 +147,12 @@ uint8_t steady_state(Event event, uint16_t arg) {
     else if ((event == EV_click1_hold) || (event == EV_click2_hold)) {
         // ramp slower in discrete mode
         if (cfg.ramp_style  &&  (arg % HOLD_TIMEOUT != 0)) {
-            return MISCHIEF_MANAGED;
+            return EVENT_HANDLED;
         }
         #ifdef USE_RAMP_SPEED_CONFIG
         // ramp slower if user configured things that way
         if ((! cfg.ramp_style) && (arg % ramp_speed)) {
-            return MISCHIEF_MANAGED;
+            return EVENT_HANDLED;
         }
         #endif
         // fix ramp direction on first frame if necessary
@@ -228,7 +228,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #ifdef USE_SUNSET_TIMER
         reset_sunset_timer();
         #endif
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // reverse ramp direction on hold release
     else if ((event == EV_click1_hold_release)
@@ -237,7 +237,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #ifdef START_AT_MEMORIZED_LEVEL
         save_config_wl();
         #endif
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     else if (event == EV_tick) {
@@ -292,7 +292,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
             }
         }
         #endif  // ifdef USE_SET_LEVEL_GRADUALLY
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     #ifdef USE_THERMAL_REGULATION
@@ -322,7 +322,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
             set_level(stepdown);
             #endif
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // underheating: increase slowly if we're lower than the target
     //               (proportional to how low we are)
@@ -341,7 +341,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
             set_level(stepup);
             #endif
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #ifdef USE_SET_LEVEL_GRADUALLY
     // temperature is within target window
@@ -352,7 +352,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
             gradual_target = actual_level + 1;
         else if (gradual_target < actual_level)
             gradual_target = actual_level - 1;
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif  // ifdef USE_SET_LEVEL_GRADUALLY
     #endif  // ifdef USE_THERMAL_REGULATION
@@ -397,7 +397,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #ifdef USE_SUNSET_TIMER
         reset_sunset_timer();
         #endif
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     // If we allowed 3C in Simple UI, now block further actions
@@ -428,7 +428,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
             set_level_and_therm_target(turbo_level);
             #endif
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     else if ((event == EV_click3_hold_release)
             #ifdef USE_CHANNEL_MODE_ARGS
@@ -442,7 +442,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
                 return EVENT_NOT_HANDLED;
         #endif
         set_level_and_therm_target(memorized_level);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     #ifdef USE_MOMENTARY_MODE
@@ -450,7 +450,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
     else if (event == EV_5clicks) {
         set_level(0);
         set_state(momentary_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
 
@@ -458,7 +458,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
     // 7H: configure this ramp mode
     else if (event == EV_click7_hold) {
         push_state(ramp_config_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
 
@@ -468,7 +468,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         manual_memory_save();
         save_config();
         blink_once();
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     else if (event == EV_click10_hold) {
         #ifdef USE_RAMP_EXTRAS_CONFIG
@@ -482,7 +482,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
             blink_once();
         }
         #endif
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif  // ifdef USE_MANUAL_MEMORY
 

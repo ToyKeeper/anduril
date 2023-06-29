@@ -247,7 +247,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         #endif
         // sleep while off  (lower power use)
         go_to_standby = 1;
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // go back to sleep eventually if we got bumped but didn't leave "off" state
     else if (event == EV_tick) {
@@ -257,7 +257,7 @@ uint8_t off_state(Event event, uint16_t arg) {
             indicator_led(indicator_led_mode & 0x03);
             #endif
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #if defined(TICK_DURING_STANDBY) && defined(USE_INDICATOR_LED)
     // blink the indicator LED, maybe
@@ -265,13 +265,13 @@ uint8_t off_state(Event event, uint16_t arg) {
         if ((indicator_led_mode & 0b00000011) == 0b00000011) {
             indicator_blink(arg);
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
     // hold (initially): go to lowest level (floor), but allow abort for regular click
     else if (event == EV_click1_press) {
         set_level(nearest_level(1));
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // hold: go to lowest level
     else if (event == EV_click1_hold) {
@@ -290,56 +290,56 @@ uint8_t off_state(Event event, uint16_t arg) {
         if (arg >= (!ramp_style) * HOLD_TIMEOUT) {  // more consistent
             set_state(steady_state, 1);
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // hold, release quickly: go to lowest level (floor)
     else if (event == EV_click1_hold_release) {
         set_state(steady_state, 1);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 1 click (before timeout): go to memorized level, but allow abort for double click
     else if (event == EV_click1_release) {
         set_level(nearest_level(memorized_level));
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 1 click: regular mode
     else if (event == EV_1click) {
         set_state(steady_state, memorized_level);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // click, hold: go to highest level (ceiling) (for ramping down)
     else if (event == EV_click2_hold) {
         set_state(steady_state, MAX_LEVEL);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 2 clicks: highest mode (ceiling)
     else if (event == EV_2clicks) {
         set_state(steady_state, MAX_LEVEL);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 3 clicks (initial press): off, to prep for later events
     else if (event == EV_click3_press) {
         set_level(0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #ifdef USE_BATTCHECK
     // 3 clicks: battcheck mode / blinky mode group 1
     else if (event == EV_3clicks) {
         set_state(battcheck_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
     // 4 clicks: momentary
     else if (event == EV_4clicks) {
         blink_confirm(1);
         set_state(momentary_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 6 clicks: lockout mode
     else if (event == EV_6clicks) {
         blink_confirm(2);
         set_state(lockout_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #ifdef USE_INDICATOR_LED
     // 7 clicks: next aux LED mode
@@ -357,19 +357,19 @@ uint8_t off_state(Event event, uint16_t arg) {
         indicator_led_mode = (indicator_led_mode & 0b11111100) | mode;
         indicator_led(mode);
         save_config();
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
     // 8 clicks: beacon mode
     else if (event == EV_8clicks) {
         set_state(beacon_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #ifdef USE_TENCLICK_THERMAL_CONFIG
     // 10 clicks: thermal config mode
     else if (event == EV_10clicks) {
         push_state(thermal_config_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
     return EVENT_NOT_HANDLED;
@@ -407,12 +407,12 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #ifdef USE_REVERSING
         ramp_direction = 1;
         #endif
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 1 click: off
     else if (event == EV_1click) {
         set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 2 clicks: go to/from highest level
     else if (event == EV_2clicks) {
@@ -429,7 +429,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
             #endif
             set_level(memorized_level);
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 3 clicks: toggle smooth vs discrete ramping
     else if (event == EV_3clicks) {
@@ -445,20 +445,20 @@ uint8_t steady_state(Event event, uint16_t arg) {
         set_level(0);
         delay_4ms(20/4);
         set_level(memorized_level);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #ifdef USE_RAMP_CONFIG
     // 4 clicks: configure this ramp mode
     else if (event == EV_4clicks) {
         push_state(ramp_config_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
     // hold: change brightness (brighter)
     else if (event == EV_click1_hold) {
         // ramp slower in discrete mode
         if (ramp_style  &&  (arg % HOLD_TIMEOUT != 0)) {
-            return MISCHIEF_MANAGED;
+            return EVENT_HANDLED;
         }
         #ifdef USE_REVERSING
         // make it ramp down instead, if already at max
@@ -510,7 +510,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         }
         #endif
         set_level(memorized_level);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #if defined(USE_REVERSING)
     // reverse ramp direction on hold release
@@ -518,7 +518,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #ifdef USE_REVERSING
         ramp_direction = -ramp_direction;
         #endif
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
     // click, hold: change brightness (dimmer)
@@ -528,7 +528,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #endif
         // ramp slower in discrete mode
         if (ramp_style  &&  (arg % HOLD_TIMEOUT != 0)) {
-            return MISCHIEF_MANAGED;
+            return EVENT_HANDLED;
         }
         // TODO? make it ramp up instead, if already at min?
         memorized_level = nearest_level((int16_t)actual_level - ramp_step_size);
@@ -569,7 +569,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         }
         #endif
         set_level(memorized_level);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #if defined(USE_SET_LEVEL_GRADUALLY) || defined(USE_REVERSING)
     else if (event == EV_tick) {
@@ -580,7 +580,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #ifdef USE_SET_LEVEL_GRADUALLY
         // make thermal adjustment speed scale with magnitude
         if ((arg & 1) && (actual_level < THERM_FASTER_LEVEL)) {
-            return MISCHIEF_MANAGED;  // adjust slower when not a high mode
+            return EVENT_HANDLED;  // adjust slower when not a high mode
         }
         #ifdef THERM_HARD_TURBO_DROP
         else if ((! (actual_level < THERM_FASTER_LEVEL))
@@ -622,7 +622,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         }
         #endif
         #endif
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
     #ifdef USE_THERMAL_REGULATION
@@ -654,7 +654,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
             set_level(stepdown);
             #endif
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // underheating: increase slowly if we're lower than the target
     //               (proportional to how low we are)
@@ -676,7 +676,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
             set_level(stepup);
             #endif
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
     return EVENT_NOT_HANDLED;
@@ -688,12 +688,12 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 2 clicks: tempcheck mode
     else if (event == EV_2clicks) {
         set_state(tempcheck_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     return EVENT_NOT_HANDLED;
 }
@@ -705,12 +705,12 @@ uint8_t tempcheck_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 4 clicks: thermal config mode
     else if (event == EV_4clicks) {
         push_state(thermal_config_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     return EVENT_NOT_HANDLED;
 }
@@ -722,14 +722,14 @@ uint8_t beacon_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // TODO: use sleep ticks to measure time between pulses,
     //       to save power
     // 4 clicks: beacon config mode
     else if (event == EV_4clicks) {
         push_state(beacon_config_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     return EVENT_NOT_HANDLED;
 }
@@ -781,14 +781,14 @@ uint8_t lockout_state(Event event, uint16_t arg) {
             indicator_led(indicator_led_mode >> 2);
             #endif
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #if defined(TICK_DURING_STANDBY) && defined(USE_INDICATOR_LED)
     else if (event == EV_sleep_tick) {
         if ((indicator_led_mode & 0b00001100) == 0b00001100) {
             indicator_blink(arg);
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
     #ifdef USE_INDICATOR_LED
@@ -806,14 +806,14 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         indicator_led_mode = (mode << 2) + (indicator_led_mode & 0x03);
         indicator_led(mode);
         save_config();
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
     // 6 clicks: exit
     else if (event == EV_6clicks) {
         blink_confirm(1);
         set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     return EVENT_NOT_HANDLED;
@@ -827,13 +827,13 @@ uint8_t momentary_state(Event event, uint16_t arg) {
     // button is being held
     if ((event & (B_CLICK | B_PRESS)) == (B_CLICK | B_PRESS)) {
         set_level(memorized_level);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // button was released
     else if ((event & (B_CLICK | B_PRESS)) == (B_CLICK)) {
         set_level(0);
         //go_to_standby = 1;  // sleep while light is off
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     // Sleep, dammit!  (but wait a few seconds first)
@@ -846,7 +846,7 @@ uint8_t momentary_state(Event event, uint16_t arg) {
             go_to_standby = 1;  // sleep while light is off
             // TODO: lighted button should use lockout config?
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     return EVENT_NOT_HANDLED;
@@ -861,7 +861,7 @@ uint8_t config_state_base(Event event, uint16_t arg,
     if (event == EV_enter_state) {
         config_step = 0;
         set_level(0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // advance forward through config steps
     else if (event == EV_tick) {
@@ -875,13 +875,13 @@ uint8_t config_state_base(Event event, uint16_t arg,
             //set_state(retstate, retval);
             pop_state();
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // an option was set (return from number_entry_state)
     else if (event == EV_reenter_state) {
         config_state_values[config_step] = number_entry_value;
         config_step ++;
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     //return EVENT_NOT_HANDLED;
     // eat all other events; don't pass any through to parent
@@ -985,7 +985,7 @@ uint8_t number_entry_state(Event event, uint16_t arg) {
         blinks_left = arg;
         entry_step = 0;
         wait_ticks = 0;
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // advance through the process:
     // 0: wait a moment
@@ -1042,7 +1042,7 @@ uint8_t number_entry_state(Event event, uint16_t arg) {
             number_entry_value = value;
             pop_state();
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // count clicks
     else if (event == EV_click1_release) {
@@ -1055,7 +1055,7 @@ uint8_t number_entry_state(Event event, uint16_t arg) {
             delay_4ms(8/2);
             set_level(0);
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     return EVENT_NOT_HANDLED;
 }

@@ -129,7 +129,7 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
     // channel toggle menu on ... 9H?
     else if (event == EV_click9_hold) {
         push_state(channel_mode_config_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
 

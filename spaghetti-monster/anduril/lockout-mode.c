@@ -59,7 +59,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
             rgb_led_update(cfg.rgb_led_lockout_mode, arg);
             #endif
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     #if defined(TICK_DURING_STANDBY) && (defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS))
@@ -77,7 +77,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         #elif defined(USE_AUX_RGB_LEDS)
         rgb_led_update(cfg.rgb_led_lockout_mode, arg);
         #endif
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
 
@@ -85,7 +85,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     else if (event == EV_3clicks) {
         blink_once();
         set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     // 4 clicks: exit and turn on
@@ -98,7 +98,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         else
         #endif
         set_state(steady_state, memorized_level);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     // 4 clicks, but hold last: exit and start at floor
@@ -109,13 +109,13 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         current_event = 0;
         // ... and back to ramp mode
         set_state(steady_state, 1);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     // 5 clicks: exit and turn on at ceiling level
     else if (event == EV_5clicks) {
         set_state(steady_state, MAX_LEVEL);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     #if NUM_CHANNEL_MODES > 1
@@ -155,7 +155,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         #elif defined(USE_AUX_RGB_LEDS)
         #endif
         save_config();
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #elif defined(USE_AUX_RGB_LEDS)
     // 7 clicks: change RGB aux LED pattern
@@ -166,7 +166,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         rgb_led_update(cfg.rgb_led_lockout_mode, 0);
         save_config();
         blink_once();
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 7H: change RGB aux LED color
     else if (event == EV_click7_hold) {
@@ -178,13 +178,13 @@ uint8_t lockout_state(Event event, uint16_t arg) {
             //save_config();
         }
         rgb_led_update(cfg.rgb_led_lockout_mode, arg);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 7H, release: save new color
     else if (event == EV_click7_hold_release) {
         setting_rgb_mode_now = 0;
         save_config();
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
 
@@ -199,7 +199,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     // 10H: configure the autolock option
     else if (event == EV_click10_hold) {
         push_state(autolock_config_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
 
