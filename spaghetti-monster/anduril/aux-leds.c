@@ -109,6 +109,7 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
     // (but not after changing aux LED settings and other similar actions)
     else if ((arg < (cfg.post_off_voltage * SLEEP_TICKS_PER_SECOND))
           && (ticks_since_on < (cfg.post_off_voltage * SLEEP_TICKS_PER_SECOND))
+          && (ticks_since_on > 0)  // don't blink red on 1st frame
         ) {
         // use high mode unless prev_level was really low
         pattern = 1 + (prev_level >= POST_OFF_VOLTAGE_BRIGHTNESS);
