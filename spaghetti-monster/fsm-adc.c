@@ -323,18 +323,23 @@ static inline void ADC_voltage_handler() {
     else if (go_to_standby) {  // weaker lowpass while asleep
         // occasionally the aux LED color can oscillate during standby,
         // while using "voltage" mode ... so try to reduce the oscillation
-        uint16_t m = adc_raw[0];
-        uint16_t v = adc_smooth[0];
+        uint16_t r = adc_raw[0];
+        uint16_t s = adc_smooth[0];
         #if 0
-        // fixed-rate lowpass, slow, more stable but takes longer to settle
-        if (m < v) { v -= 64; }
-        if (m > v) { v += 64; }
+        // fixed-rate lowpass, stable but very slow
+        // (move by only 0.5 ADC units per measurement, 1 ADC unit = 64)
+        if (r < s) { s -= 32; }
+        if (r > s) { s += 32; }
+        #elif 1
+        // 1/8th proportional lowpass, faster but less stable
+        int16_t diff = (r/8) - (s/8);
+        s += diff;
         #else
-        // weighted lowpass, faster but less stable
-        v = (m>>1) + (v>>1);
+        // 50% proportional lowpass, fastest but least stable
+        s = (r>>1) + (s>>1);
         #endif
-        adc_smooth[0] = v;
-        measurement = v;
+        adc_smooth[0] = s;
+        measurement = s;
     }
     #endif
     else measurement = adc_smooth[0];

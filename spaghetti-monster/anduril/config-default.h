@@ -179,7 +179,9 @@
 // if the aux LEDs oscillate between "full battery" and "empty battery"
 // while in "voltage" mode, enable this to reduce the amplitude of
 // those oscillations
-//#define USE_LOWPASS_WHILE_ASLEEP
+#if (ATTINY==1616) || (ATTINY==1634)
+#define USE_LOWPASS_WHILE_ASLEEP
+#endif
 
 // if there's tint ramping, allow user to set it smooth or stepped
 #define USE_STEPPED_TINT_RAMPING
