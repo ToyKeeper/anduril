@@ -11,90 +11,8 @@ uint8_t actual_level = 0;
 // the level used before actual
 uint8_t prev_level = 0;
 
-// TODO: size-optimize the case with only 1 channel mode
-// (the arrays and stuff shouldn't be needed)
-
-#ifdef USE_CFG
-    #define CH_MODE cfg.channel_mode
-#else
-    // current multi-channel mode
-    uint8_t channel_mode = DEFAULT_CHANNEL_MODE;
-    #define CH_MODE channel_mode
-#endif
-
-#if NUM_CHANNEL_MODES > 1
-#define USE_CHANNEL_MODES
-#endif
-
-// one function per channel mode
-typedef void SetLevelFunc(uint8_t level);
-typedef SetLevelFunc * SetLevelFuncPtr;
-// TODO: move to progmem
-SetLevelFuncPtr channel_modes[NUM_CHANNEL_MODES];
-
-#ifdef USE_SET_LEVEL_GRADUALLY
-// the gradual tick mechanism may be different per channel
-typedef bool GradualTickFunc(uint8_t gt);
-typedef GradualTickFunc * GradualTickFuncPtr;
-// TODO: move to progmem
-GradualTickFuncPtr gradual_tick_modes[NUM_CHANNEL_MODES];
-#endif
-
-#ifdef USE_CUSTOM_CHANNEL_3H_MODES
-// different 3H behavior per channel?
-// TODO: move to progmem
-// TODO: move to Anduril, not FSM
-StatePtr channel_3H_modes[NUM_CHANNEL_MODES];
-#endif
-
-//#ifdef USE_CHANNEL_MODE_TOGGLES
-#if NUM_CHANNEL_MODES > 1
-// user can take unwanted modes out of the rotation
-// bitmask
-#ifdef USE_CFG
-    #define channel_mode_enabled(n) ((cfg.channel_modes_enabled >> n) & 1)
-    #define channel_mode_enable(n)  cfg.channel_modes_enabled |= (1 << n)
-    #define channel_mode_disable(n) cfg.channel_modes_enabled &= ((1 << n) ^ 0xff)
-#else
-    uint8_t channel_modes_enabled = CHANNEL_MODES_ENABLED;
-    #define channel_mode_enabled(n) ((channel_modes_enabled >> n) & 1)
-    #define channel_mode_enable(n)  channel_modes_enabled |= (1 << n)
-    #define channel_mode_disable(n) channel_modes_enabled &= ((1 << n) ^ 0xff)
-    #endif
-#endif
-
-#ifdef USE_CHANNEL_MODE_ARGS
-    #ifndef USE_CFG
-    // one byte of extra data per channel mode, like for tint value
-    uint8_t channel_mode_args[NUM_CHANNEL_MODES] = { CHANNEL_MODE_ARGS };
-    #endif
-    // bitmask: which modes respond to their "arg", and which don't?
-    //const uint8_t channel_has_args = CHANNEL_HAS_ARGS;
-    #define channel_has_args(n) ((CHANNEL_HAS_ARGS >> n) & 1)
-#endif
-
-void set_channel_mode(uint8_t mode);
-
 void set_level(uint8_t level);
 //void set_level_smooth(uint8_t level);
-
-#ifdef USE_CALC_2CH_BLEND
-void calc_2ch_blend(
-    PWM_DATATYPE *warm,
-    PWM_DATATYPE *cool,
-    PWM_DATATYPE brightness,
-    PWM_DATATYPE top,
-    uint8_t blend);
-#endif
-
-#ifdef USE_HSV2RGB
-typedef struct RGB_t {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-} RGB_t;
-RGB_t hsv2rgb(uint8_t h, uint8_t s, uint8_t v);
-#endif  // ifdef USE_HSV2RGB
 
 #ifdef USE_SET_LEVEL_GRADUALLY
 // adjust brightness very smoothly
@@ -140,6 +58,7 @@ void gradual_tick();
 
 // auto-detect the data type for PWM tables
 // FIXME: PWM bits and data type should be per PWM table
+// FIXME: this whole thing is a mess and should be removed
 #ifndef PWM1_BITS
     #define PWM1_BITS 8
     #define PWM1_TOP 255
@@ -188,6 +107,7 @@ PROGMEM const PWM3_DATATYPE pwm3_levels[] = { PWM3_LEVELS };
 #endif
 
 // convenience defs for 1 LED with stacked channels
+// FIXME: remove this, use pwm1/2/3 instead
 #ifdef LOW_PWM_LEVELS
 PROGMEM const PWM_DATATYPE low_pwm_levels[]  = { LOW_PWM_LEVELS };
 #endif
@@ -200,6 +120,7 @@ PROGMEM const PWM_DATATYPE high_pwm_levels[] = { HIGH_PWM_LEVELS };
 
 // 2 channel CCT blending ramp
 #ifdef BLEND_PWM_LEVELS
+// FIXME: remove this, use pwm1/2/3 instead
 PROGMEM const PWM_DATATYPE blend_pwm_levels[] = { BLEND_PWM_LEVELS };
 #endif
 

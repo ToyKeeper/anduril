@@ -33,37 +33,31 @@
 
 #define HWDEF_C_FILE hwdef-emisar-2ch.c
 
-#define USE_CHANNEL_MODES
+// allow using aux LEDs as extra channel modes
+#include "chan-rgbaux.h"
+
 // channel modes:
 // * 0. channel 1 only
 // * 1. channel 2 only
 // * 2. both channels, tied together
 // * 3. both channels, manual blend, max 200% power?
 // * 4. both channels, auto blend, reversible
-#define NUM_CHANNEL_MODES 5
-#define CM_CH1      0
-#define CM_CH2      1
-#define CM_BOTH     2
-#define CM_BLEND    3
-#define CM_AUTO     4
+#define NUM_CHANNEL_MODES   (5 + NUM_RGB_AUX_CHANNEL_MODES)
+enum channel_modes_e {
+    CM_CH1 = 0,
+    CM_CH2,
+    CM_BOTH,
+    CM_BLEND,
+    CM_AUTO,
+    RGB_AUX_ENUMS
+};
 
-#define CHANNEL_MODES_ENABLED 0b00011111
-#define CHANNEL_HAS_ARGS      0b00011000
+// right-most bit first, modes are in fedcba9876543210 order
+#define CHANNEL_MODES_ENABLED 0b0000000000011111
 #define USE_CHANNEL_MODE_ARGS
 // _, _, _, 128=middle CCT, 0=warm-to-cool
-#define CHANNEL_MODE_ARGS     0,0,0,128,0
+#define CHANNEL_MODE_ARGS     0,0,0,128,0,RGB_AUX_CM_ARGS
 
-#define SET_LEVEL_MODES      set_level_ch1, \
-                             set_level_ch2, \
-                             set_level_both, \
-                             set_level_blend, \
-                             set_level_auto
-// gradual ticking for thermal regulation
-#define GRADUAL_TICK_MODES   gradual_tick_ch1, \
-                             gradual_tick_ch2, \
-                             gradual_tick_both, \
-                             gradual_tick_blend, \
-                             gradual_tick_auto
 // can use some of the common handlers
 #define USE_CALC_2CH_BLEND
 
@@ -149,19 +143,6 @@
 #define BUTTON_LED_PORT PORTA  // for all "PA" pins
 #define BUTTON_LED_DDR  DDRA   // for all "PA" pins
 #define BUTTON_LED_PUE  PUEA   // for all "PA" pins
-
-
-void set_level_ch1(uint8_t level);
-void set_level_ch2(uint8_t level);
-void set_level_both(uint8_t level);
-void set_level_blend(uint8_t level);
-void set_level_auto(uint8_t level);
-
-bool gradual_tick_ch1(uint8_t gt);
-bool gradual_tick_ch2(uint8_t gt);
-bool gradual_tick_both(uint8_t gt);
-bool gradual_tick_blend(uint8_t gt);
-bool gradual_tick_auto(uint8_t gt);
 
 
 inline void hwdef_setup() {

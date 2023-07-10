@@ -3,6 +3,52 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
+#include "chan-rgbaux.c"
+
+
+void set_level_ch1(uint8_t level);
+void set_level_ch2(uint8_t level);
+void set_level_both(uint8_t level);
+void set_level_blend(uint8_t level);
+void set_level_auto(uint8_t level);
+
+bool gradual_tick_ch1(uint8_t gt);
+bool gradual_tick_ch2(uint8_t gt);
+bool gradual_tick_both(uint8_t gt);
+bool gradual_tick_blend(uint8_t gt);
+bool gradual_tick_auto(uint8_t gt);
+
+
+Channel channels[] = {
+    { // channel 1 only
+        .set_level    = set_level_ch1,
+        .gradual_tick = gradual_tick_ch1,
+        .has_args     = 0
+    },
+    { // channel 2 only
+        .set_level    = set_level_ch2,
+        .gradual_tick = gradual_tick_ch2,
+        .has_args     = 0
+    },
+    { // both channels, tied together (max "200%" power)
+        .set_level    = set_level_both,
+        .gradual_tick = gradual_tick_both,
+        .has_args     = 0
+    },
+    { // both channels, manual blend (max "100%" power)
+        .set_level    = set_level_blend,
+        .gradual_tick = gradual_tick_blend,
+        .has_args     = 1
+    },
+    { // both channels, auto blend
+        .set_level    = set_level_auto,
+        .gradual_tick = gradual_tick_auto,
+        .has_args     = 1
+    },
+    RGB_AUX_CHANNELS
+};
+
+
 // set new values for both channels,
 // handling any possible combination
 // and any before/after state

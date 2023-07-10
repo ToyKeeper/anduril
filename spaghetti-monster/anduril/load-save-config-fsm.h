@@ -48,7 +48,7 @@ typedef struct Config {
     ///// channel modes / color modes
     #if NUM_CHANNEL_MODES > 1
         uint8_t channel_mode;
-        uint8_t channel_modes_enabled;
+        uint16_t channel_modes_enabled;
         #ifdef USE_MANUAL_MEMORY
             uint8_t manual_memory_channel_mode;
         #endif

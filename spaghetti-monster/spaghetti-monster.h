@@ -25,6 +25,7 @@
 #include "fsm-wdt.h"
 #include "fsm-pcint.h"
 #include "fsm-standby.h"
+#include "fsm-channels.h"
 #include "fsm-ramping.h"
 #include "fsm-random.h"
 #ifdef USE_EEPROM
@@ -63,6 +64,7 @@ void loop();
 #include "fsm-wdt.c"
 #include "fsm-pcint.c"
 #include "fsm-standby.c"
+#include "fsm-channels.c"
 #include "fsm-ramping.c"
 #include "fsm-random.c"
 #ifdef USE_EEPROM
