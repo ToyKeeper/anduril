@@ -28,10 +28,13 @@
  *      ADC12   thermal sensor
  */
 
-#define HWDEF_C_FILE hwdef-noctigon-m44.c
-
 #define ATTINY 1634
 #include <avr/io.h>
+
+#define HWDEF_C_FILE hwdef-noctigon-m44.c
+
+// allow using aux LEDs as extra channel modes
+#include "chan-rgbaux.h"
 
 // channel modes:
 // * 0. channel 1 only
@@ -40,32 +43,22 @@
 // * 3. both channels, manual blend
 // * 4? both channels, manual blend, max 200% power
 // * 4. both channels, auto blend, reversible
-#define NUM_CHANNEL_MODES 5
-#define CM_CH1      0
-#define CM_CH2      1
-#define CM_BOTH     2
-#define CM_BLEND    3
-#define CM_AUTO     4
-// TODO: Add RGB aux channel modes
+#define NUM_CHANNEL_MODES   (5 + NUM_RGB_AUX_CHANNEL_MODES)
+enum channel_modes_e {
+    CM_CH1 = 0,
+    CM_CH2,
+    CM_BOTH,
+    CM_BLEND,
+    CM_AUTO,
+    RGB_AUX_ENUMS
+};
 
-#define CHANNEL_MODES_ENABLED 0b00011111
-#define CHANNEL_HAS_ARGS      0b00011000
-// _, _, _, 128=middle CCT, 0=warm-to-cool
-#define CHANNEL_MODE_ARGS     0,0,0,128,0
-
-#define USE_CHANNEL_MODES
+// right-most bit first, modes are in fedcba9876543210 order
+#define CHANNEL_MODES_ENABLED 0b0000000000011111
 #define USE_CHANNEL_MODE_ARGS
-#define SET_LEVEL_MODES      set_level_ch1, \
-                             set_level_ch2, \
-                             set_level_both, \
-                             set_level_blend, \
-                             set_level_auto
-// gradual ticking for thermal regulation
-#define GRADUAL_TICK_MODES   gradual_tick_ch1, \
-                             gradual_tick_ch2, \
-                             gradual_tick_both, \
-                             gradual_tick_blend, \
-                             gradual_tick_auto
+// _, _, _, 128=middle CCT, 0=warm-to-cool
+#define CHANNEL_MODE_ARGS     0,0,0,128,0,RGB_AUX_CM_ARGS
+
 // can use some of the common handlers
 #define USE_CALC_2CH_BLEND
 
@@ -96,6 +89,7 @@
 #define CH2_ENABLE_PORT  PORTA  // control port for PA0
 
 
+// e-switch
 #ifndef SWITCH_PIN
 #define SWITCH_PIN   PA7     // pin 20
 #define SWITCH_PCINT PCINT7  // pin 20 pin change interrupt
@@ -150,57 +144,42 @@
 #define BUTTON_LED_PUE  PUEA   // for all "PA" pins
 
 
-void set_level_ch1(uint8_t level);
-void set_level_ch2(uint8_t level);
-void set_level_both(uint8_t level);
-void set_level_blend(uint8_t level);
-void set_level_auto(uint8_t level);
-
-bool gradual_tick_ch1(uint8_t gt);
-bool gradual_tick_ch2(uint8_t gt);
-bool gradual_tick_both(uint8_t gt);
-bool gradual_tick_blend(uint8_t gt);
-bool gradual_tick_auto(uint8_t gt);
-
-
-// with so many pins, doing this all with #ifdefs gets awkward...
-// ... so just hardcode it in each hwdef file instead
 inline void hwdef_setup() {
-  // enable output ports
-  //DDRC = (1 << CH3_PIN);
-  DDRB = (1 << CH1_PIN)
-       | (1 << CH1_ENABLE_PIN)
-       ;
-  DDRA = (1 << CH2_PIN)
-       | (1 << CH2_ENABLE_PIN)
-       | (1 << AUXLED_R_PIN)
-       | (1 << AUXLED_G_PIN)
-       | (1 << AUXLED_B_PIN)
-       | (1 << BUTTON_LED_PIN)
-       ;
+    // enable output ports
+    //DDRC = (1 << CH3_PIN);
+    DDRB = (1 << CH1_PIN)
+         | (1 << CH1_ENABLE_PIN)
+         ;
+    DDRA = (1 << CH2_PIN)
+         | (1 << CH2_ENABLE_PIN)
+         | (1 << AUXLED_R_PIN)
+         | (1 << AUXLED_G_PIN)
+         | (1 << AUXLED_B_PIN)
+         | (1 << BUTTON_LED_PIN)
+         ;
 
-  // configure PWM
-  // Setup PWM. F_pwm = F_clkio / 2 / N / TOP, where N = prescale factor, TOP = top of counter
-  // pre-scale for timer: N = 1
-  // Linear opamp PWM for both main and 2nd LEDs (10-bit)
-  // WGM1[3:0]: 1,0,1,0: PWM, Phase Correct, adjustable (DS table 12-5)
-  // CS1[2:0]:    0,0,1: clk/1 (No prescaling) (DS table 12-6)
-  // COM1A[1:0]:    1,0: PWM OC1A in the normal direction (DS table 12-4)
-  // COM1B[1:0]:    1,0: PWM OC1B in the normal direction (DS table 12-4)
-  TCCR1A  = (1<<WGM11)  | (0<<WGM10)   // adjustable PWM (TOP=ICR1) (DS table 12-5)
-          | (1<<COM1A1) | (0<<COM1A0)  // PWM 1A in normal direction (DS table 12-4)
-          | (1<<COM1B1) | (0<<COM1B0)  // PWM 1B in normal direction (DS table 12-4)
-          ;
-  TCCR1B  = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
-          | (1<<WGM13)  | (0<<WGM12)  // phase-correct adjustable PWM (DS table 12-5)
-          ;
+    // configure PWM
+    // Setup PWM. F_pwm = F_clkio / 2 / N / TOP, where N = prescale factor, TOP = top of counter
+    // pre-scale for timer: N = 1
+    // Linear opamp PWM for both main and 2nd LEDs (10-bit)
+    // WGM1[3:0]: 1,0,1,0: PWM, Phase Correct, adjustable (DS table 12-5)
+    // CS1[2:0]:    0,0,1: clk/1 (No prescaling) (DS table 12-6)
+    // COM1A[1:0]:    1,0: PWM OC1A in the normal direction (DS table 12-4)
+    // COM1B[1:0]:    1,0: PWM OC1B in the normal direction (DS table 12-4)
+    TCCR1A  = (1<<WGM11)  | (0<<WGM10)   // adjustable PWM (TOP=ICR1) (DS table 12-5)
+            | (1<<COM1A1) | (0<<COM1A0)  // PWM 1A in normal direction (DS table 12-4)
+            | (1<<COM1B1) | (0<<COM1B0)  // PWM 1B in normal direction (DS table 12-4)
+            ;
+    TCCR1B  = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
+            | (1<<WGM13)  | (0<<WGM12)  // phase-correct adjustable PWM (DS table 12-5)
+            ;
 
-  // set PWM resolution
-  PWM_TOP = PWM_TOP_INIT;
+    // set PWM resolution
+    PWM_TOP = PWM_TOP_INIT;
 
-  // set up e-switch
-  SWITCH_PUE = (1 << SWITCH_PIN);  // pull-up for e-switch
-  SWITCH_PCMSK = (1 << SWITCH_PCINT);  // enable pin change interrupt
+    // set up e-switch
+    SWITCH_PUE = (1 << SWITCH_PIN);  // pull-up for e-switch
+    SWITCH_PCMSK = (1 << SWITCH_PCINT);  // enable pin change interrupt
 }
 
 #define LAYOUT_DEFINED

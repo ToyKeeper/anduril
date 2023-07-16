@@ -1,6 +1,7 @@
 // Emisar 2-channel generic w/ tint ramping
 // Copyright (C) 2021-2023 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
+
 #pragma once
 
 #include "chan-rgbaux.c"

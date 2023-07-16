@@ -22,7 +22,8 @@
 
 // channel modes...
 // CM_CH1, CM_CH2, CM_BOTH, CM_BLEND, CM_AUTO
-#define DEFAULT_CHANNEL_MODE           CM_AUTO
+// enable max brightness out of the box
+#define DEFAULT_CHANNEL_MODE           CM_BOTH
 
 //#define FACTORY_RESET_WARN_CHANNEL     CM_CH2
 //#define FACTORY_RESET_SUCCESS_CHANNEL  CM_BOTH
@@ -30,6 +31,9 @@
 #define USE_CONFIG_COLORS
 //#define CONFIG_WAITING_CHANNEL         CM_CH2
 //#define CONFIG_BLINK_CHANNEL           CM_BOTH
+
+// blink numbers on the main LEDs by default (but allow user to change it)
+#define DEFAULT_BLINK_CHANNEL  CM_BLEND
 
 #define POLICE_COLOR_STROBE_CH1        CM_CH1
 #define POLICE_COLOR_STROBE_CH2        CM_CH2

@@ -44,53 +44,22 @@
 // allow using aux LEDs as extra channel modes
 #include "chan-rgbaux.h"
 
-#define USE_CHANNEL_MODES
 // channel modes:
 // * 0. linear + DD FET stacked
-// * 1. aux red
-// * 2. aux yellow
-// * 3. aux green
-// * 4. aux cyan
-// * 5. aux blue
-// * 6. aux purple
-// * 7. aux white
-#define NUM_CHANNEL_MODES  8
+// * 1+. aux RGB
+#define NUM_CHANNEL_MODES   (1 + NUM_RGB_AUX_CHANNEL_MODES)
 enum CHANNEL_MODES {
     CM_MAIN = 0,
-    CM_AUXRED,
-    CM_AUXYEL,
-    CM_AUXGRN,
-    CM_AUXCYN,
-    CM_AUXBLU,
-    CM_AUXPRP,
-    CM_AUXWHT,
+    RGB_AUX_ENUMS
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
-#define CHANNEL_MODES_ENABLED 0b00000001
-#define CHANNEL_HAS_ARGS      0b00000000
+// right-most bit first, modes are in fedcba9876543210 order
+#define CHANNEL_MODES_ENABLED 0b0000000000000001
 // no args
 //#define USE_CHANNEL_MODE_ARGS
 //#define CHANNEL_MODE_ARGS     0,0,0,0,0,0,0,0
-
-#define SET_LEVEL_MODES      set_level_main, \
-                             set_level_auxred, \
-                             set_level_auxyel, \
-                             set_level_auxgrn, \
-                             set_level_auxcyn, \
-                             set_level_auxblu, \
-                             set_level_auxprp, \
-                             set_level_auxwht
-// gradual ticking for thermal regulation
-#define GRADUAL_TICK_MODES   gradual_tick_main, \
-                             gradual_tick_null, \
-                             gradual_tick_null, \
-                             gradual_tick_null, \
-                             gradual_tick_null, \
-                             gradual_tick_null, \
-                             gradual_tick_null, \
-                             gradual_tick_null
 
 
 #define PWM_CHANNELS 2  // old, remove this
@@ -181,10 +150,6 @@ enum CHANNEL_MODES {
 #ifdef USE_INDICATOR_LED_WHILE_RAMPING
 #undef USE_INDICATOR_LED_WHILE_RAMPING
 #endif
-
-void set_level_main(uint8_t level);
-
-bool gradual_tick_main(uint8_t gt);
 
 
 inline void hwdef_setup() {

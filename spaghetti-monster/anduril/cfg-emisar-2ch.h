@@ -22,7 +22,8 @@
 
 // channel modes...
 // CM_CH1, CM_CH2, CM_BOTH, CM_BLEND, CM_AUTO
-#define DEFAULT_CHANNEL_MODE           CM_BLEND
+// enable max brightness out of the box
+#define DEFAULT_CHANNEL_MODE           CM_BOTH
 
 //#define FACTORY_RESET_WARN_CHANNEL     CM_CH2
 //#define FACTORY_RESET_SUCCESS_CHANNEL  CM_BOTH
@@ -97,6 +98,7 @@
 
 #define THERM_CAL_OFFSET 5
 
+// don't blink while ramping
 #ifdef BLINK_AT_RAMP_MIDDLE
 #undef BLINK_AT_RAMP_MIDDLE
 #endif
