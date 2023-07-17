@@ -13,10 +13,10 @@
  * Voltage:    VCC
  */
 
-#define HWDEF_C_FILE hwdef-Sofirn_LT1S-Pro.c
-
 #define ATTINY 1616
 #include <avr/io.h>
+
+#define HWDEF_C_FILE hwdef-Sofirn_LT1S-Pro.c
 
 // channel modes:
 // * 0. warm/cool white blend
@@ -25,36 +25,23 @@
 // * 3. red only
 // * 4. red + white blend
 #define NUM_CHANNEL_MODES 5
-#define CM_WHITE      0
-#define CM_AUTO2      1
-#define CM_AUTO3      2
-#define CM_RED        3
-#define CM_WHITE_RED  4
+enum channel_modes_e {
+    CM_WHITE = 0,
+    CM_AUTO2,
+    CM_AUTO3,
+    CM_RED,
+    CM_WHITE_RED,
+};
 
 #define CHANNEL_MODES_ENABLED 0b00011111
-#define CHANNEL_HAS_ARGS      0b00010001
+#define USE_CHANNEL_MODE_ARGS
 // 128=middle CCT, _, _, _, 255=100% red
 #define CHANNEL_MODE_ARGS     128,0,0,0,255
 
-// TODO: blend mode should enable this automatically?
-#define USE_CHANNEL_MODES
-// TODO: blend mode should enable this automatically?
-#define USE_CHANNEL_MODE_ARGS
-// TODO: or maybe if args are defined, the USE_ should be auto-set?
-#define SET_LEVEL_MODES      set_level_white_blend, \
-                             set_level_auto_2ch_blend, \
-                             set_level_auto_3ch_blend, \
-                             set_level_red, \
-                             set_level_red_white_blend
-// gradual ticking for thermal regulation
-#define GRADUAL_TICK_MODES   gradual_tick_white_blend, \
-                             gradual_tick_auto_2ch_blend, \
-                             gradual_tick_auto_3ch_blend, \
-                             gradual_tick_red, \
-                             gradual_tick_red_white_blend
 // can use some of the common handlers
 #define USE_CALC_2CH_BLEND
 //#define USE_CALC_AUTO_3CH_BLEND
+
 
 // TODO: remove this as soon as it's not needed
 #define PWM_CHANNELS 1
@@ -107,19 +94,6 @@
 // the button is visible while main LEDs are on
 #define USE_INDICATOR_LED_WHILE_RAMPING
 
-
-// custom channel modes
-void set_level_red(uint8_t level);
-void set_level_white_blend(uint8_t level);
-void set_level_auto_2ch_blend(uint8_t level);
-void set_level_auto_3ch_blend(uint8_t level);
-void set_level_red_white_blend(uint8_t level);
-
-bool gradual_tick_red(uint8_t gt);
-bool gradual_tick_white_blend(uint8_t gt);
-bool gradual_tick_auto_2ch_blend(uint8_t gt);
-bool gradual_tick_auto_3ch_blend(uint8_t gt);
-bool gradual_tick_red_white_blend(uint8_t gt);
 
 
 inline void hwdef_setup() {
