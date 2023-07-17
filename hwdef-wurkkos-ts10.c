@@ -6,6 +6,22 @@
 
 #include "chan-aux.c"
 
+void set_level_main(uint8_t level);
+bool gradual_tick_main(uint8_t gt);
+
+
+Channel channels[] = {
+    { // main LEDs
+        .set_level    = set_level_main,
+        .gradual_tick = gradual_tick_main
+    },
+    { // aux LEDs
+        .set_level    = set_level_aux,
+        .gradual_tick = gradual_tick_null
+    }
+};
+
+
 // single set of LEDs with 2 stacked power channels, DDFET+1 or DDFET+linear
 void set_level_main(uint8_t level) {
     if (level == 0) {
