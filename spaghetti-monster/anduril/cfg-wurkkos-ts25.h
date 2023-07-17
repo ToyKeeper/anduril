@@ -5,6 +5,7 @@
 
 #define MODEL_NUMBER "0715"
 #include "hwdef-wurkkos-ts25.h"
+#include "wurkkos-cfg.h"
 // ATTINY: 1616
 
 // this light has three aux LED channels: R, G, B
@@ -61,9 +62,6 @@
 #define SIMPLE_UI_CEIL   125
 #define SIMPLE_UI_STEPS  5
 
-// enable 2 click turbo (Anduril 1 style)
-#define DEFAULT_2C_STYLE 1
-
 // stop panicking at ~50% power
 #define THERM_FASTER_LEVEL 120  // throttle back faster when high
 
@@ -82,21 +80,8 @@
 #define POLICE_COLOR_STROBE_CH1        CM_AUXRED
 #define POLICE_COLOR_STROBE_CH2        CM_AUXBLU
 
-// enable SOS in the blinkies group
-#define USE_SOS_MODE
-#define USE_SOS_MODE_IN_BLINKY_GROUP
-
-// Allow 3C in Simple UI for switching between smooth and stepped ramping
-#define USE_SIMPLE_UI_RAMPING_TOGGLE
-
-// allow Aux Config and Strobe Modes in Simple UI
-#define USE_EXTENDED_SIMPLE_UI
-
 // don't blink mid-ramp
 #ifdef BLINK_AT_RAMP_MIDDLE
 #undef BLINK_AT_RAMP_MIDDLE
 #endif
-
-// enable factory reset on 13H without loosening tailcap
-#define USE_SOFT_FACTORY_RESET
 

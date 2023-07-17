@@ -6,6 +6,7 @@
 // same as  the  BLF Q8 T1616, mostly (added Dynamic PWM)
 #define MODEL_NUMBER "0714"
 #include "hwdef-wurkkos-ts10.h"
+#include "wurkkos-cfg.h"
 // ATTINY: 1616
 
 // uses forward-facing aux LEDs
@@ -65,9 +66,6 @@
 #define SIMPLE_UI_CEIL   130
 #define SIMPLE_UI_STEPS  5
 
-// enable 2 click turbo (Anduril 1 style)
-#define DEFAULT_2C_STYLE 1
-
 // stop panicking at ~50% power
 #define THERM_FASTER_LEVEL 120  // throttle back faster when high
 
@@ -77,16 +75,6 @@
 // blink numbers on the aux LEDs by default
 #define DEFAULT_BLINK_CHANNEL  CM_AUX
 
-// enable SOS in the blinkies group
-#define USE_SOS_MODE
-#define USE_SOS_MODE_IN_BLINKY_GROUP
-
-// Allow 3C in Simple UI for switching between smooth and stepped ramping
-#define USE_SIMPLE_UI_RAMPING_TOGGLE
-
-// allow Aux Config and Strobe Modes in Simple UI
-#define USE_EXTENDED_SIMPLE_UI
-
 // the default of 26 looks a bit rough, so increase it to make it smoother
 #define CANDLE_AMPLITUDE 33
 
@@ -95,6 +83,6 @@
 #undef BLINK_AT_RAMP_MIDDLE
 #endif
 
-// enable factory reset on 13H without loosening tailcap
+// enable factory reset on 13H without loosening tailcap (required)
 #define USE_SOFT_FACTORY_RESET
 
