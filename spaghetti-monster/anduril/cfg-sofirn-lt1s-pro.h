@@ -4,7 +4,7 @@
 #pragma once
 
 #define MODEL_NUMBER "0623"
-#include "hwdef-Sofirn_LT1S-Pro.h"
+#include "hwdef-sofirn-lt1s-pro.h"
 // ATTINY: 1616
 
 // off mode: low (1)
