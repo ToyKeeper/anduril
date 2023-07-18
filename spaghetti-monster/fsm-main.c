@@ -26,48 +26,52 @@ ISR(TIMER1_COMPA_vect) {
 // FIXME: hw_setup() shouldn't be here ... move it entirely to hwdef files
 #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
 static inline void hw_setup() {
-    // configure PWM channels
-    #if PWM_CHANNELS >= 1
-    DDRB |= (1 << PWM1_PIN);
-    TCCR0B = 0x01; // pre-scaler for timer (1 => 1, 2 => 8, 3 => 64...)
-    TCCR0A = PHASE;
-    #if (PWM1_PIN == PB4) // Second PWM counter is ... weird
-    TCCR1 = _BV (CS10);
-    GTCCR = _BV (COM1B1) | _BV (PWM1B);
-    OCR1C = 255;  // Set ceiling value to maximum
-    #endif
-    #endif
-    // tint ramping needs second channel enabled,
-    // despite PWM_CHANNELS being only 1
-    #if (PWM_CHANNELS >= 2) || defined(USE_TINT_RAMPING)
-    DDRB |= (1 << PWM2_PIN);
-    #if (PWM2_PIN == PB4) // Second PWM counter is ... weird
-    TCCR1 = _BV (CS10);
-    GTCCR = _BV (COM1B1) | _BV (PWM1B);
-    OCR1C = 255;  // Set ceiling value to maximum
-    #endif
-    #endif
-    #if PWM_CHANNELS >= 3
-    DDRB |= (1 << PWM3_PIN);
-    #if (PWM3_PIN == PB4) // Second PWM counter is ... weird
-    TCCR1 = _BV (CS10);
-    GTCCR = _BV (COM1B1) | _BV (PWM1B);
-    OCR1C = 255;  // Set ceiling value to maximum
-    #endif
-    #endif
-    #if PWM_CHANNELS >= 4
-    // 4th PWM channel is ... not actually supported in hardware  :(
-    DDRB |= (1 << PWM4_PIN);
-    //OCR1C = 255;  // Set ceiling value to maximum
-    TCCR1 = 1<<CTC1 | 1<<PWM1A | 3<<COM1A0 | 2<<CS10;
-    GTCCR = (2<<COM1B0) | (1<<PWM1B);
-    // set up an interrupt to control PWM4 pin
-    TIMSK |= (1<<OCIE1A) | (1<<TOIE1);
-    #endif
+    #if !defined(USE_GENERIC_HWDEF_SETUP)
+        hwdef_setup();
+    #else
+        // configure PWM channels
+        #if PWM_CHANNELS >= 1
+            DDRB |= (1 << PWM1_PIN);
+            TCCR0B = 0x01; // pre-scaler for timer (1 => 1, 2 => 8, 3 => 64...)
+            TCCR0A = PHASE;
+            #if (PWM1_PIN == PB4) // Second PWM counter is ... weird
+                TCCR1 = _BV (CS10);
+                GTCCR = _BV (COM1B1) | _BV (PWM1B);
+                OCR1C = 255;  // Set ceiling value to maximum
+            #endif
+        #endif
+        // tint ramping needs second channel enabled,
+        // despite PWM_CHANNELS being only 1
+        #if (PWM_CHANNELS >= 2) || defined(USE_TINT_RAMPING)
+            DDRB |= (1 << PWM2_PIN);
+            #if (PWM2_PIN == PB4) // Second PWM counter is ... weird
+                TCCR1 = _BV (CS10);
+                GTCCR = _BV (COM1B1) | _BV (PWM1B);
+                OCR1C = 255;  // Set ceiling value to maximum
+            #endif
+        #endif
+        #if PWM_CHANNELS >= 3
+            DDRB |= (1 << PWM3_PIN);
+            #if (PWM3_PIN == PB4) // Second PWM counter is ... weird
+                TCCR1 = _BV (CS10);
+                GTCCR = _BV (COM1B1) | _BV (PWM1B);
+                OCR1C = 255;  // Set ceiling value to maximum
+            #endif
+        #endif
+        #if PWM_CHANNELS >= 4
+            // 4th PWM channel is ... not actually supported in hardware  :(
+            DDRB |= (1 << PWM4_PIN);
+            //OCR1C = 255;  // Set ceiling value to maximum
+            TCCR1 = 1<<CTC1 | 1<<PWM1A | 3<<COM1A0 | 2<<CS10;
+            GTCCR = (2<<COM1B0) | (1<<PWM1B);
+            // set up an interrupt to control PWM4 pin
+            TIMSK |= (1<<OCIE1A) | (1<<TOIE1);
+        #endif
 
-    // configure e-switch
-    PORTB = (1 << SWITCH_PIN);  // e-switch is the only input
-    PCMSK = (1 << SWITCH_PIN);  // pin change interrupt uses this pin
+        // configure e-switch
+        PORTB = (1 << SWITCH_PIN);  // e-switch is the only input
+        PCMSK = (1 << SWITCH_PIN);  // pin change interrupt uses this pin
+    #endif  // ifdef USE_GENERIC_HWDEF_SETUP
 }
 #elif (ATTINY == 1634) || defined(AVRXMEGA3)  // ATTINY816, 817, etc
 static inline void hw_setup() {

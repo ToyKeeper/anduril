@@ -1,10 +1,15 @@
-// Emisar D4v2 PWM helper functions
+// Emisar D4 PWM helper functions
 // Copyright (C) 2017-2023 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
-#include "chan-rgbaux.c"
+//#ifdef AUXLED_PIN
+#if 0
+#include "chan-aux.c"
+#else
+#define AUX_CHANNELS
+#endif
 
 void set_level_main(uint8_t level);
 bool gradual_tick_main(uint8_t gt);
@@ -15,33 +20,26 @@ Channel channels[] = {
         .set_level    = set_level_main,
         .gradual_tick = gradual_tick_main
     },
-    RGB_AUX_CHANNELS
+    AUX_CHANNELS
 };
 
+
+// TODO: implement delta-sigma modulation for better low modes
 
 // single set of LEDs with 2 stacked power channels, DDFET+1 or DDFET+linear
 void set_level_main(uint8_t level) {
     if (level == 0) {
         CH1_PWM = 0;
         CH2_PWM = 0;
-        PWM_CNT = 0;  // reset phase
         return;
     }
 
     level --;  // PWM array index = level - 1
     PWM_DATATYPE ch1_pwm = PWM_GET(pwm1_levels, level);
     PWM_DATATYPE ch2_pwm = PWM_GET(pwm2_levels, level);
-    // pulse frequency modulation, a.k.a. dynamic PWM
-    uint16_t top = PWM_GET16(pwm_tops, level);
 
     CH1_PWM = ch1_pwm;
     CH2_PWM = ch2_pwm;
-    // wait to sync the counter and avoid flashes
-    while(actual_level && (PWM_CNT > (top - 32))) {}
-    PWM_TOP = top;
-    // force reset phase when turning on from zero
-    // (because otherwise the initial response is inconsistent)
-    if (! actual_level) PWM_CNT = 0;
 }
 
 bool gradual_tick_main(uint8_t gt) {

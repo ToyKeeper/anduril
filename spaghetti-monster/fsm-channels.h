@@ -14,10 +14,18 @@ typedef SetLevelFunc * SetLevelFuncPtr;
 typedef bool GradualTickFunc(uint8_t gt);
 typedef GradualTickFunc * GradualTickFuncPtr;
 
+// TODO: implement custom 3H handlers
+typedef void ChannelArgFunc();
+typedef ChannelArgFunc * ChannelArgFuncPtr;
+
 typedef struct Channel {
     SetLevelFuncPtr set_level;
     #ifdef USE_SET_LEVEL_GRADUALLY
         GradualTickFuncPtr gradual_tick;
+    #endif
+    #ifdef USE_CUSTOM_3H_HANDLERS
+        // TODO: implement custom 3H handlers
+        ChannelArgFuncPtr ramp_channel_arg;
     #endif
     #ifdef USE_CHANNEL_MODE_ARGS
         bool has_args;
@@ -30,7 +38,7 @@ Channel channels[];  // values are defined in the hwdef-*.c
 // TODO: size-optimize the case with only 1 channel mode?
 // (the arrays and stuff shouldn't be needed)
 
-#ifdef USE_CFG
+#if defined(USE_CFG) && (NUM_CHANNEL_MODES > 1)
     #define CH_MODE cfg.channel_mode
 #else
     // current multi-channel mode
