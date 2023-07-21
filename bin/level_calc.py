@@ -19,6 +19,7 @@ def main(args):
     cli_answers = []
     global max_pwm, max_pwms, dyn_pwm
     pwm_arg = str(max_pwm)
+    clock_arg = '8:16:1'  # quarter/half speed levels and rise time
 
     i = 0
     while i < len(args):
@@ -26,6 +27,9 @@ def main(args):
         if a in ('--pwm',):
             i += 1
             pwm_arg = args[i]
+        elif a in ('--clock',):
+            i += 1
+            clock_arg = args[i]
         else:
             #print('unrecognized option: "%s"' % (a,))
             cli_answers.append(a)
@@ -82,6 +86,13 @@ def main(args):
             val = int(pwm_arg)
             max_pwm = val
             max_pwms = [val] * answers.num_levels
+
+    if clock_arg:
+        parts = clock_arg.split(':')
+        answers.quarterspeed_level, answers.halfspeed_level = [int(x) for x in parts[:2]]
+        answers.rise_time_base = float(parts[2])
+    else:
+        answers.quarterspeed_level, answers.halfspeed_level, answers.rise_time_base = 0,0,0
 
     global ramp_shape
     ramp_shape = answers.ramp_shape
@@ -148,6 +159,7 @@ def multi_pwm(answers, channels):
         channel.modes = []
         for i in range(answers.num_levels):
             goal_vis, goal_lm = goals[i]
+            rise_time = calc_rise_time(i, answers)
             # This channel already is maxed out
             if goal_lm >= (channel.lm_max + channel.prev_lm):
                 # This shouldn't happen, the FET is assumed to be the highest channel
@@ -176,19 +188,20 @@ def multi_pwm(answers, channels):
                 lm_needed = goal_lm - channel.prev_lm - channel.lm_min
 
                 pwm_top = max_pwms[i]
-                pwm_avail = pwm_top - channel.pwm_min
+                pwm_avail = pwm_top - channel.pwm_min - rise_time
                 pwm_needed = pwm_avail * lm_needed / lm_avail
+                #pwm_needed = min(pwm_needed, pwm_avail)
                 if dyn_pwm and (pwm_top > max_pwm):
                     this_step = max(1, math.floor(pwm_needed))
                     next_step = this_step + 1
                     fpart = pwm_needed - math.floor(pwm_needed)
                     correction = (next_step - fpart) / next_step
                     pwm_top = int(pwm_avail * correction) + channel.pwm_min
-                    pwm_avail = pwm_top - channel.pwm_min
+                    pwm_avail = pwm_top - channel.pwm_min - rise_time
                     pwm_needed = pwm_avail * lm_needed / lm_avail
                     max_pwms[i] = pwm_top
                 # save the result
-                pwm = max(0, pwm_needed + channel.pwm_min)
+                pwm = max(0, pwm_needed + channel.pwm_min + rise_time)
                 channel.modes.append(pwm)
                 # how close did we get?
                 #ptop = int(round(pwm - channel.pwm_min))
@@ -206,13 +219,18 @@ def multi_pwm(answers, channels):
     for i in range(answers.num_levels):
         goal_vis, goal_lm = goals[i]
         pwms = []
+        rise_time = calc_rise_time(i, answers)
         for c, channel in enumerate(channels):
+            #top = channel.modes[i] - channel.pwm_min - rise_time
             top = channel.modes[i] - channel.pwm_min
             if top < 0: top = 0
-            bot = max_pwms[i] - channel.pwm_min
-            ratio = 100 * (int(round(top)) / float(bot))
-            top, bot = channel.modes[i], max_pwms[i]
-            pwms.append('%.2f/%i (%.3f%%)' % (top, bot, ratio))
+            #bot = max_pwms[i] - channel.pwm_min - rise_time
+            bot = max_pwms[i]
+            #ratio = 100 * (int(round(top)) / float(bot))
+            topf, bot = channel.modes[i], max_pwms[i]
+            top = int(round(topf))
+            ratio = 100 * top / float(bot)
+            pwms.append('(%.2f) %i/%i (%.3f%%)' % (topf, top, bot, ratio))
             if (ratio < prev_ratios[c]) and (ratio > 0):
                 pwms.append('WARN')
             prev_ratios[c] = ratio
@@ -238,6 +256,19 @@ def multi_pwm(answers, channels):
                 #and (channel.modes[i] >= channel.modes[i-1]) \
             i += 1
         print('Ch%i max: %i (%.2f/%s)' % (cnum, i, channel.modes[i-1], max_pwms[i]))
+
+
+def calc_rise_time(i, answers):
+    base = answers.rise_time_base
+
+    if (i+1) < answers.quarterspeed_level:
+        rise_time = base / 4.0
+    elif (i+1) < answers.halfspeed_level:
+        rise_time = base / 2.0
+    else:
+        ratio = 1.0 - math.sqrt((i - base) / (answers.num_levels - base))
+        rise_time = answers.rise_time_base * ratio
+    return rise_time
 
 
 def get_value(text, default, args):
