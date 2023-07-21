@@ -20,7 +20,7 @@
 #define VOLTAGE_FUDGE_FACTOR 7  // add 0.35V
 #endif
 
-#include "hwdef-Emisar_D4S.h"
+#include "hwdef-emisar-d4s.h"
 #undef FSM_EMISAR_D4S_DRIVER
 #undef FSM_EMISAR_D4_DRIVER
 
