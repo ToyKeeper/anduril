@@ -6,6 +6,19 @@
 
 #include "chan-rgbaux.c"
 
+void set_level_main(uint8_t level);
+bool gradual_tick_main(uint8_t gt);
+
+
+Channel channels[] = {
+    { // main LEDs
+        .set_level    = set_level_main,
+        .gradual_tick = gradual_tick_main
+    },
+    RGB_AUX_CHANNELS
+};
+
+
 // single set of LEDs with 3 stacked power channels, DDFET+3+1
 void set_level_main(uint8_t level) {
     if (level == 0) {

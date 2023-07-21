@@ -38,35 +38,22 @@
 // allow using aux LEDs as extra channel modes
 #include "chan-rgbaux.h"
 
-#define USE_CHANNEL_MODES
 // channel modes:
 // * 0. FET+3+1 stacked
-// * 1. aux red
-// * 2. aux green
-// * 3. aux blue
-#define NUM_CHANNEL_MODES  4
-#define CM_MAIN            0
-#define CM_AUXRED          1
-#define CM_AUXGRN          2
-#define CM_AUXBLU          3
+// * 1+. aux RGB
+#define NUM_CHANNEL_MODES   (1 + NUM_RGB_AUX_CHANNEL_MODES)
+enum CHANNEL_MODES {
+    CM_MAIN = 0,
+    RGB_AUX_ENUMS
+};
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
-#define CHANNEL_MODES_ENABLED 0b00000001
-#define CHANNEL_HAS_ARGS      0b00000000
+// right-most bit first, modes are in fedcba9876543210 order
+#define CHANNEL_MODES_ENABLED 0b0000000000000001
 // no args
 //#define USE_CHANNEL_MODE_ARGS
-//#define CHANNEL_MODE_ARGS     0,0,0,0
-
-#define SET_LEVEL_MODES      set_level_main, \
-                             set_level_auxred, \
-                             set_level_auxgrn, \
-                             set_level_auxblu
-// gradual ticking for thermal regulation
-#define GRADUAL_TICK_MODES   gradual_tick_main, \
-                             gradual_tick_null, \
-                             gradual_tick_null, \
-                             gradual_tick_null
+//#define CHANNEL_MODE_ARGS     0,0,0,0,0,0,0,0
 
 
 #define PWM_CHANNELS 3  // old, remove this
@@ -134,10 +121,6 @@
 #ifdef USE_INDICATOR_LED_WHILE_RAMPING
 #undef USE_INDICATOR_LED_WHILE_RAMPING
 #endif
-
-void set_level_main(uint8_t level);
-
-bool gradual_tick_main(uint8_t gt);
 
 
 inline void hwdef_setup() {
