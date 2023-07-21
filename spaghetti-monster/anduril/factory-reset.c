@@ -33,6 +33,11 @@ void factory_reset() {
     }
     // explode, if button pressed long enough
     if (reset) {
+        #if defined(FACTORY_RESET_WARN_CHANNEL) && defined(DEFAULT_CHANNEL_MODE)
+        // return to default channel before saving
+        set_channel_mode(DEFAULT_CHANNEL_MODE);
+        #endif
+
         // auto-calibrate temperature
         // AVR 1-Series has factory calibrated thermal sensor, always remove the offset on reset
         #if defined(USE_THERMAL_REGULATION) && defined(AVRXMEGA3)
@@ -41,11 +46,6 @@ void factory_reset() {
         #elif defined(USE_THERMAL_REGULATION) && defined(USE_THERM_AUTOCALIBRATE)
         // assume current temperature is 21 C
         thermal_config_save(1, 21);
-        #endif
-
-        #if defined(FACTORY_RESET_WARN_CHANNEL) && defined(DEFAULT_CHANNEL_MODE) && (FACTORY_RESET_WARN_CHANNEL != DEFAULT_CHANNEL_MODE)
-        // return to default channel before saving
-        set_channel_mode(DEFAULT_CHANNEL_MODE);
         #endif
 
         // save all settings to eeprom
