@@ -72,7 +72,7 @@ enum CHANNEL_MODES {
 #define PWM2_DATATYPE uint8_t   // DD FET ramp
 
 // PWM parameters of both channels are tied together because they share a counter
-#define PWM_TOP       ICR1   // holds the TOP value for for variable-resolution PWM
+#define PWM_TOP       ICR1   // holds the TOP value for variable-resolution PWM
 #define PWM_TOP_INIT  255    // highest value used in top half of ramp
 #define PWM_CNT       TCNT1  // for dynamic PWM, reset phase
 
