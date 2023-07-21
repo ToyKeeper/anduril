@@ -4,7 +4,7 @@
 #pragma once
 
 // same as a D4, basically
-#include "hwdef-Emisar_D4.h"
+#include "hwdef-emisar-d4.h"
 
 // ... except the D4S has aux LEDs under the optic
 #ifndef AUXLED_PIN
