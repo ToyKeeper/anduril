@@ -51,8 +51,6 @@ enum CHANNEL_MODES {
 
 #define PWM_TOP_INIT  255    // highest value used in top half of ramp
 
-//#define AUXLED_PIN   PB4    // pin 3
-
 // 1x7135 channel
 #ifndef CH1_PIN
 #define CH1_PIN  PB0        // pin 5, 1x7135 PWM
@@ -64,6 +62,8 @@ enum CHANNEL_MODES {
 #define CH2_PIN  PB1        // pin 6, FET PWM
 #define CH2_PWM  OCR0B      // OCR0B is the output compare register for PB1
 #endif
+
+//#define AUXLED_PIN   PB4    // pin 3
 
 // e-switch
 #ifndef SWITCH_PIN
