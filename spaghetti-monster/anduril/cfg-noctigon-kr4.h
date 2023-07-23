@@ -33,7 +33,6 @@
 
 #define MAX_1x7135 130
 #define DEFAULT_LEVEL 50
-//#define MIN_THERM_STEPDOWN 66  // should be above highest dyn_pwm level
 #define HALFSPEED_LEVEL 12
 #define QUARTERSPEED_LEVEL 4
 
@@ -63,8 +62,8 @@
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
 
-// there is usually no lighted button,
-// so blink numbers on the main LEDs by default (but allow user to change it)
+// there is usually no lighted button, so
+// blink numbers on the main LEDs by default (but allow user to change it)
 #define DEFAULT_BLINK_CHANNEL  CM_MAIN
 
 // slow down party strobe; this driver can't pulse for 1ms or less

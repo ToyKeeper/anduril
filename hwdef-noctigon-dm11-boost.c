@@ -6,18 +6,31 @@
 
 #include "chan-rgbaux.c"
 
+void set_level_main(uint8_t level);
+bool gradual_tick_main(uint8_t gt);
+
+
+Channel channels[] = {
+    { // channel 1 only
+        .set_level    = set_level_main,
+        .gradual_tick = gradual_tick_main
+    },
+    RGB_AUX_CHANNELS
+};
+
+
 // single set of LEDs with single power channel, boost
 void set_level_main(uint8_t level) {
     if (level == 0) {
         CH1_PWM = 0;
         PWM_CNT = 0;  // reset phase
-        LED_ENABLE_PORT  &= ~(1 << LED_ENABLE_PIN );  // disable opamp
-        LED_ENABLE_PORT2 &= ~(1 << LED_ENABLE_PIN2);  // disable PMIC
+        CH1_ENABLE_PORT  &= ~(1 << CH1_ENABLE_PIN );  // disable opamp
+        CH1_ENABLE_PORT2 &= ~(1 << CH1_ENABLE_PIN2);  // disable PMIC
         return;
     }
 
-    LED_ENABLE_PORT  |= (1 << LED_ENABLE_PIN );  // enable opamp
-    LED_ENABLE_PORT2 |= (1 << LED_ENABLE_PIN2);  // enable PMIC
+    CH1_ENABLE_PORT  |= (1 << CH1_ENABLE_PIN );  // enable opamp
+    CH1_ENABLE_PORT2 |= (1 << CH1_ENABLE_PIN2);  // enable PMIC
 
     level --;  // PWM array index = level - 1
     PWM_DATATYPE ch1_pwm = PWM_GET(pwm1_levels, level);

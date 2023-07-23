@@ -1,8 +1,10 @@
-// Noctigon DM11-noFET config options for Anduril
+// Noctigon DM11 (no DD FET) config options for Anduril
 // Copyright (C) 2021-2023 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
+// same support functions as a KR4
+#define HWDEF_C_FILE hwdef-noctigon-kr4-nofet.c
 #include "cfg-noctigon-dm11.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0272"
@@ -11,6 +13,7 @@
 // turn off the DD FET
 #undef PWM_CHANNELS
 #define PWM_CHANNELS 1
+#define RAMP_SIZE 150
 
 // level_calc.py 5.01 1 149 7135 1 0.3 1740 --pwm dyn:78:16384:255
 #undef PWM1_LEVELS

@@ -5,11 +5,11 @@
 
 /*
  * Pin / Name / Function
- *   1    PA6   FET PWM (direct drive) (PWM1B)
+ *   1    PA6   FET PWM (direct drive) (PWM1B) (on some models)
  *   2    PA5   R: red aux LED (PWM0B)
  *   3    PA4   G: green aux LED
  *   4    PA3   B: blue aux LED
- *   5    PA2   button LED (D4V2.5 only)
+ *   5    PA2   L: button LED (on some models)
  *   6    PA1   (none)
  *   7    PA0   (none)
  *   8    GND   GND
@@ -29,6 +29,7 @@
  *
  * Main LED power uses one pin to turn the Opamp on/off,
  * and one pin to control Opamp power level.
+ * Linear brightness control uses the power level pin, with dynamic PWM.
  * The on/off pin is only used to turn the main LED on and off,
  * not to change brightness.
  * Some models also have a direct-drive FET for turbo.
