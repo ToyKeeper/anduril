@@ -43,8 +43,8 @@
 // channel modes:
 // * 0. channel 1 only (linear + DD FET)
 // * 1. channel 2 only (linear)
-// * 2. both channels, tied together (linear tied + DD FET at top of ramp)
-// * 3. both channels, manual blend, max 200% power + DD FET at top of ramp
+// * 2. both channels, tied together, max "200%" power + DD FET at top of ramp
+// * 3. both channels, manual blend, max "100%" power + "200%" and DD FET at top of ramp
 // * 4. both channels, auto blend, reversible (linear only)
 #define NUM_CHANNEL_MODES   (5 + NUM_RGB_AUX_CHANNEL_MODES)
 enum channel_modes_e {

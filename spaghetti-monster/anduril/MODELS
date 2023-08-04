@@ -34,8 +34,8 @@ Model	Name                          	MCU
 0261	noctigon-k9.3                 	attiny1634
 0262	noctigon-k9.3-nofet           	attiny1634
 0263	noctigon-k9.3-219             	attiny1634
-0265	noctigon-k9.3-tintramp-nofet  	attiny1634	(old, use 0261)
-0266	noctigon-k9.3-tintramp-fet    	attiny1634	(old, use 0262)
+0265	noctigon-k9.3-tintramp-nofet  	attiny1634	(old, use 0262)
+0266	noctigon-k9.3-tintramp-fet    	attiny1634	(old, use 0261)
 0267	noctigon-k9.3-tintramp-219    	attiny1634	(old, use 0263)
 0271	noctigon-dm11                 	attiny1634
 0272	noctigon-dm11-nofet           	attiny1634

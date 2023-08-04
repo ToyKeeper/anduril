@@ -42,8 +42,8 @@
 // channel modes:
 // * 0. channel 1 only
 // * 1. channel 2 only
-// * 2. both channels, tied together
-// * 3. both channels, manual blend, max 200% power?
+// * 2. both channels, tied together, max "200%" power
+// * 3. both channels, manual blend, max "100%" power
 // * 4. both channels, auto blend, reversible
 #define NUM_CHANNEL_MODES   (5 + NUM_RGB_AUX_CHANNEL_MODES)
 enum channel_modes_e {
