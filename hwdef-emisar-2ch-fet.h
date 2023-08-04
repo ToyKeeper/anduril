@@ -1,4 +1,4 @@
-// Emisar 2-channel generic w/ tint ramping
+// Emisar 2-channel generic w/ tint ramping + DD FET
 // Copyright (C) 2021-2023 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
@@ -19,7 +19,7 @@
  *  12    PC3   RESET
  *  13    PC2   (none)
  *  14    PC1   SCK
- *  15    PC0   [unused: ch1 LED PWM (FET) (PWM0A, 8-bit)]
+ *  15    PC0   ch1 LED PWM (FET) (PWM0A, 8-bit)
  *  16    PB3   ch1 LED PWM (linear) (PWM1A)
  *  17    PB2   MISO
  *  18    PB1   MOSI / battery voltage (ADC6)
@@ -29,22 +29,23 @@
  *
  * Both sets of LEDs use one pin to turn the Opamp on/off,
  * and one pin to control the Opamp power level.
+ * The first channel also has a direct-drive FET for turbo.
  */
 
 #define ATTINY 1634
 #include <avr/io.h>
 
-#define HWDEF_C_FILE hwdef-emisar-2ch.c
+#define HWDEF_C_FILE hwdef-emisar-2ch-fet.c
 
 // allow using aux LEDs as extra channel modes
 #include "chan-rgbaux.h"
 
 // channel modes:
-// * 0. channel 1 only
-// * 1. channel 2 only
-// * 2. both channels, tied together
-// * 3. both channels, manual blend, max 200% power?
-// * 4. both channels, auto blend, reversible
+// * 0. channel 1 only (linear + DD FET)
+// * 1. channel 2 only (linear)
+// * 2. both channels, tied together (linear tied + DD FET at top of ramp)
+// * 3. both channels, manual blend, max 200% power + DD FET at top of ramp
+// * 4. both channels, auto blend, reversible (linear only)
 #define NUM_CHANNEL_MODES   (5 + NUM_RGB_AUX_CHANNEL_MODES)
 enum channel_modes_e {
     CM_CH1 = 0,
@@ -65,19 +66,21 @@ enum channel_modes_e {
 #define USE_CALC_2CH_BLEND
 
 
-#define PWM_CHANNELS 2  // old, remove this
+#define PWM_CHANNELS 3  // old, remove this
 
 #define PWM_BITS      16     // 0 to 16383 at variable Hz, not 0 to 255 at 16 kHz
-#define PWM_GET       PWM_GET16
+#define PWM_GET       PWM_GET8
 #define PWM_DATATYPE  uint16_t
-#define PWM_DATATYPE2 uint32_t  // only needs 32-bit if ramp values go over 255
-#define PWM1_DATATYPE uint16_t  // regular ramp table
-#define PWM2_DATATYPE uint16_t  // max "200% power" ramp table
-//#define PWM3_DATATYPE uint8_t   // DD FET ramp table (8-bit only)
+#define PWM_DATATYPE2 uint16_t  // only needs 32-bit if ramp values go over 255
+#define PWM1_DATATYPE uint8_t   // linear part of linear+FET ramp
+#define PWM2_DATATYPE uint8_t   // DD FET part of linear+FET ramp
+#define PWM3_DATATYPE uint16_t  // linear+FET ramp tops
+#define PWM4_DATATYPE uint8_t   // linear-only ramp
+#define PWM5_DATATYPE uint16_t  // linear-only ramp tops
 
 // PWM parameters of both channels are tied together because they share a counter
 #define PWM_TOP       ICR1   // holds the TOP value for for variable-resolution PWM
-#define PWM_TOP_INIT  511    // highest value used in top half of ramp
+#define PWM_TOP_INIT  255    // highest value used in top half of ramp
 #define PWM_CNT       TCNT1  // for dynamic PWM, reset phase
 
 // main LEDs, linear
@@ -93,8 +96,8 @@ enum channel_modes_e {
 #define CH2_ENABLE_PORT  PORTA  // control port for PA1
 
 // main LEDs, DD FET
-//#define CH3_PIN  PC0            // pin 15, DD FET PWM
-//#define CH3_PWM  OCR0A          // OCR0A is the output compare register for PC0
+#define CH3_PIN  PC0            // pin 15, DD FET PWM
+#define CH3_PWM  OCR0A          // OCR0A is the output compare register for PC0
 
 // e-switch
 #ifndef SWITCH_PIN
@@ -153,7 +156,7 @@ enum channel_modes_e {
 
 inline void hwdef_setup() {
     // enable output ports
-    //DDRC = (1 << CH3_PIN);
+    DDRC = (1 << CH3_PIN);
     DDRB = (1 << CH1_PIN);
     DDRA = (1 << CH2_PIN)
          | (1 << AUXLED_R_PIN)
@@ -180,8 +183,6 @@ inline void hwdef_setup() {
             | (1<<WGM13)  | (0<<WGM12)  // phase-correct adjustable PWM (DS table 12-5)
             ;
 
-    // unused on this driver
-    #if 0
     // FET PWM (8-bit; this channel can't do 10-bit)
     // WGM0[2:0]: 0,0,1: PWM, Phase Correct, 8-bit (DS table 11-8)
     // CS0[2:0]:  0,0,1: clk/1 (No prescaling) (DS table 11-9)
@@ -194,8 +195,6 @@ inline void hwdef_setup() {
     TCCR0B  = (0<<CS02)   | (0<<CS01) | (1<<CS00)  // clk/1 (no prescaling) (DS table 11-9)
             | (0<<WGM02)  // phase-correct PWM (DS table 11-8)
             ;
-    CH3_PWM = 0;  // ensure this channel is off, if it exists
-    #endif
 
     // set PWM resolution
     PWM_TOP = PWM_TOP_INIT;

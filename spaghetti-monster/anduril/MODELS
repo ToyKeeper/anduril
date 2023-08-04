@@ -16,7 +16,8 @@ Model	Name                          	MCU
 0134	emisar-d4sv2-219              	attiny1634
 0135	emisar-2ch                    	attiny1634
 0135	emisar-d4sv2-tintramp         	attiny1634	(old)
-0136	emisar-d4sv2-tintramp-fet     	attiny1634
+0136	emisar-2ch-fet                	attiny1634
+0136	emisar-d4sv2-tintramp-fet     	attiny1634	(old)
 0141	emisar-d18                    	attiny85
 0142	emisar-d18-219                	attiny85
 0143	noctigon-m44                  	attiny1634
@@ -33,9 +34,9 @@ Model	Name                          	MCU
 0261	noctigon-k9.3                 	attiny1634
 0262	noctigon-k9.3-nofet           	attiny1634
 0263	noctigon-k9.3-219             	attiny1634
-0265	noctigon-k9.3-tintramp-nofet  	attiny1634
-0266	noctigon-k9.3-tintramp-fet    	attiny1634
-0267	noctigon-k9.3-tintramp-219    	attiny1634
+0265	noctigon-k9.3-tintramp-nofet  	attiny1634	(old, use 0261)
+0266	noctigon-k9.3-tintramp-fet    	attiny1634	(old, use 0262)
+0267	noctigon-k9.3-tintramp-219    	attiny1634	(old, use 0263)
 0271	noctigon-dm11                 	attiny1634
 0272	noctigon-dm11-nofet           	attiny1634
 0273	noctigon-dm11-boost           	attiny1634
@@ -66,6 +67,7 @@ Model	Name                          	MCU
 0623	sofirn-lt1s-pro               	attiny1616
 0631	sofirn-sp10-pro               	attiny1616
 0632	sofirn-sc21-pro               	attiny1616
+0713	wurkkos-ts10-rgb              	attiny1616
 0714	wurkkos-ts10                  	attiny1616
 0715	wurkkos-ts25                  	attiny1616
 0716	wurkkos-fc13                  	attiny1616

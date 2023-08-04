@@ -105,6 +105,12 @@ PROGMEM const PWM2_DATATYPE pwm2_levels[] = { PWM2_LEVELS };
 #ifdef PWM3_LEVELS
 PROGMEM const PWM3_DATATYPE pwm3_levels[] = { PWM3_LEVELS };
 #endif
+#ifdef PWM4_LEVELS
+PROGMEM const PWM4_DATATYPE pwm4_levels[] = { PWM4_LEVELS };
+#endif
+#ifdef PWM5_LEVELS
+PROGMEM const PWM5_DATATYPE pwm5_levels[] = { PWM5_LEVELS };
+#endif
 
 // convenience defs for 1 LED with stacked channels
 // FIXME: remove this, use pwm1/2/3 instead
