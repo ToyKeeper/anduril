@@ -11,7 +11,7 @@ uint8_t strobe_state(Event event, uint16_t arg) {
     static int8_t ramp_direction = 1;
 
     // 'st' reduces ROM size slightly
-    strobe_mode_te st = cfg.strobe_type;
+    strobe_mode_te st = current_strobe_type;
 
     #ifdef USE_MOMENTARY_MODE
     momentary_mode = 1;  // 0 = ramping, 1 = strobes
@@ -28,6 +28,7 @@ uint8_t strobe_state(Event event, uint16_t arg) {
     if (0) {}  // placeholder
     // init anything which needs to be initialized
     else if (event == EV_enter_state) {
+        current_strobe_type = cfg.strobe_type;
         ramp_direction = 1;
         return EVENT_HANDLED;
     }
@@ -38,13 +39,13 @@ uint8_t strobe_state(Event event, uint16_t arg) {
     }
     // 2 clicks: rotate through strobe/flasher modes
     else if (event == EV_2clicks) {
-        cfg.strobe_type = (st + 1) % NUM_STROBES;
+        current_strobe_type = cfg.strobe_type = (st + 1) % NUM_STROBES;
         save_config();
         return EVENT_HANDLED;
     }
     // 4 clicks: rotate backward through strobe/flasher modes
     else if (event == EV_4clicks) {
-        cfg.strobe_type = (st - 1 + NUM_STROBES) % NUM_STROBES;
+        current_strobe_type = cfg.strobe_type = (st - 1 + NUM_STROBES) % NUM_STROBES;
         save_config();
         return EVENT_HANDLED;
     }
@@ -154,7 +155,7 @@ uint8_t strobe_state(Event event, uint16_t arg) {
 
 // runs repeatedly in FSM loop() whenever UI is in strobe_state or momentary strobe
 inline void strobe_state_iter() {
-    uint8_t st = cfg.strobe_type;  // can't use switch() on an enum
+    uint8_t st = current_strobe_type;  // can't use switch() on an enum
 
     switch(st) {
         #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)

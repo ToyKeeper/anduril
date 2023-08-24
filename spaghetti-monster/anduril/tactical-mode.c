@@ -31,7 +31,7 @@ uint8_t tactical_state(Event event, uint16_t arg) {
             } else {  // momentary strobe mode
                 momentary_mode = 1;
                 if (lvl > RAMP_SIZE) {
-                    cfg.strobe_type = (lvl - RAMP_SIZE - 1) % strobe_mode_END;
+                    current_strobe_type = (lvl - RAMP_SIZE - 1) % strobe_mode_END;
                 }
             }
         }
