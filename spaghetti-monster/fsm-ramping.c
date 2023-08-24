@@ -59,7 +59,7 @@ void set_level(uint8_t level) {
     #endif
 
     // call the relevant hardware-specific set_level_*()
-    SetLevelFuncPtr set_level_func = channels[CH_MODE].set_level;
+    SetLevelFuncPtr set_level_func = channels[channel_mode].set_level;
     set_level_func(level);
 
     if (actual_level != level) prev_level = actual_level;
@@ -217,7 +217,7 @@ void gradual_tick() {
     gt --;
 
     // call the relevant hardware-specific function
-    GradualTickFuncPtr gradual_tick_func = channels[CH_MODE].gradual_tick;
+    GradualTickFuncPtr gradual_tick_func = channels[channel_mode].gradual_tick;
     bool done = gradual_tick_func(gt);
 
     if (done) {

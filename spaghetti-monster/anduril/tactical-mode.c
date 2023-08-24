@@ -28,6 +28,10 @@ uint8_t tactical_state(Event event, uint16_t arg) {
             if ((1 <= lvl) && (lvl <= RAMP_SIZE)) {  // steady output
                 memorized_level = lvl;
                 momentary_mode = 0;
+                #if NUM_CHANNEL_MODES > 1
+                    // use ramp mode's channel
+                    channel_mode = cfg.channel_mode;
+                #endif
             } else {  // momentary strobe mode
                 momentary_mode = 1;
                 if (lvl > RAMP_SIZE) {
@@ -40,6 +44,7 @@ uint8_t tactical_state(Event event, uint16_t arg) {
     else if ((event & (B_CLICK | B_PRESS)) == (B_CLICK)) {
         momentary_active = 0;
         set_level(0);
+        interrupt_nice_delays();  // stop animations in progress
     }
 
     // delegate to momentary mode while button is pressed

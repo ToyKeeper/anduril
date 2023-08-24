@@ -4,31 +4,7 @@
 
 #pragma once
 
-// internal numbering for strobe modes
 #ifdef USE_STROBE_STATE
-typedef enum {
-    #ifdef USE_PARTY_STROBE_MODE
-    party_strobe_e,
-    #endif
-    #ifdef USE_TACTICAL_STROBE_MODE
-    tactical_strobe_e,
-    #endif
-    #ifdef USE_POLICE_COLOR_STROBE_MODE
-    police_color_strobe_e,
-    #endif
-    #ifdef USE_LIGHTNING_MODE
-    lightning_storm_e,
-    #endif
-    #ifdef USE_CANDLE_MODE
-    candle_mode_e,
-    #endif
-    #ifdef USE_BIKE_FLASHER_MODE
-    bike_flasher_e,
-    #endif
-    strobe_mode_END
-} strobe_mode_te;
-
-const int NUM_STROBES = strobe_mode_END;
 
 strobe_mode_te current_strobe_type;
 
@@ -38,7 +14,8 @@ strobe_mode_te current_strobe_type;
 #else
     #define DEFAULT_STROBE 0
 #endif
-#endif
+
+#endif  // ifdef USE_STROBE_STATE
 
 
 // full FET strobe can be a bit much...  use max regulated level instead,

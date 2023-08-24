@@ -19,6 +19,10 @@ uint8_t steady_state(Event event, uint16_t arg) {
     static uint8_t level_before_off = 0;
     #endif
 
+    #if NUM_CHANNEL_MODES > 1
+        channel_mode = cfg.channel_mode;
+    #endif
+
     // make sure ramp globals are correct...
     // ... but they already are; no need to do it here
     //ramp_update_config();
@@ -417,7 +421,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #ifdef USE_CHANNEL_MODE_ARGS
             // ramp tint if tint exists in this mode
             if ((event == EV_click3_hold)
-                && (channel_has_args(cfg.channel_mode)))
+                && (channel_has_args(channel_mode)))
                 return EVENT_NOT_HANDLED;
         #endif
         if (! arg) {  // first frame only, to allow thermal regulation to work
@@ -438,7 +442,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #ifdef USE_CHANNEL_MODE_ARGS
             // ramp tint if tint exists in this mode
             if ((event == EV_click3_hold_release)
-                && (channel_has_args(cfg.channel_mode)))
+                && (channel_has_args(channel_mode)))
                 return EVENT_NOT_HANDLED;
         #endif
         set_level_and_therm_target(memorized_level);
@@ -665,7 +669,7 @@ void set_level_and_therm_target(uint8_t level) {
 void manual_memory_restore() {
     memorized_level = cfg.manual_memory;
     #if NUM_CHANNEL_MODES > 1
-        cfg.channel_mode = cfg.manual_memory_channel_mode;
+        channel_mode = cfg.channel_mode = cfg.manual_memory_channel_mode;
     #endif
     #ifdef USE_CHANNEL_MODE_ARGS
         for (uint8_t i=0; i<NUM_CHANNEL_MODES; i++)
@@ -676,7 +680,7 @@ void manual_memory_restore() {
 void manual_memory_save() {
     cfg.manual_memory = actual_level;
     #if NUM_CHANNEL_MODES > 1
-        cfg.manual_memory_channel_mode = cfg.channel_mode;
+        cfg.manual_memory_channel_mode = channel_mode;
     #endif
     #ifdef USE_CHANNEL_MODE_ARGS
         for (uint8_t i=0; i<NUM_CHANNEL_MODES; i++)

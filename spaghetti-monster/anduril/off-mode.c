@@ -16,6 +16,10 @@ uint8_t off_state(Event event, uint16_t arg) {
     if (event == EV_enter_state) {
         set_level(0);
         ticks_since_on = 0;
+        #if NUM_CHANNEL_MODES > 1
+            // reset to ramp mode's channel when light turns off
+            channel_mode = cfg.channel_mode;
+        #endif
         #ifdef USE_INDICATOR_LED
         // redundant, sleep tick does the same thing
         //indicator_led_update(cfg.indicator_led_mode & 0x03, 0);

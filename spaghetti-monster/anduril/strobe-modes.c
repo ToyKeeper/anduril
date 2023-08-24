@@ -43,6 +43,16 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         save_config();
         return EVENT_HANDLED;
     }
+    #if NUM_CHANNEL_MODES > 1
+    // 3 clicks: rotate through channel modes for the current strobe
+    else if (event == EV_3clicks) {
+        // TODO: maybe skip aux modes?
+        set_channel_mode((channel_mode + 1) % NUM_CHANNEL_MODES);
+        cfg.strobe_channels[st] = channel_mode;
+        save_config();
+        return EVENT_HANDLED;
+    }
+    #endif
     // 4 clicks: rotate backward through strobe/flasher modes
     else if (event == EV_4clicks) {
         current_strobe_type = cfg.strobe_type = (st - 1 + NUM_STROBES) % NUM_STROBES;
@@ -157,6 +167,11 @@ uint8_t strobe_state(Event event, uint16_t arg) {
 inline void strobe_state_iter() {
     uint8_t st = current_strobe_type;  // can't use switch() on an enum
 
+    #if NUM_CHANNEL_MODES > 1
+        // remember channel mode for each strobe
+        channel_mode = cfg.strobe_channels[st];
+    #endif
+
     switch(st) {
         #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
         #ifdef USE_PARTY_STROBE_MODE
@@ -223,7 +238,7 @@ inline void police_color_strobe_iter() {
     uint8_t del = 66;
     // TODO: make police strobe brightness configurable
     uint8_t bright = memorized_level;
-    uint8_t channel = cfg.channel_mode;
+    //uint8_t channel = channel_mode;
 
     for (uint8_t i=0; i<10; i++) {
         if (0 == i) set_channel_mode(POLICE_COLOR_STROBE_CH1);
@@ -234,8 +249,9 @@ inline void police_color_strobe_iter() {
         nice_delay_ms(del);
     }
 
-    // restore this when done
-    set_channel_mode(channel);
+    // restore the channel when done
+    //set_channel_mode(channel);
+    channel_mode = cfg.channel_mode;
 }
 #endif
 

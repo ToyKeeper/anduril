@@ -98,6 +98,12 @@ Config cfg = {
 
     #ifdef USE_STROBE_STATE
         .strobe_type = DEFAULT_STROBE,
+        #if NUM_CHANNEL_MODES > 1
+            // channel mode saved per strobe-group mode
+            #ifdef DEFAULT_STROBE_CHANNELS
+                .strobe_channels = { DEFAULT_STROBE_CHANNELS },
+            #endif
+        #endif
     #endif
     #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
         // party / tactical strobe timing

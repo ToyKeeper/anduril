@@ -128,7 +128,7 @@ void set_level_blend(uint8_t level) {
     PWM_DATATYPE ch1_pwm, ch2_pwm;
     PWM_DATATYPE brightness = PWM_GET(pwm1_levels, level);
     PWM_DATATYPE top        = PWM_GET(pwm_tops, level);
-    uint8_t blend           = cfg.channel_mode_args[cfg.channel_mode];
+    uint8_t blend           = cfg.channel_mode_args[channel_mode];
 
     calc_2ch_blend(&ch1_pwm, &ch2_pwm, brightness, top, blend);
 
@@ -144,7 +144,7 @@ void set_level_auto(uint8_t level) {
     PWM_DATATYPE brightness = PWM_GET(pwm1_levels, level);
     PWM_DATATYPE top        = PWM_GET(pwm_tops, level);
     uint8_t blend           = 255 * (uint16_t)level / RAMP_SIZE;
-    if (cfg.channel_mode_args[cfg.channel_mode] & 0b01000000)
+    if (cfg.channel_mode_args[channel_mode] & 0b01000000)
         blend = 255 - blend;
 
     calc_2ch_blend(&ch1_pwm, &ch2_pwm, brightness, top, blend);
@@ -185,7 +185,7 @@ bool gradual_tick_blend(uint8_t gt) {
     PWM_DATATYPE ch1_pwm, ch2_pwm;
     PWM_DATATYPE brightness = PWM_GET(pwm1_levels, gt);
     PWM_DATATYPE top        = PWM_GET(pwm_tops, gt);
-    uint8_t blend           = cfg.channel_mode_args[cfg.channel_mode];
+    uint8_t blend           = cfg.channel_mode_args[channel_mode];
 
     calc_2ch_blend(&ch1_pwm, &ch2_pwm, brightness, top, blend);
 
@@ -197,7 +197,7 @@ bool gradual_tick_auto(uint8_t gt) {
     PWM_DATATYPE brightness = PWM_GET(pwm1_levels, gt);
     PWM_DATATYPE top        = PWM_GET(pwm_tops, gt);
     uint8_t blend           = 255 * (uint16_t)gt / RAMP_SIZE;
-    if (cfg.channel_mode_args[cfg.channel_mode] & 0b01000000)
+    if (cfg.channel_mode_args[channel_mode] & 0b01000000)
         blend = 255 - blend;
 
     calc_2ch_blend(&ch1_pwm, &ch2_pwm, brightness, top, blend);

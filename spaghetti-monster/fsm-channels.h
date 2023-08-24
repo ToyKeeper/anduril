@@ -38,17 +38,10 @@ Channel channels[];  // values are defined in the hwdef-*.c
 // TODO: size-optimize the case with only 1 channel mode?
 // (the arrays and stuff shouldn't be needed)
 
-#if defined(USE_CFG) && (NUM_CHANNEL_MODES > 1)
-    #define CH_MODE cfg.channel_mode
-#else
+#if NUM_CHANNEL_MODES > 1
+    #define USE_CHANNEL_MODES
     // current multi-channel mode
     uint8_t channel_mode = DEFAULT_CHANNEL_MODE;
-    #define CH_MODE channel_mode
-#endif
-
-// FIXME: remove this?
-#if NUM_CHANNEL_MODES > 1
-#define USE_CHANNEL_MODES
 #endif
 
 #ifdef USE_CUSTOM_CHANNEL_3H_MODES

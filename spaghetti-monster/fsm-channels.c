@@ -13,7 +13,7 @@ void set_channel_mode(uint8_t mode) {
     set_level(0);
 
     // change the channel
-    CH_MODE = mode;
+    channel_mode = mode;
 
     // update the LEDs
     set_level(cur_level);
