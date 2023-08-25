@@ -36,6 +36,25 @@ inline void set_level_aux_leds(uint8_t level) {
 }
 #endif  // ifdef HAS_AUX_LEDS
 
+#ifdef USE_AUX_RGB_LEDS_WHILE_ON
+// TODO: maybe move this stuff into FSM
+#include "anduril/aux-leds.h"  // for rgb_led_voltage_readout()
+inline void set_level_aux_rgb_leds(uint8_t level) {
+    if (! go_to_standby) {
+        if (level > 0) {
+            rgb_led_voltage_readout(level > USE_AUX_RGB_LEDS_WHILE_ON);
+        } else {
+            rgb_led_set(0);
+        }
+        // some drivers can be wired with RGB or single color to button
+        // ... so support both even though only one is connected
+        #ifdef USE_BUTTON_LED
+            button_led_set((level > 0) + (level > DEFAULT_LEVEL));
+        #endif
+    }
+}
+#endif  // ifdef USE_AUX_RGB_LEDS_WHILE_ON
+
 
 void set_level(uint8_t level) {
     #ifdef USE_JUMP_START
@@ -58,9 +77,17 @@ void set_level(uint8_t level) {
     set_level_aux_leds(level);
     #endif
 
-    // call the relevant hardware-specific set_level_*()
-    SetLevelFuncPtr set_level_func = channels[channel_mode].set_level;
-    set_level_func(level);
+    #ifdef USE_AUX_RGB_LEDS_WHILE_ON
+    set_level_aux_rgb_leds(level);
+    #endif
+
+    if (0 == level) {
+        set_level_zero();
+    } else {
+        // call the relevant hardware-specific set_level_*()
+        SetLevelFuncPtr set_level_func = channels[channel_mode].set_level;
+        set_level_func(level - 1);
+    }
 
     if (actual_level != level) prev_level = actual_level;
     actual_level = level;

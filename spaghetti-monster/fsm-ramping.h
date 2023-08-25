@@ -13,6 +13,7 @@ uint8_t prev_level = 0;
 
 void set_level(uint8_t level);
 //void set_level_smooth(uint8_t level);
+void set_level_zero();  // implement this in a hwdef
 
 #ifdef USE_SET_LEVEL_GRADUALLY
 // adjust brightness very smoothly
