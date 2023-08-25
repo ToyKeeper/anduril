@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
+#include "spaghetti-monster/anduril/channel-modes.h"  //for circular_tint_3h()
 #include "chan-rgbaux.c"
 
 
@@ -69,15 +70,21 @@ Channel channels[] = {
     RGB_AUX_CHANNELS
 };
 
+// HSV mode needs a different 3H handler
+StatePtr channel_3H_modes[NUM_CHANNEL_MODES] = {
+    NULL, NULL, NULL, NULL,
+    NULL, NULL, circular_tint_3h, NULL,
+};
 
 // LEDs 1+2 are 8-bit
 // this 8-bit channel may be LEDs 1+2 or LED 4, depending on wiring
 void set_level_main2(uint8_t level) {
+    LED3_ENABLE_PORT  &= ~(1 << LED3_ENABLE_PIN );  // turn off unused LEDs
+    LED4_ENABLE_PORT  &= ~(1 << LED4_ENABLE_PIN );  // turn off unused LEDs
+
     if (level == 0) {
         MAIN2_PWM_LVL = 0;
         MAIN2_ENABLE_PORT &= ~(1 << MAIN2_ENABLE_PIN);  // turn off opamp
-        LED3_ENABLE_PORT  &= ~(1 << LED3_ENABLE_PIN );  // turn off opamp
-        LED4_ENABLE_PORT  &= ~(1 << LED4_ENABLE_PIN );  // turn off opamp
     } else {
         level --;
         MAIN2_ENABLE_PORT |= (1 << MAIN2_ENABLE_PIN);
@@ -87,12 +94,13 @@ void set_level_main2(uint8_t level) {
 
 // LED 3 is 16-bit
 void set_level_led3(uint8_t level) {
+    MAIN2_ENABLE_PORT &= ~(1 << MAIN2_ENABLE_PIN);  // turn off unused LEDs
+    LED4_ENABLE_PORT  &= ~(1 << LED4_ENABLE_PIN );  // turn off unused LEDs
+
     if (level == 0) {
         LED3_PWM_LVL = 0;
         PWM_CNT      = 0;
-        MAIN2_ENABLE_PORT &= ~(1 << MAIN2_ENABLE_PIN);  // turn off opamp
         LED3_ENABLE_PORT  &= ~(1 << LED3_ENABLE_PIN );  // turn off opamp
-        LED4_ENABLE_PORT  &= ~(1 << LED4_ENABLE_PIN );  // turn off opamp
     } else {
         level --;
         LED3_ENABLE_PORT |= (1 << LED3_ENABLE_PIN);
@@ -106,11 +114,12 @@ void set_level_led3(uint8_t level) {
 
 // this 16-bit channel may be LED 4 or LEDs 1+2, depending on wiring
 void set_level_led4(uint8_t level) {
+    MAIN2_ENABLE_PORT &= ~(1 << MAIN2_ENABLE_PIN);  // turn off unused LEDs
+    LED3_ENABLE_PORT  &= ~(1 << LED3_ENABLE_PIN );  // turn off unused LEDs
+
     if (level == 0) {
         LED4_PWM_LVL = 0;
         PWM_CNT      = 0;  // reset phase
-        MAIN2_ENABLE_PORT &= ~(1 << MAIN2_ENABLE_PIN);  // turn off opamp
-        LED3_ENABLE_PORT  &= ~(1 << LED3_ENABLE_PIN );  // turn off opamp
         LED4_ENABLE_PORT  &= ~(1 << LED4_ENABLE_PIN );  // turn off opamp
     } else {
         level --;  // PWM array index = level - 1
@@ -159,11 +168,12 @@ void set_level_all(uint8_t level) {
 
 // 8/16/16 wiring, mix 16+16
 void set_level_led34a_blend(uint8_t level) {
+    MAIN2_ENABLE_PORT &= ~(1 << MAIN2_ENABLE_PIN);  // turn off unused LEDs
+
     if (level == 0) {
         LED3_PWM_LVL = 0;
         LED4_PWM_LVL = 0;
         PWM_CNT      = 0;  // reset phase
-        MAIN2_ENABLE_PORT &= ~(1 << MAIN2_ENABLE_PIN);  // turn off opamp
         LED3_ENABLE_PORT  &= ~(1 << LED3_ENABLE_PIN );  // turn off opamp
         LED4_ENABLE_PORT  &= ~(1 << LED4_ENABLE_PIN );  // turn off opamp
         return;
@@ -189,13 +199,14 @@ void set_level_led34a_blend(uint8_t level) {
 
 // 16/16/8 wiring, mix 16+8
 void set_level_led34b_blend(uint8_t level) {
+    LED4_ENABLE_PORT  &= ~(1 << LED4_ENABLE_PIN );  // turn off unused LEDs
+
     if (level == 0) {
-        LED3_PWM_LVL = 0;
-        LED4_PWM_LVL = 0;
-        PWM_CNT      = 0;  // reset phase
+        MAIN2_PWM_LVL = 0;
+        LED3_PWM_LVL  = 0;
+        PWM_CNT       = 0;  // reset phase
         MAIN2_ENABLE_PORT &= ~(1 << MAIN2_ENABLE_PIN);  // turn off opamp
         LED3_ENABLE_PORT  &= ~(1 << LED3_ENABLE_PIN );  // turn off opamp
-        LED4_ENABLE_PORT  &= ~(1 << LED4_ENABLE_PIN );  // turn off opamp
         return;
     }
 

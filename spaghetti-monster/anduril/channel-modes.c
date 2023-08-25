@@ -53,10 +53,12 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
 
     #ifdef USE_CUSTOM_CHANNEL_3H_MODES
     // defer to mode-specific function if defined
-    if (tint_ramp_modes[channel_mode]) {
+    if (channel_3H_modes[channel_mode]) {
         StatePtr tint_func = channel_3H_modes[channel_mode];
-        return tint_func(channel_mode);
-    } else
+        uint8_t err = tint_func(event, arg);
+        if (EVENT_HANDLED == err) return EVENT_HANDLED;
+        // else let the default handler run
+    }
     #endif
     #ifdef USE_CHANNEL_MODE_ARGS
     #ifndef DONT_USE_DEFAULT_CHANNEL_ARG_MODE
@@ -190,3 +192,46 @@ uint8_t nearest_tint_value(const int16_t target) {
 }
 #endif
 
+#ifdef USE_CIRCULAR_TINT_3H
+uint8_t circular_tint_3h(Event event, uint16_t arg) {
+    static int8_t tint_ramp_direction = 1;
+    // bugfix: click-click-hold from off to strobes would invoke tint ramping
+    // in addition to changing state...  so ignore any tint-ramp events which
+    // don't look like they were meant to be here
+    static uint8_t active = 0;
+    uint8_t tint = cfg.channel_mode_args[channel_mode];
+
+    // click, click, hold: change the current channel's arg (like tint)
+    if (event == EV_click3_hold) {
+        ///// adjust value from 0 to 255 in a circle
+        // reset at beginning of movement
+        if (! arg) {
+            active = 1;  // first frame means this is for us
+        }
+        // ignore event if we weren't the ones who handled the first frame
+        if (! active) return EVENT_NOT_HANDLED;
+
+        // smooth tint ramping only
+        tint += tint_ramp_direction;
+
+        cfg.channel_mode_args[channel_mode] = tint;
+        set_level(actual_level);
+        return EVENT_HANDLED;
+    }
+
+    // click, click, hold, release: reverse direction for next ramp
+    else if (event == EV_click3_hold_release) {
+        active = 0;  // ignore next hold if it wasn't meant for us
+        // reverse
+        tint_ramp_direction = -tint_ramp_direction;
+        // remember tint after battery change
+        save_config();
+        // bug?: for some reason, brightness can seemingly change
+        // from 1/150 to 2/150 without this next line... not sure why
+        set_level(actual_level);
+        return EVENT_HANDLED;
+    }
+
+    return EVENT_NOT_HANDLED;
+}
+#endif

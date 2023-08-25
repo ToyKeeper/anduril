@@ -72,6 +72,8 @@ enum channel_modes_e {
 #define USE_CHANNEL_MODE_ARGS
 // _, _, _, _, 128=middle CCT, 128=middle CCT, 213=purple, _
 #define CHANNEL_MODE_ARGS 0,0,0,0,128,128,213,0,RGB_AUX_CM_ARGS
+#define USE_CUSTOM_CHANNEL_3H_MODES
+#define USE_CIRCULAR_TINT_3H
 
 // can use some of the common handlers
 #define USE_CALC_2CH_BLEND

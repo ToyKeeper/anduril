@@ -86,21 +86,26 @@ void calc_2ch_blend(
 RGB_t hsv2rgb(uint8_t h, uint8_t s, uint8_t v) {
     RGB_t color;
 
-    uint16_t region, fpart, high, low, rising, falling;
-
     if (s == 0) {  // grey
         color.r = color.g = color.b = v;
         return color;
     }
 
-    // make hue 0-5
+    uint8_t region;
+    uint16_t fpart;
+    uint16_t high, low, rising, falling;
+
+    // hue has 6 segments, 0-5
     region = ((uint16_t)h * 6) >> 8;
     // find remainder part, make it from 0-255
     fpart = ((uint16_t)h * 6) - (region << 8);
 
     // calculate graph segments, doing integer multiplication
+    // TODO: calculate 16-bit results, not 8-bit
     high    = v;
     low     = (v * (255 - s)) >> 8;
+    // TODO: use a cosine crossfade instead of linear
+    // (because it looks better and feels more natural)
     falling = (v * (255 - ((s * fpart) >> 8))) >> 8;
     rising  = (v * (255 - ((s * (255 - fpart)) >> 8))) >> 8;
 

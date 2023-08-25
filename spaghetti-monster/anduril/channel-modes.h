@@ -16,3 +16,11 @@ uint8_t channel_mode_config_state(Event event, uint16_t arg);
 uint8_t nearest_tint_value(const int16_t target);
 #endif
 
+#ifdef USE_CUSTOM_CHANNEL_3H_MODES
+StatePtr channel_3H_modes[NUM_CHANNEL_MODES];
+#endif
+
+#ifdef USE_CIRCULAR_TINT_3H
+uint8_t circular_tint_3h(Event event, uint16_t arg);
+#endif
+
