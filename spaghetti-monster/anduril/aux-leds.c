@@ -111,8 +111,8 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
           && (ticks_since_on < (cfg.post_off_voltage * SLEEP_TICKS_PER_SECOND))
           && (ticks_since_on > 0)  // don't blink red on 1st frame
         ) {
-        // use high mode unless prev_level was really low
-        pattern = 1 + (prev_level >= POST_OFF_VOLTAGE_BRIGHTNESS);
+        // use high mode if regular aux level is high or prev level was high
+        pattern = 1 + ((2 == pattern) | (prev_level >= POST_OFF_VOLTAGE_BRIGHTNESS));
         // voltage mode
         color = RGB_LED_NUM_COLORS - 1;
     }
