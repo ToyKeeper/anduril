@@ -228,18 +228,24 @@ void calc_auto_3ch_blend(
 
     // tint goes from 0 (red) to 127 (warm white) to 255 (cool white)
     uint8_t mytint;
-    mytint = 255 * (uint16_t)level / RAMP_SIZE;
+    mytint = 255 * (uint16_t)(level+1) / RAMP_SIZE;
+
+    uint8_t falling=0, rising=0;
+    if (level < (RAMP_SIZE/2))
+        falling = 255 - triangle_wave(mytint);
+    else
+        rising = 255 - triangle_wave(mytint);
 
     // TODO: make "a" drop to zero sooner, and "c" start ramping up later
     // red is high at 0, low at 255 (linear)
-    *a = (((PWM_DATATYPE2)(255 - mytint)
+    *a = (((PWM_DATATYPE2)falling
          * (PWM_DATATYPE2)vpwm) + 127) / 255;
     // warm white is low at 0 and 255, high at 127 (linear triangle)
     *b = (((PWM_DATATYPE2)triangle_wave(mytint)
-         * (PWM_DATATYPE2)vpwm) + 127) / 255;
+         * (PWM_DATATYPE2)vpwm)      ) / 255;
     // cool white is low at 0, high at 255 (linear)
     *c = (uint8_t)(
-         (((PWM_DATATYPE2)mytint
+         (((PWM_DATATYPE2)rising
          * (PWM_DATATYPE2)vpwm8) + 127) / 255
          );
 
@@ -254,7 +260,8 @@ void set_level_auto3(uint8_t level) {
     // pulse frequency modulation, a.k.a. dynamic PWM
     uint16_t top = PWM_GET(pwm_tops, level);
 
-    if (a > 0) LED4_ENABLE_PORT  |= (1 << LED4_ENABLE_PIN );
+    if ((a > 0) || (0 == level))  // don't turn off at bottom level
+        LED4_ENABLE_PORT  |= (1 << LED4_ENABLE_PIN );
     else LED4_ENABLE_PORT  &= ~(1 << LED4_ENABLE_PIN );
     if (b > 0) LED3_ENABLE_PORT  |= (1 << LED3_ENABLE_PIN );
     else LED3_ENABLE_PORT  &= ~(1 << LED3_ENABLE_PIN );
