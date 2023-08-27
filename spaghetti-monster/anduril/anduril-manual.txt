@@ -222,6 +222,9 @@ While the light is on, a few actions are available:
               2: Anduril 2 style.  Ramp -> 2C goes to ceiling,
                  or goes to full power if user ramped up to ceiling first.
               This value also affects momentary turbo in Ramp and Off modes.
+    - Item 5: Configure "smooth steps".
+              0: Disable smooth steps.
+              1: Enable smooth steps.
 
 Memory determines which brightness level the light goes to with 1 click 
 from off.  There are three types of brightness memory to choose from:
@@ -251,6 +254,11 @@ To choose a memory style, set the configuration accordingly:
   automatic	off		any
   manual	on		zero
   hybrid	on		non-zero
+
+If "smooth steps" is enabled, the stepped ramp uses a smooth animation 
+between steps, and turning the light on/off has the edges smoothed off 
+too.  With "smooth steps" turned off, these brightness changes are 
+immediate.
 
 
 Sunset Timer
@@ -904,6 +912,7 @@ Ramp		Full	10H	Ramp Extras config menu:
 				2: set manual mem timeout
 				3: ramp after moon or not
 				4: advanced UI turbo style
+				5: smooth steps
 
 Multi-channel lights only:
 Any		Any	3C	Next channel mode (i.e. next color mode)

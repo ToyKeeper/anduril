@@ -10,6 +10,10 @@
 #include "sunset-timer.h"
 #endif
 
+#ifdef USE_SMOOTH_STEPS
+#include "smooth-steps.h"
+#endif
+
 
 uint8_t steady_state(Event event, uint16_t arg) {
     static int8_t ramp_direction = 1;
@@ -554,21 +558,25 @@ uint8_t simple_ui_config_state(Event event, uint16_t arg) {
 #ifdef USE_RAMP_EXTRAS_CONFIG
 void ramp_extras_config_save(uint8_t step, uint8_t value) {
     // item 1: disable manual memory, go back to automatic
-    if (1 == step) { cfg.manual_memory = 0; }
+    if (manual_memory_config_step == step) {
+        cfg.manual_memory = 0;
+    }
 
     #ifdef USE_MANUAL_MEMORY_TIMER
     // item 2: set manual memory timer duration
     // FIXME: should be limited to (65535 / SLEEP_TICKS_PER_MINUTE)
     //   to avoid overflows or impossibly long timeouts
     //   (by default, the effective limit is 145, but it allows up to 255)
-    else if (2 == step) { cfg.manual_memory_timer = value; }
+    else if (manual_memory_timer_config_step == step) {
+        cfg.manual_memory_timer = value;
+    }
     #endif
 
     #ifdef USE_RAMP_AFTER_MOON_CONFIG
     // item 3: ramp up after hold-from-off for moon?
     // 0 = yes, ramp after moon
     // 1+ = no, stay at moon
-    else if (3 == step) {
+    else if (dont_ramp_after_moon_config_step == step) {
         cfg.dont_ramp_after_moon = value;
     }
     #endif
@@ -577,14 +585,22 @@ void ramp_extras_config_save(uint8_t step, uint8_t value) {
     // item 4: Anduril 1 2C turbo, or Anduril 2 2C ceiling?
     // 1 = Anduril 1, 2C turbo
     // 2+ = Anduril 2, 2C ceiling
-    else if (4 == step) {
+    else if (ramp_2c_style_config_step == step) {
         cfg.ramp_2c_style = value;
+    }
+    #endif
+
+    #ifdef USE_SMOOTH_STEPS
+    else if (smooth_steps_style_config_step == step) {
+        cfg.smooth_steps_style = value;
     }
     #endif
 }
 
 uint8_t ramp_extras_config_state(Event event, uint16_t arg) {
-    return config_state_base(event, arg, 4, ramp_extras_config_save);
+    return config_state_base(event, arg,
+        ramp_extras_config_num_steps - 1,
+        ramp_extras_config_save);
 }
 #endif
 
@@ -592,16 +608,17 @@ uint8_t ramp_extras_config_state(Event event, uint16_t arg) {
 void globals_config_save(uint8_t step, uint8_t value) {
     if (0) {}
     #if defined(USE_CHANNEL_MODE_ARGS) && defined(USE_STEPPED_TINT_RAMPING)
-    else if (step == 1+tint_style_config_step) { cfg.tint_ramp_style = value; }
+    else if (step == tint_style_config_step) { cfg.tint_ramp_style = value; }
     #endif
     #ifdef USE_JUMP_START
-    else if (step == 1+jump_start_config_step) { cfg.jump_start_level = value; }
+    else if (step == jump_start_config_step) { cfg.jump_start_level = value; }
     #endif
 }
 
 uint8_t globals_config_state(Event event, uint16_t arg) {
-    // TODO: set number of steps based on how many configurable options
-    return config_state_base(event, arg, globals_config_num_steps, globals_config_save);
+    return config_state_base(event, arg,
+        globals_config_num_steps - 1,
+        globals_config_save);
 }
 #endif
 
@@ -657,9 +674,16 @@ void ramp_update_config() {
     ramp_ceil  = cfg.ramp_ceils[which];
 }
 
-#ifdef USE_THERMAL_REGULATION
+#if defined(USE_THERMAL_REGULATION) || defined(USE_SMOOTH_STEPS)
 void set_level_and_therm_target(uint8_t level) {
+    #ifdef USE_THERMAL_REGULATION
     target_level = level;
+    #endif
+    #ifdef USE_SMOOTH_STEPS
+        if (cfg.smooth_steps_style && cfg.ramp_style)
+            set_level_smooth(level, 4);
+        else
+    #endif
     set_level(level);
 }
 #else

@@ -94,6 +94,11 @@ Config cfg = {
         #endif
     #endif
 
+    ///// Smooth animation between steps, and for on/off
+    #ifdef USE_SMOOTH_STEPS
+        .smooth_steps_style = DEFAULT_SMOOTH_STEPS_STYLE,
+    #endif
+
     ///// strobe / blinky mode settings
 
     #ifdef USE_STROBE_STATE

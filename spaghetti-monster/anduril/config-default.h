@@ -187,3 +187,11 @@
 #define USE_STEPPED_TINT_RAMPING
 #define DEFAULT_TINT_RAMP_STYLE 0  // smooth
 
+// Use "smooth steps" to soften on/off and step changes
+// on MCUs with enough room for extra stuff like this
+#if (ATTINY==1616) || (ATTINY==1634)
+#define USE_SMOOTH_STEPS
+#endif
+// 0 = none, 1 = smooth, 2+ = undefined
+#define DEFAULT_SMOOTH_STEPS_STYLE  1
+

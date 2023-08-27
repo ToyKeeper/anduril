@@ -67,6 +67,11 @@ typedef struct Config {
         #endif
     #endif
 
+    ///// Smooth animation between steps, and for on/off
+    #ifdef USE_SMOOTH_STEPS
+        uint8_t smooth_steps_style;
+    #endif
+
     ///// strobe / blinky mode settings
     #ifdef USE_STROBE_STATE
         uint8_t strobe_type;

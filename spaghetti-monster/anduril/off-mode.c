@@ -14,6 +14,12 @@ uint8_t off_state(Event event, uint16_t arg) {
 
     // turn emitter off when entering state
     if (event == EV_enter_state) {
+        #ifdef USE_SMOOTH_STEPS
+            if (cfg.smooth_steps_style && actual_level) {
+                set_level_smooth(0, 8);
+                arg = 1;  // don't go to sleep immediately
+            } else
+        #endif
         set_level(0);
         ticks_since_on = 0;
         #if NUM_CHANNEL_MODES > 1
@@ -24,7 +30,8 @@ uint8_t off_state(Event event, uint16_t arg) {
         // redundant, sleep tick does the same thing
         //indicator_led_update(cfg.indicator_led_mode & 0x03, 0);
         #elif defined(USE_AUX_RGB_LEDS)
-        rgb_led_update(cfg.rgb_led_off_mode, 0);
+        // redundant, sleep tick does the same thing
+        //rgb_led_update(cfg.rgb_led_off_mode, 0);
         #endif
         #ifdef USE_SUNSET_TIMER
         sunset_timer = 0;  // needs a reset in case previous timer was aborted
@@ -37,13 +44,18 @@ uint8_t off_state(Event event, uint16_t arg) {
 
     // go back to sleep eventually if we got bumped but didn't leave "off" state
     else if (event == EV_tick) {
-        if (arg > HOLD_TIMEOUT) {
+        if (arg > HOLD_TIMEOUT
+            #ifdef USE_SMOOTH_STEPS
+                && (! smooth_steps_in_progress)
+            #endif
+            ) {
             go_to_standby = 1;
             #ifdef USE_INDICATOR_LED
             // redundant, sleep tick does the same thing
             //indicator_led_update(cfg.indicator_led_mode & 0x03, arg);
             #elif defined(USE_AUX_RGB_LEDS)
-            rgb_led_update(cfg.rgb_led_off_mode, arg);
+            // redundant, sleep tick does the same thing
+            //rgb_led_update(cfg.rgb_led_off_mode, arg);
             #endif
         }
         return EVENT_HANDLED;
@@ -127,6 +139,11 @@ uint8_t off_state(Event event, uint16_t arg) {
                 manual_memory_restore();
             }
         #endif
+        #ifdef USE_SMOOTH_STEPS
+            if (cfg.smooth_steps_style)
+                set_level_smooth(nearest_level(memorized_level), 8);
+            else
+        #endif
         set_level(nearest_level(memorized_level));
         return EVENT_HANDLED;
     }
@@ -135,8 +152,7 @@ uint8_t off_state(Event event, uint16_t arg) {
     // 1 click: regular mode
     else if (event == EV_1click) {
         #if (B_TIMING_ON != B_TIMEOUT_T)
-        // brightness was already set; reuse previous value
-        set_state(steady_state, actual_level);
+        set_state(steady_state, memorized_level);
         #else
         // FIXME: B_TIMEOUT_T breaks manual_memory and manual_memory_timer
         //        (need to duplicate manual mem logic here, probably)
@@ -186,6 +202,10 @@ uint8_t off_state(Event event, uint16_t arg) {
 
     // 3 clicks (initial press): off, to prep for later events
     else if (event == EV_click3_press) {
+        #ifdef USE_SMOOTH_STEPS
+            // immediately cancel any animations in progress
+            smooth_steps_in_progress = 0;
+        #endif
         set_level(0);
         return EVENT_HANDLED;
     }

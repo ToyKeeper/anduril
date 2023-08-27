@@ -186,10 +186,29 @@ uint8_t sunset_timer_orig_level = 0;
 void reset_sunset_timer();
 #endif
 
+#ifdef USE_RAMP_EXTRAS_CONFIG
+typedef enum {
+    manual_memory_config_step = 1,
+    #ifdef USE_MANUAL_MEMORY_TIMER
+    manual_memory_timer_config_step,
+    #endif
+    #ifdef USE_RAMP_AFTER_MOON_CONFIG
+    dont_ramp_after_moon_config_step,
+    #endif
+    #ifdef USE_2C_STYLE_CONFIG
+    ramp_2c_style_config_step,
+    #endif
+    #ifdef USE_SMOOTH_STEPS
+    smooth_steps_style_config_step,
+    #endif
+    ramp_extras_config_num_steps
+} ramp_extras_config_steps_e;
+#endif
+
 #ifdef USE_GLOBALS_CONFIG
 typedef enum {
     #if defined(USE_CHANNEL_MODE_ARGS) && defined(USE_STEPPED_TINT_RAMPING)
-    tint_style_config_step,
+    tint_style_config_step = 1,
     #endif
     #ifdef USE_JUMP_START
     jump_start_config_step,
