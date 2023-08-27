@@ -303,13 +303,16 @@ inline void lightning_storm_iter() {
 #endif
 
 #ifdef USE_BIKE_FLASHER_MODE
+#ifndef BIKE_STROBE_ONTIME
+#define BIKE_STROBE_ONTIME 0
+#endif
 inline void bike_flasher_iter() {
     // one iteration of main loop()
     uint8_t burst = cfg.bike_flasher_brightness << 1;
     if (burst > MAX_LEVEL) burst = MAX_LEVEL;
     for(uint8_t i=0; i<4; i++) {
         set_level(burst);
-        nice_delay_ms(5);
+        nice_delay_ms(5 + BIKE_STROBE_ONTIME);
         set_level(cfg.bike_flasher_brightness);
         nice_delay_ms(65);
     }
