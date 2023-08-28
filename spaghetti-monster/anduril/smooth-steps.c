@@ -14,28 +14,29 @@ void smooth_steps_iter() {
         smooth_steps_in_progress = 0;
         // restore prev_level when animation ends
         prev_level = smooth_steps_start;
-        return;
     }
-
-    if (actual_level < smooth_steps_target) {
+    else if (smooth_steps_target > actual_level) {
+        // power-linear(ish) ascent
+        // (jump by ~20% of remaining distance on each frame)
         uint8_t diff = smooth_steps_target - actual_level;
         uint8_t this = diff / smooth_steps_speed;
         if (!this) this = 1;
         set_level(actual_level + this);
-    } else if (actual_level > smooth_steps_target) {
-        uint8_t diff = actual_level - smooth_steps_target;
-        uint8_t this = diff / smooth_steps_speed;
-        if (!this) this = 1;
-        set_level(actual_level - this);
+        nice_delay_ms(10);
+    } else {
+        // ramp-linear descent
+        // (jump by 1 on each frame, frame rate gives constant total time)
+        uint8_t diff = smooth_steps_start - smooth_steps_target;
+        uint16_t delay = 1 + (26 * smooth_steps_speed / diff);
+        set_level(actual_level - 1);
+        // TODO? if delay < one PWM cycle, this can look a little weird
+        nice_delay_ms(delay);
     }
-    // TODO: maybe change the delay based on the speed var?
-    nice_delay_ms(10);
 }
 
 void set_level_smooth(uint8_t level, uint8_t speed) {
     smooth_steps_target = level;
-    // TODO: maybe speed should be a desired total time for the animation?
-    smooth_steps_speed = speed;
+    smooth_steps_speed = speed;  // higher = slower
     smooth_steps_in_progress = 1;
     // for setting prev_level after animation ends
     smooth_steps_start = actual_level;
