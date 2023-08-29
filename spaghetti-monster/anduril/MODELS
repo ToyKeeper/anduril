@@ -21,6 +21,7 @@ Model	Name                          	MCU
 0141	emisar-d18                    	attiny85
 0142	emisar-d18-219                	attiny85
 0143	noctigon-m44                  	attiny1634
+0151	emisar-d4k-3ch                	attiny1634
 0211	noctigon-kr4                  	attiny1634
 0212	noctigon-kr4-nofet            	attiny1634
 0213	noctigon-kr4-219              	attiny1634
@@ -67,7 +68,7 @@ Model	Name                          	MCU
 0623	sofirn-lt1s-pro               	attiny1616
 0631	sofirn-sp10-pro               	attiny1616
 0632	sofirn-sc21-pro               	attiny1616
-0713	wurkkos-ts10-rgb              	attiny1616
+0713	wurkkos-ts10-rgbaux           	attiny1616
 0714	wurkkos-ts10                  	attiny1616
 0715	wurkkos-ts25                  	attiny1616
 0716	wurkkos-fc13                  	attiny1616

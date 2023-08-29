@@ -68,6 +68,10 @@
 #undef DEFAULT_BLINK_CHANNEL
 #define DEFAULT_BLINK_CHANNEL  CM_AUXWHT
 
+// the aux LEDs are pretty bright; set the high-mode threshold a bit higher
+// (default is 15)
+#define POST_OFF_VOLTAGE_BRIGHTNESS 25
+
 // the default of 26 looks a bit rough, so increase it to make it smoother
 #define CANDLE_AMPLITUDE 33
 
