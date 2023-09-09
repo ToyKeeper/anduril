@@ -680,7 +680,8 @@ void set_level_and_therm_target(uint8_t level) {
     target_level = level;
     #endif
     #ifdef USE_SMOOTH_STEPS
-        if (cfg.smooth_steps_style && cfg.ramp_style)
+        if (smooth_steps_in_progress
+            || (cfg.smooth_steps_style && cfg.ramp_style))
             set_level_smooth(level, 4);
         else
     #endif
