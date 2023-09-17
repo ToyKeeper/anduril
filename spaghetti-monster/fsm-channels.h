@@ -42,6 +42,8 @@ Channel channels[];  // values are defined in the hwdef-*.c
     #define USE_CHANNEL_MODES
     // current multi-channel mode
     uint8_t channel_mode = DEFAULT_CHANNEL_MODE;
+#else
+    #define channel_mode 0
 #endif
 
 #ifdef USE_CUSTOM_CHANNEL_3H_MODES
@@ -79,7 +81,9 @@ StatePtr channel_3H_modes[NUM_CHANNEL_MODES];
     #define channel_has_args(n) (channels[n].has_args)
 #endif
 
+#if NUM_CHANNEL_MODES > 1
 void set_channel_mode(uint8_t mode);
+#endif
 
 #ifdef USE_CALC_2CH_BLEND
 void calc_2ch_blend(

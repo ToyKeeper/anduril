@@ -4,6 +4,8 @@
 #pragma once
 
 
+void set_level_zero();
+
 void set_level_red(uint8_t level);
 void set_level_white_blend(uint8_t level);
 void set_level_auto_2ch_blend(uint8_t level);
@@ -76,34 +78,26 @@ void calc_auto_3ch_blend(
 }
 
 
+void set_level_zero() {
+    WARM_PWM_LVL = 0;
+    COOL_PWM_LVL = 0;
+    RED_PWM_LVL  = 0;
+    PWM_CNT      = 0;  // reset phase
+}
+
 // single set of LEDs with 1 power channel and dynamic PWM
 void set_level_red(uint8_t level) {
-    if (level == 0) {
-        RED_PWM_LVL  = 0;
-        PWM_CNT      = 0;  // reset phase
-    } else {
-        level --;  // PWM array index = level - 1
-        RED_PWM_LVL  = PWM_GET(pwm1_levels, level);
-        // pulse frequency modulation, a.k.a. dynamic PWM
-        PWM_TOP = PWM_GET(pwm_tops, level);
-        // force reset phase when turning on from zero
-        // (because otherwise the initial response is inconsistent)
-        if (! actual_level) PWM_CNT = 0;
-    }
+    RED_PWM_LVL  = PWM_GET(pwm1_levels, level);
+    // pulse frequency modulation, a.k.a. dynamic PWM
+    PWM_TOP = PWM_GET(pwm_tops, level);
+    // force reset phase when turning on from zero
+    // (because otherwise the initial response is inconsistent)
+    if (! actual_level) PWM_CNT = 0;
 }
 
 
 // warm + cool blend w/ dynamic PWM
 void set_level_white_blend(uint8_t level) {
-    if (level == 0) {
-        WARM_PWM_LVL = 0;
-        COOL_PWM_LVL = 0;
-        PWM_CNT      = 0;  // reset phase
-        return;
-    }
-
-    level --;  // PWM array index = level - 1
-
     PWM_DATATYPE warm_PWM, cool_PWM;
     PWM_DATATYPE brightness = PWM_GET(pwm1_levels, level);
     PWM_DATATYPE top        = PWM_GET(pwm_tops, level);
@@ -120,15 +114,6 @@ void set_level_white_blend(uint8_t level) {
 
 // same as white blend, but tint is calculated from the ramp level
 void set_level_auto_2ch_blend(uint8_t level) {
-    if (level == 0) {
-        WARM_PWM_LVL = 0;
-        COOL_PWM_LVL = 0;
-        PWM_CNT      = 0;  // reset phase
-        return;
-    }
-
-    level --;  // PWM array index = level - 1
-
     PWM_DATATYPE warm_PWM, cool_PWM;
     PWM_DATATYPE brightness = PWM_GET(pwm1_levels, level);
     PWM_DATATYPE top        = PWM_GET(pwm_tops, level);
@@ -145,16 +130,6 @@ void set_level_auto_2ch_blend(uint8_t level) {
 
 // "auto tint" channel mode with dynamic PWM
 void set_level_auto_3ch_blend(uint8_t level) {
-    if (level == 0) {
-        WARM_PWM_LVL = 0;
-        COOL_PWM_LVL = 0;
-        RED_PWM_LVL  = 0;
-        PWM_CNT      = 0;  // reset phase
-        return;
-    }
-
-    level --;  // PWM array index = level - 1
-
     PWM_DATATYPE a, b, c;
     calc_auto_3ch_blend(&a, &b, &c, level);
 
@@ -176,13 +151,6 @@ void set_level_red_white_blend(uint8_t level) {
     set_level_white_blend(level);
     channel_mode = CM_WHITE_RED;
 
-    if (level == 0) {
-        RED_PWM_LVL = 0;
-        PWM_CNT     = 0;  // reset phase
-        return;
-    }
-
-    level --;  // PWM array index = level - 1
     PWM_DATATYPE vpwm = PWM_GET(pwm1_levels, level);
 
     // set the red LED as a ratio of the white output level

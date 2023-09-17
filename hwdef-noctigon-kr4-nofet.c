@@ -6,6 +6,8 @@
 
 #include "chan-rgbaux.c"
 
+void set_level_zero();
+
 void set_level_main(uint8_t level);
 bool gradual_tick_main(uint8_t gt);
 
@@ -19,19 +21,17 @@ Channel channels[] = {
 };
 
 
+void set_level_zero() {
+    CH1_PWM = 0;
+    CH2_PWM = 0;
+    PWM_CNT = 0;  // reset phase
+    CH1_ENABLE_PORT &= ~(1 << CH1_ENABLE_PIN);  // disable opamp
+}
+
 // single set of LEDs with linear power channel
 void set_level_main(uint8_t level) {
-    if (level == 0) {
-        CH1_PWM = 0;
-        CH2_PWM = 0;
-        PWM_CNT = 0;  // reset phase
-        CH1_ENABLE_PORT &= ~(1 << CH1_ENABLE_PIN);  // disable opamp
-        return;
-    }
-
     CH1_ENABLE_PORT |= (1 << CH1_ENABLE_PIN);  // enable opamp
 
-    level --;  // PWM array index = level - 1
     PWM_DATATYPE ch1_pwm = PWM_GET(pwm1_levels, level);
     // pulse frequency modulation, a.k.a. dynamic PWM
     uint16_t top = PWM_GET16(pwm_tops, level);

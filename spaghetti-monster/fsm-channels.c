@@ -7,6 +7,7 @@
 #include "fsm-ramping.h"
 
 
+#if NUM_CHANNEL_MODES > 1
 void set_channel_mode(uint8_t mode) {
     uint8_t cur_level = actual_level;
     // turn off old LEDs before changing channel
@@ -18,6 +19,7 @@ void set_channel_mode(uint8_t mode) {
     // update the LEDs
     set_level(cur_level);
 }
+#endif  // if NUM_CHANNEL_MODES > 1
 
 
 #ifdef USE_CALC_2CH_BLEND
