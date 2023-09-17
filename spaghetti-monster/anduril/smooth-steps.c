@@ -11,6 +11,7 @@
 // one iteration of main loop()
 void smooth_steps_iter() {
     if (actual_level == smooth_steps_target) {
+        set_level(smooth_steps_target);
         smooth_steps_in_progress = 0;
         // restore prev_level when animation ends
         prev_level = smooth_steps_start;
