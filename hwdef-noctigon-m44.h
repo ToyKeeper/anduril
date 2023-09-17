@@ -163,6 +163,7 @@ inline void hwdef_setup() {
     // pre-scale for timer: N = 1
     // Linear opamp PWM for both main and 2nd LEDs (10-bit)
     // WGM1[3:0]: 1,0,1,0: PWM, Phase Correct, adjustable (DS table 12-5)
+    // WGM1[3:0]: 1,1,1,0: PWM, Fast, adjustable (DS table 12-5)
     // CS1[2:0]:    0,0,1: clk/1 (No prescaling) (DS table 12-6)
     // COM1A[1:0]:    1,0: PWM OC1A in the normal direction (DS table 12-4)
     // COM1B[1:0]:    1,0: PWM OC1B in the normal direction (DS table 12-4)
@@ -171,7 +172,8 @@ inline void hwdef_setup() {
             | (1<<COM1B1) | (0<<COM1B0)  // PWM 1B in normal direction (DS table 12-4)
             ;
     TCCR1B  = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
-            | (1<<WGM13)  | (0<<WGM12)  // phase-correct adjustable PWM (DS table 12-5)
+            | (1<<WGM13)  | (1<<WGM12)  // fast adjustable PWM (DS table 12-5)
+            //| (1<<WGM13)  | (0<<WGM12)  // phase-correct adjustable PWM (DS table 12-5)
             ;
 
     // set PWM resolution

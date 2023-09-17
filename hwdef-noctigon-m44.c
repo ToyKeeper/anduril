@@ -7,6 +7,8 @@
 #include "chan-rgbaux.c"
 
 
+void set_level_zero();
+
 void set_level_ch1(uint8_t level);
 void set_level_ch2(uint8_t level);
 void set_level_both(uint8_t level);
@@ -53,26 +55,33 @@ Channel channels[] = {
 // set new values for both channels,
 // handling any possible combination
 // and any before/after state
-void set_pwms(uint16_t ch1_pwm, uint16_t ch2_pwm, uint16_t top) {
-    bool was_on = (CH1_PWM>0) | (CH2_PWM>0);
-    bool now_on = (ch1_pwm>0) | (ch2_pwm>0);
+void set_pwms(uint16_t ch1_pwm, uint16_t ch2_pwm, uint16_t top,
+              uint8_t ch1_on, uint8_t ch2_on) {
 
-    if (! now_on) {
-        CH1_PWM = 0;
-        CH2_PWM = 0;
-        PWM_TOP = PWM_TOP_INIT;
-        PWM_CNT = 0;
-        CH1_ENABLE_PORT &= ~(1 << CH1_ENABLE_PIN);  // disable opamp
-        CH2_ENABLE_PORT &= ~(1 << CH2_ENABLE_PIN);  // disable opamp
-        return;
-    }
+    bool was_on = (CH1_PWM>0) || (CH2_PWM>0)
+                || ( CH1_ENABLE_PORT & (1 << CH1_ENABLE_PIN) )
+                || ( CH2_ENABLE_PORT & (1 << CH2_ENABLE_PIN) );
+    bool now_on = (ch1_pwm>0) || (ch2_pwm>0) || ch1_on || ch2_on;
 
-    if (ch1_pwm)
+    // phase-correct PWM at zero (for flicker-free moon),
+    // fast PWM otherwise
+    if (ch1_pwm || ch2_pwm)
+        TCCR1B  = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
+                | (1<<WGM13)  | (1<<WGM12)  // fast adjustable PWM (DS table 12-5)
+                //| (1<<WGM13)  | (0<<WGM12)  // phase-correct adjustable PWM (DS table 12-5)
+                ;
+    else
+        TCCR1B  = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
+                //| (1<<WGM13)  | (1<<WGM12)  // fast adjustable PWM (DS table 12-5)
+                | (1<<WGM13)  | (0<<WGM12)  // phase-correct adjustable PWM (DS table 12-5)
+                ;
+
+    if (ch1_pwm || ch1_on)
         CH1_ENABLE_PORT |= (1 << CH1_ENABLE_PIN);  // enable opamp
     else
         CH1_ENABLE_PORT &= ~(1 << CH1_ENABLE_PIN);  // disable opamp
 
-    if (ch2_pwm)
+    if (ch2_pwm || ch2_on)
         CH2_ENABLE_PORT |= (1 << CH2_ENABLE_PIN);  // enable opamp
     else
         CH2_ENABLE_PORT &= ~(1 << CH2_ENABLE_PIN);  // disable opamp
@@ -90,41 +99,34 @@ void set_pwms(uint16_t ch1_pwm, uint16_t ch2_pwm, uint16_t top) {
     if (! was_on) PWM_CNT = 0;
 }
 
-void set_level_ch1(uint8_t level) {
-    if (0 == level)
-        return set_pwms(0, 0, PWM_TOP_INIT);
+void set_level_zero() {
+    CH1_PWM = 0;
+    CH2_PWM = 0;
+    PWM_TOP = PWM_TOP_INIT;
+    PWM_CNT = 0;
+    CH1_ENABLE_PORT &= ~(1 << CH1_ENABLE_PIN);  // disable opamp
+    CH2_ENABLE_PORT &= ~(1 << CH2_ENABLE_PIN);  // disable opamp
+}
 
-    level --;
+void set_level_ch1(uint8_t level) {
     uint16_t pwm = PWM_GET(pwm1_levels, level);
     uint16_t top = PWM_GET(pwm_tops, level);
-    set_pwms(pwm, 0, top);
+    set_pwms(pwm, 0, top, 1, 0);
 }
 
 void set_level_ch2(uint8_t level) {
-    if (0 == level)
-        return set_pwms(0, 0, PWM_TOP_INIT);
-
-    level --;
     uint16_t pwm = PWM_GET(pwm1_levels, level);
     uint16_t top = PWM_GET(pwm_tops, level);
-    set_pwms(0, pwm, top);
+    set_pwms(0, pwm, top, 0, 1);
 }
 
 void set_level_both(uint8_t level) {
-    if (0 == level)
-        return set_pwms(0, 0, PWM_TOP_INIT);
-
-    level --;
     uint16_t pwm = PWM_GET(pwm1_levels, level);
     uint16_t top = PWM_GET(pwm_tops, level);
-    set_pwms(pwm, pwm, top);
+    set_pwms(pwm, pwm, top, 1, 1);
 }
 
 void set_level_blend(uint8_t level) {
-    if (0 == level)
-        return set_pwms(0, 0, PWM_TOP_INIT);
-
-    level --;
     PWM_DATATYPE ch1_pwm, ch2_pwm;
     PWM_DATATYPE brightness = PWM_GET(pwm1_levels, level);
     PWM_DATATYPE top        = PWM_GET(pwm_tops, level);
@@ -133,17 +135,11 @@ void set_level_blend(uint8_t level) {
     calc_2ch_blend(&ch1_pwm, &ch2_pwm, brightness, top, blend);
 
     // don't turn off either emitter entirely while using middle blends
-    if ((0 == ch1_pwm) && (blend < 255)) ch1_pwm = 1;
-    if ((0 == ch2_pwm) && (blend > 0)) ch2_pwm = 1;
-
-    set_pwms(ch1_pwm, ch2_pwm, top);
+    set_pwms(ch1_pwm, ch2_pwm, top,
+             blend < 255, blend > 0);
 }
 
 void set_level_auto(uint8_t level) {
-    if (0 == level)
-        return set_pwms(0, 0, PWM_TOP_INIT);
-
-    level --;
     PWM_DATATYPE ch1_pwm, ch2_pwm;
     PWM_DATATYPE brightness = PWM_GET(pwm1_levels, level);
     PWM_DATATYPE top        = PWM_GET(pwm_tops, level);
@@ -153,7 +149,9 @@ void set_level_auto(uint8_t level) {
 
     calc_2ch_blend(&ch1_pwm, &ch2_pwm, brightness, top, blend);
 
-    set_pwms(ch1_pwm, ch2_pwm, top);
+    // don't turn off either emitter entirely
+    // (it blinks pretty bright when the regulator turns on mid-ramp)
+    set_pwms(ch1_pwm, ch2_pwm, top, 1, 1);
 }
 
 
