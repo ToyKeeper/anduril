@@ -29,6 +29,9 @@
 #define CONFIG_WAITING_CHANNEL         CM_RED
 #define CONFIG_BLINK_CHANNEL           CM_WHITE
 
+// blink numbers on the main LEDs by default (but allow user to change it)
+#define DEFAULT_BLINK_CHANNEL  CM_RED
+
 #define POLICE_COLOR_STROBE_CH1        CM_RED
 #define POLICE_COLOR_STROBE_CH2        CM_WHITE
 
