@@ -72,5 +72,8 @@
 // don't do this
 #undef BLINK_AT_RAMP_MIDDLE
 
+#define USE_SMOOTH_STEPS
+
 // too big, turn off extra features
+#undef USE_SOS_MODE
 #undef USE_TACTICAL_MODE
