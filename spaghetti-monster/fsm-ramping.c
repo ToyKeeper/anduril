@@ -241,15 +241,14 @@ void gradual_tick() {
     uint8_t gt = gradual_target;
     if (gt < actual_level) gt = actual_level - 1;
     else if (gt > actual_level) gt = actual_level + 1;
-    gt --;
 
     // call the relevant hardware-specific function
     GradualTickFuncPtr gradual_tick_func = channels[channel_mode].gradual_tick;
-    bool done = gradual_tick_func(gt);
+    bool done = gradual_tick_func(gt - 1);
 
     if (done) {
         uint8_t orig = gradual_target;
-        set_level(gt + 1);
+        set_level(gt);
         gradual_target = orig;
     }
 }

@@ -20,7 +20,13 @@
 
 // overheat protection
 #define USE_THERMAL_REGULATION
+#if (ATTINY==85) || (ATTINY==1634)
+// sloppy temperature sensor needs bigger error margin
 #define DEFAULT_THERM_CEIL 45  // try not to get hotter than this (in C)
+#else
+// more accurate temperature sensor can regulate higher safely
+#define DEFAULT_THERM_CEIL 50  // try not to get hotter than this (in C)
+#endif
 // Comment out to disable automatic calibration on factory reset
 //   - If so, be sure to set THERM_CAL_OFFSET to the correct calibration offset
 //   - Calibration can still be overridden in temperature check mode
