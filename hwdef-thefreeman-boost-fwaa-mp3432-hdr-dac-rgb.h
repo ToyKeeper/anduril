@@ -1,32 +1,31 @@
-// hwdef for thefreeman's boost driver 2.1 w/ MP3431, DAC, ARGB
+// hwdef for thefreeman's boost FWAA driver 1.1 w/ MP3432, HDR DAC, RGB aux
 // Copyright (C) 2023 TBD (thefreeman), Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-/* thefreeman’s Boost driver based on MP3431 and attiny1616
- * with high dynamic range and DAC control, AUX : RGB + button
- * hardware version : 2.0+
- * compatible with BST20-FWxA v1.0 (no button LED A)
+/* thefreeman’s FWAA AA/li-ion Boost driver based on MP3432 and attiny1616
+ * with high dynamic range and DAC control, AUX : RGB
+ * hardware versions : 1.0, 1.1
  *
  * Pin / Name / Function
- *   1    PA2   
+ *   1    PA2   BattLVL (ADC0 - AIN2)
  *   2    PA3   
  *   3    GND   GND
  *   4    VCC   VCC
- *   5    PA4   
- *   6    PA5   
+ *   5    PA4   BST EN: boost enable
+ *   6    PA5   HDR
  *   7    PA6   DAC
  *   8    PA7   
- *   9    PB5   IN- NFET
- *  10    PB4   HDR
- *  11    PB3   B: blue aux LED
- *  12    PB2   G: green aux LED
- *  13    PB1   R: red aux LED
+ *   9    PB5   B: blue aux LED
+ *  10    PB4   G: green aux LED
+ *  11    PB3   R: red aux LED
+ *  12    PB2   IN- NFET
+ *  13    PB1   
  *  14    PB0   
- *  15    PC0   boost enable
- *  16    PC1   A: button LED
- *  17    PC2   e-switch
- *  18    PC3   
+ *  15    PC0   
+ *  16    PC1   
+ *  17    PC2   
+ *  18    PC3   e-switch
  *  19    PA0   UDPI
  *  20    PA1   
  *
@@ -80,50 +79,57 @@ enum CHANNEL_MODES {
 #define V15   20
 
 // BST enable
-#define BST_ENABLE_PIN   PIN0_bp
-#define BST_ENABLE_PORT  PORTC_OUT
+#define BST_ENABLE_PIN   PIN4_bp
+#define BST_ENABLE_PORT  PORTA_OUT
 
 // HDR
 // turns on HDR FET for the high current range
-#define HDR_ENABLE_PIN   PIN4_bp
-#define HDR_ENABLE_PORT  PORTB_OUT
+#define HDR_ENABLE_PIN   PIN5_bp
+#define HDR_ENABLE_PORT  PORTA_OUT
 
 // IN- NFET
 // pull high to force output to zero to eliminate the startup flash
-#define IN_NFET_DELAY_TIME   8  // (ms)
-#define IN_NFET_ENABLE_PIN   PIN5_bp
+#define IN_NFET_DELAY_TIME   4  // (ms)
+#define IN_NFET_ENABLE_PIN   PIN2_bp
 #define IN_NFET_ENABLE_PORT  PORTB_OUT
 
 // e-switch
 #ifndef SWITCH_PIN
-#define SWITCH_PIN      PIN2_bp
+#define SWITCH_PIN      PIN3_bp
 #define SWITCH_PORT     VPORTC.IN
-#define SWITCH_ISC_REG  PORTC.PIN2CTRL
+#define SWITCH_ISC_REG  PORTC.PIN3CTRL
 #define SWITCH_VECT     PORTC_PORT_vect
 #define SWITCH_INTFLG   VPORTC.INTFLAGS
 #define SWITCH_PCINT    PCINT0
 #define PCINT_vect      PCINT0_vect
 #endif
 
-// average drop across diode on this hardware
-#ifndef VOLTAGE_FUDGE_FACTOR
-#define VOLTAGE_FUDGE_FACTOR 0  // using a PFET so no appreciable drop
+// Voltage divider battLVL
+#define USE_VOLTAGE_DIVIDER       // use a dedicated pin, not VCC, because VCC input is regulated
+#define DUAL_VOLTAGE_FLOOR     21  // for AA/14500 boost drivers, don't indicate low voltage if below this level
+#define DUAL_VOLTAGE_LOW_LOW   7  // the lower voltage range's danger zone 0.7 volts (NiMH)
+#define ADMUX_VOLTAGE_DIVIDER  ADC_MUXPOS_AIN2_gc  // which ADC channel to read
+
+// Raw ADC readings at 4.4V and 2.2V
+// calibrate the voltage readout here
+// estimated / calculated values are:
+//   (voltage - D1) * (R2/(R2+R1) * 1024 / 1.1)
+// Resistors are 330k and 100k
+#ifndef ADC_44
+#define ADC_44 951  // raw value at 4.40V
+#endif
+#ifndef ADC_22
+#define ADC_22 476  // raw value at 2.20V
 #endif
 
 // this driver allows for aux LEDs under the optic
-#define AUXLED_R_PIN  PIN1_bp
-#define AUXLED_G_PIN  PIN2_bp
-#define AUXLED_B_PIN  PIN3_bp
+#define AUXLED_R_PIN  PIN3_bp
+#define AUXLED_G_PIN  PIN4_bp
+#define AUXLED_B_PIN  PIN5_bp
 #define AUXLED_RGB_PORT PORTB  // PORTA or PORTB or PORTC
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
-
-// A: button LED
-#ifndef BUTTON_LED_PIN
-#define BUTTON_LED_PIN  PIN1_bp
-#define BUTTON_LED_PORT PORTC
-#endif
 
 
 inline void hwdef_setup() {
@@ -133,37 +139,37 @@ inline void hwdef_setup() {
     _PROTECTED_WRITE( CLKCTRL.MCLKCTRLB,
                       CLKCTRL_PDIV_2X_gc | CLKCTRL_PEN_bm );
 
-    VPORTA.DIR = PIN6_bm;  // DAC
-    VPORTB.DIR = PIN1_bm   // R
-               | PIN2_bm   // G
-               | PIN3_bm   // B
-               | PIN4_bm   // HDR
-               | PIN5_bm;  // IN- NFET
-    VPORTC.DIR = PIN0_bm   // BST EN
-               | PIN1_bm;  // A
+    VPORTA.DIR = PIN4_bm  // BST EN
+               | PIN5_bm  // HDR
+               | PIN6_bm; // DAC
+    VPORTB.DIR = PIN2_bm  // IN- NFET
+               | PIN3_bm  // R
+               | PIN4_bm  // G
+               | PIN5_bm; // B
+    //VPORTC.DIR = PIN0_bm | PIN1_bm;
 
     // enable pullups on the input pins to reduce power
     PORTA.PIN0CTRL = PORT_PULLUPEN_bm;
     PORTA.PIN1CTRL = PORT_PULLUPEN_bm;
-    PORTA.PIN2CTRL = PORT_PULLUPEN_bm;
+    //PORTA.PIN2CTRL = PORT_PULLUPEN_bm;  // BattLVL
     PORTA.PIN3CTRL = PORT_PULLUPEN_bm;
-    PORTA.PIN4CTRL = PORT_PULLUPEN_bm;
-    PORTA.PIN5CTRL = PORT_PULLUPEN_bm;
+    //PORTA.PIN4CTRL = PORT_PULLUPEN_bm;  // EN
+    //PORTA.PIN5CTRL = PORT_PULLUPEN_bm;  // HDR
     //PORTA.PIN6CTRL = PORT_PULLUPEN_bm;  // DAC
     PORTA.PIN7CTRL = PORT_PULLUPEN_bm;
-
+    
     PORTB.PIN0CTRL = PORT_PULLUPEN_bm;
-    //PORTB.PIN1CTRL = PORT_PULLUPEN_bm;  // R
-    //PORTB.PIN2CTRL = PORT_PULLUPEN_bm;  // G
-    //PORTB.PIN3CTRL = PORT_PULLUPEN_bm;  // B
-    //PORTB.PIN4CTRL = PORT_PULLUPEN_bm;  // HDR
-    //PORTB.PIN5CTRL = PORT_PULLUPEN_bm;  // IN- NFET
-
-    //PORTC.PIN0CTRL = PORT_PULLUPEN_bm;  // EN
-    //PORTC.PIN1CTRL = PORT_PULLUPEN_bm;  // A
-    PORTC.PIN2CTRL = PORT_PULLUPEN_bm
+    PORTB.PIN1CTRL = PORT_PULLUPEN_bm;
+    //PORTB.PIN2CTRL = PORT_PULLUPEN_bm;  // IN- NFET
+    //PORTB.PIN3CTRL = PORT_PULLUPEN_bm;  // R
+    //PORTB.PIN4CTRL = PORT_PULLUPEN_bm;  // G
+    //PORTB.PIN5CTRL = PORT_PULLUPEN_bm;  // B
+    
+    PORTC.PIN0CTRL = PORT_PULLUPEN_bm;
+    PORTC.PIN1CTRL = PORT_PULLUPEN_bm;
+    PORTC.PIN2CTRL = PORT_PULLUPEN_bm;
+    PORTC.PIN3CTRL = PORT_PULLUPEN_bm
                    | PORT_ISC_BOTHEDGES_gc;  // e-switch
-    PORTC.PIN3CTRL = PORT_PULLUPEN_bm;
 
     // set up the DAC
     // https://ww1.microchip.com/downloads/en/DeviceDoc/ATtiny1614-16-17-DataSheet-DS40002204A.pdf

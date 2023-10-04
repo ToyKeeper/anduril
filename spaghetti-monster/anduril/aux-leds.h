@@ -22,13 +22,14 @@ void rgb_led_voltage_readout(uint8_t bright);
  * 8: voltage
  */
 const PROGMEM uint8_t rgb_led_colors[] = {
-    0b00000001,  // 0: red
-    0b00000101,  // 1: yellow
-    0b00000100,  // 2: green
-    0b00010100,  // 3: cyan
-    0b00010000,  // 4: blue
-    0b00010001,  // 5: purple
-    0b00010101,  // 6: white
+    0b00000000,  // 0: black
+    0b00000001,  // 1: red
+    0b00000101,  // 2: yellow
+    0b00000100,  // 3: green
+    0b00010100,  // 4: cyan
+    0b00010000,  // 5: blue
+    0b00010001,  // 6: purple
+    0b00010101,  // 7: white
 };
 // intentionally 1 higher than total modes, to make "voltage" easier to reach
 // (at Hank's request)

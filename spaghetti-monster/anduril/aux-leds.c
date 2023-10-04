@@ -58,17 +58,30 @@ void indicator_led_update(uint8_t mode, uint8_t tick) {
 uint8_t voltage_to_rgb() {
     static const uint8_t levels[] = {
     // voltage, color
-          0, 0, // 0, R
-         33, 1, // 1, R+G
-         35, 2, // 2,   G
-         37, 3, // 3,   G+B
-         39, 4, // 4,     B
-         41, 5, // 5, R + B
-         44, 6, // 6, R+G+B  // skip; looks too similar to G+B
-        255, 6, // 7, R+G+B
+          0, 0, // black
+        #ifdef DUAL_VOLTAGE_FLOOR
+        // AA / NiMH voltages
+          9, 1, // R
+         10, 2, // R+G
+         11, 3, //   G
+         12, 4, //   G+B
+         13, 5, //     B
+         14, 6, // R + B
+         15, 7, // R+G+B
+         20, 0, // black
+        #endif
+        // li-ion voltages
+         29, 1, // R
+         33, 2, // R+G
+         35, 3, //   G
+         37, 4, //   G+B
+         39, 5, //     B
+         41, 6, // R + B
+         44, 7, // R+G+B  // skip; looks too similar to G+B
+        255, 7, // R+G+B
     };
     uint8_t volts = voltage;
-    if (volts < VOLTAGE_LOW) return 0;
+    //if (volts < VOLTAGE_LOW) return 0;
 
     uint8_t i;
     for (i = 0;  volts >= levels[i];  i += 2) {}

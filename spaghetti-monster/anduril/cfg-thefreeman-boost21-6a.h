@@ -70,7 +70,7 @@
 
 // UI
 
-//#define SIMPLE_UI_ACTIVE 1 // advanced UI by default
+//#define SIMPLE_UI_ACTIVE 0 // advanced UI by default
 
 // allow Aux Config and Strobe Modes in Simple UI
 #define USE_EXTENDED_SIMPLE_UI
@@ -108,8 +108,11 @@
 
 // Misc
 
-#define PARTY_STROBE_ONTIME 1 // slow down party strobe
+#define PARTY_STROBE_ONTIME 1  // slow down party strobe
 #define STROBE_OFF_LEVEL 1  // keep the regulator chip on between pulses
+
+// smoother candle mode with bigger oscillations
+#define CANDLE_AMPLITUDE 40
 
 // enable 13H factory reset so it can be used on tail e-switch lights
 #define USE_SOFT_FACTORY_RESET
