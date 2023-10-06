@@ -10,17 +10,20 @@
 #include "sunset-timer.h"
 #endif
 
+// set level smooth maybe
+void off_state_set_level(uint8_t level);
+
+
 uint8_t off_state(Event event, uint16_t arg) {
 
     // turn emitter off when entering state
     if (event == EV_enter_state) {
+        // turn off
+        off_state_set_level(0);
         #ifdef USE_SMOOTH_STEPS
-            if (cfg.smooth_steps_style && actual_level) {
-                set_level_smooth(0, 8);
-                arg = 1;  // don't go to sleep immediately
-            } else
+            // don't go to sleep while animating
+            arg |= smooth_steps_in_progress;
         #endif
-        set_level(0);
         ticks_since_on = 0;
         #if NUM_CHANNEL_MODES > 1
             // reset to ramp mode's channel when light turns off
@@ -92,7 +95,7 @@ uint8_t off_state(Event event, uint16_t arg) {
     #if (B_TIMING_ON == B_PRESS_T)
     // hold (initially): go to lowest level (floor), but allow abort for regular click
     else if (event == EV_click1_press) {
-        set_level(nearest_level(1));
+        off_state_set_level(nearest_level(1));
         return EVENT_HANDLED;
     }
     #endif  // B_TIMING_ON == B_PRESS_T
@@ -107,7 +110,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         } else
         #endif
         #else  // B_RELEASE_T or B_TIMEOUT_T
-        set_level(nearest_level(1));
+        off_state_set_level(nearest_level(1));
         #endif
         #ifdef USE_RAMP_AFTER_MOON_CONFIG
         if (cfg.dont_ramp_after_moon) {
@@ -139,12 +142,7 @@ uint8_t off_state(Event event, uint16_t arg) {
                 manual_memory_restore();
             }
         #endif
-        #ifdef USE_SMOOTH_STEPS
-            if (cfg.smooth_steps_style)
-                set_level_smooth(nearest_level(memorized_level), 8);
-            else
-        #endif
-        set_level(nearest_level(memorized_level));
+        off_state_set_level(nearest_level(memorized_level));
         return EVENT_HANDLED;
     }
     #endif  // if (B_TIMING_ON != B_TIMEOUT_T)
@@ -186,11 +184,11 @@ uint8_t off_state(Event event, uint16_t arg) {
             turbo_level = MAX_LEVEL;
         #endif
 
-        set_level(turbo_level);
+        off_state_set_level(turbo_level);
         return EVENT_HANDLED;
     }
     else if (event == EV_click2_hold_release) {
-        set_level(0);
+        off_state_set_level(0);
         return EVENT_HANDLED;
     }
 
@@ -206,7 +204,7 @@ uint8_t off_state(Event event, uint16_t arg) {
             // immediately cancel any animations in progress
             smooth_steps_in_progress = 0;
         #endif
-        set_level(0);
+        off_state_set_level(0);
         return EVENT_HANDLED;
     }
 
@@ -372,5 +370,15 @@ uint8_t off_state(Event event, uint16_t arg) {
     #endif
 
     return EVENT_NOT_HANDLED;
+}
+
+
+void off_state_set_level(uint8_t level) {
+    // this pattern gets used a few times, so reduce duplication
+    #ifdef USE_SMOOTH_STEPS
+        if (cfg.smooth_steps_style) set_level_smooth(level, 8);
+        else
+    #endif
+    set_level(level);
 }
 
