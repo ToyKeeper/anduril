@@ -18,7 +18,7 @@
 
 #define MAX_1x7135 65
 #define DEFAULT_LEVEL 65
-#define HALFSPEED_LEVEL 14
+#define HALFSPEED_LEVEL 15
 #define QUARTERSPEED_LEVEL 6
 
 #define RAMP_SMOOTH_FLOOR 1
@@ -29,12 +29,20 @@
 #define RAMP_DISCRETE_STEPS 7
 
 // safe limit ~20% power
-#define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
-#define SIMPLE_UI_CEIL 95
-#define SIMPLE_UI_STEPS 5
+#define SIMPLE_UI_FLOOR  RAMP_DISCRETE_FLOOR
+#define SIMPLE_UI_CEIL   100
+#define SIMPLE_UI_STEPS  5
 
 // stop panicking at ~30% power or ~1200 lm
 #define THERM_FASTER_LEVEL 105
 
+// don't blink during ramp
+#undef BLINK_AT_RAMP_MIDDLE
+
+// enable extra features
+#define USE_SMOOTH_STEPS
+
 // too big, turn off extra features
-#undef USE_TACTICAL_MODE
+//#undef USE_TACTICAL_MODE
+#undef USE_SOS_MODE
+
