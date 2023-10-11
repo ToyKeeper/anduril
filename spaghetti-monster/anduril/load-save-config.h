@@ -57,7 +57,9 @@ Config cfg = {
         #endif
     #endif
 
-    .dont_ramp_after_moon = DEFAULT_DONT_RAMP_AFTER_MOON,
+    #ifdef USE_RAMP_AFTER_MOON_CONFIG
+        .dont_ramp_after_moon = DEFAULT_DONT_RAMP_AFTER_MOON,
+    #endif
 
     #ifdef USE_MANUAL_MEMORY
         .manual_memory = DEFAULT_MANUAL_MEMORY,
