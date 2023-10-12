@@ -934,6 +934,7 @@ Lockout		Full	10H	Auto-lock config menu:
 
 Strobe (any)	Full	1C	Off
 Strobe (any)	Full	2C	Next strobe mode
+Strobe (any)	Full	3C	Next channel mode (saved per strobe mode)
 Strobe (any)	Full	4C	Prev strobe mode
 Strobe (any)	Full	5C	Momentary mode (using current strobe)
 

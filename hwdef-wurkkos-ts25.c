@@ -25,7 +25,6 @@ void set_level_zero() {
     CH1_PWM = 0;
     CH2_PWM = 0;
     PWM_CNT = 0;  // reset phase
-    return;
 }
 
 // single set of LEDs with 2 stacked power channels, DDFET+1 or DDFET+linear

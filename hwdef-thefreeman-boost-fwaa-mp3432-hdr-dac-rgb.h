@@ -106,7 +106,7 @@ enum CHANNEL_MODES {
 
 // Voltage divider battLVL
 #define USE_VOLTAGE_DIVIDER       // use a dedicated pin, not VCC, because VCC input is regulated
-#define DUAL_VOLTAGE_FLOOR     21  // for AA/14500 boost drivers, don't indicate low voltage if below this level
+#define DUAL_VOLTAGE_FLOOR     21 // for AA/14500 boost drivers, don't indicate low voltage if below this level
 #define DUAL_VOLTAGE_LOW_LOW   7  // the lower voltage range's danger zone 0.7 volts (NiMH)
 #define ADMUX_VOLTAGE_DIVIDER  ADC_MUXPOS_AIN2_gc  // which ADC channel to read
 
@@ -157,14 +157,14 @@ inline void hwdef_setup() {
     //PORTA.PIN5CTRL = PORT_PULLUPEN_bm;  // HDR
     //PORTA.PIN6CTRL = PORT_PULLUPEN_bm;  // DAC
     PORTA.PIN7CTRL = PORT_PULLUPEN_bm;
-    
+
     PORTB.PIN0CTRL = PORT_PULLUPEN_bm;
     PORTB.PIN1CTRL = PORT_PULLUPEN_bm;
     //PORTB.PIN2CTRL = PORT_PULLUPEN_bm;  // IN- NFET
     //PORTB.PIN3CTRL = PORT_PULLUPEN_bm;  // R
     //PORTB.PIN4CTRL = PORT_PULLUPEN_bm;  // G
     //PORTB.PIN5CTRL = PORT_PULLUPEN_bm;  // B
-    
+
     PORTC.PIN0CTRL = PORT_PULLUPEN_bm;
     PORTC.PIN1CTRL = PORT_PULLUPEN_bm;
     PORTC.PIN2CTRL = PORT_PULLUPEN_bm;

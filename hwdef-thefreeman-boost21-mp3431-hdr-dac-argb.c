@@ -12,7 +12,7 @@ bool gradual_tick_main(uint8_t gt);
 
 
 Channel channels[] = {
-    { // channel 1 only
+    { // main LEDs
         .set_level    = set_level_main,
         .gradual_tick = gradual_tick_main
     },
