@@ -68,7 +68,7 @@ enum channel_modes_e {
     RGB_AUX_ENUMS
 };
 
-#define CHANNEL_MODES_ENABLED 0b0000000000011111
+#define CHANNEL_MODES_ENABLED 0b0000000000001111
 #define USE_CHANNEL_MODE_ARGS
 // _, _, _, _, 128=middle CCT, 128=middle CCT, 213=purple, _
 #define CHANNEL_MODE_ARGS 0,0,0,0,128,128,213,0,RGB_AUX_CM_ARGS
@@ -86,28 +86,35 @@ enum channel_modes_e {
 #define PWM_GET       PWM_GET16
 #define PWM_DATATYPE  uint16_t
 #define PWM_DATATYPE2 uint32_t  // only needs 32-bit if ramp values go over 255
-#define PWM1_DATATYPE uint8_t   // 8-bit PWM on main2
-#define PWM2_DATATYPE uint16_t  // dynamic PWM on led3 + led4
+#define PWM1_DATATYPE uint16_t  // 15-bit PWM+DSM ramp
 
 // dynamic PWM
 #define PWM_TOP       ICR1   // holds the TOP value for for variable-resolution PWM
-#define PWM_TOP_INIT  511    // highest value used in top half of ramp
-#define PWM_CNT       TCNT1  // for dynamic PWM, reset phase
+#define PWM_TOP_INIT  255    // highest value used in top half of ramp
+#define PWM_CNT       TCNT1  // for checking / resetting phase
+#define PWM_CNT2      TCNT0  // for checking / resetting phase
+// (max is (255 << 7), because it's 8-bit PWM plus 7 bits of DSM)
+#define DSM_TOP       (255<<7) // 15-bit resolution leaves 1 bit for carry
 
 // main 2 LEDs / 1st channel (2 LEDs)
+uint16_t main2_dsm_lvl;
+uint8_t main2_pwm, main2_dsm;
 #define MAIN2_PWM_PIN PC0
 #define MAIN2_PWM_LVL OCR0A   // OCR0A is the output compare register for PC0
 #define MAIN2_ENABLE_PIN  PB0    // Opamp power
 #define MAIN2_ENABLE_PORT PORTB  // control port for PB0
 
 // LED 3 / 2nd channel (1 LED)
+uint16_t led3_dsm_lvl;
+uint8_t led3_pwm, led3_dsm;
 #define LED3_PWM_PIN PB3
 #define LED3_PWM_LVL OCR1A   // OCR1A is the output compare register for PB3
 #define LED3_ENABLE_PIN  PA1    // Opamp power
 #define LED3_ENABLE_PORT PORTA  // control port for PA1
 
 // LED 4 / 3rd channel (1 LED)
-// 8-bit PWM only on OCR0A :(
+uint16_t led4_dsm_lvl;
+uint8_t led4_pwm, led4_dsm;
 #define LED4_PWM_PIN PA6
 #define LED4_PWM_LVL OCR1B  // OCR1B is the output compare register for PA6
 #define LED4_ENABLE_PIN  PA0    // Opamp power
@@ -206,6 +213,8 @@ inline void hwdef_setup() {
             //| (1<<WGM13)  | (1<<WGM12)  // fast adjustable PWM (DS table 12-5)
             | (1<<WGM13)  | (0<<WGM12)  // phase-correct adjustable PWM (DS table 12-5)
             ;
+    // set PWM resolution
+    PWM_TOP = PWM_TOP_INIT;
 
     // 8-bit PWM channel (LEDs 1+2 or LED 4)
     // WGM0[2:0]: 0,0,1: PWM, Phase Correct, 8-bit (DS table 11-8)
@@ -219,8 +228,9 @@ inline void hwdef_setup() {
     TCCR0B  = (0<<CS02)   | (0<<CS01) | (1<<CS00)  // clk/1 (no prescaling) (DS table 11-9)
             | (0<<WGM02)  // phase-correct PWM (DS table 11-8)
             ;
-    // set PWM resolution
-    PWM_TOP = PWM_TOP_INIT;
+
+    // set up interrupt for delta-sigma modulation
+    TIMSK |= (1<<TOIE0);  // interrupt once for each timer 0 cycle
 
     // set up e-switch
     SWITCH_PUE = (1 << SWITCH_PIN);  // pull-up for e-switch

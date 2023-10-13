@@ -96,11 +96,11 @@ void calc_2ch_blend(
 
 #ifdef USE_HSV2RGB
 typedef struct RGB_t {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
+    uint16_t r;
+    uint16_t g;
+    uint16_t b;
 } RGB_t;
-RGB_t hsv2rgb(uint8_t h, uint8_t s, uint8_t v);
+RGB_t hsv2rgb(uint8_t h, uint8_t s, uint16_t v);
 #endif  // ifdef USE_HSV2RGB
 
 

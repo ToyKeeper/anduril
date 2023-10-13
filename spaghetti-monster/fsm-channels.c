@@ -9,7 +9,10 @@
 
 #if NUM_CHANNEL_MODES > 1
 void set_channel_mode(uint8_t mode) {
+    if (mode == channel_mode) return;  // abort if nothing to do
+
     uint8_t cur_level = actual_level;
+
     // turn off old LEDs before changing channel
     set_level(0);
 
@@ -85,7 +88,7 @@ void calc_2ch_blend(
 
 
 #ifdef USE_HSV2RGB
-RGB_t hsv2rgb(uint8_t h, uint8_t s, uint8_t v) {
+RGB_t hsv2rgb(uint8_t h, uint8_t s, uint16_t v) {
     RGB_t color;
 
     if (s == 0) {  // grey
@@ -105,11 +108,11 @@ RGB_t hsv2rgb(uint8_t h, uint8_t s, uint8_t v) {
     // calculate graph segments, doing integer multiplication
     // TODO: calculate 16-bit results, not 8-bit
     high    = v;
-    low     = (v * (255 - s)) >> 8;
+    low     = ((uint32_t)v * (255 - s)) >> 8;
     // TODO: use a cosine crossfade instead of linear
     // (because it looks better and feels more natural)
-    falling = (v * (255 - ((s * fpart) >> 8))) >> 8;
-    rising  = (v * (255 - ((s * (255 - fpart)) >> 8))) >> 8;
+    falling = ((uint32_t)v * (255 - ((s * fpart) >> 8))) >> 8;
+    rising  = ((uint32_t)v * (255 - ((s * (255 - fpart)) >> 8))) >> 8;
 
     // default floor
     color.r = low;
