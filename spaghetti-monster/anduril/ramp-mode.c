@@ -153,15 +153,21 @@ uint8_t steady_state(Event event, uint16_t arg) {
     // hold: change brightness (brighter, dimmer)
     // click, hold: change brightness (dimmer)
     else if ((event == EV_click1_hold) || (event == EV_click2_hold)) {
-        // ramp slower in discrete mode
-        if (cfg.ramp_style  &&  (arg % HOLD_TIMEOUT != 0)) {
+        // ramp infrequently in stepped mode
+        if (cfg.ramp_style && (arg % HOLD_TIMEOUT != 0))
             return EVENT_HANDLED;
-        }
         #ifdef USE_RAMP_SPEED_CONFIG
-        // ramp slower if user configured things that way
-        if ((! cfg.ramp_style) && (arg % ramp_speed)) {
-            return EVENT_HANDLED;
-        }
+            // ramp slower if user configured things that way
+            if ((! cfg.ramp_style) && (arg % ramp_speed))
+                return EVENT_HANDLED;
+        #endif
+        #ifdef USE_SMOOTH_STEPS
+            // if a brightness transition is already happening,
+            // don't interrupt it
+            // (like 2C for full turbo then 1H to smooth ramp down
+            //  ... without this clause, it flickers because it trips
+            //  the "blink at ramp ceil" clause below, over and over)
+            if (smooth_steps_in_progress) return EVENT_HANDLED;
         #endif
         // fix ramp direction on first frame if necessary
         if (!arg) {
@@ -200,6 +206,11 @@ uint8_t steady_state(Event event, uint16_t arg) {
                           + (step_size * ramp_direction));
         #if defined(BLINK_AT_RAMP_CEIL) || defined(BLINK_AT_RAMP_MIDDLE)
         // only blink once for each threshold
+        // FIXME: blinks at beginning of smooth_steps animation instead
+        // of the end, so it should blink when actual_level reaches a
+        // threshold, instead of when memorized_level does
+        // (one possible fix is to just remove mid-ramp blinks entirely,
+        //  and just blink only when it hits the top while going up)
         if ((memorized_level != actual_level) && (
                 0  // for easier syntax below
                 #ifdef BLINK_AT_RAMP_MIDDLE_1
@@ -209,6 +220,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
                 || (memorized_level == BLINK_AT_RAMP_MIDDLE_2)
                 #endif
                 #ifdef BLINK_AT_RAMP_CEIL
+                // FIXME: only blink at top when going up, not down
                 || (memorized_level == mode_max)
                 #endif
                 #ifdef BLINK_AT_RAMP_FLOOR
