@@ -75,7 +75,7 @@ typedef struct Config {
     ///// strobe / blinky mode settings
     #ifdef USE_STROBE_STATE
         uint8_t strobe_type;
-        #if NUM_CHANNEL_MODES > 1
+        #if (NUM_CHANNEL_MODES > 1) && defined(USE_CHANNEL_PER_STROBE)
             uint8_t strobe_channels[NUM_STROBES];
         #endif
     #endif

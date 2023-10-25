@@ -43,7 +43,7 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         save_config();
         return EVENT_HANDLED;
     }
-    #if NUM_CHANNEL_MODES > 1
+    #if (NUM_CHANNEL_MODES > 1) && defined(USE_CHANNEL_PER_STROBE)
     // 3 clicks: rotate through channel modes for the current strobe
     else if (event == EV_3clicks) {
         // TODO: maybe skip aux modes?
@@ -167,7 +167,7 @@ uint8_t strobe_state(Event event, uint16_t arg) {
 inline void strobe_state_iter() {
     uint8_t st = current_strobe_type;  // can't use switch() on an enum
 
-    #if NUM_CHANNEL_MODES > 1
+    #if (NUM_CHANNEL_MODES > 1) && defined(USE_CHANNEL_PER_STROBE)
         // remember channel mode for each strobe
         channel_mode = cfg.strobe_channels[st];
     #endif

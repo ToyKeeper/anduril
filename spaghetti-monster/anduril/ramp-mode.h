@@ -129,7 +129,7 @@ uint8_t nearest_level(int16_t target);
 // ensure ramp globals are correct
 void ramp_update_config();
 
-#ifdef USE_THERMAL_REGULATION
+#if defined(USE_THERMAL_REGULATION) || defined(USE_SMOOTH_STEPS)
 // brightness before thermal step-down
 uint8_t target_level = 0;
 void set_level_and_therm_target(uint8_t level);

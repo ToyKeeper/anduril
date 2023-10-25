@@ -201,3 +201,7 @@
 // 0 = none, 1 = smooth, 2+ = undefined
 #define DEFAULT_SMOOTH_STEPS_STYLE  1
 
+// by default, allow user to set the channel for each strobe-group mode
+// (but allow disabling this feature per build)
+#define USE_CHANNEL_PER_STROBE
+
