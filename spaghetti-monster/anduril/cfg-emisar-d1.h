@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "hwdef-Emisar_D1.h"
 // same as Emisar D4, mostly
+#include "hwdef-emisar-d4.h"
 #include "cfg-emisar-d4.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0121"

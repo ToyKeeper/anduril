@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "hwdef-Emisar_D1S.h"
 // same as Emisar D4, mostly
+#include "hwdef-emisar-d4.h"
 #include "cfg-emisar-d4.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0122"
@@ -20,4 +20,4 @@
 #define THERM_FASTER_LEVEL 144  // throttle back faster when high
 
 // too big, turn off extra features
-#undef USE_TACTICAL_MODE
+//#undef USE_TACTICAL_MODE
