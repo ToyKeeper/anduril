@@ -94,7 +94,7 @@ inline void hwdef_setup() {
     TCCR0A = PHASE;
 
     // enable timer 0 overflow interrupt for DSM purposes
-    TIMSK |= (1 << TOIE0);
+    //TIMSK |= (1 << TOIE0);  // moved to hwdef.c functions instead
 
     // configure e-switch
     PORTB = (1 << SWITCH_PIN);  // e-switch is the only input
