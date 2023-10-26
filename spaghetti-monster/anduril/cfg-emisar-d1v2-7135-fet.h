@@ -17,7 +17,7 @@
 // (early short run had no button LEDs at all, later run uses linear+FET instead,
 //  so it's unlikely that anyone needs this, but it doesn't hurt anything)
 #define USE_AUX_RGB_LEDS
-#define USE_AUX_RGB_LEDS_WHILE_ON
+#define USE_AUX_RGB_LEDS_WHILE_ON  25
 #define USE_INDICATOR_LED_WHILE_RAMPING
 
 // safe limit ~50% power
