@@ -6,6 +6,7 @@
 #include "spaghetti-monster/anduril/channel-modes.h"  //for circular_tint_3h()
 #include "chan-rgbaux.c"
 
+void set_level_zero();
 
 void set_level_main2(uint8_t level);
 void set_level_led3(uint8_t level);

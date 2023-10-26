@@ -68,6 +68,7 @@ uint8_t ch2_pwm, ch2_dsm;
 #define CH2_PIN  PB0        // pin 5, cold tint PWM
 #define CH2_PWM  OCR0A      // OCR0A is the output compare register for PB0
 
+// lighted button
 #define AUXLED_PIN   PB4    // pin 3
 
 // e-switch
