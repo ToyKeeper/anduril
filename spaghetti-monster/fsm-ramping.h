@@ -69,7 +69,9 @@ void gradual_tick();
     #define STACKED_PWM_DATATYPE uint8_t
     #define PWM_DATATYPE uint8_t
     #define PWM_DATATYPE2 uint16_t
-    #define PWM_TOP 255
+    #ifndef PWM_TOP
+        #define PWM_TOP 255
+    #endif
     #define STACKED_PWM_TOP 255
     #ifndef PWM_GET
     #define PWM_GET(x,y) pgm_read_byte(x+y)

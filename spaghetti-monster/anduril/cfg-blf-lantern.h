@@ -18,6 +18,7 @@
 // channel modes...
 // CM_CH1, CM_CH2, CM_BOTH, CM_BLEND, CM_AUTO
 #define DEFAULT_CHANNEL_MODE  CM_AUTO
+//#define DEFAULT_BLINK_CHANNEL  CM_BOTH  // takes too much space
 
 // how much to increase total brightness at middle tint
 // (0 = 100% brightness, 64 = 200% brightness)
@@ -54,14 +55,14 @@
 #define RAMP_DISCRETE_CEIL   150
 #define RAMP_DISCRETE_STEPS  7
 
-// Allow 3C in Simple UI for switching between smooth and stepped ramping
-#define USE_SIMPLE_UI_RAMPING_TOGGLE
-#define USE_EXTENDED_SIMPLE_UI
-
 // LT1 can handle heat well, so don't limit simple mode
 #define SIMPLE_UI_FLOOR  10
 #define SIMPLE_UI_CEIL   150
 #define SIMPLE_UI_STEPS  5
+
+// Allow 3C in Simple UI for switching between smooth and stepped ramping
+#define USE_SIMPLE_UI_RAMPING_TOGGLE
+#define USE_EXTENDED_SIMPLE_UI
 
 // also at Sofirn's request, enable 2 click turbo (Anduril 1 style)
 #define DEFAULT_2C_STYLE  1
