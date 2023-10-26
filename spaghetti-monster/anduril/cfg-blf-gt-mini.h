@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "hwdef-BLF_GT_Mini.h"
+#include "hwdef-blf-gt-mini.h"
 // Same as an Emisar D1S, except it has a lighted button
 #include "cfg-emisar-d1s.h"
 #undef MODEL_NUMBER
@@ -15,6 +15,7 @@
 #define USE_INDICATOR_LED_WHILE_RAMPING
 
 // too big, remove stuff to make room
+#undef USE_TACTICAL_MODE
 #undef USE_SOS_MODE
 //#undef USE_RAMP_AFTER_MOON_CONFIG
 //#undef USE_RAMP_SPEED_CONFIG

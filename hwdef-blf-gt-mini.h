@@ -4,7 +4,8 @@
 #pragma once
 
 // exactly the same as a D1S, but with a lighted button
-#include "hwdef-Emisar_D1S.h"
+// (which is the same hwdef as a D4)
+#include "hwdef-emisar-d4.h"
 
 // lighted button
 #ifndef AUXLED_PIN
