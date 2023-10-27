@@ -27,8 +27,6 @@
  *  20    PA7   e-switch (PCINT7)
  *      ADC12   thermal sensor
  *
- * All 3 channels share a single Opamp enable pin,
- * but have individual PWM controls.
  * PWM speed + resolution is dynamic on 2 channels,
  * and 8-bit 16 kHz on 1 channel.
  *

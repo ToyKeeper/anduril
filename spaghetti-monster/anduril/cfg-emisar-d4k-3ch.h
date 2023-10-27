@@ -56,8 +56,8 @@
 #define MAX_1x7135 70
 // always run at 1/4th speed, because 4 kHz PWM is enough for this circuit
 // and speed changes make a big visible bump
-#define HALFSPEED_LEVEL 255
-#define QUARTERSPEED_LEVEL 255
+#define HALFSPEED_LEVEL     255
+#define QUARTERSPEED_LEVEL  255
 
 #define RAMP_SMOOTH_FLOOR 1
 #define RAMP_SMOOTH_CEIL  130

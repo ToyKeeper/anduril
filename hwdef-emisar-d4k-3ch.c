@@ -262,6 +262,7 @@ void set_level_auto3(uint8_t level) {
 }
 
 ///// "gradual tick" functions for smooth thermal regulation /////
+// (and other smooth adjustments)
 
 bool gradual_adjust(PWM_DATATYPE main2, PWM_DATATYPE led3, PWM_DATATYPE led4) {
     // adjust multiple times based on current brightness

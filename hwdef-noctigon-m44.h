@@ -63,34 +63,41 @@ enum channel_modes_e {
 #define USE_CALC_2CH_BLEND
 
 
-#define PWM_CHANNELS 1  // old, remove this
+#define PWM_CHANNELS  1  // old, remove this
 
-#define PWM_BITS 16     // 0 to 16383 at variable Hz, not 0 to 255 at 16 kHz
+#define PWM_BITS      16     // 0 to 16383 at variable Hz, not 0 to 255 at 16 kHz
 #define PWM_GET       PWM_GET16
 #define PWM_DATATYPE  uint16_t
 #define PWM_DATATYPE2 uint32_t  // only needs 32-bit if ramp values go over 255
-#define PWM1_DATATYPE uint16_t  // regular ramp table
+#define PWM1_DATATYPE uint16_t  // 15-bit PWM+DSM ramp
 //#define PWM2_DATATYPE uint16_t  // max "200% power" ramp table
-//#define PWM3_DATATYPE uint16_t  // PWM_TOPs for 2nd ramp table
 
 // PWM parameters of both channels are tied together because they share a counter
+// dynamic PWM
 #define PWM_TOP       ICR1   // holds the TOP value for for variable-resolution PWM
-#define PWM_TOP_INIT  511
-#define PWM_CNT       TCNT1  // for dynamic PWM, reset phase
+#define PWM_TOP_INIT  255
+#define PWM_CNT       TCNT1  // for checking / resetting phase
+// (max is (255 << 7), because it's 8-bit PWM plus 7 bits of DSM)
+#define DSM_TOP       (255<<7) // 15-bit resolution leaves 1 bit for carry
 
-#define CH1_PIN  PB3            // pin 16, Opamp reference
-#define CH1_PWM  OCR1A          // OCR1A is the output compare register for PB3
+// 1st channel (8 LEDs)
+uint16_t ch1_dsm_lvl;
+uint8_t ch1_pwm, ch1_dsm;
+#define CH1_PIN          PB3    // pin 16, Opamp reference
+#define CH1_PWM          OCR1A  // OCR1A is the output compare register for PB3
 #define CH1_ENABLE_PIN   PB0    // pin 19, Opamp power
 #define CH1_ENABLE_PORT  PORTB  // control port for PB0
 
-#define CH2_PIN  PA6            // pin 1, 2nd LED Opamp reference
-#define CH2_PWM  OCR1B          // OCR1B is the output compare register for PA6
+// 2nd channel (8 LEDs)
+uint16_t ch2_dsm_lvl;
+uint8_t ch2_pwm, ch2_dsm;
+#define CH2_PIN          PA6    // pin 1, 2nd LED Opamp reference
+#define CH2_PWM          OCR1B  // OCR1B is the output compare register for PA6
 #define CH2_ENABLE_PIN   PA0    // pin 7, Opamp power
 #define CH2_ENABLE_PORT  PORTA  // control port for PA0
 
 
 // e-switch
-#ifndef SWITCH_PIN
 #define SWITCH_PIN   PA7     // pin 20
 #define SWITCH_PCINT PCINT7  // pin 20 pin change interrupt
 #define SWITCH_PCIE  PCIE0   // PCIE1 is for PCINT[7:0]
@@ -98,7 +105,6 @@ enum channel_modes_e {
 #define SWITCH_PORT  PINA    // PINA or PINB or PINC
 #define SWITCH_PUE   PUEA    // pullup group A
 #define PCINT_vect   PCINT0_vect  // ISR for PCINT[7:0]
-#endif
 
 #define USE_VOLTAGE_DIVIDER  // use a dedicated pin, not VCC, because VCC input is flattened
 #define VOLTAGE_PIN PB1      // Pin 18 / PB1 / ADC6
@@ -161,7 +167,7 @@ inline void hwdef_setup() {
     // configure PWM
     // Setup PWM. F_pwm = F_clkio / 2 / N / TOP, where N = prescale factor, TOP = top of counter
     // pre-scale for timer: N = 1
-    // Linear opamp PWM for both main and 2nd LEDs (10-bit)
+    // PWM for both channels
     // WGM1[3:0]: 1,0,1,0: PWM, Phase Correct, adjustable (DS table 12-5)
     // WGM1[3:0]: 1,1,1,0: PWM, Fast, adjustable (DS table 12-5)
     // CS1[2:0]:    0,0,1: clk/1 (No prescaling) (DS table 12-6)
@@ -172,17 +178,22 @@ inline void hwdef_setup() {
             | (1<<COM1B1) | (0<<COM1B0)  // PWM 1B in normal direction (DS table 12-4)
             ;
     TCCR1B  = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
-            | (1<<WGM13)  | (1<<WGM12)  // fast adjustable PWM (DS table 12-5)
-            //| (1<<WGM13)  | (0<<WGM12)  // phase-correct adjustable PWM (DS table 12-5)
+            //| (1<<WGM13)  | (1<<WGM12)  // fast adjustable PWM (DS table 12-5)
+            | (1<<WGM13)  | (0<<WGM12)  // phase-correct adjustable PWM (DS table 12-5)
             ;
 
     // set PWM resolution
     PWM_TOP = PWM_TOP_INIT;
 
+    // set up interrupt for delta-sigma modulation
+    // (moved to hwdef.c functions so it can be enabled/disabled based on ramp level)
+    //TIMSK |= (1<<TOIE1);  // interrupt once for each timer 1 cycle
+
     // set up e-switch
     SWITCH_PUE = (1 << SWITCH_PIN);  // pull-up for e-switch
     SWITCH_PCMSK = (1 << SWITCH_PCINT);  // enable pin change interrupt
 }
+
 
 #define LAYOUT_DEFINED
 
