@@ -1,10 +1,12 @@
-// Wurkkos TS10 driver layout
+// BLF Q8 driver layout using the Attiny1616
 // Copyright (C) 2021-2023 gchart, Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
 /*
- * (based on BLF Q8-t1616 driver layout)
+ * (based on Wurkkos TS10 driver layout,
+ *  which in turn was based on an older version of this BLF-Q8-t1616 driver)
+ * (should probably merge the two files at some point)
  * Driver pinout:
  * eSwitch:    PA5
  * Aux LED:    PB5
@@ -16,6 +18,8 @@
 #define ATTINY 1616
 #include <avr/io.h>
 
+// nearly all t1616-based FET+1 drivers work pretty much the same
+// (this one has single-color aux like the TS10)
 #define HWDEF_C_FILE hwdef-wurkkos-ts10.c
 
 // allow using aux LEDs as extra channel modes
@@ -61,21 +65,19 @@ enum CHANNEL_MODES {
 
 // e-switch
 #define SWITCH_PIN      PIN5_bp
-//#define SWITCH_PCINT    PCINT0
 #define SWITCH_PORT     VPORTA.IN
 #define SWITCH_ISC_REG  PORTA.PIN2CTRL
 #define SWITCH_VECT     PORTA_PORT_vect
 #define SWITCH_INTFLG   VPORTA.INTFLAGS
-//#define PCINT_vect      PCINT0_vect
 
 // average drop across diode on this hardware
 #ifndef VOLTAGE_FUDGE_FACTOR
 #define VOLTAGE_FUDGE_FACTOR 7  // add 0.35V
 #endif
 
-// front-facing aux LEDs
-#define AUXLED_PIN  PIN5_bp
-#define AUXLED_PORT PORTB
+// lighted button
+#define AUXLED_PIN   PIN5_bp
+#define AUXLED_PORT  PORTB
 
 
 inline void hwdef_setup() {
