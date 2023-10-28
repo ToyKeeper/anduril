@@ -39,8 +39,8 @@
 // channel modes:
 // * 0. channel 1 only
 // * 1. channel 2 only
-// * 2. both channels, tied together
-// * 3. both channels, manual blend
+// * 2. both channels, tied together, max "200%" power
+// * 3. both channels, manual blend, max "100%" power
 // * 4? both channels, manual blend, max 200% power
 // * 4. both channels, auto blend, reversible
 #define NUM_CHANNEL_MODES   (5 + NUM_RGB_AUX_CHANNEL_MODES)
@@ -65,7 +65,7 @@ enum channel_modes_e {
 
 #define PWM_CHANNELS  1  // old, remove this
 
-#define PWM_BITS      16     // 0 to 16383 at variable Hz, not 0 to 255 at 16 kHz
+#define PWM_BITS      16     // 0 to 32640 (0 to 255 PWM + 0 to 127 DSM) at constant kHz
 #define PWM_GET       PWM_GET16
 #define PWM_DATATYPE  uint16_t
 #define PWM_DATATYPE2 uint32_t  // only needs 32-bit if ramp values go over 255
@@ -79,6 +79,11 @@ enum channel_modes_e {
 #define PWM_CNT       TCNT1  // for checking / resetting phase
 // (max is (255 << 7), because it's 8-bit PWM plus 7 bits of DSM)
 #define DSM_TOP       (255<<7) // 15-bit resolution leaves 1 bit for carry
+
+// timer interrupt for DSM
+#define DSM_vect     TIMER1_OVF_vect
+#define DSM_INTCTRL  TIMSK
+#define DSM_OVF_bm   (1<<TOIE1)
 
 // 1st channel (8 LEDs)
 uint16_t ch1_dsm_lvl;
@@ -187,7 +192,7 @@ inline void hwdef_setup() {
 
     // set up interrupt for delta-sigma modulation
     // (moved to hwdef.c functions so it can be enabled/disabled based on ramp level)
-    //TIMSK |= (1<<TOIE1);  // interrupt once for each timer 1 cycle
+    //DSM_INTCTRL |= DSM_OVF_bm;  // interrupt once for each timer cycle
 
     // set up e-switch
     SWITCH_PUE = (1 << SWITCH_PIN);  // pull-up for e-switch

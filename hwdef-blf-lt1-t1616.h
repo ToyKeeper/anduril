@@ -46,40 +46,49 @@ enum channel_modes_e {
 #define USE_CALC_2CH_BLEND
 
 
-#define PWM_CHANNELS   1  // old, remove this
+#define PWM_CHANNELS  1  // old, remove this
 
-#define PWM_BITS      8  //
-
-#define PWM_GET       PWM_GET8
-#define PWM_DATATYPE  uint8_t
-#define PWM_DATATYPE2 uint16_t  // only needs 32-bit if ramp values go over 255
-#define PWM1_DATATYPE uint8_t   //
+#define PWM_BITS      16     // 0 to 32640 (0 to 255 PWM + 0 to 127 DSM) at constant kHz
+#define PWM_GET       PWM_GET16
+#define PWM_DATATYPE  uint16_t
+#define PWM_DATATYPE2 uint32_t  // only needs 32-bit if ramp values go over 255
+#define PWM1_DATATYPE uint16_t  // 15-bit PWM+DSM ramp
 
 // PWM parameters of both channels are tied together because they share a counter
-#define PWM_TOP_INIT  255  // highest value used in the top half of the ramp
-#define PWM_TOP TCA0.SINGLE.PERBUF   // holds the TOP value for for variable-resolution PWM
-#define PWM_CNT TCA0.SINGLE.CNT   // for resetting phase after each TOP adjustment
-// TODO: implement DSM
+// dynamic PWM
+#define PWM_TOP  TCA0.SINGLE.PERBUF  // holds the TOP value for for variable-resolution PWM
+#define PWM_TOP_INIT  255
+#define PWM_CNT  TCA0.SINGLE.CNT  // for resetting phase after each TOP adjustment
+// (max is (255 << 7), because it's 8-bit PWM plus 7 bits of DSM)
 #define DSM_TOP       (255<<7) // 15-bit resolution leaves 1 bit for carry
 
+// timer interrupt for DSM
+#define DSM_vect     TCA0_OVF_vect
+#define DSM_INTCTRL  TCA0.SINGLE.INTCTRL
+#define DSM_OVF_bm   TCA_SINGLE_OVF_bm
+
 // warm LEDs
+uint16_t ch1_dsm_lvl;
+uint8_t ch1_pwm, ch1_dsm;
 #define CH1_PIN  PB1
-#define CH1_PWM TCA0.SINGLE.CMP1  // CMP1 is the output compare register for PB1
+#define CH1_PWM  TCA0.SINGLE.CMP1  // CMP1 is the output compare register for PB1
 
 // cold LEDs
-#define CH2_PIN PB0
-#define CH2_PWM TCA0.SINGLE.CMP0  // CMP0 is the output compare register for PB0
+uint16_t ch2_dsm_lvl;
+uint8_t ch2_pwm, ch2_dsm;
+#define CH2_PIN  PB0
+#define CH2_PWM  TCA0.SINGLE.CMP0  // CMP0 is the output compare register for PB0
 
 // lighted button
 #define AUXLED_PIN   PIN5_bp
 #define AUXLED_PORT  PORTB
 
 // e-switch
-#define SWITCH_PIN     PIN5_bp
-#define SWITCH_PORT    VPORTA.IN
-#define SWITCH_ISC_REG PORTA.PIN2CTRL
-#define SWITCH_VECT    PORTA_PORT_vect
-#define SWITCH_INTFLG  VPORTA.INTFLAGS
+#define SWITCH_PIN      PIN5_bp
+#define SWITCH_PORT     VPORTA.IN
+#define SWITCH_ISC_REG  PORTA.PIN2CTRL
+#define SWITCH_VECT     PORTA_PORT_vect
+#define SWITCH_INTFLG   VPORTA.INTFLAGS
 
 // average drop across diode on this hardware
 #ifndef VOLTAGE_FUDGE_FACTOR
@@ -89,11 +98,12 @@ enum channel_modes_e {
 
 inline void hwdef_setup() {
 
-    // set up the system clock to run at 5 MHz instead of the default 3.33 MHz
-    _PROTECTED_WRITE( CLKCTRL.MCLKCTRLB, CLKCTRL_PDIV_4X_gc | CLKCTRL_PEN_bm );
+    // set up the system clock to run at 10 MHz instead of the default 3.33 MHz
+    _PROTECTED_WRITE( CLKCTRL.MCLKCTRLB,
+                      CLKCTRL_PDIV_2X_gc | CLKCTRL_PEN_bm );
 
     //VPORTA.DIR = ...;
-    // Outputs:
+    // Outputs
     VPORTB.DIR = PIN0_bm   // cool white
                | PIN1_bm   // warm white
                | PIN5_bm;  // aux LED
@@ -130,10 +140,16 @@ inline void hwdef_setup() {
     // TODO: add references to MCU documentation
     TCA0.SINGLE.CTRLB = TCA_SINGLE_CMP0EN_bm
                       | TCA_SINGLE_CMP1EN_bm
-                      | TCA_SINGLE_WGMODE_SINGLESLOPE_gc;
-    PWM_TOP = PWM_TOP_INIT;
+                      | TCA_SINGLE_WGMODE_DSBOTTOM_gc;
     TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc
                       | TCA_SINGLE_ENABLE_bm;
+
+    PWM_TOP = PWM_TOP_INIT;
+
+    // set up interrupt for delta-sigma modulation
+    // (moved to hwdef.c functions so it can be enabled/disabled based on ramp level)
+    //DSM_INTCTRL |= DSM_OVF_bm;  // interrupt once for each timer cycle
+
 }
 
 
