@@ -18,6 +18,9 @@
 #endif
 #define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
 
+// the button is *not* visible while main LEDs are on
+#undef USE_INDICATOR_LED_WHILE_RAMPING
+
 // ramp shape is different than original ROT66
 // 1x7135: 150 lm
 // Nx7135: 1200 lm
