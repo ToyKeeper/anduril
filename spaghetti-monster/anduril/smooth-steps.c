@@ -23,12 +23,12 @@ void smooth_steps_iter() {
         uint8_t this = diff / smooth_steps_speed;
         if (!this) this = 1;
         set_level(actual_level + this);
-        nice_delay_ms(9);
+        nice_delay_ms(10);
     } else {
         // ramp-linear descent
         // (jump by 1 on each frame, frame rate gives constant total time)
         uint8_t diff = smooth_steps_start - smooth_steps_target;
-        uint16_t delay = 1 + (22 * smooth_steps_speed / diff);
+        uint16_t delay = 1 + (24 * smooth_steps_speed / diff);
         set_level(actual_level - 1);
         // TODO? if delay < one PWM cycle, this can look a little weird
         nice_delay_ms(delay);

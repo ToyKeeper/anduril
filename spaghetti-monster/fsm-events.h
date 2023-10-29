@@ -55,9 +55,9 @@ uint8_t push_event(uint8_t ev_type);  // only for use by PCINT_inner()
 // TODO: Maybe move these to their own file...
 // ... this probably isn't the right place for delays.
 #ifndef DELAY_FACTOR
-// adjust the timing of delays, lower = shorter delays
-// 90 = 90% delay, 10% for other things
-#define DELAY_FACTOR 92
+    // adjust the timing of delays, lower = shorter delays
+    // 90 = 90% delay, 10% for other things
+    #define DELAY_FACTOR 92
 #endif
 inline void interrupt_nice_delays();
 uint8_t nice_delay_ms(uint16_t ms);

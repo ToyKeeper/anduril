@@ -58,7 +58,7 @@
 #elif (ATTINY == 412) || (ATTINY == 416) || (ATTINY == 417) || (ATTINY == 816) || (ATTINY == 817) || (ATTINY == 1616) || (ATTINY == 1617) || (ATTINY == 3216) || (ATTINY == 3217)
     #define AVRXMEGA3
     #define F_CPU 10000000UL
-    #define BOGOMIPS (F_CPU/4000)
+    #define BOGOMIPS (F_CPU/4700)
     #define EEPSIZE 128
     #define DELAY_ZERO_TIME 1020
 #else
