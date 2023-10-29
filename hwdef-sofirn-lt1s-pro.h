@@ -96,10 +96,11 @@ enum channel_modes_e {
 inline void hwdef_setup() {
 
     // set up the system clock to run at 10 MHz instead of the default 3.33 MHz
-    _PROTECTED_WRITE( CLKCTRL.MCLKCTRLB, CLKCTRL_PDIV_2X_gc | CLKCTRL_PEN_bm );
+    _PROTECTED_WRITE( CLKCTRL.MCLKCTRLB,
+                      CLKCTRL_PDIV_2X_gc | CLKCTRL_PEN_bm );
 
     //VPORTA.DIR = ...;
-    // Outputs:
+    // Outputs
     VPORTB.DIR = PIN0_bm   // warm white
                | PIN1_bm   // cool white
                | PIN2_bm   // red

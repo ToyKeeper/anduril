@@ -32,9 +32,6 @@
 // blink numbers on the main LEDs by default (but allow user to change it)
 #define DEFAULT_BLINK_CHANNEL  CM_RED
 
-#define POLICE_COLOR_STROBE_CH1        CM_RED
-#define POLICE_COLOR_STROBE_CH2        CM_WHITE
-
 // how much to increase total brightness at middle tint
 // (0 = 100% brightness, 64 = 200% brightness)
 // seems unnecessary on this light
@@ -74,18 +71,18 @@
 #define RAMP_STYLE 1  // 0 = smooth, 1 = stepped
 // set floor and ceiling as far apart as possible
 // because this lantern isn't overpowered
-#define RAMP_SMOOTH_FLOOR 1
-#define RAMP_SMOOTH_CEIL  150
+#define RAMP_SMOOTH_FLOOR    1
+#define RAMP_SMOOTH_CEIL     150
 //#define RAMP_DISCRETE_FLOOR 17  // 17 50 83 116 150
-#define RAMP_DISCRETE_FLOOR 1  // 1 25 50 75 100 125 150
-#define RAMP_DISCRETE_CEIL  RAMP_SMOOTH_CEIL
-#define RAMP_DISCRETE_STEPS 7
+#define RAMP_DISCRETE_FLOOR  1  // 1 25 50 75 100 125 150
+#define RAMP_DISCRETE_CEIL   150
+#define RAMP_DISCRETE_STEPS  7
 
 // LT1S can handle heat well, so don't limit simple mode
 //#define SIMPLE_UI_FLOOR 10  // 10 45 80 115 150
-#define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
-#define SIMPLE_UI_CEIL  RAMP_DISCRETE_CEIL
-#define SIMPLE_UI_STEPS RAMP_DISCRETE_STEPS
+#define SIMPLE_UI_FLOOR  1
+#define SIMPLE_UI_CEIL   150
+#define SIMPLE_UI_STEPS  7
 
 // Allow 3C (or 6C) in Simple UI (toggle smooth or stepped ramping)
 #define USE_SIMPLE_UI_RAMPING_TOGGLE
@@ -106,6 +103,9 @@
 #define USE_SOS_MODE_IN_BLINKY_GROUP
 
 #define USE_POLICE_COLOR_STROBE_MODE
+#define POLICE_COLOR_STROBE_CH1        CM_RED
+#define POLICE_COLOR_STROBE_CH2        CM_WHITE
+
 #undef  TACTICAL_LEVELS
 #define TACTICAL_LEVELS 120,30,(RAMP_SIZE+3)  // high, low, police strobe
 

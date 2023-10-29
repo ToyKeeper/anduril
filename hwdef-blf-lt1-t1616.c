@@ -54,7 +54,7 @@ Channel channels[] = {
 void set_level_zero() {
     // disable timer overflow interrupt
     // (helps improve button press handling from Off state)
-    DSM_INTCTRL &= ~DSM_OVF_bm;
+    DSM_INTCTRL = 0;
 
     // turn off all LEDs
     ch1_dsm_lvl = 0;
@@ -77,7 +77,7 @@ void set_hw_levels(PWM_DATATYPE ch1, PWM_DATATYPE ch2) {
     CH2_PWM = ch2_pwm = ch2 >> 7;
 
     // enable timer overflow interrupt so DSM can work
-    DSM_INTCTRL |= DSM_OVF_bm;
+    DSM_INTCTRL = DSM_OVF_bm;
 
     // reset phase when turning on
     if (! was_on) PWM_CNT = 0;
@@ -107,6 +107,10 @@ ISR(DSM_vect) {
     ch2_dsm += (ch2_dsm_lvl & 0x007f);
     ch2_pwm  = (ch2_dsm_lvl >> 7) + (ch2_dsm > 0x7f);
     ch2_dsm &= 0x7f;
+
+    // clear the interrupt flag to indicate it was handled
+    // as per: https://onlinedocs.microchip.com/pr/GUID-C37FFBA8-82C6-4339-A2B1-ABD9A0F6C162-en-US-8/index.html?GUID-C2A2BEFD-158F-413D-B9D4-0F0556AA79BD
+    DSM_INTFLAGS = DSM_OVF_bm;
 }
 
 

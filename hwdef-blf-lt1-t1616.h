@@ -65,19 +65,20 @@ enum channel_modes_e {
 // timer interrupt for DSM
 #define DSM_vect     TCA0_OVF_vect
 #define DSM_INTCTRL  TCA0.SINGLE.INTCTRL
+#define DSM_INTFLAGS TCA0.SINGLE.INTFLAGS
 #define DSM_OVF_bm   TCA_SINGLE_OVF_bm
 
 // warm LEDs
 uint16_t ch1_dsm_lvl;
 uint8_t ch1_pwm, ch1_dsm;
 #define CH1_PIN  PB1
-#define CH1_PWM  TCA0.SINGLE.CMP1  // CMP1 is the output compare register for PB1
+#define CH1_PWM  TCA0.SINGLE.CMP1BUF  // CMP1 is the output compare register for PB1
 
 // cold LEDs
 uint16_t ch2_dsm_lvl;
 uint8_t ch2_pwm, ch2_dsm;
 #define CH2_PIN  PB0
-#define CH2_PWM  TCA0.SINGLE.CMP0  // CMP0 is the output compare register for PB0
+#define CH2_PWM  TCA0.SINGLE.CMP0BUF  // CMP0 is the output compare register for PB0
 
 // lighted button
 #define AUXLED_PIN   PIN5_bp
@@ -106,6 +107,7 @@ inline void hwdef_setup() {
     // Outputs
     VPORTB.DIR = PIN0_bm   // cool white
                | PIN1_bm   // warm white
+    //           | PIN2_bm   // for testing on LT1S Pro, disable red channel
                | PIN5_bm;  // aux LED
     //VPORTC.DIR = ...;
 
@@ -121,7 +123,7 @@ inline void hwdef_setup() {
 
     //PORTB.PIN0CTRL = PORT_PULLUPEN_bm; // cold tint channel
     //PORTB.PIN1CTRL = PORT_PULLUPEN_bm; // warm tint channel
-    PORTB.PIN2CTRL = PORT_PULLUPEN_bm;
+    PORTB.PIN2CTRL = PORT_PULLUPEN_bm; // comment out for testing on LT1S Pro
     PORTB.PIN3CTRL = PORT_PULLUPEN_bm;
     PORTB.PIN4CTRL = PORT_PULLUPEN_bm;
     //PORTB.PIN5CTRL = PORT_PULLUPEN_bm; // Aux LED
