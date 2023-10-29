@@ -56,6 +56,13 @@ enum channel_modes_e {
 #define PWM_TOP_INIT  255
 #define DSM_TOP       (255<<7) // 15-bit resolution leaves 1 bit for carry
 
+// timer interrupt for DSM
+#define DSM_vect     TIMER0_OVF_vect
+#define DSM_INTCTRL  TIMSK
+#define DSM_OVF_bm   (1<<TOIE0)
+
+#define DELAY_FACTOR 90  // less time in delay() because more time spent in interrupts
+
 // warm LEDs
 uint16_t ch1_dsm_lvl;
 uint8_t ch1_pwm, ch1_dsm;
@@ -94,8 +101,8 @@ inline void hwdef_setup() {
     TCCR0B = 0x01; // pre-scaler for timer (1 => 1, 2 => 8, 3 => 64...)
     TCCR0A = PHASE;
 
-    // enable timer 0 overflow interrupt for DSM purposes
-    //TIMSK |= (1 << TOIE0);  // moved to hwdef.c functions instead
+    // enable timer overflow interrupt for DSM purposes
+    //DSM_INTCTRL |= DSM_OVF_bm;  // moved to hwdef.c functions instead
 
     // configure e-switch
     PORTB = (1 << SWITCH_PIN);  // e-switch is the only input

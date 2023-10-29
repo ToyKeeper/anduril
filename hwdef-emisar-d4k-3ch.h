@@ -94,6 +94,13 @@ enum channel_modes_e {
 // (max is (255 << 7), because it's 8-bit PWM plus 7 bits of DSM)
 #define DSM_TOP       (255<<7) // 15-bit resolution leaves 1 bit for carry
 
+// timer interrupt for DSM
+#define DSM_vect     TIMER0_OVF_vect
+#define DSM_INTCTRL  TIMSK
+#define DSM_OVF_bm   (1<<TOIE0)
+
+#define DELAY_FACTOR 90  // less time in delay() because more time spent in interrupts
+
 // main 2 LEDs / 1st channel (2 LEDs)
 uint16_t main2_dsm_lvl;
 uint8_t main2_pwm, main2_dsm;
@@ -228,7 +235,8 @@ inline void hwdef_setup() {
             ;
 
     // set up interrupt for delta-sigma modulation
-    TIMSK |= (1<<TOIE0);  // interrupt once for each timer 0 cycle
+    // (moved to hwdef.c functions so it can be enabled/disabled based on ramp level)
+    //DSM_INTCTRL |= DSM_OVF_bm;  // interrupt once for each timer cycle
 
     // set up e-switch
     SWITCH_PUE = (1 << SWITCH_PIN);  // pull-up for e-switch

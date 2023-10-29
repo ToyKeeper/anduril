@@ -85,6 +85,8 @@ enum channel_modes_e {
 #define DSM_INTCTRL  TIMSK
 #define DSM_OVF_bm   (1<<TOIE1)
 
+#define DELAY_FACTOR 90  // less time in delay() because more time spent in interrupts
+
 // 1st channel (8 LEDs)
 uint16_t ch1_dsm_lvl;
 uint8_t ch1_pwm, ch1_dsm;

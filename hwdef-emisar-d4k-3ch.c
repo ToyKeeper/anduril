@@ -78,6 +78,10 @@ StatePtr channel_3H_modes[NUM_CHANNEL_MODES] = {
 };
 
 void set_level_zero() {
+    // disable timer overflow interrupt
+    // (helps improve button press handling from Off state)
+    DSM_INTCTRL &= ~DSM_OVF_bm;
+
     // turn off all LEDs
     MAIN2_ENABLE_PORT &= ~(1 << MAIN2_ENABLE_PIN);
     LED3_ENABLE_PORT  &= ~(1 << LED3_ENABLE_PIN );
@@ -123,14 +127,18 @@ void set_hw_levels(PWM_DATATYPE main2, // brightness, 0 to DSM_TOP
     MAIN2_PWM_LVL = main2_pwm = main2 >> 7;
     LED3_PWM_LVL  = led3_pwm  = led3  >> 7;
     LED4_PWM_LVL  = led4_pwm  = led4  >> 7;
+
+    // enable timer overflow interrupt so DSM can work
+    DSM_INTCTRL |= DSM_OVF_bm;
+
     // force phase reset
     PWM_CNT       = PWM_CNT2  = 0;
 }
 
 // delta-sigma modulation of PWM outputs
-// happens on each Timer0 overflow (every 512 cpu clock cycles)
+// happens on each Timer overflow (every 512 cpu clock cycles)
 // uses 8-bit pwm w/ 7-bit dsm (0b 0PPP PPPP PDDD DDDD)
-ISR(TIMER0_OVF_vect) {
+ISR(DSM_vect) {
     // set new hardware values first,
     // for best timing (reduce effect of interrupt jitter)
     MAIN2_PWM_LVL = main2_pwm;

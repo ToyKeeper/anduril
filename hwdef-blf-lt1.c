@@ -52,7 +52,7 @@ Channel channels[] = {
 void set_level_zero() {
     // disable timer 0 overflow interrupt
     // (helps improve button press handling from Off state)
-    TIMSK &= ~(1 << TOIE0);
+    DSM_INTCTRL &= ~DSM_OVF_bm;
 
     // turn off all LEDs
     ch1_dsm_lvl = 0;
@@ -72,14 +72,14 @@ void set_hw_levels(PWM_DATATYPE ch1, PWM_DATATYPE ch2) {
     CH1_PWM = ch1_pwm = ch1 >> 7;
     CH2_PWM = ch2_pwm = ch2 >> 7;
 
-    // enable timer 0 overflow interrupt so DSM can work
-    TIMSK |= (1 << TOIE0);
+    // enable timer overflow interrupt so DSM can work
+    DSM_INTCTRL |= DSM_OVF_bm;
 }
 
 // delta-sigma modulation of PWM outputs
-// happens on each Timer0 overflow (every 512 cpu clock cycles)
+// happens on each Timer overflow (every 512 cpu clock cycles)
 // uses 8-bit pwm w/ 7-bit dsm (0b 0PPP PPPP PDDD DDDD)
-ISR(TIMER0_OVF_vect) {
+ISR(DSM_vect) {
     // set new hardware values first,
     // for best timing (reduce effect of interrupt jitter)
     CH1_PWM = ch1_pwm;

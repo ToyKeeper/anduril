@@ -68,6 +68,8 @@ enum channel_modes_e {
 #define DSM_INTFLAGS TCA0.SINGLE.INTFLAGS
 #define DSM_OVF_bm   TCA_SINGLE_OVF_bm
 
+#define DELAY_FACTOR 90  // less time in delay() because more time spent in interrupts
+
 // warm LEDs
 uint16_t ch1_dsm_lvl;
 uint8_t ch1_pwm, ch1_dsm;
