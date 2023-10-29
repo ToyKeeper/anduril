@@ -31,7 +31,7 @@
  *
  * Main LED power uses one pin to turn the Opamp on/off,
  * and one pin to control Opamp power level.
- * Linear brightness control uses the power level pin, with dynamic PWM.
+ * Regulated brightness control uses the power level pin, with PWM+DSM.
  * The on/off pin is only used to turn the main LED on and off,
  * not to change brightness.
  */
@@ -62,35 +62,46 @@ enum CHANNEL_MODES {
 //#define CHANNEL_MODE_ARGS     0,0,0,0,0,0,0,0
 
 
-#define PWM_CHANNELS 1  // old, remove this
+#define PWM_CHANNELS  1  // old, remove this
 
-#define PWM_BITS      16        // dynamic 16-bit, but never goes over 255
-#define PWM_GET       PWM_GET8
-#define PWM_DATATYPE  uint16_t  // is used for PWM_TOPS (which goes way over 255)
-#define PWM_DATATYPE2 uint16_t  // only needs 32-bit if ramp values go over 255
-#define PWM1_DATATYPE uint8_t   // regulated ramp
+#define PWM_BITS      16        // 0 to 32640 (0 to 255 PWM + 0 to 127 DSM) at constant kHz
+#define PWM_GET       PWM_GET16
+#define PWM_DATATYPE  uint16_t
+#define PWM_DATATYPE2 uint32_t  // only needs 32-bit if ramp values go over 255
+#define PWM1_DATATYPE uint16_t  // 15-bit PWM+DSM ramp
 
 #define PWM_TOP       ICR1   // holds the TOP value for variable-resolution PWM
-#define PWM_TOP_INIT  255    // highest value used in top half of ramp
-#define PWM_CNT       TCNT1  // for dynamic PWM, reset phase
+#define PWM_TOP_INIT  255
+#define PWM_CNT       TCNT1  // for checking / resetting phase
+// (max is (255 << 7), because it's 8-bit PWM plus 7 bits of DSM)
+#define DSM_TOP       (255<<7) // 15-bit resolution leaves 1 bit for carry
+
+// timer interrupt for DSM
+#define DSM_vect     TIMER1_OVF_vect
+#define DSM_INTCTRL  TIMSK
+#define DSM_OVF_bm   (1<<TOIE1)
+
+#define DELAY_FACTOR 90  // less time in delay() because more time spent in interrupts
 
 // regulated channel
-#define CH1_PIN PB3            // pin 16, Opamp reference
-#define CH1_PWM OCR1A          // OCR1A is the output compare register for PB3
+uint16_t ch1_dsm_lvl;
+uint8_t ch1_pwm, ch1_dsm;
+#define CH1_PIN          PB3    // pin 16, Opamp reference
+#define CH1_PWM          OCR1A  // OCR1A is the output compare register for PB3
 
-#define CH1_ENABLE_PIN  PB0    // pin 19, Opamp power
-#define CH1_ENABLE_PORT PORTB  // control port for PB0
+#define CH1_ENABLE_PIN   PB0    // pin 19, Opamp power
+#define CH1_ENABLE_PORT  PORTB  // control port for PB0
 
 #define CH1_ENABLE_PIN2  PC0   // pin 15, boost PMIC enable
 #define CH1_ENABLE_PORT2 PORTC // control port for PC0
 
 // e-switch
-#define SWITCH_PIN   PA7    // pin 20
-#define SWITCH_PCINT PCINT7 // pin 20 pin change interrupt
-#define SWITCH_PCIE  PCIE0  // PCIE0 is for PCINT[7:0]
-#define SWITCH_PCMSK PCMSK0 // PCMSK0 is for PCINT[7:0]
-#define SWITCH_PORT  PINA   // PINA or PINB or PINC
-#define SWITCH_PUE   PUEA   // pullup group A
+#define SWITCH_PIN   PA7     // pin 20
+#define SWITCH_PCINT PCINT7  // pin 20 pin change interrupt
+#define SWITCH_PCIE  PCIE0   // PCIE0 is for PCINT[7:0]
+#define SWITCH_PCMSK PCMSK0  // PCMSK0 is for PCINT[7:0]
+#define SWITCH_PORT  PINA    // PINA or PINB or PINC
+#define SWITCH_PUE   PUEA    // pullup group A
 #define PCINT_vect   PCINT0_vect  // ISR for PCINT[7:0]
 
 #define USE_VOLTAGE_DIVIDER  // use a dedicated pin, not VCC, because VCC input is flattened
@@ -163,20 +174,27 @@ inline void hwdef_setup() {
     // configure PWM
     // Setup PWM. F_pwm = F_clkio / 2 / N / TOP, where N = prescale factor, TOP = top of counter
     // pre-scale for timer: N = 1
+    // PWM for both channels
     // WGM1[3:0]: 1,0,1,0: PWM, Phase Correct, adjustable (DS table 12-5)
+    // WGM1[3:0]: 1,1,1,0: PWM, Fast, adjustable (DS table 12-5)
     // CS1[2:0]:    0,0,1: clk/1 (No prescaling) (DS table 12-6)
     // COM1A[1:0]:    1,0: PWM OC1A in the normal direction (DS table 12-4)
-    // COM1B[1:0]:    0,0: PWM OC1B disabled (DS table 12-4)
+    // COM1B[1:0]:    1,0: PWM OC1B in the normal direction (DS table 12-4)
     TCCR1A = (1<<WGM11)  | (0<<WGM10)   // adjustable PWM (TOP=ICR1) (DS table 12-5)
            | (1<<COM1A1) | (0<<COM1A0)  // PWM 1A in normal direction (DS table 12-4)
-           | (0<<COM1B1) | (0<<COM1B0)  // PWM 1B disabled (DS table 12-4)
+           | (1<<COM1B1) | (0<<COM1B0)  // PWM 1B in normal direction (DS table 12-4)
            ;
     TCCR1B = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
+           //| (1<<WGM13)  | (1<<WGM12)  // fast adjustable PWM (DS table 12-5)
            | (1<<WGM13)  | (0<<WGM12)  // phase-correct adjustable PWM (DS table 12-5)
            ;
 
     // set PWM resolution
     PWM_TOP = PWM_TOP_INIT;
+
+    // set up interrupt for delta-sigma modulation
+    // (moved to hwdef.c functions so it can be enabled/disabled based on ramp level)
+    //DSM_INTCTRL |= DSM_OVF_bm;  // interrupt once for each timer cycle
 
     // set up e-switch
     SWITCH_PUE = (1 << SWITCH_PIN);  // pull-up for e-switch

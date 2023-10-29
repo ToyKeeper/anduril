@@ -65,7 +65,7 @@ enum channel_modes_e {
 
 #define PWM_CHANNELS  1  // old, remove this
 
-#define PWM_BITS      16     // 0 to 32640 (0 to 255 PWM + 0 to 127 DSM) at constant kHz
+#define PWM_BITS      16        // 0 to 32640 (0 to 255 PWM + 0 to 127 DSM) at constant kHz
 #define PWM_GET       PWM_GET16
 #define PWM_DATATYPE  uint16_t
 #define PWM_DATATYPE2 uint32_t  // only needs 32-bit if ramp values go over 255
@@ -105,8 +105,8 @@ uint8_t ch2_pwm, ch2_dsm;
 // e-switch
 #define SWITCH_PIN   PA7     // pin 20
 #define SWITCH_PCINT PCINT7  // pin 20 pin change interrupt
-#define SWITCH_PCIE  PCIE0   // PCIE1 is for PCINT[7:0]
-#define SWITCH_PCMSK PCMSK0  // PCMSK1 is for PCINT[7:0]
+#define SWITCH_PCIE  PCIE0   // PCIE0 is for PCINT[7:0]
+#define SWITCH_PCMSK PCMSK0  // PCMSK0 is for PCINT[7:0]
 #define SWITCH_PORT  PINA    // PINA or PINB or PINC
 #define SWITCH_PUE   PUEA    // pullup group A
 #define PCINT_vect   PCINT0_vect  // ISR for PCINT[7:0]
@@ -178,14 +178,14 @@ inline void hwdef_setup() {
     // CS1[2:0]:    0,0,1: clk/1 (No prescaling) (DS table 12-6)
     // COM1A[1:0]:    1,0: PWM OC1A in the normal direction (DS table 12-4)
     // COM1B[1:0]:    1,0: PWM OC1B in the normal direction (DS table 12-4)
-    TCCR1A  = (1<<WGM11)  | (0<<WGM10)   // adjustable PWM (TOP=ICR1) (DS table 12-5)
-            | (1<<COM1A1) | (0<<COM1A0)  // PWM 1A in normal direction (DS table 12-4)
-            | (1<<COM1B1) | (0<<COM1B0)  // PWM 1B in normal direction (DS table 12-4)
-            ;
-    TCCR1B  = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
-            //| (1<<WGM13)  | (1<<WGM12)  // fast adjustable PWM (DS table 12-5)
-            | (1<<WGM13)  | (0<<WGM12)  // phase-correct adjustable PWM (DS table 12-5)
-            ;
+    TCCR1A = (1<<WGM11)  | (0<<WGM10)   // adjustable PWM (TOP=ICR1) (DS table 12-5)
+           | (1<<COM1A1) | (0<<COM1A0)  // PWM 1A in normal direction (DS table 12-4)
+           | (1<<COM1B1) | (0<<COM1B0)  // PWM 1B in normal direction (DS table 12-4)
+           ;
+    TCCR1B = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
+           //| (1<<WGM13)  | (1<<WGM12)  // fast adjustable PWM (DS table 12-5)
+           | (1<<WGM13)  | (0<<WGM12)  // phase-correct adjustable PWM (DS table 12-5)
+           ;
 
     // set PWM resolution
     PWM_TOP = PWM_TOP_INIT;
