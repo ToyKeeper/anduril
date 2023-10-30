@@ -48,7 +48,7 @@ function run () {
 }
 
 run $CPP $OTHERFLAGS $CPPFLAGS -o foo.cpp $PROGRAM.c
-grep --text -E -v '^#|^$' foo.cpp > $PROGRAM.cpp ; rm foo.cpp
+grep -a -E -v '^#|^$' foo.cpp > $PROGRAM.cpp ; rm foo.cpp
 run $CC $OTHERFLAGS $CFLAGS -o $PROGRAM.o -c $PROGRAM.c
 run $CC $OFLAGS $LDFLAGS -o $PROGRAM.elf $PROGRAM.o
 run $OBJCOPY $OBJCOPYFLAGS $PROGRAM.elf $PROGRAM.hex
