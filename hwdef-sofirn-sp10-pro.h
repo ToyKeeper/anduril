@@ -143,7 +143,7 @@ inline void hwdef_setup() {
 // command: avr-objdump -d -S -j .fuse anduril.elf
 FUSES = {
     .WDTCFG  = FUSE_WDTCFG_DEFAULT,   // Watchdog Configuration
-    .BODCFG  = FUSE_ACTIVE0_bm,       // BOD Configuration
+    .BODCFG  = FUSE_ACTIVE0,          // BOD Configuration
     .OSCCFG  = FUSE_OSCCFG_DEFAULT,   // Oscillator Configuration
     .TCD0CFG = FUSE_TCD0CFG_DEFAULT,  // TCD0 Configuration
     .SYSCFG0 = FUSE_SYSCFG0_DEFAULT,  // System Configuration 0
