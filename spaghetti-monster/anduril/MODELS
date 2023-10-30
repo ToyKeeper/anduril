@@ -76,6 +76,7 @@ Model	Name                          	MCU
 0716	wurkkos-fc13                  	attiny1616
 0717	wurkkos-ts11                  	attiny1616
 1618	gchart-fet1-t1616             	attiny1616
+1630	thefreeman-lin16dac           	attiny1616
 1631	thefreeman-boost21-6a         	attiny1616
 1632	thefreeman-boost-fwaa         	attiny1616
 
