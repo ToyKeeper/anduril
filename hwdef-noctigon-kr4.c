@@ -1,7 +1,6 @@
 // Noctigon KR4 PWM helper functions
 // Copyright (C) 2020-2023 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
-
 #pragma once
 
 #include "chan-rgbaux.c"

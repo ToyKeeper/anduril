@@ -63,7 +63,7 @@ enum CHANNEL_MODES {
 //#define CHANNEL_MODE_ARGS     0,0,0,0,0,0,0,0
 
 
-#define PWM_CHANNELS 2  // old, remove this
+#define PWM_CHANNELS  2  // old, remove this
 
 #define PWM_BITS      16        // dynamic 16-bit, but never goes over 255
 #define PWM_GET       PWM_GET8
