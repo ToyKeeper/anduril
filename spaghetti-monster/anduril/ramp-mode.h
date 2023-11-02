@@ -1,24 +1,8 @@
-/*
- * ramp-mode.h: Ramping functions for Anduril.
- *
- * Copyright (C) 2017 Selene ToyKeeper
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// ramp-mode.h: Ramping functions for Anduril.
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef RAMP_MODE_H
-#define RAMP_MODE_H
+#pragma once
 
 #ifndef RAMP_LENGTH
 #define RAMP_LENGTH 150  // default, if not overridden in a driver cfg file
@@ -72,6 +56,7 @@
 #define B_TIMING_OFF B_TIMEOUT_T
 #endif
 
+
 // default ramp options if not overridden earlier per-driver
 #ifndef RAMP_STYLE
 #define RAMP_STYLE 0  // smooth default
@@ -102,6 +87,7 @@
 // mile marker(s) partway up the ramp
 // default: blink only at border between regulated and FET
 #ifdef BLINK_AT_RAMP_MIDDLE
+  // FIXME: remove PWM_CHANNELS, use some other abstraction
   #if PWM_CHANNELS >= 3
     #ifndef BLINK_AT_RAMP_MIDDLE_1
       #define BLINK_AT_RAMP_MIDDLE_1 MAX_Nx7135
@@ -143,7 +129,7 @@ uint8_t nearest_level(int16_t target);
 // ensure ramp globals are correct
 void ramp_update_config();
 
-#ifdef USE_THERMAL_REGULATION
+#if defined(USE_THERMAL_REGULATION) || defined(USE_SMOOTH_STEPS)
 // brightness before thermal step-down
 uint8_t target_level = 0;
 void set_level_and_therm_target(uint8_t level);
@@ -155,78 +141,75 @@ void set_level_and_therm_target(uint8_t level);
 // brightness control
 uint8_t memorized_level = DEFAULT_LEVEL;
 #ifdef USE_MANUAL_MEMORY
-#ifndef DEFAULT_MANUAL_MEMORY
-#define DEFAULT_MANUAL_MEMORY 0
-#endif
-uint8_t manual_memory = DEFAULT_MANUAL_MEMORY;
-#ifdef USE_MANUAL_MEMORY_TIMER
-#ifndef DEFAULT_MANUAL_MEMORY_TIMER
-#define DEFAULT_MANUAL_MEMORY_TIMER 0
-#endif
-uint8_t manual_memory_timer = DEFAULT_MANUAL_MEMORY_TIMER;
-#endif
-#endif
-#ifdef USE_SIMPLE_UI
-    // whether to enable the simplified interface or not
-    uint8_t simple_ui_active = SIMPLE_UI_ACTIVE;
-    #ifdef USE_2C_STYLE_CONFIG
-        #ifndef DEFAULT_2C_STYLE_SIMPLE
-        #define DEFAULT_2C_STYLE_SIMPLE 0
+    void manual_memory_restore();
+    void manual_memory_save();
+    #ifndef DEFAULT_MANUAL_MEMORY
+        #define DEFAULT_MANUAL_MEMORY 0
+    #endif
+    #ifdef USE_MANUAL_MEMORY_TIMER
+        #ifndef DEFAULT_MANUAL_MEMORY_TIMER
+            #define DEFAULT_MANUAL_MEMORY_TIMER 0
         #endif
-        uint8_t ramp_2c_style_simple = DEFAULT_2C_STYLE_SIMPLE;  // 0 = no turbo, 1 = A1 style, 2 = A2 style
     #endif
 #endif
-// smooth vs discrete ramping
-uint8_t ramp_style = RAMP_STYLE;  // 0 = smooth, 1 = discrete
+
+#ifndef DEFAULT_2C_STYLE_SIMPLE
+    #define DEFAULT_2C_STYLE_SIMPLE 0
+#endif
+
 #ifdef USE_2C_STYLE_CONFIG
 #ifndef DEFAULT_2C_STYLE
 #define DEFAULT_2C_STYLE 2
 #endif
-uint8_t ramp_2c_style = DEFAULT_2C_STYLE;  // 1 = A1 style, 2 = A2 style
+
 #ifdef USE_2C_MAX_TURBO
 #error Cannot use USE_2C_MAX_TURBO and USE_2C_STYLE_CONFIG at the same time.
 #endif
 #endif
 
 #ifdef USE_RAMP_SPEED_CONFIG
-#define ramp_speed (ramp_stepss[0])
+#define ramp_speed (cfg.ramp_stepss[0])
 #endif
 #ifdef USE_RAMP_AFTER_MOON_CONFIG
 #ifndef DEFAULT_DONT_RAMP_AFTER_MOON
 #define DEFAULT_DONT_RAMP_AFTER_MOON 0
 #endif
-uint8_t dont_ramp_after_moon = DEFAULT_DONT_RAMP_AFTER_MOON;
 #endif
 // current values, regardless of style
 uint8_t ramp_floor = RAMP_SMOOTH_FLOOR;
 uint8_t ramp_ceil = RAMP_SMOOTH_CEIL;
-// per style
-uint8_t ramp_floors[] = {
-    RAMP_SMOOTH_FLOOR,
-    RAMP_DISCRETE_FLOOR,
-    #ifdef USE_SIMPLE_UI
-    SIMPLE_UI_FLOOR,
-    #endif
-    };
-uint8_t ramp_ceils[] = {
-    RAMP_SMOOTH_CEIL,
-    RAMP_DISCRETE_CEIL,
-    #ifdef USE_SIMPLE_UI
-    SIMPLE_UI_CEIL,
-    #endif
-    };
-uint8_t ramp_stepss[] = {
-    DEFAULT_RAMP_SPEED,
-    RAMP_DISCRETE_STEPS,
-    #ifdef USE_SIMPLE_UI
-    SIMPLE_UI_STEPS,
-    #endif
-    };
+
 uint8_t ramp_discrete_step_size;  // don't set this
+
+#ifdef USE_SUNSET_TIMER
+uint8_t sunset_timer_orig_level = 0;
+void reset_sunset_timer();
+#endif
+
+#ifdef USE_RAMP_EXTRAS_CONFIG
+typedef enum {
+    ramp_extras_cfg_zero = 0,
+    manual_memory_config_step,
+    #ifdef USE_MANUAL_MEMORY_TIMER
+    manual_memory_timer_config_step,
+    #endif
+    #ifdef USE_RAMP_AFTER_MOON_CONFIG
+    dont_ramp_after_moon_config_step,
+    #endif
+    #ifdef USE_2C_STYLE_CONFIG
+    ramp_2c_style_config_step,
+    #endif
+    #ifdef USE_SMOOTH_STEPS
+    smooth_steps_style_config_step,
+    #endif
+    ramp_extras_config_num_steps
+} ramp_extras_config_steps_e;
+#endif
 
 #ifdef USE_GLOBALS_CONFIG
 typedef enum {
-    #ifdef USE_TINT_RAMPING
+    globals_cfg_zero = 0,
+    #if defined(USE_CHANNEL_MODE_ARGS) && defined(USE_STEPPED_TINT_RAMPING)
     tint_style_config_step,
     #endif
     #ifdef USE_JUMP_START
@@ -239,5 +222,3 @@ void globals_config_save(uint8_t step, uint8_t value);
 uint8_t globals_config_state(Event event, uint16_t arg);
 #endif
 
-
-#endif

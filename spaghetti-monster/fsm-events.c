@@ -1,24 +1,8 @@
-/*
- * fsm-events.c: Event-handling functions for SpaghettiMonster.
- *
- * Copyright (C) 2017 Selene ToyKeeper
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// fsm-events.c: Event-handling functions for SpaghettiMonster.
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef FSM_EVENTS_C
-#define FSM_EVENTS_C
+#pragma once
 
 #include <util/delay_basic.h>
 
@@ -143,7 +127,7 @@ uint8_t nice_delay_ms(uint16_t ms) {
         uint8_t level = actual_level;  // volatile, avoid repeat access
         if (level < QUARTERSPEED_LEVEL) {
             clock_prescale_set(clock_div_4);
-            _delay_loop_2(BOGOMIPS*90/100/4);
+            _delay_loop_2(BOGOMIPS*DELAY_FACTOR/100/4);
         }
         //else if (level < HALFSPEED_LEVEL) {
         //    clock_prescale_set(clock_div_2);
@@ -151,7 +135,7 @@ uint8_t nice_delay_ms(uint16_t ms) {
         //}
         else {
             clock_prescale_set(clock_div_1);
-            _delay_loop_2(BOGOMIPS*90/100);
+            _delay_loop_2(BOGOMIPS*DELAY_FACTOR/100);
         }
         // restore regular clock speed
         clock_prescale_set(clock_div_1);
@@ -159,13 +143,13 @@ uint8_t nice_delay_ms(uint16_t ms) {
         // underclock MCU to save power
         clock_prescale_set(clock_div_4);
         // wait
-        _delay_loop_2(BOGOMIPS*90/100/4);
+        _delay_loop_2(BOGOMIPS*DELAY_FACTOR/100/4);
         // restore regular clock speed
         clock_prescale_set(clock_div_1);
         #endif  // ifdef USE_RAMPING
         #else
         // wait
-        _delay_loop_2(BOGOMIPS*90/100);
+        _delay_loop_2(BOGOMIPS*DELAY_FACTOR/100);
         #endif  // ifdef USE_DYNAMIC_UNDERCLOCKING
 
         // run pending system processes while we wait
@@ -212,4 +196,3 @@ uint8_t nice_delay_s() {
 }
 */
 
-#endif

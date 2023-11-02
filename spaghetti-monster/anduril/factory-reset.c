@@ -1,26 +1,13 @@
-/*
- * factory-reset.c: Factory reset functions for Anduril.
- *
- * Copyright (C) 2017 Selene ToyKeeper
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// factory-reset.c: Factory reset functions for Anduril.
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef FACTORY_RESET_C
-#define FACTORY_RESET_C
+#pragma once
 
 #include "factory-reset.h"
+
+// allows setting channel mode per animation stage,
+// so it can ramp up in red then explode in white (as one example)
 
 void factory_reset() {
     // display a warning for a few seconds before doing the actual reset,
@@ -31,6 +18,9 @@ void factory_reset() {
     uint8_t bright;
     uint8_t reset = 1;
     // wind up to an explosion
+    #ifdef FACTORY_RESET_WARN_CHANNEL
+    set_channel_mode(FACTORY_RESET_WARN_CHANNEL);
+    #endif
     for (bright=0; bright<SPLODEY_STEPS; bright++) {
         set_level(bright);
         nice_delay_ms(SPLODEY_TIME_PER_STEP/2);
@@ -43,17 +33,29 @@ void factory_reset() {
     }
     // explode, if button pressed long enough
     if (reset) {
+        #if defined(FACTORY_RESET_WARN_CHANNEL) && defined(DEFAULT_CHANNEL_MODE)
+        // return to default channel before saving
+        set_channel_mode(DEFAULT_CHANNEL_MODE);
+        #endif
+
+        // auto-calibrate temperature
         // AVR 1-Series has factory calibrated thermal sensor, always remove the offset on reset
         #if defined(USE_THERMAL_REGULATION) && defined(AVRXMEGA3)
-        thermal_config_save(1,temperature - therm_cal_offset); // this will cancel out the offset
+        // this will cancel out the offset
+        thermal_config_save(1, temperature - cfg.therm_cal_offset);
         #elif defined(USE_THERMAL_REGULATION) && defined(USE_THERM_AUTOCALIBRATE)
-        // auto-calibrate temperature...  assume current temperature is 21 C
+        // assume current temperature is 21 C
         thermal_config_save(1, 21);
         #endif
+
         // save all settings to eeprom
         // (assuming they're all at default because we haven't loaded them yet)
         save_config();
 
+        // explosion animation
+        #ifdef FACTORY_RESET_SUCCESS_CHANNEL
+        set_channel_mode(FACTORY_RESET_SUCCESS_CHANNEL);
+        #endif
         bright = MAX_LEVEL;
         for (; bright > 0; bright--) {
             set_level(bright);
@@ -68,7 +70,4 @@ void factory_reset() {
         }
     }
 }
-
-
-#endif
 

@@ -1,6 +1,11 @@
-// Noctigon KR4 (fetless) config options for Anduril
+// Noctigon KR4 (no DD FET) config options for Anduril
+// Copyright (C) 2020-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 // (and Noctigon KR1)
 // (and Emisar D4v2 E21A, a.k.a. "D4v2.5")
+#define HWDEF_C_FILE hwdef-noctigon-kr4-nofet.c
 #include "cfg-noctigon-kr4.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0212"
@@ -12,7 +17,7 @@
 // max regulated: 1740 lm
 #undef PWM_CHANNELS
 #define PWM_CHANNELS 1
-#define RAMP_LENGTH 150
+#define RAMP_SIZE 150
 // prioritize low lows, at risk of visible ripple
 // level_calc.py 5.01 1 149 7135 1 0.3 1740 --pwm dyn:78:16384:255
 #undef PWM1_LEVELS
@@ -44,9 +49,6 @@
 #define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
 #define SIMPLE_UI_CEIL RAMP_DISCRETE_CEIL
 
-
-// make candle mode wobble more
-#define CANDLE_AMPLITUDE 32
 
 // slow down party strobe; this driver can't pulse for 1ms or less
 // (only needed on no-FET build)

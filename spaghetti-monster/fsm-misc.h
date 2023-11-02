@@ -1,34 +1,28 @@
-/*
- * fsm-misc.h: Miscellaneous function for SpaghettiMonster.
- *
- * Copyright (C) 2017 Selene ToyKeeper
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// fsm-misc.h: Miscellaneous function for SpaghettiMonster.
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef FSM_MISC_H
-#define FSM_MISC_H
+#pragma once
 
 #ifdef USE_DYNAMIC_UNDERCLOCKING
 void auto_clock_speed();
 #endif
 
-#if defined(USE_BLINK_NUM) || defined(USE_BLINK_DIGIT)
-#ifndef BLINK_BRIGHTNESS
-#define BLINK_BRIGHTNESS (MAX_LEVEL/6)
+// shortest time (in ms) the light should blink for to indicate a zero
+#ifndef BLINK_ONCE_TIME
+    #define BLINK_ONCE_TIME 10
 #endif
-uint8_t blink_digit(uint8_t num);
+
+#if defined(USE_BLINK_NUM) || defined(USE_BLINK_DIGIT)
+    #ifndef BLINK_BRIGHTNESS
+        #define BLINK_BRIGHTNESS (MAX_LEVEL/6)
+    #endif
+    #if defined(USE_CFG) && defined(DEFAULT_BLINK_CHANNEL)
+        #define BLINK_CHANNEL cfg.blink_channel
+    #elif defined(DEFAULT_BLINK_CHANNEL)
+        #define BLINK_CHANNEL DEFAULT_BLINK_CHANNEL
+    #endif
+    uint8_t blink_digit(uint8_t num);
 #endif
 
 #ifdef USE_BLINK_NUM
@@ -53,6 +47,11 @@ void indicator_led(uint8_t lvl);
 void button_led_set(uint8_t lvl);
 #endif
 
+// if any type of aux LEDs exist, define a shorthand flag for it
+#if defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS) || defined(USE_BUTTON_LED)
+#define HAS_AUX_LEDS
+#endif
+
 #ifdef USE_AUX_RGB_LEDS
 // value: 0b00BBGGRR
 // each pair of bits: 0=off, 1=low, 2=high
@@ -67,4 +66,3 @@ uint8_t triangle_wave(uint8_t phase);
 void reboot();
 #endif
 
-#endif

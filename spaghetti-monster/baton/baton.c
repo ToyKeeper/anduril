@@ -152,12 +152,12 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         PWM1_LVL = 0;  PWM2_LVL = 0;  // make sure emitters are off
         // sleep 1 second after user stops pressing buttons
         if (arg > TICKS_PER_SECOND) { go_to_standby = 1; }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 4 clicks: exit, and turn on at "low" level
     else if (event == EV_4clicks) {
         set_state(steady_state, 1);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     return EVENT_NOT_HANDLED;
 }

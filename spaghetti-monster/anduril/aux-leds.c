@@ -1,24 +1,7 @@
-/*
- * aux-leds.c: Aux LED functions for Anduril.
- *
- * Copyright (C) 2017 Selene ToyKeeper
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#ifndef AUX_LEDS_C
-#define AUX_LEDS_C
+// aux-leds.c: Aux LED functions for Anduril.
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
 #include "aux-leds.h"
 
@@ -27,14 +10,21 @@
 void indicator_led_update(uint8_t mode, uint8_t tick) {
     //uint8_t volts = voltage;  // save a few bytes by caching volatile value
     // turn off when battery is too low
+    #ifdef DUAL_VOLTAGE_FLOOR
+    if (((voltage < VOLTAGE_LOW) && (voltage > DUAL_VOLTAGE_FLOOR))
+        || (voltage < DUAL_VOLTAGE_LOW_LOW)) {
+    #else
     if (voltage < VOLTAGE_LOW) {
+    #endif
         indicator_led(0);
     }
     //#ifdef USE_INDICATOR_LOW_BAT_WARNING
+    #ifndef DUAL_VOLTAGE_FLOOR // this isn't set up for dual-voltage lights like the Sofirn SP10 Pro
     // fast blink a warning when battery is low but not critical
     else if (voltage < VOLTAGE_RED) {
         indicator_led(mode & (((tick & 0b0010)>>1) - 3));
     }
+    #endif
     //#endif
     // normal steady output, 0/1/2 = off / low / high
     else if ((mode & 0b00001111) < 3) {
@@ -68,17 +58,30 @@ void indicator_led_update(uint8_t mode, uint8_t tick) {
 uint8_t voltage_to_rgb() {
     static const uint8_t levels[] = {
     // voltage, color
-          0, 0, // 0, R
-         33, 1, // 1, R+G
-         35, 2, // 2,   G
-         37, 3, // 3,   G+B
-         39, 4, // 4,     B
-         41, 5, // 5, R + B
-         44, 6, // 6, R+G+B  // skip; looks too similar to G+B
-        255, 6, // 7, R+G+B
+          0, 0, // black
+        #ifdef DUAL_VOLTAGE_FLOOR
+        // AA / NiMH voltages
+          9, 1, // R
+         10, 2, // R+G
+         11, 3, //   G
+         12, 4, //   G+B
+         13, 5, //     B
+         14, 6, // R + B
+         15, 7, // R+G+B
+         20, 0, // black
+        #endif
+        // li-ion voltages
+         29, 1, // R
+         33, 2, // R+G
+         35, 3, //   G
+         37, 4, //   G+B
+         39, 5, //     B
+         41, 6, // R + B
+         44, 7, // R+G+B  // skip; looks too similar to G+B
+        255, 7, // R+G+B
     };
     uint8_t volts = voltage;
-    if (volts < VOLTAGE_LOW) return 0;
+    //if (volts < VOLTAGE_LOW) return 0;
 
     uint8_t i;
     for (i = 0;  volts >= levels[i];  i += 2) {}
@@ -89,14 +92,18 @@ uint8_t voltage_to_rgb() {
 // do fancy stuff with the RGB aux LEDs
 // mode: 0bPPPPCCCC where PPPP is the pattern and CCCC is the color
 // arg: time slice number
-void rgb_led_update(uint8_t mode, uint8_t arg) {
+void rgb_led_update(uint8_t mode, uint16_t arg) {
     static uint8_t rainbow = 0;  // track state of rainbow mode
     static uint8_t frame = 0;  // track state of animation mode
 
     // turn off aux LEDs when battery is empty
     // (but if voltage==0, that means we just booted and don't know yet)
     uint8_t volts = voltage;  // save a few bytes by caching volatile value
+    #ifdef DUAL_VOLTAGE_FLOOR
+    if ((volts) && (((voltage < VOLTAGE_LOW) && (voltage > DUAL_VOLTAGE_FLOOR)) || (voltage < DUAL_VOLTAGE_LOW_LOW))) {
+    #else
     if ((volts) && (volts < VOLTAGE_LOW)) {
+    #endif
         rgb_led_set(0);
         #ifdef USE_BUTTON_LED
         button_led_set(0);
@@ -107,22 +114,26 @@ void rgb_led_update(uint8_t mode, uint8_t arg) {
     uint8_t pattern = (mode>>4);  // off, low, high, blinking, ... more?
     uint8_t color = mode & 0x0f;
 
-    // preview in blinking mode is awkward... use high instead
-    if ((! go_to_standby) && (pattern > 2)) { pattern = 2; }
+    // always preview in high mode
+    if (setting_rgb_mode_now) { pattern = 2; }
 
+    #ifdef USE_POST_OFF_VOLTAGE
+    // use voltage high mode for a few seconds after initial poweroff
+    // (but not after changing aux LED settings and other similar actions)
+    else if ((arg < (cfg.post_off_voltage * SLEEP_TICKS_PER_SECOND))
+          && (ticks_since_on < (cfg.post_off_voltage * SLEEP_TICKS_PER_SECOND))
+          && (ticks_since_on > 0)  // don't blink red on 1st frame
+        ) {
+        // use high mode if regular aux level is high or prev level was high
+        pattern = 1 + ((2 == pattern) | (prev_level >= POST_OFF_VOLTAGE_BRIGHTNESS));
+        // voltage mode
+        color = RGB_LED_NUM_COLORS - 1;
+    }
+    #endif
 
-    const uint8_t *colors = rgb_led_colors;
+    const uint8_t *colors = rgb_led_colors + 1;
     uint8_t actual_color = 0;
     if (color < 7) {  // normal color
-        #ifdef USE_K93_LOCKOUT_KLUDGE
-        // FIXME: jank alert: this is dumb
-        // this clause does nothing; it just uses up clock cycles
-        // because without it, the K9.3's lockout mode fails and returns
-        // to "off" after ~5 to 15 seconds when configured for a blinking
-        // single color, even though there is no code path from lockout to
-        // "off", and it doesn't act like a reboot either (no boot-up blink)
-        rainbow = (rainbow + 1 + pseudo_rand() % 5) % 6;
-        #endif
         actual_color = pgm_read_byte(colors + color);
     }
     else if (color == 7) {  // disco
@@ -195,8 +206,5 @@ void rgb_led_voltage_readout(uint8_t bright) {
     if (bright) color = color << 1;
     rgb_led_set(color);
 }
-#endif
-
-
 #endif
 

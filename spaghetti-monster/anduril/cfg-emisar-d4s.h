@@ -1,20 +1,21 @@
 // Emisar D4S config options for Anduril
-#define MODEL_NUMBER "0131"
-#include "hwdef-Emisar_D4S.h"
-#include "hank-cfg.h"
+// Copyright (C) 2018-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-// the button lights up
+#define MODEL_NUMBER "0131"
+#include "hwdef-emisar-d4s.h"
+#include "hank-cfg.h"
+// ATTINY: 85
+
+// the button lights up (on some models)
 #define USE_INDICATOR_LED
 // the aux LEDs are behind the main LEDs
 #ifdef USE_INDICATOR_LED_WHILE_RAMPING
 #undef USE_INDICATOR_LED_WHILE_RAMPING
 #endif
 
-#ifdef RAMP_LENGTH
-#undef RAMP_LENGTH
-#endif
-
-#define RAMP_LENGTH 150
+#define RAMP_SIZE 150
 
 // 3x7135 + FET
 // level_calc.py ninth 2 150 7135 1 11.2 450 FET 1 10 4000

@@ -1,4 +1,8 @@
 // Fireflies ROT66 G2 config options for Anduril
+// Copyright (C) 2019-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #include "cfg-ff-rot66.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0413"
@@ -13,6 +17,9 @@
 #undef INDICATOR_LED_DEFAULT_MODE
 #endif
 #define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
+
+// the button is *not* visible while main LEDs are on
+#undef USE_INDICATOR_LED_WHILE_RAMPING
 
 // ramp shape is different than original ROT66
 // 1x7135: 150 lm

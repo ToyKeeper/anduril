@@ -1,4 +1,9 @@
 #error This build is broken.
+// Noctigon K9.3 code overrides for Anduril
+// Copyright (C) 2020-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 /*
  * K9.3 has unusual power channels, so it must override some of FSM's code.
  * There are two sets of LEDs:

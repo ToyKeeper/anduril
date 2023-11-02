@@ -1,6 +1,10 @@
 // Emisar D1 config options for Anduril
-#include "hwdef-Emisar_D1.h"
+// Copyright (C) 2018-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 // same as Emisar D4, mostly
+#include "hwdef-emisar-d4.h"
 #include "cfg-emisar-d4.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0121"

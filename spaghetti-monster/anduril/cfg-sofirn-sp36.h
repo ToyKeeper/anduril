@@ -1,4 +1,8 @@
 // Sofirn SP36 (small Q8) config options for Anduril
+// Copyright (C) 2018-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 // same as  the  BLF Q8, mostly
 #include "cfg-blf-q8.h"
 #undef MODEL_NUMBER

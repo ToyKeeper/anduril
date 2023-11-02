@@ -1,4 +1,8 @@
 // Sofirn SP36 (small Q8) config options for Anduril using the Attiny1616
+// Copyright (C) 2021-2023 (FIXME)
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 // same as  the  BLF Q8, mostly
 #include "cfg-blf-q8-t1616.h"
 #undef MODEL_NUMBER

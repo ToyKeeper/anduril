@@ -1,24 +1,8 @@
-/*
- * config-default.h: Default configuration for Anduril.
- *
- * Copyright (C) 2017 Selene ToyKeeper
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// config-default.h: Default configuration for Anduril.
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef CONFIG_DEFAULT_H
-#define CONFIG_DEFAULT_H
+#pragma once
 
 /*
  * This file specifies the default settings for Anduril.
@@ -36,7 +20,13 @@
 
 // overheat protection
 #define USE_THERMAL_REGULATION
+#if (ATTINY==85) || (ATTINY==1634)
+// sloppy temperature sensor needs bigger error margin
 #define DEFAULT_THERM_CEIL 45  // try not to get hotter than this (in C)
+#else
+// more accurate temperature sensor can regulate higher safely
+#define DEFAULT_THERM_CEIL 50  // try not to get hotter than this (in C)
+#endif
 // Comment out to disable automatic calibration on factory reset
 //   - If so, be sure to set THERM_CAL_OFFSET to the correct calibration offset
 //   - Calibration can still be overridden in temperature check mode
@@ -195,6 +185,23 @@
 // if the aux LEDs oscillate between "full battery" and "empty battery"
 // while in "voltage" mode, enable this to reduce the amplitude of
 // those oscillations
-//#define USE_LOWPASS_WHILE_ASLEEP
-
+#if (ATTINY==1616) || (ATTINY==1634)
+#define USE_LOWPASS_WHILE_ASLEEP
 #endif
+
+// if there's tint ramping, allow user to set it smooth or stepped
+#define USE_STEPPED_TINT_RAMPING
+#define DEFAULT_TINT_RAMP_STYLE 0  // smooth
+
+// Use "smooth steps" to soften on/off and step changes
+// on MCUs with enough room for extra stuff like this
+#if (ATTINY==1616) || (ATTINY==1634)
+#define USE_SMOOTH_STEPS
+#endif
+// 0 = none, 1 = smooth, 2+ = undefined
+#define DEFAULT_SMOOTH_STEPS_STYLE  1
+
+// by default, allow user to set the channel for each strobe-group mode
+// (but allow disabling this feature per build)
+#define USE_CHANNEL_PER_STROBE
+

@@ -9,7 +9,7 @@ fi
 
 UI=anduril
 
-date '+#define VERSION_NUMBER "%Y%m%d"' > version.h
+date '+#define VERSION_NUMBER "%Y-%m-%d"' > version.h
 
 PASS=0
 FAIL=0
@@ -33,8 +33,8 @@ for TARGET in cfg-*.h ; do
   if [ -z "$ATTINY" ]; then ATTINY=85 ; fi
 
   # try to compile
-  echo ../../../bin/build.sh $ATTINY "$UI" "-DCONFIGFILE=${TARGET}"
-  ../../../bin/build.sh $ATTINY "$UI" "-DCONFIGFILE=${TARGET}"
+  echo ../../../bin/build.sh $ATTINY "$UI" "-DCFG_H=${TARGET}"
+  ../../../bin/build.sh $ATTINY "$UI" "-DCFG_H=${TARGET}"
 
   # track result, and rename compiled files
   if [ 0 = $? ] ; then

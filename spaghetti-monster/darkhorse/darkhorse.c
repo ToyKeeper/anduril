@@ -166,12 +166,12 @@ uint8_t any_mode_state(Event event, uint16_t arg, uint8_t *primary, uint8_t *sec
     // turn on LED when entering the mode
     if (event == EV_enter_state) {
         set_any_mode(*primary, *secondary, modes);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 1 click: off
     else if (event == EV_1click) {
         set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // hold: change brightness (low, med, hi, always starting at low)
     else if (event == EV_click1_hold) {
@@ -187,14 +187,14 @@ uint8_t any_mode_state(Event event, uint16_t arg, uint8_t *primary, uint8_t *sec
                 set_state(hi_mode_state, 0);
                 break;
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 2 clicks: toggle primary/secondary level
     else if (event == EV_2clicks) {
         *primary ^= 1;
         set_any_mode(*primary, *secondary, modes);
         save_config();
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // click-release-hold: change secondary level
     else if (event == EV_click2_hold) {
@@ -204,7 +204,7 @@ uint8_t any_mode_state(Event event, uint16_t arg, uint8_t *primary, uint8_t *sec
             *primary = 0;
             set_any_mode(*primary, *secondary, modes);
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // click, hold, release: save secondary level
     else if (event == EV_click2_hold_release) {
@@ -259,20 +259,20 @@ uint8_t strobe_beacon_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 1 click (initially): cancel current blink
     // FIXME: this is no longer necessary; FSM does this automatically now
     if (event == EV_click1_release) {
         interrupt_nice_delays();
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 2 clicks: rotate through blinky modes
     else if (event == EV_2clicks) {
         strobe_beacon_mode = (strobe_beacon_mode + 1) & 3;
         save_config();
         interrupt_nice_delays();
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     return EVENT_NOT_HANDLED;
 }

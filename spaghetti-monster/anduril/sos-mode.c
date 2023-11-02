@@ -1,24 +1,8 @@
-/*
- * sos-mode.c: SOS mode for Anduril.
- *
- * Copyright (C) 2017 Selene ToyKeeper
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// sos-mode.c: SOS mode for Anduril.
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef SOS_MODE_C
-#define SOS_MODE_C
+#pragma once
 
 #include "sos-mode.h"
 
@@ -27,7 +11,7 @@ uint8_t sos_state(Event event, uint16_t arg) {
     // 1 click: off
     if (event == EV_1click) {
         set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 2 clicks: next blinky mode
     else if (event == EV_2clicks) {
@@ -38,7 +22,7 @@ uint8_t sos_state(Event event, uint16_t arg) {
         #elif defined(USE_BEACON_MODE)
         set_state(beacon_state, 0);
         #endif
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     return EVENT_NOT_HANDLED;
 }
@@ -69,7 +53,4 @@ inline void sos_mode_iter() {
     sos_blink(3, 0);  // S
     nice_delay_ms(2000);
 }
-
-
-#endif
 

@@ -1,25 +1,9 @@
-#ifndef TK_ATTINY_H
-#define TK_ATTINY_H
-/*
- * Attiny portability header.
- * This helps abstract away the differences between various attiny MCUs.
- *
- * Copyright (C) 2017 Selene ToyKeeper
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+// tk-attiny.h: Attiny portability header.
+// Copyright (C) 2014-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
+// This helps abstract away the differences between various attiny MCUs.
 
 // Choose your MCU here, or in the main .c file, or in the build script
 //#define ATTINY 13
@@ -74,7 +58,7 @@
 #elif (ATTINY == 412) || (ATTINY == 416) || (ATTINY == 417) || (ATTINY == 816) || (ATTINY == 817) || (ATTINY == 1616) || (ATTINY == 1617) || (ATTINY == 3216) || (ATTINY == 3217)
     #define AVRXMEGA3
     #define F_CPU 10000000UL
-    #define BOGOMIPS (F_CPU/4000)
+    #define BOGOMIPS (F_CPU/4700)
     #define EEPSIZE 128
     #define DELAY_ZERO_TIME 1020
 #else
@@ -171,4 +155,3 @@
 #error Unable to define MCU macros.
 #endif
 
-#endif  // TK_ATTINY_H

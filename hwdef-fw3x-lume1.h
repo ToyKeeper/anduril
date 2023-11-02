@@ -1,14 +1,16 @@
-#ifndef HWDEF_FW3X_LUME1_H
-#define HWDEF_FW3X_LUME1_H
+// lume1 Driver Rev B for FW3x driver layout (attiny1634)
+// Copyright (C) 2020-2023 LoneOceans, Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
 /* lume1 Driver Rev B for FW3x driver layout (attiny1634)
  * www.loneoceans.com/labs/ for more information
  *
  * Pin / Name / Function in Lume1 Rev B
  *   1    PA6   Regulated PWM (PWM1B)
- *   2    PA5   R red aux LED (PWM0B)
- *   3    PA4   G green aux LED
- *   4    PA3   B blue aux LED
+ *   2    PA5   R: red aux LED (PWM0B)
+ *   3    PA4   G: green aux LED
+ *   4    PA3   B: blue aux LED
  *   5    PA2   e-switch (PCINT2)
  *   6    PA1   Jumper 1
  *   7    PA0   Jumper 2
@@ -28,36 +30,57 @@
  *        ADC12 internal thermal sensor (not used for lume1)
  *
  * Main LED power uses one pin as a global Buck Boost Enable, and
- * one pin to control the power level via PWM. Another pin is used
- * for FET control.
+ * one pin to control the power level via PWM.
+ * Another pin is used for DD FET control.
  */
 
-#ifdef ATTINY
-#undef ATTINY
-#endif
 #define ATTINY 1634
 #include <avr/io.h>
 
-#define PWM_CHANNELS 2
+#define HWDEF_C_FILE hwdef-fw3x-lume1.c
+
+// allow using aux LEDs as extra channel modes
+#include "chan-rgbaux.h"
+
+// channel modes:
+// * 0. main LEDs
+// * 1+. aux RGB
+#define NUM_CHANNEL_MODES   (1 + NUM_RGB_AUX_CHANNEL_MODES)
+enum CHANNEL_MODES {
+    CM_MAIN = 0,
+    RGB_AUX_ENUMS
+};
+
+#define DEFAULT_CHANNEL_MODE  CM_MAIN
+
+// right-most bit first, modes are in fedcba9876543210 order
+#define CHANNEL_MODES_ENABLED 0b0000000000000001
+
+
+#define PWM_CHANNELS  2  // old, remove this
+
 // Added for Lume1 Buck Boost Driver
-#define PWM_BITS 10  // 0 to 1023 at 3.9 kHz, not 0 to 255 at 15.6 kHz
-#define PWM_TOP 1023
+#define PWM_BITS      16        // 0 to 1023 at 3.9 kHz, not 0 to 255 at 15.6 kHz
+#define PWM_GET       PWM_GET16
+#define PWM_DATATYPE  uint16_t
+#define PWM_DATATYPE2 uint32_t  // only needs 32-bit if ramp values go over 255
+#define PWM1_DATATYPE uint16_t  // regulated ramp
+#define PWM2_DATATYPE uint16_t  // DD FET ramp
 
-#define SWITCH_PIN   PA2    // pin 5
-#define SWITCH_PCINT PCINT2 // pin 5 pin change interrupt
-#define SWITCH_PCIE  PCIE0  // PCIE0 is for PCINT[7:0]
-#define SWITCH_PCMSK PCMSK0 // PCMSK0 is for PCINT[7:0]
-#define SWITCH_PORT  PINA   // PINA or PINB or PINC
+// PWM parameters of both channels are tied together because they share a counter
+#define PWM_TOP       ICR1   // holds the TOP value for variable-resolution PWM
+#define PWM_TOP_INIT  1023
+#define PWM_CNT       TCNT1  // for dynamic PWM, reset phase
 
-#define PWM1_PIN PA6        // pin 1, Buck Boost CTRL pin or 7135-eqv PWM
-#define PWM1_LVL OCR1B      // OCR1A is the output compare register for PA6
+// regulated channel
+#define CH1_PIN  PA6            // pin 1, Buck Boost CTRL pin or 7135-eqv PWM
+#define CH1_PWM  OCR1B          // OCR1B is the output compare register for PA6
+#define CH1_ENABLE_PIN   PA7    // pin 20, BuckBoost Enable
+#define CH1_ENABLE_PORT  PORTA  // control port for PA7
 
-#define PWM2_PIN PB3        // pin 16, FET PWM Pin, but only used as on (1023) or off (0)
-#define PWM2_LVL OCR1A      // OCR1A is the output compare register for PB3
-
-// Added for Lume1 Buck Boost Driver
-#define LED_ENABLE_PIN  PA7    // pin 20, BuckBoost Enable
-#define LED_ENABLE_PORT PORTA  // control port for PA7
+// DD FET channel
+#define CH2_PIN  PB3            // pin 16, FET PWM Pin, but only used as on (1023) or off (0)
+#define CH2_PWM  OCR1A          // OCR1A is the output compare register for PB3
 
 /* // For Jumpers X1 to X4, no SW support yet
 #define JUMPER1_PIN PA1
@@ -66,8 +89,17 @@
 #define JUMPER4_PIN PC4
 */
 
-#define USE_VOLTAGE_DIVIDER   // use a dedicated pin, not VCC, because VCC input is flattened
-#define VOLTAGE_PIN PB0       // Pin 19  PB0  ADC5
+// e-switch
+#define SWITCH_PIN   PA2    // pin 5
+#define SWITCH_PCINT PCINT2 // pin 5 pin change interrupt
+#define SWITCH_PCIE  PCIE0  // PCIE0 is for PCINT[7:0]
+#define SWITCH_PCMSK PCMSK0 // PCMSK0 is for PCINT[7:0]
+#define SWITCH_PORT  PINA   // PINA or PINB or PINC
+#define SWITCH_PUE   PUEA   // pullup group A
+#define PCINT_vect   PCINT0_vect  // ISR for PCINT[7:0]
+
+#define USE_VOLTAGE_DIVIDER  // use a dedicated pin, not VCC, because VCC input is flattened
+#define VOLTAGE_PIN PB0      // Pin 19  PB0  ADC5
 // pin to ADC mappings are in DS table 19-4
 #define VOLTAGE_ADC ADC5D  // digital input disable pin for PB1
 // DIDR0/DIDR1 mappings are in DS section 19.13.5, 19.13.6
@@ -117,53 +149,54 @@
 #define AUXLED_RGB_DDR  DDRA   // DDRA or DDRB or DDRC
 #define AUXLED_RGB_PUE  PUEA   // PUEA or PUEB or PUEC
 
-// with so many pins, doing this all with #ifdefs gets awkward...
-// ... so just hardcode it in each hwdef file instead
 // For lume1 driver, no SW support for Auxillary Jumpers X1 to X4 yet!
 inline void hwdef_setup() {
-  // enable output ports in Data Direction Registers
-  // FET PWM Pin
-  DDRB = (1 << PWM2_PIN);
-  // Main PWM, Buck Boost Enable Pin, aux R/G/B
-  DDRA = (1 << PWM1_PIN)
-       | (1 << LED_ENABLE_PIN)
-       | (1 << AUXLED_R_PIN)
-       | (1 << AUXLED_G_PIN)
-       | (1 << AUXLED_B_PIN)
-       ;
-  //DDRB&=~(1<<VOLTAGE_PIN); // All pins are input by default
-  /* // For Jumpers X1 to X4, no SW support yet
-  DDRA &= (1<<JUMPER1_PIN);
-  DDRA &= (1<<JUMPER2_PIN);
-  DDRC &= (1<<JUMPER3_PIN);
-  DDRC &= (1<<JUMPER4_PIN);
-  PUEA = (1 << JUMPER1_PIN);
-  PUEA = (1 << JUMPER2_PIN);
-  PUEC = (1 << JUMPER3_PIN);
-  PUEC = (1 << JUMPER4_PIN);
-  */
+    // enable output ports
+    // FET PWM Pin
+    DDRB = (1 << CH2_PIN);
+    // Main PWM, Buck Boost Enable Pin, aux R/G/B
+    DDRA = (1 << CH1_PIN)
+         | (1 << CH1_ENABLE_PIN)
+         | (1 << AUXLED_R_PIN)
+         | (1 << AUXLED_G_PIN)
+         | (1 << AUXLED_B_PIN)
+         ;
 
-  // configure PWM for 10 bit at 3.9kHz
-  // Setup PWM. F_pwm = F_clkio / 2 / N / TOP, where N = prescale factor, TOP = top of counter
-  // pre-scale for timer: N = 1
-  // WGM1[3:0]: 0,0,1,1: PWM, Phase Correct, 10-bit (DS table 12-5)
-  // CS1[2:0]:    0,0,1: clk/1 (No prescaling) (DS table 12-6)
-  // COM1A[1:0]:    1,0: PWM OC1A in the normal direction (DS table 12-4)
-  // COM1B[1:0]:    1,0: PWM OC1B in the normal direction (DS table 12-4)
-  TCCR1A  = (1<<WGM11)  | (1<<WGM10)   // 10-bit (TOP=0x03FF) (DS table 12-5)
-          | (1<<COM1A1) | (0<<COM1A0)  // PWM 1A Clear OC1A on Compare Match
-          | (1<<COM1B1) | (0<<COM1B0)  // PWM 1B Clear OC1B on Compare Match
-          ;
-  TCCR1B  = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
-          | (0<<WGM13)  | (0<<WGM12)  // PWM, Phase Correct, 10-bit
-          ;
+    //DDRB&=~(1<<VOLTAGE_PIN); // All pins are input by default
+    /* // For Jumpers X1 to X4, no SW support yet
+    DDRA &= (1<<JUMPER1_PIN);
+    DDRA &= (1<<JUMPER2_PIN);
+    DDRC &= (1<<JUMPER3_PIN);
+    DDRC &= (1<<JUMPER4_PIN);
+    PUEA = (1 << JUMPER1_PIN);
+    PUEA = (1 << JUMPER2_PIN);
+    PUEC = (1 << JUMPER3_PIN);
+    PUEC = (1 << JUMPER4_PIN);
+    */
 
-  // set up e-switch
-  //PORTA = (1 << SWITCH_PIN);  // TODO: configure PORTA / PORTB / PORTC?
-  PUEA = (1 << SWITCH_PIN);  // pull-up for e-switch
-  SWITCH_PCMSK = (1 << SWITCH_PCINT);  // enable pin change interrupt
+    // configure PWM for 10 bit at 3.9kHz
+    // Setup PWM. F_pwm = F_clkio / 2 / N / TOP, where N = prescale factor, TOP = top of counter
+    // pre-scale for timer: N = 1
+    // WGM1[3:0]: 0,0,1,1: PWM, Phase Correct, 10-bit (DS table 12-5)
+    // CS1[2:0]:    0,0,1: clk/1 (No prescaling) (DS table 12-6)
+    // COM1A[1:0]:    1,0: PWM OC1A in the normal direction (DS table 12-4)
+    // COM1B[1:0]:    1,0: PWM OC1B in the normal direction (DS table 12-4)
+    TCCR1A  = (1<<WGM11)  | (1<<WGM10)   // 10-bit (TOP=0x03FF) (DS table 12-5)
+            | (1<<COM1A1) | (0<<COM1A0)  // PWM 1A Clear OC1A on Compare Match
+            | (1<<COM1B1) | (0<<COM1B0)  // PWM 1B Clear OC1B on Compare Match
+            ;
+    TCCR1B  = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
+            | (0<<WGM13)  | (0<<WGM12)  // PWM, Phase Correct, 10-bit
+            ;
+
+    // set PWM resolution
+    PWM_TOP = PWM_TOP_INIT;
+
+    // set up e-switch
+    SWITCH_PUE = (1 << SWITCH_PIN);  // pull-up for e-switch
+    SWITCH_PCMSK = (1 << SWITCH_PCINT);  // enable pin change interrupt
 }
+
 
 #define LAYOUT_DEFINED
 
-#endif

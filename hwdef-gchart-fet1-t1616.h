@@ -1,70 +1,92 @@
-#ifndef HWDEF_GCH_FET1_T1616_H
-#define HWDEF_GCH_FET1_T1616_H
+// gChart's custom FET+1 driver layout
+// Copyright (C) 2020-2023 gchart, Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
-/* gChart's custom FET+1 driver layout
-
-PB0 - PWM for FET (TCA - WO0)
-PB1 - PWM for 7135 (TCA - WO1)
-PB2 - Switch pin, internal pullup
-PB3 - Aux LED with 4700 Ohm series resistor
-Read voltage from VCC pin, has diode with ~0.4v drop
-
+/*
+ * PB0 - PWM for FET (TCA - WO0)
+ * PB1 - PWM for 7135 (TCA - WO1)
+ * PB2 - Switch pin, internal pullup
+ * PB3 - Aux LED with 4700 Ohm series resistor
+ * Read voltage from VCC pin, has diode with ~0.4v drop
 */
 
-
-#define LAYOUT_DEFINED
-
-#ifdef ATTINY
-#undef ATTINY
-#endif
 #define ATTINY 1616
 #include <avr/io.h>
 
-#define PWM_CHANNELS 2
+// nearly all t1616-based FET+1 drivers work pretty much the same
+// (this one has single-color aux like the TS10)
+#define HWDEF_C_FILE hwdef-wurkkos-ts10.c
 
-#ifndef SWITCH_PIN
-#define SWITCH_PIN     PIN2_bp
-#define SWITCH_PORT    VPORTB.IN
-#define SWITCH_ISC_REG PORTB.PIN2CTRL
-#define SWITCH_VECT    PORTB_PORT_vect
-#define SWITCH_INTFLG  VPORTB.INTFLAGS
-#endif
+// allow using aux LEDs as extra channel modes
+#include "chan-aux.h"
+
+// channel modes:
+// * 0. FET+7135 stacked
+// * 1. aux LEDs
+#define NUM_CHANNEL_MODES  2
+enum CHANNEL_MODES {
+    CM_MAIN = 0,
+    CM_AUX
+};
+
+#define DEFAULT_CHANNEL_MODE  CM_MAIN
+
+// right-most bit first, modes are in fedcba9876543210 order
+#define CHANNEL_MODES_ENABLED 0b00000001
 
 
-// 7135 channel
-#ifndef PWM1_PIN
-#define PWM1_PIN PB1               //
-#define PWM1_LVL TCA0.SINGLE.CMP1  // CMP1 is the output compare register for PB1
-#endif
+#define PWM_CHANNELS 2  // old, remove this
 
-// FET channel
-#ifndef PWM2_PIN
-#define PWM2_PIN PB0               //
-#define PWM2_LVL TCA0.SINGLE.CMP0  // CMP0 is the output compare register for PB0
-#endif
+#define PWM_BITS      16        // dynamic 16-bit, but never goes over 255
+#define PWM_GET       PWM_GET8
+#define PWM_DATATYPE  uint16_t  // is used for PWM_TOPS (which goes way over 255)
+#define PWM_DATATYPE2 uint16_t  // only needs 32-bit if ramp values go over 255
+#define PWM1_DATATYPE uint8_t   // 1x7135 ramp
+#define PWM2_DATATYPE uint8_t   // DD FET ramp
+
+// PWM parameters of both channels are tied together because they share a counter
+#define PWM_TOP TCA0.SINGLE.PERBUF   // holds the TOP value for for variable-resolution PWM
+#define PWM_TOP_INIT  255    // highest value used in top half of ramp
+// not necessary when double-buffered "BUF" registers are used
+#define PWM_CNT TCA0.SINGLE.CNT   // for resetting phase after each TOP adjustment
+
+// 1x7135 channel
+#define CH1_PIN  PB1
+#define CH1_PWM  TCA0.SINGLE.CMP1BUF  // CMP1 is the output compare register for PB1
+
+// DD FET channel
+#define CH2_PIN  PB0
+#define CH2_PWM  TCA0.SINGLE.CMP0BUF  // CMP0 is the output compare register for PB0
+
+// e-switch
+#define SWITCH_PIN      PIN2_bp
+#define SWITCH_PORT     VPORTB.IN
+#define SWITCH_ISC_REG  PORTB.PIN2CTRL
+#define SWITCH_VECT     PORTB_PORT_vect
+#define SWITCH_INTFLG   VPORTB.INTFLAGS
 
 // average drop across diode on this hardware
 #ifndef VOLTAGE_FUDGE_FACTOR
 #define VOLTAGE_FUDGE_FACTOR 8  // 4 = add 0.20V
 #endif
 
-
 // lighted button
-#ifndef AUXLED_PIN
-#define AUXLED_PIN  PIN3_bp
-#define AUXLED_PORT PORTB
-#endif
+#define AUXLED_PIN   PIN3_bp
+#define AUXLED_PORT  PORTB
 
 
-// with so many pins, doing this all with #ifdefs gets awkward...
-// ... so just hardcode it in each hwdef file instead
 inline void hwdef_setup() {
 
     // set up the system clock to run at 10 MHz instead of the default 3.33 MHz
-    _PROTECTED_WRITE( CLKCTRL.MCLKCTRLB, CLKCTRL_PDIV_2X_gc | CLKCTRL_PEN_bm );
+    _PROTECTED_WRITE( CLKCTRL.MCLKCTRLB,
+                      CLKCTRL_PDIV_2X_gc | CLKCTRL_PEN_bm );
 
     //VPORTA.DIR = 0b00000010;
-    VPORTB.DIR = PIN0_bm | PIN1_bm | PIN3_bm;
+    // Outputs
+    VPORTB.DIR = PIN0_bm   // DD FET
+               | PIN1_bm   // 7135
+               | PIN3_bm;  // Aux LED
     //VPORTC.DIR = 0b00000000;
 
     // enable pullups on the input pins to reduce power
@@ -97,10 +119,16 @@ inline void hwdef_setup() {
     // For Fast (Single Slope) PWM use TCA_SINGLE_WGMODE_SINGLESLOPE_gc
     // For Phase Correct (Dual Slope) PWM use TCA_SINGLE_WGMODE_DSBOTTOM_gc
     // See the manual for other pins, clocks, configs, portmux, etc
-    TCA0.SINGLE.CTRLB = TCA_SINGLE_CMP0EN_bm | TCA_SINGLE_CMP1EN_bm | TCA_SINGLE_WGMODE_DSBOTTOM_gc;
-    TCA0.SINGLE.PER = 255;
-    TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc | TCA_SINGLE_ENABLE_bm;
+    TCA0.SINGLE.CTRLB = TCA_SINGLE_CMP0EN_bm
+                      | TCA_SINGLE_CMP1EN_bm
+                      | TCA_SINGLE_WGMODE_DSBOTTOM_gc;
+    TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc
+                      | TCA_SINGLE_ENABLE_bm;
+
+    PWM_TOP = PWM_TOP_INIT;
+
 }
 
 
-#endif
+#define LAYOUT_DEFINED
+

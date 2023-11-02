@@ -1,22 +1,7 @@
-/*
- * Anduril: Narsil-inspired UI for SpaghettiMonster.
- * (Anduril is Aragorn's sword, the blade Narsil reforged)
- *
- * Copyright (C) 2017-2020 Selene ToyKeeper
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// Anduril: Narsil-inspired UI for SpaghettiMonster.
+// (Anduril is Aragorn's sword, the blade Narsil reforged)
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 /*
  * Usually a program would be structured like this...
@@ -54,10 +39,10 @@
 
 /********* specific settings for known driver types *********/
 // Anduril config file name (set it here or define it at the gcc command line)
-//#define CONFIGFILE cfg-blf-q8.h
+//#define CFG_H cfg-blf-q8.h
 
 #include "tk.h"
-#include incfile(CONFIGFILE)
+#include incfile(CFG_H)
 
 
 /********* Include headers which need to be before FSM *********/
@@ -92,8 +77,11 @@
 #include "spaghetti-monster.h"
 
 /********* does this build target have special code to include? *********/
-#ifdef OVERRIDES_FILE
-#include incfile(OVERRIDES_FILE)
+#ifdef HWDEF_C_FILE
+#include incfile(HWDEF_C_FILE)
+#endif
+#ifdef CFG_C_FILE
+#include incfile(CFG_C_FILE)
 #endif
 
 
@@ -101,7 +89,6 @@
 
 #include "off-mode.h"
 #include "ramp-mode.h"
-#include "load-save-config.h"
 #include "config-mode.h"
 #include "aux-leds.h"
 #include "misc.h"
@@ -138,8 +125,10 @@
 #include "tactical-mode.h"
 #endif
 
-#ifdef USE_TINT_RAMPING
-#include "tint-ramping.h"
+// allow the channel mode handler even when only 1 mode
+// (so a tint ramp light could still use 3H even if there's no other mode)
+#if defined(USE_CHANNEL_MODES)
+#include "channel-modes.h"
 #endif
 
 #ifdef USE_FACTORY_RESET
@@ -152,6 +141,13 @@
 #ifdef USE_SOS_MODE
 #include "sos-mode.h"
 #endif
+
+#ifdef USE_SMOOTH_STEPS
+#include "smooth-steps.h"
+#endif
+
+// this should be last, so other headers have a chance to declare values
+#include "load-save-config.h"
 
 
 /********* Include all the app logic source files *********/
@@ -197,8 +193,8 @@
 #include "tactical-mode.c"
 #endif
 
-#ifdef USE_TINT_RAMPING
-#include "tint-ramping.c"
+#if defined(USE_CHANNEL_MODES)
+#include "channel-modes.c"
 #endif
 
 #ifdef USE_FACTORY_RESET
@@ -211,6 +207,10 @@
 
 #ifdef USE_SOS_MODE
 #include "sos-mode.c"
+#endif
+
+#ifdef USE_SMOOTH_STEPS
+#include "smooth-steps.c"
 #endif
 
 
@@ -234,13 +234,13 @@ void setup() {
         #if defined(USE_MANUAL_MEMORY) && defined(USE_MANUAL_MEMORY_TIMER)
         // without this, initial boot-up brightness is wrong
         // when manual mem is enabled with a non-zero timer
-        if (manual_memory) memorized_level = manual_memory;
+        if (cfg.manual_memory) manual_memory_restore();
         #endif
 
-        #ifdef USE_TINT_RAMPING
-        // add tint ramping underneath every other state
-        push_state(tint_ramping_state, 0);
-        #endif  // ifdef USE_TINT_RAMPING
+        #if defined(USE_CHANNEL_MODES)
+        // add channel mode functions underneath every other state
+        push_state(channel_mode_state, 0);
+        #endif
 
         push_state(off_state, 1);
 
@@ -250,10 +250,10 @@ void setup() {
         // power clicky acts as a momentary mode
         load_config();
 
-        #ifdef USE_TINT_RAMPING
-        // add tint ramping underneath every other state
-        push_state(tint_ramping_state, 0);
-        #endif  // ifdef USE_TINT_RAMPING
+        #if defined(USE_CHANNEL_MODES)
+        // add channel mode functions underneath every other state
+        push_state(channel_mode_state, 0);
+        #endif
 
         if (button_is_pressed())
             // hold button to go to moon
@@ -275,7 +275,8 @@ void loop() {
 
     #ifdef USE_AUX_RGB_LEDS_WHILE_ON
     // display battery charge on RGB button during use
-    if (! setting_rgb_mode_now) rgb_led_voltage_readout(1);
+    if (state == steady_state)
+        rgb_led_voltage_readout(actual_level > USE_AUX_RGB_LEDS_WHILE_ON);
     #endif
 
     if (0) {}  // placeholder
@@ -316,7 +317,7 @@ void loop() {
         // in simple mode, turn off after one readout
         // FIXME: can eat the next button press
         //        (state changes in loop() act weird)
-        if (simple_ui_active) set_state_deferred(off_state, 0);
+        if (cfg.simple_ui_active) set_state_deferred(off_state, 0);
         else nice_delay_ms(1000);
         #endif
     }
@@ -339,6 +340,12 @@ void loop() {
     #if defined(USE_SOS_MODE) && defined(USE_SOS_MODE_IN_BLINKY_GROUP)
     else if (state == sos_state) {
         sos_mode_iter();
+    }
+    #endif
+
+    #ifdef USE_SMOOTH_STEPS
+    else if (cfg.smooth_steps_style && smooth_steps_in_progress) {
+        smooth_steps_iter();
     }
     #endif
 

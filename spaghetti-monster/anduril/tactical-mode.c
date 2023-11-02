@@ -1,29 +1,11 @@
-/*
- * tactical-mode.c: Tactical (ish) mode for Anduril.
- *
- * Copyright (C) 2023 Selene ToyKeeper
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// tactical-mode.c: Tactical (ish) mode for Anduril.
+// Copyright (C) 2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef TACTICAL_MODE_C
-#define TACTICAL_MODE_C
+#pragma once
 
 #include "tactical-mode.h"
 
-// TODO: save these in eeprom
-uint8_t tactical_levels[] = { TACTICAL_LEVELS };  // high, low, strobe
 
 uint8_t tactical_state(Event event, uint16_t arg) {
     // momentary(ish) tactical mode
@@ -42,14 +24,18 @@ uint8_t tactical_state(Event event, uint16_t arg) {
         if (click <= 3) {
             momentary_active = 1;
             uint8_t lvl;
-            lvl = tactical_levels[click-1];
+            lvl = cfg.tactical_levels[click-1];
             if ((1 <= lvl) && (lvl <= RAMP_SIZE)) {  // steady output
                 memorized_level = lvl;
                 momentary_mode = 0;
+                #if NUM_CHANNEL_MODES > 1
+                    // use ramp mode's channel
+                    channel_mode = cfg.channel_mode;
+                #endif
             } else {  // momentary strobe mode
                 momentary_mode = 1;
                 if (lvl > RAMP_SIZE) {
-                    strobe_type = (lvl - RAMP_SIZE - 1) % strobe_mode_END;
+                    current_strobe_type = (lvl - RAMP_SIZE - 1) % strobe_mode_END;
                 }
             }
         }
@@ -58,6 +44,7 @@ uint8_t tactical_state(Event event, uint16_t arg) {
     else if ((event & (B_CLICK | B_PRESS)) == (B_CLICK)) {
         momentary_active = 0;
         set_level(0);
+        interrupt_nice_delays();  // stop animations in progress
     }
 
     // delegate to momentary mode while button is pressed
@@ -92,7 +79,7 @@ uint8_t tactical_state(Event event, uint16_t arg) {
     // (unnecessary since this entire mode is blocked in simple UI)
     /*
     #ifdef USE_SIMPLE_UI
-    if (simple_ui_active) {
+    if (cfg.simple_ui_active) {
         return EVENT_NOT_HANDLED;
     }
     #endif
@@ -101,7 +88,7 @@ uint8_t tactical_state(Event event, uint16_t arg) {
     // 7H: configure tactical mode
     else if (event == EV_click7_hold) {
         push_state(tactical_config_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     return ret;
@@ -113,13 +100,10 @@ void tactical_config_save(uint8_t step, uint8_t value) {
     // each value is 1 to 150, or other:
     // - 1..150 is a ramp level
     // - other means "strobe mode"
-    tactical_levels[step - 1] = value;
+    cfg.tactical_levels[step - 1] = value;
 }
 
 uint8_t tactical_config_state(Event event, uint16_t arg) {
     return config_state_base(event, arg, 3, tactical_config_save);
 }
-
-
-#endif
 

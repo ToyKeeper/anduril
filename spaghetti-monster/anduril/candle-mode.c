@@ -1,24 +1,7 @@
-/*
- * candle-mode.c: Candle mode for Anduril.
- *
- * Copyright (C) 2017 Selene ToyKeeper
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#ifndef CANDLE_MODE_C
-#define CANDLE_MODE_C
+// candle-mode.c: Candle mode for Anduril.
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
 #include "candle-mode.h"
 
@@ -28,7 +11,7 @@
 
 uint8_t candle_mode_state(Event event, uint16_t arg) {
     static int8_t ramp_direction = 1;
-    #define MAX_CANDLE_LEVEL (RAMP_LENGTH-CANDLE_AMPLITUDE-15)
+    #define MAX_CANDLE_LEVEL (MAX_LEVEL-CANDLE_AMPLITUDE-15)
     static uint8_t candle_wave1 = 0;
     static uint8_t candle_wave2 = 0;
     static uint8_t candle_wave3 = 0;
@@ -52,14 +35,14 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
     // if the timer just expired, shut off
     if (sunset_active  &&  (! sunset_timer)) {
         set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif  // ifdef USE_SUNSET_TIMER
 
 
     if (event == EV_enter_state) {
         ramp_direction = 1;
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #ifdef USE_SUNSET_TIMER
     // 2 clicks: cancel timer
@@ -67,7 +50,7 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
         // parent state just rotated through strobe/flasher modes,
         // so cancel timer...  in case any time was left over from earlier
         sunset_timer = 0;
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif  // ifdef USE_SUNSET_TIMER
     // hold: change brightness (brighter)
@@ -81,19 +64,19 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
         candle_mode_brightness += ramp_direction;
         if (candle_mode_brightness < 1) candle_mode_brightness = 1;
         else if (candle_mode_brightness > MAX_CANDLE_LEVEL) candle_mode_brightness = MAX_CANDLE_LEVEL;
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // reverse ramp direction on hold release
     else if (event == EV_click1_hold_release) {
         ramp_direction = -ramp_direction;
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // click, hold: change brightness (dimmer)
     else if (event == EV_click2_hold) {
         ramp_direction = 1;
         if (candle_mode_brightness > 1)
             candle_mode_brightness --;
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // clock tick: animate candle brightness
     else if (event == EV_tick) {
@@ -146,11 +129,8 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
             // random amplitude
             //candle_wave3_depth = 2 + (pseudo_rand() % ((CANDLE_WAVE3_MAXDEPTH * CANDLE_AMPLITUDE / 100) - 2));
             candle_wave3_depth = pseudo_rand() % (CANDLE_WAVE3_MAXDEPTH * CANDLE_AMPLITUDE / 100);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     return EVENT_NOT_HANDLED;
 }
-
-
-#endif
 

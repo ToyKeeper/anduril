@@ -1,24 +1,8 @@
-/*
- * strobe-modes.c: Strobe modes for Anduril.
- *
- * Copyright (C) 2017 Selene ToyKeeper
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// strobe-modes.c: Strobe modes for Anduril.
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef STROBE_MODES_C
-#define STROBE_MODES_C
+#pragma once
 
 #include "strobe-modes.h"
 
@@ -27,7 +11,7 @@ uint8_t strobe_state(Event event, uint16_t arg) {
     static int8_t ramp_direction = 1;
 
     // 'st' reduces ROM size slightly
-    strobe_mode_te st = strobe_type;
+    strobe_mode_te st = current_strobe_type;
 
     #ifdef USE_MOMENTARY_MODE
     momentary_mode = 1;  // 0 = ramping, 1 = strobes
@@ -44,25 +28,36 @@ uint8_t strobe_state(Event event, uint16_t arg) {
     if (0) {}  // placeholder
     // init anything which needs to be initialized
     else if (event == EV_enter_state) {
+        current_strobe_type = cfg.strobe_type;
         ramp_direction = 1;
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 1 click: off
     else if (event == EV_1click) {
         set_state(off_state, 0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // 2 clicks: rotate through strobe/flasher modes
     else if (event == EV_2clicks) {
-        strobe_type = (st + 1) % NUM_STROBES;
+        current_strobe_type = cfg.strobe_type = (st + 1) % NUM_STROBES;
         save_config();
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
+    #if (NUM_CHANNEL_MODES > 1) && defined(USE_CHANNEL_PER_STROBE)
+    // 3 clicks: rotate through channel modes for the current strobe
+    else if (event == EV_3clicks) {
+        // TODO: maybe skip aux modes?
+        set_channel_mode((channel_mode + 1) % NUM_CHANNEL_MODES);
+        cfg.strobe_channels[st] = channel_mode;
+        save_config();
+        return EVENT_HANDLED;
+    }
+    #endif
     // 4 clicks: rotate backward through strobe/flasher modes
     else if (event == EV_4clicks) {
-        strobe_type = (st - 1 + NUM_STROBES) % NUM_STROBES;
+        current_strobe_type = cfg.strobe_type = (st - 1 + NUM_STROBES) % NUM_STROBES;
         save_config();
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // hold: change speed (go faster)
     //       or change brightness (brighter)
@@ -77,11 +72,11 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         else if (st == party_strobe_e) {
         #endif
             if ((arg & 1) == 0) {
-                uint8_t d = strobe_delays[st];
+                uint8_t d = cfg.strobe_delays[st];
                 d -= ramp_direction;
                 if (d < 8) d = 8;
                 else if (d > 254) d = 254;
-                strobe_delays[st] = d;
+                cfg.strobe_delays[st] = d;
             }
         }
         #endif
@@ -92,21 +87,21 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         // biking mode brighter
         #ifdef USE_BIKE_FLASHER_MODE
         else if (st == bike_flasher_e) {
-            bike_flasher_brightness += ramp_direction;
-            if (bike_flasher_brightness < 2) bike_flasher_brightness = 2;
-            else if (bike_flasher_brightness > MAX_BIKING_LEVEL) bike_flasher_brightness = MAX_BIKING_LEVEL;
-            set_level(bike_flasher_brightness);
+            cfg.bike_flasher_brightness += ramp_direction;
+            if (cfg.bike_flasher_brightness < 2) cfg.bike_flasher_brightness = 2;
+            else if (cfg.bike_flasher_brightness > MAX_BIKING_LEVEL) cfg.bike_flasher_brightness = MAX_BIKING_LEVEL;
+            set_level(cfg.bike_flasher_brightness);
         }
         #endif
 
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // reverse ramp direction on hold release
     // ... and save new strobe settings
     else if (event == EV_click1_hold_release) {
         ramp_direction = -ramp_direction;
         save_config();
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // click, hold: change speed (go slower)
     //       or change brightness (dimmer)
@@ -123,7 +118,7 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         else if (st == party_strobe_e) {
         #endif
             if ((arg & 1) == 0) {
-                if (strobe_delays[st] < 255) strobe_delays[st] ++;
+                if (cfg.strobe_delays[st] < 255) cfg.strobe_delays[st] ++;
             }
         }
         #endif
@@ -134,25 +129,25 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         // biking mode dimmer
         #ifdef USE_BIKE_FLASHER_MODE
         else if (st == bike_flasher_e) {
-            if (bike_flasher_brightness > 2)
-                bike_flasher_brightness --;
-            set_level(bike_flasher_brightness);
+            if (cfg.bike_flasher_brightness > 2)
+                cfg.bike_flasher_brightness --;
+            set_level(cfg.bike_flasher_brightness);
         }
         #endif
 
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     // release hold: save new strobe settings
     else if (event == EV_click2_hold_release) {
         save_config();
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #ifdef USE_MOMENTARY_MODE
     // 5 clicks: go to momentary mode (momentary strobe)
     else if (event == EV_5clicks) {
         set_state(momentary_state, 0);
         set_level(0);
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
     #if defined(USE_LIGHTNING_MODE) || defined(USE_CANDLE_MODE)
@@ -162,7 +157,7 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         if (arg == AUTO_REVERSE_TIME) ramp_direction = 1;
 
         pseudo_rand_seed += arg;
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
     #endif
     return EVENT_NOT_HANDLED;
@@ -170,7 +165,12 @@ uint8_t strobe_state(Event event, uint16_t arg) {
 
 // runs repeatedly in FSM loop() whenever UI is in strobe_state or momentary strobe
 inline void strobe_state_iter() {
-    uint8_t st = strobe_type;  // can't use switch() on an enum
+    uint8_t st = current_strobe_type;  // can't use switch() on an enum
+
+    #if (NUM_CHANNEL_MODES > 1) && defined(USE_CHANNEL_PER_STROBE)
+        // remember channel mode for each strobe
+        channel_mode = cfg.strobe_channels[st];
+    #endif
 
     switch(st) {
         #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
@@ -181,6 +181,12 @@ inline void strobe_state_iter() {
         case tactical_strobe_e:
         #endif
             party_tactical_strobe_mode_iter(st);
+            break;
+        #endif
+
+        #ifdef USE_POLICE_COLOR_STROBE_MODE
+        case police_color_strobe_e:
+            police_color_strobe_iter();
             break;
         #endif
 
@@ -202,10 +208,10 @@ inline void strobe_state_iter() {
 #if defined(USE_PARTY_STROBE_MODE) || defined(USE_TACTICAL_STROBE_MODE)
 inline void party_tactical_strobe_mode_iter(uint8_t st) {
     // one iteration of main loop()
-    uint8_t del = strobe_delays[st];
+    uint8_t del = cfg.strobe_delays[st];
     // TODO: make tac strobe brightness configurable?
     set_level(STROBE_BRIGHTNESS);
-    if (0) {}  // placeholde0
+    if (0) {}  // placeholder
     #ifdef USE_PARTY_STROBE_MODE
     else if (st == party_strobe_e) {  // party strobe
         #ifdef PARTY_STROBE_ONTIME
@@ -223,6 +229,29 @@ inline void party_tactical_strobe_mode_iter(uint8_t st) {
     #endif
     set_level(STROBE_OFF_LEVEL);
     nice_delay_ms(del);  // no return check necessary on final delay
+}
+#endif
+
+#ifdef USE_POLICE_COLOR_STROBE_MODE
+inline void police_color_strobe_iter() {
+    // one iteration of main loop()
+    uint8_t del = 66;
+    // TODO: make police strobe brightness configurable
+    uint8_t bright = memorized_level;
+    //uint8_t channel = channel_mode;
+
+    for (uint8_t i=0; i<10; i++) {
+        if (0 == i) set_channel_mode(POLICE_COLOR_STROBE_CH1);
+        else if (5 == i) set_channel_mode(POLICE_COLOR_STROBE_CH2);
+        set_level(bright);
+        nice_delay_ms(del >> 1);
+        set_level(STROBE_OFF_LEVEL);
+        nice_delay_ms(del);
+    }
+
+    // restore the channel when done
+    //set_channel_mode(channel);
+    channel_mode = cfg.channel_mode;
 }
 #endif
 
@@ -274,14 +303,17 @@ inline void lightning_storm_iter() {
 #endif
 
 #ifdef USE_BIKE_FLASHER_MODE
+#ifndef BIKE_STROBE_ONTIME
+#define BIKE_STROBE_ONTIME 0
+#endif
 inline void bike_flasher_iter() {
     // one iteration of main loop()
-    uint8_t burst = bike_flasher_brightness << 1;
+    uint8_t burst = cfg.bike_flasher_brightness << 1;
     if (burst > MAX_LEVEL) burst = MAX_LEVEL;
     for(uint8_t i=0; i<4; i++) {
         set_level(burst);
-        nice_delay_ms(5);
-        set_level(bike_flasher_brightness);
+        nice_delay_ms(5 + BIKE_STROBE_ONTIME);
+        set_level(cfg.bike_flasher_brightness);
         nice_delay_ms(65);
     }
     nice_delay_ms(720);  // no return check necessary on final delay
@@ -296,8 +328,5 @@ inline void bike_flasher_iter() {
 
 #ifdef USE_BORING_STROBE_STATE
 #include "ff-strobe-modes.c"
-#endif
-
-
 #endif
 

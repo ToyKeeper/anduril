@@ -1,4 +1,8 @@
 // Fireflies PL47-219B config options for Anduril
+// Copyright (C) 2018-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 // same as PL47 but with FET modes limited to 67% power
 // to avoid destroying the LEDs
 #include "cfg-ff-pl47.h"

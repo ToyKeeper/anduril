@@ -1,24 +1,8 @@
-/*
- * fsm-adc.c: ADC (voltage, temperature) functions for SpaghettiMonster.
- *
- * Copyright (C) 2017 Selene ToyKeeper
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// fsm-adc.c: ADC (voltage, temperature) functions for SpaghettiMonster.
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef FSM_ADC_C
-#define FSM_ADC_C
+#pragma once
 
 // override onboard temperature sensor definition, if relevant
 #ifdef USE_EXTERNAL_TEMP_SENSOR
@@ -27,6 +11,8 @@
 #endif
 #define ADMUX_THERM ADMUX_THERM_EXTERNAL_SENSOR
 #endif
+
+#include <avr/sleep.h>
 
 
 static inline void set_admux_therm() {
@@ -86,6 +72,24 @@ inline void set_admux_voltage() {
     ADC_start_measurement();
 }
 
+
+#ifdef TICK_DURING_STANDBY
+inline void adc_sleep_mode() {
+    // needs a special sleep mode to get accurate measurements quickly 
+    // ... full power-down ends up using more power overall, and causes 
+    // some weird issues when the MCU doesn't stay awake enough cycles 
+    // to complete a reading
+    #ifdef SLEEP_MODE_ADC
+        // attiny1634
+        set_sleep_mode(SLEEP_MODE_ADC);
+    #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc
+        set_sleep_mode(SLEEP_MODE_STANDBY);
+    #else
+        #error No ADC sleep mode defined for this hardware.
+    #endif
+}
+#endif
+
 inline void ADC_start_measurement() {
     #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85) || (ATTINY == 841) || (ATTINY == 1634)
         ADCSRA |= (1 << ADSC) | (1 << ADIE);
@@ -124,10 +128,13 @@ inline void ADC_on()
         ADCSRA = (1 << ADEN) | (1 << ADSC) | (1 << ADATE) | ADC_PRSCL;
         //ADCSRA |= (1 << ADSC);  // start measuring
     #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc
-        set_admux_voltage();
         VREF.CTRLA |= VREF_ADC0REFSEL_1V1_gc; // Set Vbg ref to 1.1V
-        ADC0.CTRLA = ADC_ENABLE_bm | ADC_FREERUN_bm; // Enabled, free-running (aka, auto-retrigger)
-        ADC0.COMMAND |= ADC_STCONV_bm; // Start the ADC conversions    
+        // Enabled, free-running (aka, auto-retrigger), run in standby
+        ADC0.CTRLA = ADC_ENABLE_bm | ADC_FREERUN_bm | ADC_RUNSTBY_bm;
+        // set a INITDLY value because the AVR manual says so (section 30.3.5)
+        // (delay 1st reading until Vref is stable)
+        ADC0.CTRLD |= ADC_INITDLY_DLY16_gc;
+        set_admux_voltage();
     #else
         #error Unrecognized MCU type
     #endif
@@ -135,7 +142,7 @@ inline void ADC_on()
 
 inline void ADC_off() {
     #ifdef AVRXMEGA3  // ATTINY816, 817, etc
-        ADC0.CTRLA &= ~(ADC_ENABLE_bm);  // disable the ADC 
+        ADC0.CTRLA &= ~(ADC_ENABLE_bm);  // disable the ADC
     #else
         ADCSRA &= ~(1<<ADEN); //ADC off
     #endif
@@ -149,7 +156,7 @@ static inline uint8_t calc_voltage_divider(uint16_t value) {
     uint8_t result = ((value / adc_per_volt)
                      + VOLTAGE_FUDGE_FACTOR
                      #ifdef USE_VOLTAGE_CORRECTION
-                     + voltage_correction - 7
+                        + VOLT_CORR - 7
                      #endif
                      ) >> 1;
     return result;
@@ -260,6 +267,8 @@ void adc_deferred() {
         // (and the usual standby level is only ~20 uA)
         if (go_to_standby) {
             ADC_off();
+            // if any measurements were in progress, they're done now
+            adc_active_now = 0;
             // also, only check the battery while asleep, not the temperature
             adc_channel = 0;
         }
@@ -314,18 +323,23 @@ static inline void ADC_voltage_handler() {
     else if (go_to_standby) {  // weaker lowpass while asleep
         // occasionally the aux LED color can oscillate during standby,
         // while using "voltage" mode ... so try to reduce the oscillation
-        uint16_t m = adc_raw[0];
-        uint16_t v = adc_smooth[0];
+        uint16_t r = adc_raw[0];
+        uint16_t s = adc_smooth[0];
         #if 0
-        // fixed-rate lowpass, slow, more stable but takes longer to settle
-        if (m < v) { v -= 64; }
-        if (m > v) { v += 64; }
+        // fixed-rate lowpass, stable but very slow
+        // (move by only 0.5 ADC units per measurement, 1 ADC unit = 64)
+        if (r < s) { s -= 32; }
+        if (r > s) { s += 32; }
+        #elif 1
+        // 1/8th proportional lowpass, faster but less stable
+        int16_t diff = (r/8) - (s/8);
+        s += diff;
         #else
-        // weighted lowpass, faster but less stable
-        v = (m>>1) + (v>>1);
+        // 50% proportional lowpass, fastest but least stable
+        s = (r>>1) + (s>>1);
         #endif
-        adc_smooth[0] = v;
-        measurement = v;
+        adc_smooth[0] = s;
+        measurement = s;
     }
     #endif
     else measurement = adc_smooth[0];
@@ -349,7 +363,7 @@ static inline void ADC_voltage_handler() {
     voltage = ((uint16_t)(2*1.1*1024*10)/(measurement>>6)
                + VOLTAGE_FUDGE_FACTOR
                #ifdef USE_VOLTAGE_CORRECTION
-               + voltage_correction - 7
+                  + VOLT_CORR - 7
                #endif
                ) >> 1;
     #endif
@@ -428,10 +442,10 @@ static inline void ADC_temperature_handler() {
     // Convert ADC units to Celsius (ish)
     #ifndef USE_EXTERNAL_TEMP_SENSOR
     // onboard sensor for attiny25/45/85/1634
-    temperature = (measurement>>1) + THERM_CAL_OFFSET + (int16_t)therm_cal_offset - 275;
+    temperature = (measurement>>1) + THERM_CAL_OFFSET + (int16_t)TH_CAL - 275;
     #else
     // external sensor
-    temperature = EXTERN_TEMP_FORMULA(measurement>>1) + THERM_CAL_OFFSET + (int16_t)therm_cal_offset;
+    temperature = EXTERN_TEMP_FORMULA(measurement>>1) + THERM_CAL_OFFSET + (int16_t)TH_CAL;
     #endif
 
     // how much has the temperature changed between now and a few seconds ago?
@@ -447,10 +461,10 @@ static inline void ADC_temperature_handler() {
     pt = measurement + (diff * THERM_LOOKAHEAD);
 
     // convert temperature limit from C to raw 16-bit ADC units
-    // C = (ADC>>6) - 275 + THERM_CAL_OFFSET + therm_cal_offset;
+    // C = (ADC>>6) - 275 + THERM_CAL_OFFSET + TH_CAL;
     // ... so ...
-    // (C + 275 - THERM_CAL_OFFSET - therm_cal_offset) << 6 = ADC;
-    uint16_t ceil = (therm_ceil + 275 - therm_cal_offset - THERM_CAL_OFFSET) << 1;
+    // (C + 275 - THERM_CAL_OFFSET - TH_CAL) << 6 = ADC;
+    uint16_t ceil = (TH_CEIL + 275 - TH_CAL - THERM_CAL_OFFSET) << 1;
     int16_t offset = pt - ceil;
 
     // bias small errors toward zero, while leaving large errors mostly unaffected
@@ -557,4 +571,3 @@ void battcheck() {
 }
 #endif
 
-#endif

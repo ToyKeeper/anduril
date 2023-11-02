@@ -1,24 +1,8 @@
-/*
- * strobe-modes-fsm.h: FSM config for strobe modes in Anduril.
- *
- * Copyright (C) 2017 Selene ToyKeeper
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// strobe-modes-fsm.h: FSM config for strobe modes in Anduril.
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef STROBE_MODES_FSM_H
-#define STROBE_MODES_FSM_H
+#pragma once
 
 // enable the random number generator if we need it
 #if defined(USE_LIGHTNING_MODE) || defined(USE_CANDLE_MODE)
@@ -41,4 +25,31 @@
 #define USE_STROBE_STATE
 #endif
 
+// internal numbering for strobe modes
+#ifdef USE_STROBE_STATE
+typedef enum {
+    #ifdef USE_PARTY_STROBE_MODE
+    party_strobe_e,
+    #endif
+    #ifdef USE_TACTICAL_STROBE_MODE
+    tactical_strobe_e,
+    #endif
+    #ifdef USE_POLICE_COLOR_STROBE_MODE
+    police_color_strobe_e,
+    #endif
+    #ifdef USE_LIGHTNING_MODE
+    lightning_storm_e,
+    #endif
+    #ifdef USE_CANDLE_MODE
+    candle_mode_e,
+    #endif
+    #ifdef USE_BIKE_FLASHER_MODE
+    bike_flasher_e,
+    #endif
+    strobe_mode_END
+} strobe_mode_te;
+
+//const int NUM_STROBES = strobe_mode_END;
+#define NUM_STROBES strobe_mode_END
 #endif
+

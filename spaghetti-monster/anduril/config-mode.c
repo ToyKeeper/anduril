@@ -1,24 +1,8 @@
-/*
- * config-mode.c: Config mode base functions for Anduril.
- *
- * Copyright (C) 2017 Selene ToyKeeper
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// config-mode.c: Config mode base functions for Anduril.
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef CONFIG_MODE_C
-#define CONFIG_MODE_C
+#pragma once
 
 #include "config-mode.h"
 
@@ -27,6 +11,14 @@ uint8_t number_entry_state(Event event, uint16_t arg);
 // return value from number_entry_state()
 volatile uint8_t number_entry_value;
 
+
+#if defined(USE_CONFIG_COLORS) && (NUM_CHANNEL_MODES > 1)
+// TODO: promote this to fsm-channels.c ?
+void set_chan_if(bool cond, uint8_t chan) {
+    if ((cond) && (chan != channel_mode))
+        set_channel_mode(chan);
+}
+#endif
 
 // allow the user to set a new value for a config option
 // can be called two ways:
@@ -45,7 +37,13 @@ uint8_t config_state_base(
         void (*savefunc)(uint8_t step, uint8_t value)) {
 
     static uint8_t config_step;
+    #ifdef USE_CONFIG_COLORS
+    static uint8_t orig_channel;
+    #endif
     if (event == EV_enter_state) {
+        #if defined(USE_CONFIG_COLORS) && (NUM_CHANNEL_MODES > 1)
+        orig_channel = channel_mode;
+        #endif
         config_step = 0;
         set_level(0);
         // if button isn't held, configure first menu item
@@ -62,14 +60,26 @@ uint8_t config_state_base(
     #define B_ANY_HOLD_RELEASE (B_CLICK|B_HOLD|B_RELEASE|B_TIMEOUT)
     else if ((event & B_CLICK_FLAGS) == B_ANY_HOLD) {
         if (config_step <= num_config_steps) {
-            if (2 == (arg % (TICKS_PER_SECOND*3/2))) {
+            #if defined(USE_CONFIG_COLORS) && (NUM_CHANNEL_MODES > 1)
+                uint8_t chan = config_step - 1;
+                if (chan < NUM_CHANNEL_MODES)
+                    set_chan_if(config_color_per_step, chan);
+            #endif
+            if ((TICKS_PER_SECOND/10) == (arg % (TICKS_PER_SECOND*3/2))) {
                 config_step ++;
                 // blink when config step advances
-                if (config_step <= num_config_steps)
+                if (config_step <= num_config_steps) {
+                    #ifdef CONFIG_BLINK_CHANNEL
+                    set_chan_if(!config_color_per_step, CONFIG_BLINK_CHANNEL);
+                    #endif
                     set_level(RAMP_SIZE * 3 / 8);
+                }
             }
             else {
                 // stay on at a low level to indicate menu is active
+                #ifdef CONFIG_WAITING_CHANNEL
+                set_chan_if(!config_color_per_step, CONFIG_WAITING_CHANNEL);
+                #endif
                 set_level(RAMP_SIZE * 1 / 8);
             }
         } else {
@@ -82,6 +92,10 @@ uint8_t config_state_base(
     else if ((event & B_CLICK_FLAGS) == B_ANY_HOLD_RELEASE) {
         // ask the user for a number, if they selected a menu item
         if (config_step && config_step <= num_config_steps) {
+            #if defined(USE_CONFIG_COLORS) && (NUM_CHANNEL_MODES > 1)
+                // put the colors back how they were
+                set_channel_mode(orig_channel);
+            #endif
             push_state(number_entry_state, 0);
         }
         // exit after falling out of end of menu
@@ -98,6 +112,13 @@ uint8_t config_state_base(
         save_config();
         pop_state();
     }
+
+    #if defined(USE_CONFIG_COLORS) && (NUM_CHANNEL_MODES > 1)
+    else if (event == EV_leave_state) {
+        // put the colors back how they were
+        set_channel_mode(orig_channel);
+    }
+    #endif
 
     // eat all other events; don't pass any through to parent
     return EVENT_HANDLED;
@@ -135,15 +156,18 @@ uint8_t number_entry_state(Event event, uint16_t arg) {
             // (flicker every other frame,
             //  except first frame (so we can see flashes after each click))
             else if (arg) {
+                #ifdef CONFIG_WAITING_CHANNEL
+                set_chan_if(1, CONFIG_WAITING_CHANNEL);
+                #endif
                 set_level( (RAMP_SIZE/8)
-                           + ((arg&2)<<1) );
+                           + ((arg&2)<<2) );
             }
         }
         // all done, save result and return to parent state
         else {
             pop_state();
         }
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     // count clicks: click = +1, hold = +10
@@ -159,14 +183,14 @@ uint8_t number_entry_state(Event event, uint16_t arg) {
         #endif
         number_entry_value ++;  // update the result
         empty_event_sequence();  // reset FSM's click count
+        #ifdef CONFIG_BLINK_CHANNEL
+        set_channel_mode(CONFIG_BLINK_CHANNEL);
+        #endif
         set_level(RAMP_SIZE/2);  // flash briefly
-        return MISCHIEF_MANAGED;
+        return EVENT_HANDLED;
     }
 
     // eat all other events; don't pass any through to parent
     return EVENT_HANDLED;
 }
-
-
-#endif
 

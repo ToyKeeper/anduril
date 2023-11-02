@@ -1,25 +1,8 @@
-/*
- * fsm-misc.c: Miscellaneous function for SpaghettiMonster.
- *
- * Copyright (C) 2017 Selene ToyKeeper
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// fsm-misc.c: Miscellaneous function for SpaghettiMonster.
+// Copyright (C) 2017-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef FSM_MISC_C
-#define FSM_MISC_C
-
+#pragma once
 
 #ifdef USE_DYNAMIC_UNDERCLOCKING
 void auto_clock_speed() {
@@ -47,14 +30,39 @@ uint8_t blink_digit(uint8_t num) {
 
     // "zero" digit gets a single short blink
     uint8_t ontime = BLINK_SPEED * 2 / 12;
-    if (!num) { ontime = 8; num ++; }
+    if (!num) { ontime = BLINK_ONCE_TIME; num ++; }
+
+    #ifdef BLINK_CHANNEL
+    // channel is set per blink, to prevent issues
+    // if another mode interrupts us (like a config menu)
+    uint8_t old_channel = channel_mode;
+    #endif
 
     for (; num>0; num--) {
+        // TODO: allow setting a blink channel mode per build target
+        #ifdef BLINK_CHANNEL
+            set_channel_mode(BLINK_CHANNEL);
+        #endif
         set_level(BLINK_BRIGHTNESS);
+        #ifdef BLINK_CHANNEL
+            channel_mode = old_channel;
+        #endif
         nice_delay_ms(ontime);
+
+        #ifdef BLINK_CHANNEL
+            set_channel_mode(BLINK_CHANNEL);
+        #endif
         set_level(0);
+        #ifdef BLINK_CHANNEL
+            channel_mode = old_channel;
+        #endif
         nice_delay_ms(BLINK_SPEED * 3 / 12);
     }
+
+    #ifdef BLINK_CHANNEL
+    set_channel_mode(old_channel);
+    #endif
+
     return nice_delay_ms(BLINK_SPEED * 8 / 12);
 }
 #endif
@@ -201,7 +209,7 @@ void button_led_set(uint8_t lvl) {
             break;
 
         #else
-        
+
         case 0:  // LED off
             BUTTON_LED_DDR  &= 0xff ^ (1 << BUTTON_LED_PIN);
             BUTTON_LED_PUE  &= 0xff ^ (1 << BUTTON_LED_PIN);
@@ -231,7 +239,7 @@ void rgb_led_set(uint8_t value) {
         uint8_t lvl = (value >> (i<<1)) & 0x03;
         uint8_t pin = pins[i];
         switch (lvl) {
-        
+
             #ifdef AVRXMEGA3  // ATTINY816, 817, etc
 
             case 0:  // LED off
@@ -249,7 +257,7 @@ void rgb_led_set(uint8_t value) {
                 break;
 
             #else
-        
+
             case 0:  // LED off
                 AUXLED_RGB_DDR  &= 0xff ^ (1 << pin);
                 AUXLED_RGB_PUE  &= 0xff ^ (1 << pin);
@@ -265,8 +273,8 @@ void rgb_led_set(uint8_t value) {
                 AUXLED_RGB_PUE  |= (1 << pin);
                 AUXLED_RGB_PORT |= (1 << pin);
                 break;
-                
-            #endif  // MCU type                    
+
+            #endif  // MCU type
         }
     }
 }
@@ -302,4 +310,3 @@ void reboot() {
 }
 #endif
 
-#endif

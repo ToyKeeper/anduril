@@ -182,8 +182,13 @@ While the light is on, a few actions are available:
   - 2H: Change brightness (down).
 
   - 3C: Switch to the other ramp style.  (smooth / stepped)
-  - 3H: Tint ramping (on lights which have it).
-  - 3H: Momentary turbo (on lights with no tint ramping).
+        (or activate the next channel mode, when more than one is enabled)
+        (then use 6C instead, for smooth / stepped toggle)
+  - 6C: Switch to the other ramp style.  (when 3C is mapped to next channel)
+
+  - 3H: Momentary turbo (when current channel has no tint to ramp).
+  - 3H: Tint ramping (only when current channel has adjustable tint).
+  - 4H: Momentary turbo, when 3H is mapped to tint.
 
   - 4C: Go to lockout mode.
 
@@ -217,6 +222,9 @@ While the light is on, a few actions are available:
               2: Anduril 2 style.  Ramp -> 2C goes to ceiling,
                  or goes to full power if user ramped up to ceiling first.
               This value also affects momentary turbo in Ramp and Off modes.
+    - Item 5: Configure "smooth steps".
+              0: Disable smooth steps.
+              1: Enable smooth steps.
 
 Memory determines which brightness level the light goes to with 1 click 
 from off.  There are three types of brightness memory to choose from:
@@ -246,6 +254,11 @@ To choose a memory style, set the configuration accordingly:
   automatic	off		any
   manual	on		zero
   hybrid	on		non-zero
+
+If "smooth steps" is enabled, the stepped ramp uses a smooth animation 
+between steps, and turning the light on/off has the edges smoothed off 
+too.  With "smooth steps" turned off, these brightness changes are 
+immediate.
 
 
 Sunset Timer
@@ -279,8 +292,9 @@ more than 2 times when the light is off:
   - 3H: Strobe modes, starting with the most recently used strobe.
   - 4C: Lockout mode.
   - 5C: Momentary mode.
+  - 6C: Tactical mode.
   - 7C / 7H: Aux LED configuration.
-  - 9H: Misc configuration menu. (only on some lights)
+  - 9H: Misc Config menu. (only on some lights)
   - 10H: Simple UI configuration menu.
   - 13H: Factory reset (on some lights).
   - 15C or more: Version check.
@@ -314,6 +328,8 @@ lockout mode has two levels:
 
   - 2H: Light up at the highest floor level.
         (or the manual mem level, if there is one)
+
+  - 3H: Next channel mode (if more than one is enabled).
 
 It is also possible to make the light lock itself automatically after 
 being turned off.  To enable this, go to lockout mode and use a 10H 
@@ -356,70 +372,80 @@ In more detail, this is what each blinky / utility mode does:
 
   Battery check:
 
-     Blinks out the battery voltage per cell.  Full is 4.2V, empty is 
-     about 3.0V.  The light blinks the whole-number digit first, pauses, 
-     then blinks out the "tenths" digit.  Then a longer pause, and it 
-     repeats.
-     So for 4.2V, it would be "blink-blink-blink-blink .. blink-blink".
+    Blinks out the battery voltage per cell.  Full is 4.2V, empty is 
+    about 3.0V.  The light blinks the whole-number digit first, pauses, 
+    then blinks out the "tenths" digit.  Then a longer pause, and it 
+    repeats.
+    So for 4.2V, it would be "blink-blink-blink-blink .. blink-blink".
 
-     A "zero" digit is represented by a very quick blink.
+    A "zero" digit is represented by a very quick blink.
 
-     The voltage config menu has one setting:
+    On lights with more than one set of LEDs, pressing 3C during batt 
+    check mode can select which set of LEDs (which channel mode) it uses 
+    to blink out numbers.
 
-       1. Voltage correction factor.  This adjusts the battery 
-          measurement sensor, allowing the user to add or subtract up to 
-          0.30V in 0.05V steps.  Click N times to enter a value:
+    The voltage config menu has these settings:
 
-          1C: -0.30V
-          2C: -0.25V
-          3C: -0.20V
-          4C: -0.15V
-          5C: -0.10V
-          6C: -0.05V
-          7C: default, 0V
-          8C: +0.05V
-          9C: +0.10V
-          10C: +0.15V
-          11C: +0.20V
-          12C: +0.25V
-          13C: +0.30V
+      1. Voltage correction factor.  This adjusts the battery 
+         measurement sensor, allowing the user to add or subtract up to 
+         0.30V in 0.05V steps.  Click N times to enter a value:
+
+         1C: -0.30V
+         2C: -0.25V
+         3C: -0.20V
+         4C: -0.15V
+         5C: -0.10V
+         6C: -0.05V
+         7C: default, 0V
+         8C: +0.05V
+         9C: +0.10V
+         10C: +0.15V
+         11C: +0.20V
+         12C: +0.25V
+         13C: +0.30V
+
+      2. Post-off voltage display timeout.  (only on lights with RGB aux)
+         This setting determines how many seconds the RGB aux LEDs 
+         display the voltage color after the torch goes to sleep.  Click 
+         once per desired second, or zero times to turn this function 
+         off.
 
   Temperature check:
 
-     Blinks out the current temperature in degrees C.  This number 
-     should be pretty close to what a real thermometer says.  If not, it 
-     would be a good idea to enter the thermal config menu and calibrate 
-     the sensor.  Or let the light settle to room temperature, then use 
-     factory reset to auto-calibrate the sensor.
+    Blinks out the current temperature in degrees C.  This number should 
+    be pretty close to what a real thermometer says.  If not, it would 
+    be a good idea to enter the thermal config menu and calibrate the 
+    sensor.  Or let the light settle to room temperature, then use 
+    factory reset to auto-calibrate the sensor.
 
-     The thermal config menu has two settings:
+    The thermal config menu has two settings:
 
-     - Current temperature.  Click once per degree C to calibrate the 
-       sensor.  For example, if the ambient temperature is 21 C, then 
-       click 21 times.
+    - Current temperature.  Click once per degree C to calibrate the 
+      sensor.  For example, if the ambient temperature is 21 C, then 
+      click 21 times.
 
-     - Temperature limit.  This sets the maximum temperature the light 
-       can reach before it will start doing thermal regulation to keep 
-       itself from overheating.  Click once per degree C above 30.  For 
-       example, to set the limit to 50 C, click 20 times.  The default 
-       is 45 C, and the highest value it will allow is 70 C.
+    - Temperature limit.  This sets the maximum temperature the light 
+      can reach before it will start doing thermal regulation to keep 
+      itself from overheating.  Click once per degree C above 30.  For 
+      example, to set the limit to 50 C, click 20 times.  The default is 
+      45 C, and the highest value it will allow is 70 C.
 
   Beacon mode:
 
-     Blinks at a slow speed.  The light stays on for 100ms, and then 
-     stays off until the next blink.  The brightness and the number of 
-     seconds between pulses are configurable:
+    Blinks at a slow speed.  The light stays on for 100ms, and then 
+    stays off until the next blink.  The brightness and the number of 
+    seconds between pulses are configurable:
 
-       - Brightness is the user's memorized ramp level, so set this in 
-         ramping mode before activating beacon mode.  Follows the same 
-         memory rules as ramping -- automatic, manual, or hybrid.
+      - Brightness is the user's memorized ramp level, so set this in 
+        ramping mode before activating beacon mode.  Follows the same 
+        memory rules as ramping -- automatic, manual, or hybrid.
 
-       - Speed is configured by holding the button.  The light should 
-         blink once per second while holding the button.  Release it 
-         after the desired amount of time has passed, to set a new 
-         beacon speed.
-         For example, to do a 10-second alpine beacon, hold the button 
-         for 10 seconds.
+      - Speed is configured by holding the button.  The light should 
+        blink once per second while holding the button.  Release it 
+        after the desired amount of time has passed, to set a new beacon 
+        speed.
+        For example, to do a 10-second alpine beacon, hold the button 
+        for 10 seconds.
 
   SOS mode:
 
@@ -450,6 +476,7 @@ In all of these modes, a few actions are available:
   - 2C: Next strobe / mood mode.
   - 1H: Increase brightness, or strobe faster.  (except lightning)
   - 2H: Decrease brightness, or strobe slower.  (except lightning)
+  - 4C: Previous strobe / mood mode.
   - 5C: Go to momentary mode, for a momentary strobe.
         (this is useful for light painting)
 
@@ -485,6 +512,11 @@ In more detail, here is what each mode does:
 
     Be careful about heat in this mode, if using it for a long time.
 
+  - Police strobe (on some lights)
+
+    2-color police style strobe.  Only works on lights with 2 or more 
+    colors.
+
   - Lightning storm mode
 
     Flashes at random brightness and random speed to simulate lightning 
@@ -517,6 +549,46 @@ strobe mode, such as party strobe, tactical strobe, or lightning.
 
 To exit this mode, physically disconnect power by unscrewing the tailcap 
 or battery tube.
+
+
+Tactical Mode
+--------------
+
+Click 6 times from Off to enter Tactical Mode, or 6 times in Tactical 
+Mode to exit and go back to "Off".
+
+Tactical Mode provides instant momentary access to high, low, and 
+strobe, but each of these is configurable.  The inputs are:
+
+  - 1H: High
+  - 2H: Low
+  - 3H: Strobe
+
+Each of these only lasts as long as you hold the button.
+
+Other commands in Tactical Mode are:
+
+  - 6C: exit (go back to Off Mode)
+  - 7H: Tactical Mode config menu
+    - 1st blink: configure tactical slot 1
+    - 2nd blink: configure tactical slot 2
+    - 3rd blink: configure tactical slot 3
+
+To change what is in a tactical slot, press 7H, then release the button 
+after the 1st, 2nd, or 3rd blink.  Then enter a number.  Each click adds 
+1, and each hold adds 10.  The number can be:
+
+  - 1 to 150: set the brightness level
+  - 0: last-used strobe mode
+  - 151+: go directly to a specific strobe mode
+    151 = party strobe
+    152 = tactical strobe
+    153+ = other strobes, in the same order they're in in the "Off -> 3H"
+           strobe group
+
+This assumes the light has a ramp 150 levels long.  Strobe modes start 
+at the ramp size plus 1, so it may be different if a light has a 
+different ramp size.
 
 
 Configuration Menus
@@ -597,14 +669,17 @@ Version Check Mode
 ------------------
 
 This allows people to see which version of the firmware is installed on 
-their light.  The format for this is (usually) 12 digits -- a date 
-followed by a model number.  YYYYMMDDBBPP
+their light.  The format for this is (usually) 12 digits -- a model 
+number and a date.  BBPP.YYYY-MM-DD
 
+  - BB: Brand ID
+  - PP: Product ID
   - YYYY: Year
   - MM: Month
   - DD: Day
-  - BB: Brand ID
-  - PP: Product ID
+
+Versions before 2023-05-30 used YYYYMMDDBBPP format.
+Anduril 1 used only YYYYMMDD format, or none at all.
 
 The date is when the firmware was compiled.  If the vendor did not set 
 this value, it defaults to 1969-07-20, the date of first human contact 
@@ -688,19 +763,26 @@ For lights with front-facing aux LEDs, the aux LEDs typically stay off
 when the main emitters are on, and when the light is otherwise awake.  
 The aux LEDs on most lights only turn on when the light is asleep.
 
+When a light has a single-color aux LED and no RGB, it fast-blinks the 
+aux LED in "off" modes when voltage is low.
+
 
 Misc Config Menu
 ----------------
 
 Some models may have an extra config menu for settings which don't fit 
-anywhere else.  These settings are, in order:
+anywhere else.  This menu is located at "Off -> 9H" in the advanced UI.
 
-  - Tint ramp style:
+These settings are, in order:
 
-    0 = smooth (blend channels in any proportion)
-    1 = toggle (only one channel active at a time)
+  - Tint ramp style:  (on some lights)
 
-  - Jump Start level:
+    0 : smooth ramp (blend channels in any proportion)
+    1 : middle tint only
+    2 : extreme tints only (only one channel active at a time)
+    3+: stepped ramp with 3+ steps
+
+  - Jump Start level:  (on some lights)
 
     Some lights are prone to starting up slowly at low levels, so they 
     have an option to "jump start" the engine by pulsing a higher power 
@@ -710,36 +792,71 @@ anywhere else.  These settings are, in order:
     The value can be from 1 to 150, but is usually between 20 and 50.
 
 These settings are hardware-specific and may not be present on all 
-lights.  The number of settings in the global menu depends on the 
+lights.  The number of settings in the Misc Config Menu depends on the 
 hardware model and the firmware version.
 
 
-Tint Ramping
-------------
+Channel Modes (a.k.a. Tint Ramping or Multi Channel controls)
+-------------------------------------------------------------
 
 Some lights have more than one set of LEDs which can be adjusted to 
-change the color temperature of the light.  On these models, there is a 
-global button mapping which works at all times unless it's overridden by 
-the mode the light is in:
+change the beam color, shape, or other properties.  These lights have 
+features like tint ramping and channel modes.
 
-  - 3H: Tint ramping
+On these models, there are some global button mappings which work at all 
+times unless they're overridden by the mode the light is in:
 
-So, at almost any time, click 3 times but hold the final press, and it 
-can change the color of the light.  This is best done with the light at 
-a moderately high level, because it makes the changes smooth.  Low 
-levels have more coarse resolution and will typically change in very 
-visible steps.
+  - 3C: Next channel mode
+  - 3H: Adjust current channel mode (ramp tint, for example)
+  - 9H: Channel mode config menu
 
-At both ends of the tint ramp, there is an "auto tint" mode.  This 
-automatically chooses a tint based on the brightness level...  so it can 
-be warm white while dim, or cool white while bright.  Or vice-versa.  To 
-access this, ramp to the end of the tint range, then keep holding until 
-the light blinks a second time.
+Details depend on the exact type of light used.  For example, if a light 
+has LEDs in cool white, warm white, and red... that light might have a 
+few channel modes:
 
-The misc config menu also has a setting to choose a tint ramp style.  
-This can be smooth, allowing the user to smoothly blend both channels in 
-whatever ratio they desire...  or it can be "tint toggle" style, where 
-only one channel is active at a time.
+  - White blend (adjustable CCT / tint ramping)
+  - Red only
+  - Auto-tint
+
+On a light like this, the user could press 3C to rotate through these 
+different channel modes...  white, then red, then auto, then back to 
+white.
+
+Additionally, in the "white blend" mode, the user could press 3H to 
+manually adjust the balance between warm white and cool white.
+
+Finally, if the user decides they don't want all of the modes, they can 
+turn some off.  Press 9H (while on) to start the channel mode config 
+menu.  To disable the auto-tint mode, for example, it is the 3rd mode...  
+so wait for the 3rd blink, then release the button.  Then at the prompt, 
+enter a value of 0 (wait for the prompt to time out without clicking 
+anything).  Afterward, the auto tint mode should no longer be in the 
+channel mode rotation.  To turn the mode back on later, do the same 
+thing, but enter a value of 1 (click 1 time at the prompt).
+
+A light can have many different channel modes, so don't be shy about 
+turning off any modes you don't use.  It makes all the others easier to 
+reach.
+
+If you turn off channel modes until only 1 remains, the "Ramp -> 3C" 
+action reverts to its single-channel behavior -- switching between a 
+smooth or stepped brightness ramp.  Additionally, when a channel mode 
+has nothing to adjust with 3H, the 3H action also reverts to its 
+single-channel behavior -- momentary turbo.
+
+The Misc Config Menu (Off -> 9H) may also have a setting to choose a 
+tint ramp style.  There are a few styles available, by entering 
+different numbers into that config menu:
+
+  0: smooth ramp
+  1: middle tint only
+  2: extreme tints only
+  3+: stepped ramp with 3+ steps
+
+This setting only applies to modes with channel ramping (i.e. tint 
+ramping), and only when that mode uses the default 3H event handler.  
+Custom channel modes may work differently.
+
 
 
 UI Reference Table
@@ -758,9 +875,12 @@ Off		Any	3C	Battcheck mode
 Off		Full	3H	Strobe mode (whichever was used last)
 Off		Any	4C	Lockout mode
 Off		Full	5C	Momentary mode
+Off		Full	6C	Tactical mode
 Off		Full	7C	Aux LEDs: Next pattern
 Off		Full	7H	Aux LEDs: Next color
-Off		Full	9H	Misc config menu (varies per light)
+Off		Full	9H	Misc Config menu (varies per light):
+				?1: tint ramp style
+				?2: jump start level
 Off		Full	10C	Enable Simple UI
 Off		Simple	10H	Disable Simple UI
 Off		Full	10H	Simple UI ramp config menu:
@@ -776,48 +896,75 @@ Ramp		Any	1H	Ramp (up, with reversing)
 Ramp		Any	2H	Ramp (down)
 Ramp		Any	2C	Go to/from ceiling or turbo (configurable)
 Ramp		Full	3C	Change ramp style (smooth / stepped)
-Ramp		Any	3H	Tint ramping (on some lights)
-Ramp		Full	3H	Momentary turbo (on lights without tint ramping)
+Ramp		Full	6C	(same as above, but on multi-channel lights)
+Ramp		Full	3H	Momentary turbo (when no tint ramping)
+Ramp		Full	4H	Momentary turbo (on multi channel lights)
 Ramp		Any	4C	Lockout mode
 Ramp		Full	5C	Momentary mode
 Ramp		Full	5H	Sunset timer on, and add 5 minutes
-Ramp		Full	7H	Ramp config menu (1: floor, 2: ceiling, 3: speed/steps)
+Ramp		Full	7H	Ramp config menu: (for current ramp)
+				1: floor
+				2: ceiling
+				3: speed / steps
 Ramp		Full	10C	Turn on manual memory and save current brightness
 Ramp		Full	10H	Ramp Extras config menu:
-				1: enable automatic mem
+				1: switch to automatic mem, not manual mem
 				2: set manual mem timeout
 				3: ramp after moon or not
 				4: advanced UI turbo style
+				5: smooth steps
+
+Multi-channel lights only:
+Any		Any	3C	Next channel mode (i.e. next color mode)
+Any		Any	3H	Tint ramp (if this mode can)
+Any		Full	9H	Channel mode enable/disable menu:
+				N: click (or not) to enable (disable) mode N
 
 Lockout		Any	1C/1H	Momentary moon (lowest floor)
 Lockout		Any	2C/2H	Momentary moon (highest floor, or manual mem level)
 Lockout		Any	3C	Unlock (go to "Off" mode)
+Lockout		Any	3H	Next channel mode (if more than one enabled)
 Lockout		Any	4C	On (ramp mode, memorized level)
 Lockout		Any	4H	On (ramp mode, floor level)
 Lockout		Any	5C	On (ramp mode, ceiling level)
 Lockout		Full	7C	Aux LEDs: Next pattern
 Lockout		Full	7H	Aux LEDs: Next color
-Lockout		Full	10H	Auto-lock config menu (1: set timeout)
+Lockout		Full	10H	Auto-lock config menu:
+				1: set timeout in minutes (0 = no auto-lock)
 
 Strobe (any)	Full	1C	Off
 Strobe (any)	Full	2C	Next strobe mode
-Strobe (any)	Full	3H	Tint ramping (on some lights)
+Strobe (any)	Full	3C	Next channel mode (saved per strobe mode)
+Strobe (any)	Full	4C	Prev strobe mode
 Strobe (any)	Full	5C	Momentary mode (using current strobe)
 
-Candle		Full	1H/2H	Brighter / dimmer
-Candle		Full	5H	Sunset timer on, add 5 minutes
 Party strobe	Full	1H/2H	Faster / slower
 Tactical strobe	Full	1H/2H	Faster / slower
-Biking		Full	1H/2H	Brighter / dimmer
+Police strobe	-	-	None (brightness is Ramp Mode's last-used level)
 Lightning	Full	1H	Interrupt current flash or start new one
+Candle		Full	1H/2H	Brighter / dimmer
+Candle		Full	5H	Sunset timer on, add 5 minutes
+Biking		Full	1H/2H	Brighter / dimmer
 
 Batt check	Any	1C	Off
 Batt check	Full	2C	Next blinky mode (Temp check, Beacon, SOS)
+Batt check	Full	3C	Next channel mode (for number blinks only)
 Batt check	Full	7H	Voltage config menu
+				1: voltage correction factor
+				   ...
+				   5: -0.10V
+				   6: -0.05V
+				   7: no correction
+				   8: +0.05V
+				   9: +0.10V
+				   ...
+				2: post-off voltage display seconds
 
 Temp check	Full	1C	Off
 Temp check	Full	2C	Next blinky mode (Beacon, SOS, Batt check)
 Temp check	Full	7H	Thermal config menu
+				1: set current temperature
+				2: set temperature limit
 
 Beacon		Full	1C	Off
 Beacon		Full	1H	Configure beacon timing
@@ -829,8 +976,19 @@ SOS		Full	2C	Next blinky mode (Batt check, Temp check, Beacon)
 Momentary	Full	Any	On (until button is released)
 Momentary	Full	Disconnect power	Exit Momentary mode
 
+Tactical	Full	1H	High (tactical slot 1)
+Tactical	Full	2H	Low (tactical slot 2)
+Tactical	Full	3H	Strobe (tactical slot 3)
+Tactical	Full	6C	Exit (go back to Off Mode)
+Tactical	Full	7H	Tactical Mode config menu:
+				1: tactical slot 1
+				2: tactical slot 2
+				3: tactical slot 3
+
 Config menus	Full	Hold	Skip current item with no changes
 Config menus	Full	Release	Configure current item
+				(goes to Number Entry menu)
 
 Number entry	Full	Click	Add 1 to value for current item
 Number entry	Full	Hold	Add 10 to value for current item
+

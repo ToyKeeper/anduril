@@ -1,5 +1,7 @@
-#ifndef HANK_CFG
-#define HANK_CFG
+// Intl-Outdoor (Hank)'s config options for Anduril
+// Copyright (C) 2021-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
 
 // config preferences for Hank Wang of Intl-Outdoor (Emisar, Noctigon)
 
@@ -14,8 +16,15 @@
 // half a second per color in rainbow mode
 //#define RGB_RAINBOW_SPEED 0x03
 
+// Allow 3C (or 6C) in Simple UI (toggle smooth or stepped ramping)
+#define USE_SIMPLE_UI_RAMPING_TOGGLE
+
+// allow Aux Config and Strobe Modes in Simple UI
+#define USE_EXTENDED_SIMPLE_UI
 
 // double click while on goes to full-power turbo, not ramp ceiling
 #define DEFAULT_2C_STYLE 1
 
-#endif  // ifndef HANK_CFG
+// for consistency with KR4 (not otherwise necessary though)
+#define USE_SOFT_FACTORY_RESET
+

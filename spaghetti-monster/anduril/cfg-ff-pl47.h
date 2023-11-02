@@ -1,6 +1,11 @@
 // Fireflies PL47 config options for Anduril
+// Copyright (C) 2018-2023 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+#pragma once
+
 #define MODEL_NUMBER "0421"
-#include "hwdef-FF_PL47.h"
+#include "hwdef-ff-pl47.h"
+// ATTINY: 85
 
 // the button lights up
 #define USE_INDICATOR_LED
@@ -20,7 +25,7 @@
 #define INDICATOR_LED_SKIP_LOW
 
 
-#define RAMP_LENGTH 150
+#define RAMP_SIZE 150
 
 // driver is a FET + 3x7135, ~400 lm at highest regulated level
 // ramp copied from Emisar D4S ramp
@@ -30,13 +35,8 @@
 #define HALFSPEED_LEVEL 13
 #define QUARTERSPEED_LEVEL 6
 
-// thermal regulation parameters
-#ifdef MIN_THERM_STEPDOWN
-#undef MIN_THERM_STEPDOWN  // this should be lower, because 3x7135 instead of 1x7135
-#endif
-#define MIN_THERM_STEPDOWN 60  // lowest value it'll step down to
-
 // ceiling is level 120/150
+#define RAMP_SMOOTH_FLOOR 1
 #define RAMP_SMOOTH_CEIL 120
 
 // 10, 28, 46, 65, 83, 101, 120  (83 is highest regulated)
@@ -57,12 +57,23 @@
 //#define SIMPLE_UI_FLOOR 40
 //#define SIMPLE_UI_CEIL  90
 
+// thermal regulation parameters
+#ifdef MIN_THERM_STEPDOWN
+#undef MIN_THERM_STEPDOWN  // this should be lower, because 3x7135 instead of 1x7135
+#endif
+#define MIN_THERM_STEPDOWN 60  // lowest value it'll step down to
 // regulate down faster when the FET is active, slower otherwise
 #define THERM_FASTER_LEVEL 135  // throttle back faster when high
 
+#ifndef BLINK_AT_RAMP_CEIL
+#define BLINK_AT_RAMP_CEIL
+#endif
+
 // don't do this
 #undef BLINK_AT_RAMP_MIDDLE
-#undef BLINK_AT_RAMP_CEIL
+
+#define USE_SMOOTH_STEPS
 
 // too big, turn off extra features
+#undef USE_SOS_MODE
 #undef USE_TACTICAL_MODE
