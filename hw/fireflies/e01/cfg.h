@@ -4,7 +4,7 @@
 #pragma once
 
 #define MODEL_NUMBER "0441"
-#include "hwdef-ff-pl47.h"
+#include "fireflies/pl47/hwdef.h"
 // ATTINY: 85
 
 // disable indicator LED; it's hardwired

@@ -5,7 +5,7 @@
 
 // same as D4S but with FET modes limited to 80% power
 // to avoid destroying the LEDs
-#include "cfg-emisar-d4s.h"
+#include "hank/emisar-d4s/cfg.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0132"
 

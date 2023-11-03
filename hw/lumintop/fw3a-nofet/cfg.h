@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "cfg-fw3a.h"
+#include "lumintop/fw3a/cfg.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0313"
 

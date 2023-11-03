@@ -40,10 +40,10 @@
 #define ATTINY 1616
 #include <avr/io.h>
 
-#define HWDEF_C_FILE hwdef-thefreeman-boost21-mp3431-hdr-dac-argb.c
+#define HWDEF_C_FILE thefreeman/boost21-mp3431-hdr-dac-argb/hwdef.c
 
 // allow using aux LEDs as extra channel modes
-#include "chan-rgbaux.h"
+#include "fsm/chan-rgbaux.h"
 
 // channel modes:
 // * 0. main LEDs

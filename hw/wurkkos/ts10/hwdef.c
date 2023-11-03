@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "chan-aux.c"
+#include "fsm/chan-aux.c"
 
 void set_level_zero();
 

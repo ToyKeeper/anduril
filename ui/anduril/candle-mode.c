@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "candle-mode.h"
+#include "anduril/candle-mode.h"
 
 #ifdef USE_SUNSET_TIMER
-#include "sunset-timer.h"
+#include "anduril/sunset-timer.h"
 #endif
 
 uint8_t candle_mode_state(Event event, uint16_t arg) {

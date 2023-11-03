@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "momentary-mode.h"
+#include "anduril/momentary-mode.h"
 
 uint8_t momentary_state(Event event, uint16_t arg) {
     // init strobe mode, if relevant

@@ -16,10 +16,10 @@
 
 // nearly all t1616-based FET+1 drivers work pretty much the same
 // (this one has single-color aux like the TS10)
-#define HWDEF_C_FILE hwdef-wurkkos-ts10.c
+#define HWDEF_C_FILE wurkkos/ts10/hwdef.c
 
 // allow using aux LEDs as extra channel modes
-#include "chan-aux.h"
+#include "fsm/chan-aux.h"
 
 // channel modes:
 // * 0. FET+7135 stacked

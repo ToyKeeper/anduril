@@ -7,9 +7,9 @@
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 
-#include "fsm-adc.h"
-#include "fsm-wdt.h"
-#include "fsm-pcint.h"
+#include "fsm/adc.h"
+#include "fsm/wdt.h"
+#include "fsm/pcint.h"
 
 // low-power standby mode used while off but power still connected
 #define standby_mode sleep_until_eswitch_pressed

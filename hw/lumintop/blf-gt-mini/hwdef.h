@@ -5,7 +5,7 @@
 
 // exactly the same as a D1S, but with a lighted button
 // (which is the same hwdef as a D4)
-#include "hwdef-emisar-d4.h"
+#include "hank/emisar-d4/hwdef.h"
 
 // lighted button
 #ifndef AUXLED_PIN

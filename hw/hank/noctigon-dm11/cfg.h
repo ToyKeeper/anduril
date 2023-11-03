@@ -4,8 +4,8 @@
 #pragma once
 
 #define MODEL_NUMBER "0271"
-#include "hwdef-noctigon-dm11.h"
-#include "hank-cfg.h"
+#include "hank/noctigon-dm11/hwdef.h"
+#include "hank/cfg.h"
 // ATTINY: 1634
 
 // this light has three aux LED channels: R, G, B

@@ -4,7 +4,7 @@
 #pragma once
 
 #define MODEL_NUMBER "0611"
-#include "hwdef-blf-q8.h"
+#include "sofirn/blf-q8/hwdef.h"
 
 #define RAMP_SIZE 150
 

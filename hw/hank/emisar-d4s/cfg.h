@@ -4,8 +4,8 @@
 #pragma once
 
 #define MODEL_NUMBER "0131"
-#include "hwdef-emisar-d4s.h"
-#include "hank-cfg.h"
+#include "hank/emisar-d4s/hwdef.h"
+#include "hank/cfg.h"
 // ATTINY: 85
 
 // the button lights up (on some models)

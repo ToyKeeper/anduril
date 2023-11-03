@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "tactical-mode.h"
+#include "anduril/tactical-mode.h"
 
 
 uint8_t tactical_state(Event event, uint16_t arg) {

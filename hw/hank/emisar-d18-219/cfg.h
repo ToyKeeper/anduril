@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "cfg-emisar-d18.h"
+#include "hank/emisar-d18/cfg.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0142"
 

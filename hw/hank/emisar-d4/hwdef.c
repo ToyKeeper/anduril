@@ -6,7 +6,7 @@
 
 //#ifdef AUXLED_PIN
 #if 0
-#include "chan-aux.c"
+#include "fsm/chan-aux.c"
 #else
 #define AUX_CHANNELS
 #endif

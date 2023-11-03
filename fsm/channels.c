@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "fsm-ramping.h"
+#include "fsm/ramping.h"
 
 
 #if NUM_CHANNEL_MODES > 1

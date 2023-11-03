@@ -4,7 +4,7 @@
 #pragma once
 
 #define MODEL_NUMBER "0411"
-#include "hwdef-ff-rot66.h"
+#include "fireflies/rot66/hwdef.h"
 
 // the button lights up
 #define USE_INDICATOR_LED

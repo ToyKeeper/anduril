@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "channel-modes.h"
+#include "anduril/channel-modes.h"
 
 uint8_t channel_mode_state(Event event, uint16_t arg) {
     #ifdef USE_CHANNEL_MODE_ARGS

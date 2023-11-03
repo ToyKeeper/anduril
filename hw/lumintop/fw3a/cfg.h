@@ -4,7 +4,7 @@
 #pragma once
 
 #define MODEL_NUMBER "0311"
-#include "hwdef-fw3a.h"
+#include "lumintop/fw3a/hwdef.h"
 
 #define RAMP_SIZE 150
 

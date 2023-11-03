@@ -60,12 +60,12 @@ inline void bike_flasher_iter();
 #endif
 
 #ifdef USE_CANDLE_MODE
-#include "candle-mode.h"
+#include "anduril/candle-mode.h"
 #endif
 
 
 #if defined(USE_POLICE_STROBE_MODE) || defined(USE_SOS_MODE_IN_FF_GROUP)
 #define USE_BORING_STROBE_STATE
-#include "ff-strobe-modes.h"
+#include "anduril/ff-strobe-modes.h"
 #endif
 

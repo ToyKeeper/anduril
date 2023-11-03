@@ -15,7 +15,7 @@
 #define ATTINY 85
 #include <avr/io.h>
 
-#define HWDEF_C_FILE hwdef-blf-lt1.c
+#define HWDEF_C_FILE sofirn/blf-lt1/hwdef.c
 
 // channel modes:
 // * 0. channel 1 only

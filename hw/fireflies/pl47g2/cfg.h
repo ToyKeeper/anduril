@@ -4,7 +4,7 @@
 #pragma once
 
 #define MODEL_NUMBER "0423"
-#include "hwdef-ff-pl47.h"
+#include "fireflies/pl47/hwdef.h"
 // ATTINY: 85
 
 // the button lights up

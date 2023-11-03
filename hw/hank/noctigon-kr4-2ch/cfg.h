@@ -6,8 +6,8 @@
 // (basically the same as Emisar generic 2-channel build,
 // but switch on a different pin, and no lighted button)
 // ATTINY: 1634
-#include "hwdef-noctigon-kr4-2ch.h"
-#include "cfg-emisar-2ch.h"
+#include "hank/noctigon-kr4-2ch/hwdef.h"
+#include "hank/emisar-2ch/cfg.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0215"
 

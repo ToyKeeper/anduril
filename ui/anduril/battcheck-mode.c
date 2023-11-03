@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "battcheck-mode.h"
+#include "anduril/battcheck-mode.h"
 
 uint8_t battcheck_state(Event event, uint16_t arg) {
     ////////// Every action below here is blocked in the simple UI //////////

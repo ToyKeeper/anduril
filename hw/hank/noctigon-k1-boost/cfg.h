@@ -4,8 +4,8 @@
 #pragma once
 
 #define MODEL_NUMBER "0253"
-#include "hwdef-noctigon-k1-boost.h"
-#include "hank-cfg.h"
+#include "hank/noctigon-k1-boost/hwdef.h"
+#include "hank/cfg.h"
 // ATTINY: 1634
 
 // Most K1 lights can run hotter than default, but the 12V model

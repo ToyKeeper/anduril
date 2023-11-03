@@ -4,7 +4,7 @@
 #pragma once
 
 #define MODEL_NUMBER "1632"
-#include "hwdef-thefreeman-boost-fwaa-mp3432-hdr-dac-rgb.h"
+#include "thefreeman/boost-fwaa-mp3432-hdr-dac-rgb/hwdef.h"
 // ATTINY: 1616
 
 // HPRsense : 4.2+0.3+20 = 24.5mR (DMN1004UFDF+trace resistance+20mR)

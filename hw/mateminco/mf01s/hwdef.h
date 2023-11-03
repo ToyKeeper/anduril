@@ -15,7 +15,7 @@
 #define ATTINY 85
 #include <avr/io.h>
 
-#define HWDEF_C_FILE hwdef-emisar-d4.c
+#define HWDEF_C_FILE hank/emisar-d4/hwdef.c
 
 // channel modes
 // * 0. small FET + big FET stacked

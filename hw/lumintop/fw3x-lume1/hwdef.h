@@ -37,10 +37,10 @@
 #define ATTINY 1634
 #include <avr/io.h>
 
-#define HWDEF_C_FILE hwdef-fw3x-lume1.c
+#define HWDEF_C_FILE lumintop/fw3x-lume1/hwdef.c
 
 // allow using aux LEDs as extra channel modes
-#include "chan-rgbaux.h"
+#include "fsm/chan-rgbaux.h"
 
 // channel modes:
 // * 0. main LEDs

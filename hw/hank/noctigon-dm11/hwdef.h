@@ -41,11 +41,11 @@
 #include <avr/io.h>
 
 #ifndef HWDEF_C_FILE
-#define HWDEF_C_FILE hwdef-noctigon-kr4.c
+#define HWDEF_C_FILE hank/noctigon-kr4/hwdef.c
 #endif
 
 // allow using aux LEDs as extra channel modes
-#include "chan-rgbaux.h"
+#include "fsm/chan-rgbaux.h"
 
 // channel modes:
 // * 0. linear + DD FET stacked

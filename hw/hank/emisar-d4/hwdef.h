@@ -15,12 +15,12 @@
 #define ATTINY 85
 #include <avr/io.h>
 
-#define HWDEF_C_FILE hwdef-emisar-d4.c
+#define HWDEF_C_FILE hank/emisar-d4/hwdef.c
 
 // allow using aux LEDs as extra channel modes (when they exist)
 //#ifdef AUXLED_PIN
 #if 0
-#include "chan-aux.h"
+#include "fsm/chan-aux.h"
 #else
 #define NUM_AUX_CHANNEL_MODES  0
 #endif

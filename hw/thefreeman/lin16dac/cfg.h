@@ -4,7 +4,7 @@
 #pragma once
 
 #define MODEL_NUMBER "1630"
-#include "hwdef-thefreeman-lin16dac.h"
+#include "thefreeman/lin16dac/hwdef.h"
 // ATTINY: 1616
 
 // the button lights up

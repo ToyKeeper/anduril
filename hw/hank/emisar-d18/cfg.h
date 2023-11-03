@@ -4,8 +4,8 @@
 #pragma once
 
 #define MODEL_NUMBER "0141"
-#include "hwdef-emisar-d18.h"
-#include "hank-cfg.h"
+#include "hank/emisar-d18/hwdef.h"
+#include "hank/cfg.h"
 
 #define RAMP_SIZE 150
 

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "tempcheck-mode.h"
+#include "anduril/tempcheck-mode.h"
 
 uint8_t tempcheck_state(Event event, uint16_t arg) {
     // 1 click: off

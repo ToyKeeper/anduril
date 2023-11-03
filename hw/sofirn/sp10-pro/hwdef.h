@@ -15,7 +15,7 @@
 #define ATTINY 1616
 #include <avr/io.h>
 
-#define HWDEF_C_FILE hwdef-sofirn-sp10-pro.c
+#define HWDEF_C_FILE sofirn/sp10-pro/hwdef.c
 
 // channel modes:
 // * 0. low+high PWM stacked

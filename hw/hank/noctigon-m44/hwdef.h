@@ -31,10 +31,10 @@
 #define ATTINY 1634
 #include <avr/io.h>
 
-#define HWDEF_C_FILE hwdef-noctigon-m44.c
+#define HWDEF_C_FILE hank/noctigon-m44/hwdef.c
 
 // allow using aux LEDs as extra channel modes
-#include "chan-rgbaux.h"
+#include "fsm/chan-rgbaux.h"
 
 // channel modes:
 // * 0. channel 1 only

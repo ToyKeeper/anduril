@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "lockout-mode.h"
+#include "anduril/lockout-mode.h"
 
 uint8_t lockout_state(Event event, uint16_t arg) {
     #ifdef USE_MOON_DURING_LOCKOUT_MODE

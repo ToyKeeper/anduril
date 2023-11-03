@@ -38,10 +38,10 @@
 #define ATTINY 1634
 #include <avr/io.h>
 
-#define HWDEF_C_FILE hwdef-emisar-d4k-3ch.c
+#define HWDEF_C_FILE hank/emisar-d4k-3ch/hwdef.c
 
 // allow using aux LEDs as extra channel modes
-#include "chan-rgbaux.h"
+#include "fsm/chan-rgbaux.h"
 
 // channel modes:
 // - 1. main 2 LEDs only (8/16/16 wiring) or LED 4 only (16/16/8)

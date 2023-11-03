@@ -6,7 +6,7 @@
 // ATTINY: 1634
 // same as Emisar D4v2, mostly
 // (was only made for a short time, not many people have one)
-#include "cfg-emisar-d4v2.h"
+#include "hank/emisar-d4v2/cfg.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0123"
 

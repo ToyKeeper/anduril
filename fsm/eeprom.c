@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "fsm-eeprom.h"
+#include "fsm/eeprom.h"
 
 #ifdef USE_EEPROM
 #ifdef EEPROM_OVERRIDE

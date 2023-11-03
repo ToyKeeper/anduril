@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "hwdef-blf-gt-mini.h"
+#include "lumintop/blf-gt-mini/hwdef.h"
 // Same as an Emisar D1S, except it has a lighted button
-#include "cfg-emisar-d1s.h"
+#include "hank/emisar-d1s/cfg.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0322"
 

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "beacon-mode.h"
+#include "anduril/beacon-mode.h"
 
 inline void beacon_mode_iter() {
     // one iteration of main loop()

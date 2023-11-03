@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "cfg-ff-rot66.h"
+#include "fireflies/rot66/cfg.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0413"
 

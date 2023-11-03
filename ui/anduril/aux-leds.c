@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "aux-leds.h"
+#include "anduril/aux-leds.h"
 
 
 #if defined(USE_INDICATOR_LED)

@@ -15,10 +15,10 @@
 #define ATTINY 1616
 #include <avr/io.h>
 
-#define HWDEF_C_FILE hwdef-thefreeman-lin16dac.c
+#define HWDEF_C_FILE thefreeman/lin16dac/hwdef.c
 
 // allow using aux LEDs as extra channel modes
-#include "chan-aux.h"
+#include "fsm/chan-aux.h"
 
 // channel modes:
 // * 0. main LEDs

@@ -4,7 +4,7 @@
 #pragma once
 
 #define MODEL_NUMBER "0631"
-#include "hwdef-sofirn-sp10-pro.h"
+#include "sofirn/sp10-pro/hwdef.h"
 // ATTINY: 1616
 
 // 1....15: level_calc.py 3.01 1  15 7135 1 0.1   2 --pwm dyn:15:64:64

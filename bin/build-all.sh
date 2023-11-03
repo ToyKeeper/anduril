@@ -7,16 +7,19 @@ if [ ! -z "$1" ]; then
   SEARCH="$1"
 fi
 
+# TODO: detect UI from $0
 UI=anduril
 
-date '+#define VERSION_NUMBER "%Y-%m-%d"' > version.h
+mkdir -p hex
+
+date '+#define VERSION_NUMBER "%Y-%m-%d"' > ui/$UI/version.h
 
 PASS=0
 FAIL=0
 PASSED=''
 FAILED=''
 
-for TARGET in cfg-*.h ; do
+for TARGET in hw/*/*/cfg.h ; do
 
   # maybe limit builds to a specific pattern
   if [ ! -z "$SEARCH" ]; then
@@ -25,20 +28,20 @@ for TARGET in cfg-*.h ; do
   fi
 
   # friendly name for this build
-  NAME=$(echo "$TARGET" | perl -ne '/cfg-(.*).h/ && print "$1\n";')
+  NAME=$(echo "$TARGET" | perl -ne 's|/|-|g; /hw-(.*)-cfg.h/ && print "$1\n";')
   echo "===== $NAME ====="
 
   # figure out MCU type
-  ATTINY=$(grep 'ATTINY:' $TARGET | awk '{ print $3 }')
-  if [ -z "$ATTINY" ]; then ATTINY=85 ; fi
+  #ATTINY=$(grep 'ATTINY:' $TARGET | awk '{ print $3 }')
+  #if [ -z "$ATTINY" ]; then ATTINY=85 ; fi
 
   # try to compile
-  echo ../../../bin/build.sh $ATTINY "$UI" "-DCFG_H=${TARGET}"
-  ../../../bin/build.sh $ATTINY "$UI" "-DCFG_H=${TARGET}"
+  #echo bin/build.sh "$UI" "$TARGET"
+  bin/build.sh "$UI" "$TARGET"
 
   # track result, and rename compiled files
   if [ 0 = $? ] ; then
-    mv -f "$UI".hex "$UI".$NAME.hex
+    mv -f "ui/$UI/$UI".hex hex/"$UI".$NAME.hex
     PASS=$(($PASS + 1))
     PASSED="$PASSED $NAME"
   else

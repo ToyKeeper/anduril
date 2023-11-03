@@ -5,8 +5,8 @@
 #pragma once
 
 #define MODEL_NUMBER "0211"
-#include "hwdef-noctigon-kr4.h"
-#include "hank-cfg.h"
+#include "hank/noctigon-kr4/hwdef.h"
+#include "hank/cfg.h"
 // ATTINY: 1634
 
 // brightness w/ SST-20 4000K LEDs:

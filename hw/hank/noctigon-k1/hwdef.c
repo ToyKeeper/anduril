@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "chan-rgbaux.c"
+#include "fsm/chan-rgbaux.c"
 
 void set_level_zero();
 

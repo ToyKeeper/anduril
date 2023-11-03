@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "version-check-mode.h"
+#include "anduril/version-check-mode.h"
 
 // empty state; logic is handled in FSM loop() instead
 uint8_t version_check_state(Event event, uint16_t arg) {

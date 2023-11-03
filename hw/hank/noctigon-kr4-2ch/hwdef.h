@@ -43,5 +43,5 @@
 #define PCINT_vect   PCINT1_vect  // ISR for PCINT[11:8]
 
 // the rest of the config is the same as the generic Emisar 2ch build
-#include "hwdef-emisar-2ch.h"
+#include "hank/emisar-2ch/hwdef.h"
 

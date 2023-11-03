@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "cfg-wurkkos-ts10.h"
+#include "wurkkos/ts10/cfg.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0632"
 // ATTINY: 1616

@@ -39,10 +39,10 @@
 #define ATTINY 1634
 #include <avr/io.h>
 
-#define HWDEF_C_FILE hwdef-noctigon-dm11-boost.c
+#define HWDEF_C_FILE hank/noctigon-dm11-boost/hwdef.c
 
 // allow using aux LEDs as extra channel modes
-#include "chan-rgbaux.h"
+#include "fsm/chan-rgbaux.h"
 
 // channel modes:
 // * 0. main LEDs

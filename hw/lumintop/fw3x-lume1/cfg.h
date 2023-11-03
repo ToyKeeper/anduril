@@ -12,7 +12,7 @@
  */
 
 #define MODEL_NUMBER "0314"
-#include "hwdef-fw3x-lume1.h"
+#include "lumintop/fw3x-lume1/hwdef.h"
 // ATTINY: 1634
 
 // set this light for 50C thermal ceiling

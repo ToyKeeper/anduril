@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "fsm-adc.h"
+#include "fsm/adc.h"
 
 // typedefs
 typedef uint8_t State(Event event, uint16_t arg);

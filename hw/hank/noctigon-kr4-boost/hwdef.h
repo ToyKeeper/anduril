@@ -37,7 +37,7 @@
  * not to change brightness.
  */
 
-#include "hwdef-noctigon-dm11-boost.h"
+#include "hank/noctigon-dm11-boost/hwdef.h"
 
 // e-switch is on a different pin
 #undef SWITCH_PIN

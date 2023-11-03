@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "tint-ramping.h"
+#include "anduril/tint-ramping.h"
 
 uint8_t tint_ramping_state(Event event, uint16_t arg) {
     static int8_t tint_ramp_direction = 1;

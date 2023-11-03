@@ -4,8 +4,8 @@
 #pragma once
 
 #define MODEL_NUMBER "0273"
-#include "hwdef-noctigon-dm11-boost.h"
-#include "hank-cfg.h"
+#include "hank/noctigon-dm11-boost/hwdef.h"
+#include "hank/cfg.h"
 // ATTINY: 1634
 
 #define RAMP_SIZE 150

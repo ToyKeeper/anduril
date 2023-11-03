@@ -4,8 +4,8 @@
 #pragma once
 
 // same as Emisar D4, mostly
-#include "hwdef-emisar-d4.h"
-#include "cfg-emisar-d4.h"
+#include "hank/emisar-d4/hwdef.h"
+#include "hank/emisar-d4/cfg.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0121"
 

@@ -15,10 +15,10 @@
 #define ATTINY 1616
 #include <avr/io.h>
 
-#define HWDEF_C_FILE hwdef-blf-lt1-t1616.c
+#define HWDEF_C_FILE sofirn/blf-lt1-t1616/hwdef.c
 
 // allow using aux LEDs as extra channel modes
-#include "chan-aux.h"
+#include "fsm/chan-aux.h"
 
 // channel modes:
 // * 0. warm only

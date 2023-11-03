@@ -35,7 +35,7 @@
  */
 
 /********* User-configurable options *********/
-#include "config-default.h"
+#include "anduril/config-default.h"
 
 /********* specific settings for known driver types *********/
 // Anduril config file name (set it here or define it at the gcc command line)
@@ -48,33 +48,33 @@
 /********* Include headers which need to be before FSM *********/
 
 // enable FSM features needed by basic ramping functions
-#include "ramp-mode-fsm.h"
+#include "anduril/ramp-mode-fsm.h"
 
 #ifdef USE_FACTORY_RESET
-#include "factory-reset-fsm.h"
+#include "anduril/factory-reset-fsm.h"
 #endif
 
 #ifdef USE_BATTCHECK_MODE
-#include "battcheck-mode-fsm.h"
+#include "anduril/battcheck-mode-fsm.h"
 #endif
 
 #ifdef USE_LOCKOUT_MODE
-#include "lockout-mode-fsm.h"
+#include "anduril/lockout-mode-fsm.h"
 #endif
 
 // enable FSM features needed by strobe modes
-#include "strobe-modes-fsm.h"
+#include "anduril/strobe-modes-fsm.h"
 
 // figure out how many bytes of eeprom are needed,
 // based on which UI features are enabled
 // (include this one last)
-#include "load-save-config-fsm.h"
+#include "anduril/load-save-config-fsm.h"
 
 
 /********* bring in FSM / SpaghettiMonster *********/
 #define USE_IDLE_MODE  // reduce power use while awake and no tasks are pending
 
-#include "spaghetti-monster.h"
+#include "fsm/spaghetti-monster.h"
 
 /********* does this build target have special code to include? *********/
 #ifdef HWDEF_C_FILE
@@ -87,130 +87,130 @@
 
 /********* Include all the regular app headers *********/
 
-#include "off-mode.h"
-#include "ramp-mode.h"
-#include "config-mode.h"
-#include "aux-leds.h"
-#include "misc.h"
+#include "anduril/off-mode.h"
+#include "anduril/ramp-mode.h"
+#include "anduril/config-mode.h"
+#include "anduril/aux-leds.h"
+#include "anduril/misc.h"
 
 #ifdef USE_SUNSET_TIMER
-#include "sunset-timer.h"
+#include "anduril/sunset-timer.h"
 #endif
 
 #ifdef USE_VERSION_CHECK
-#include "version-check-mode.h"
+#include "anduril/version-check-mode.h"
 #endif
 
 #ifdef USE_BATTCHECK_MODE
-#include "battcheck-mode.h"
+#include "anduril/battcheck-mode.h"
 #endif
 
 #ifdef USE_BEACON_MODE
-#include "beacon-mode.h"
+#include "anduril/beacon-mode.h"
 #endif
 
 #ifdef USE_THERMAL_REGULATION
-#include "tempcheck-mode.h"
+#include "anduril/tempcheck-mode.h"
 #endif
 
 #ifdef USE_LOCKOUT_MODE
-#include "lockout-mode.h"
+#include "anduril/lockout-mode.h"
 #endif
 
 #ifdef USE_MOMENTARY_MODE
-#include "momentary-mode.h"
+#include "anduril/momentary-mode.h"
 #endif
 
 #ifdef USE_TACTICAL_MODE
-#include "tactical-mode.h"
+#include "anduril/tactical-mode.h"
 #endif
 
 // allow the channel mode handler even when only 1 mode
 // (so a tint ramp light could still use 3H even if there's no other mode)
 #if defined(USE_CHANNEL_MODES)
-#include "channel-modes.h"
+#include "anduril/channel-modes.h"
 #endif
 
 #ifdef USE_FACTORY_RESET
-#include "factory-reset.h"
+#include "anduril/factory-reset.h"
 #endif
 
 // this one detects its own enable/disable settings
-#include "strobe-modes.h"
+#include "anduril/strobe-modes.h"
 
 #ifdef USE_SOS_MODE
-#include "sos-mode.h"
+#include "anduril/sos-mode.h"
 #endif
 
 #ifdef USE_SMOOTH_STEPS
-#include "smooth-steps.h"
+#include "anduril/smooth-steps.h"
 #endif
 
 // this should be last, so other headers have a chance to declare values
-#include "load-save-config.h"
+#include "anduril/load-save-config.h"
 
 
 /********* Include all the app logic source files *********/
 // (is a bit weird to do things this way,
 //  but it saves a lot of space by letting us use the -fwhole-program flag)
 
-#include "off-mode.c"
-#include "ramp-mode.c"
-#include "load-save-config.c"
-#include "config-mode.c"
-#include "aux-leds.c"
-#include "misc.c"
+#include "anduril/off-mode.c"
+#include "anduril/ramp-mode.c"
+#include "anduril/load-save-config.c"
+#include "anduril/config-mode.c"
+#include "anduril/aux-leds.c"
+#include "anduril/misc.c"
 
 #ifdef USE_SUNSET_TIMER
-#include "sunset-timer.c"
+#include "anduril/sunset-timer.c"
 #endif
 
 #ifdef USE_VERSION_CHECK
-#include "version-check-mode.c"
+#include "anduril/version-check-mode.c"
 #endif
 
 #ifdef USE_BATTCHECK_MODE
-#include "battcheck-mode.c"
+#include "anduril/battcheck-mode.c"
 #endif
 
 #ifdef USE_BEACON_MODE
-#include "beacon-mode.c"
+#include "anduril/beacon-mode.c"
 #endif
 
 #ifdef USE_THERMAL_REGULATION
-#include "tempcheck-mode.c"
+#include "anduril/tempcheck-mode.c"
 #endif
 
 #ifdef USE_LOCKOUT_MODE
-#include "lockout-mode.c"
+#include "anduril/lockout-mode.c"
 #endif
 
 #ifdef USE_MOMENTARY_MODE
-#include "momentary-mode.c"
+#include "anduril/momentary-mode.c"
 #endif
 
 #ifdef USE_TACTICAL_MODE
-#include "tactical-mode.c"
+#include "anduril/tactical-mode.c"
 #endif
 
 #if defined(USE_CHANNEL_MODES)
-#include "channel-modes.c"
+#include "anduril/channel-modes.c"
 #endif
 
 #ifdef USE_FACTORY_RESET
-#include "factory-reset.c"
+#include "anduril/factory-reset.c"
 #endif
 
 #ifdef USE_STROBE_STATE
-#include "strobe-modes.c"
+#include "anduril/strobe-modes.c"
 #endif
 
 #ifdef USE_SOS_MODE
-#include "sos-mode.c"
+#include "anduril/sos-mode.c"
 #endif
 
 #ifdef USE_SMOOTH_STEPS
-#include "smooth-steps.c"
+#include "anduril/smooth-steps.c"
 #endif
 
 

@@ -17,10 +17,10 @@
 #define ATTINY 1616
 #include <avr/io.h>
 
-#define HWDEF_C_FILE hwdef-wurkkos-ts25.c
+#define HWDEF_C_FILE wurkkos/ts25/hwdef.c
 
 // allow using aux LEDs as extra channel modes
-#include "chan-rgbaux.h"
+#include "fsm/chan-rgbaux.h"
 
 // channel modes:
 // * 0. FET+7135 stacked

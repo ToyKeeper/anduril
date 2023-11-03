@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "ff-strobe-modes.h"
+#include "anduril/ff-strobe-modes.h"
 
 uint8_t boring_strobe_state(Event event, uint16_t arg) {
     // police strobe and SOS, meh

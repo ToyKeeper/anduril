@@ -4,7 +4,7 @@
 #pragma once
 
 #define MODEL_NUMBER "0622"
-#include "hwdef-blf-lt1-t1616.h"
+#include "sofirn/blf-lt1-t1616/hwdef.h"
 // ATTINY: 1616
 
 // the button lights up

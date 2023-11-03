@@ -4,8 +4,8 @@
 #pragma once
 
 #define MODEL_NUMBER "0715"
-#include "hwdef-wurkkos-ts25.h"
-#include "wurkkos-cfg.h"
+#include "wurkkos/ts25/hwdef.h"
+#include "wurkkos/cfg.h"
 // ATTINY: 1616
 
 // this light has three aux LED channels: R, G, B

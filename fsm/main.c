@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "fsm-main.h"
+#include "fsm/main.h"
 
 #if PWM_CHANNELS == 4
 #ifdef AVRXMEGA3  // ATTINY816, 817, etc

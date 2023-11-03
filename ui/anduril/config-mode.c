@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "config-mode.h"
+#include "anduril/config-mode.h"
 
 // general helper function for config modes
 uint8_t number_entry_state(Event event, uint16_t arg);

@@ -5,8 +5,8 @@
 
 #define MODEL_NUMBER "0251"
 // (originally known as Emisar D1S v2)
-#include "hwdef-noctigon-k1.h"
-#include "hank-cfg.h"
+#include "hank/noctigon-k1/hwdef.h"
+#include "hank/cfg.h"
 // ATTINY: 1634
 
 // this light can safely run a bit hotter than most

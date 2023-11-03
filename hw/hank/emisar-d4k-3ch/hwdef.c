@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "spaghetti-monster/anduril/channel-modes.h"  //for circular_tint_3h()
-#include "chan-rgbaux.c"
+#include "anduril/channel-modes.h"  //for circular_tint_3h()
+#include "fsm/chan-rgbaux.c"
 
 void set_level_zero();
 

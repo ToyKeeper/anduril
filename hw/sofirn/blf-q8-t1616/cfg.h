@@ -4,8 +4,8 @@
 #pragma once
 
 #define MODEL_NUMBER "0613"
-#include "hwdef-blf-q8-t1616.h"
-#include "wurkkos-cfg.h"  // Sofirn lights are closely related to Wurkkos
+#include "sofirn/blf-q8-t1616/hwdef.h"
+#include "wurkkos/cfg.h"  // Sofirn lights are closely related to Wurkkos
 // ATTINY: 1616
 
 // the button lights up

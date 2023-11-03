@@ -5,8 +5,8 @@
 
 // same as  the  BLF Q8 T1616, mostly (added Dynamic PWM)
 #define MODEL_NUMBER "0714"
-#include "hwdef-wurkkos-ts10.h"
-#include "wurkkos-cfg.h"
+#include "wurkkos/ts10/hwdef.h"
+#include "wurkkos/cfg.h"
 // ATTINY: 1616
 
 // uses forward-facing aux LEDs

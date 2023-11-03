@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "strobe-modes.h"
+#include "anduril/strobe-modes.h"
 
 #ifdef USE_STROBE_STATE
 uint8_t strobe_state(Event event, uint16_t arg) {
@@ -322,11 +322,11 @@ inline void bike_flasher_iter() {
 #endif
 
 #ifdef USE_CANDLE_MODE
-#include "candle-mode.c"
+#include "anduril/candle-mode.c"
 #endif
 
 
 #ifdef USE_BORING_STROBE_STATE
-#include "ff-strobe-modes.c"
+#include "anduril/ff-strobe-modes.c"
 #endif
 

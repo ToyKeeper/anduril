@@ -4,8 +4,8 @@
 #pragma once
 
 #define MODEL_NUMBER "0136"
-#include "hwdef-emisar-2ch-fet.h"
-#include "hank-cfg.h"
+#include "hank/emisar-2ch-fet/hwdef.h"
+#include "hank/cfg.h"
 // ATTINY: 1634
 
 // this light has three aux LED channels: R, G, B

@@ -4,13 +4,19 @@
 # same exact way, here's a script to do the same thing
 
 if [ -z "$1" ]; then
-  echo "Usage: build.sh MCU myprogram"
-  echo "MCU is a number, like '13' for attiny13 or '841' for attiny841"
+  echo "Usage: build.sh UI CFG USER"
+  echo "Example: build.sh ui/anduril hw/hank/emisar-d4 users/myuser"
+  echo "(but USER isn't implemented yet)"
   exit
 fi
 
-export ATTINY=$1 ; shift
-export PROGRAM=$1 ; shift
+UI=$1 ; shift
+CFG=$1 ; shift
+
+ATTINY=$(grep 'ATTINY:' $CFG | awk '{ print $3 }')
+if [ -z "$ATTINY" ]; then ATTINY=85 ; fi
+
+PROGRAM="ui/$UI/$UI"
 
 # give a more useful error message when AVR DFP is needed but not installed
 # (Atmel ATtiny device family pack, for attiny1616 support)
@@ -30,19 +36,23 @@ export CC=avr-gcc
 export CPP=avr-cpp
 export OBJCOPY=avr-objcopy
 export DFPFLAGS="-B $ATTINY_DFP/gcc/dev/$MCU/ -I $ATTINY_DFP/include/"
-export CFLAGS="  -Wall -g -Os -mmcu=$MCU -c -std=gnu99 -fgnu89-inline -fwhole-program -DATTINY=$ATTINY -I.. -I../.. -I../../.. -fshort-enums $DFPFLAGS"
-export CPPFLAGS="-Wall -g -Os -mmcu=$MCU -C -std=gnu99 -fgnu89-inline -fwhole-program -DATTINY=$ATTINY -I.. -I../.. -I../../.. -fshort-enums $DFPFLAGS"
+# TODO: include $user/ first so it can override other stuff
+INCLUDES="-I ui -I hw -I. -I.. -I../.. -I../../.."
+export CFLAGS="  -Wall -g -Os -mmcu=$MCU -c -std=gnu99 -fgnu89-inline -fwhole-program -DATTINY=$ATTINY $INCLUDES -fshort-enums $DFPFLAGS"
+export CPPFLAGS="-Wall -g -Os -mmcu=$MCU -C -std=gnu99 -fgnu89-inline -fwhole-program -DATTINY=$ATTINY $INCLUDES -fshort-enums $DFPFLAGS"
 export OFLAGS="-Wall -g -Os -mmcu=$MCU -mrelax $DFPFLAGS"
 export LDFLAGS="-fgnu89-inline"
 export OBJCOPYFLAGS='--set-section-flags=.eeprom=alloc,load --change-section-lma .eeprom=0 --no-change-warnings -O ihex --remove-section .fuse'
 export OBJS=$PROGRAM.o
 
+OTHERFLAGS="-DCFG_H=$CFG"
 for arg in "$*" ; do
   OTHERFLAGS="$OTHERFLAGS $arg"
 done
 
 function run () {
-  echo $*
+  #echo $1 ; shift
+  #echo $*
   $*
   if [ x"$?" != x0 ]; then exit 1 ; fi
 }

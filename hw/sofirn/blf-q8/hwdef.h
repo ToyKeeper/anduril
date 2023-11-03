@@ -16,5 +16,5 @@
 #endif
 
 // Q8 driver is the same as a D4, basically
-#include "hwdef-emisar-d4.h"
+#include "hank/emisar-d4/hwdef.h"
 

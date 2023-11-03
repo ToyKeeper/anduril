@@ -4,8 +4,8 @@
 #pragma once
 
 #define MODEL_NUMBER "0143"
-#include "hwdef-noctigon-m44.h"
-#include "hank-cfg.h"
+#include "hank/noctigon-m44/hwdef.h"
+#include "hank/cfg.h"
 // ATTINY: 1634
 
 // this light has three aux LED channels: R, G, B

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "sos-mode.h"
+#include "anduril/sos-mode.h"
 
 #ifdef USE_SOS_MODE_IN_BLINKY_GROUP
 uint8_t sos_state(Event event, uint16_t arg) {

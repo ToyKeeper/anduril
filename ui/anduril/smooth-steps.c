@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "smooth-steps.h"
+#include "anduril/smooth-steps.h"
 
 #ifdef USE_SMOOTH_STEPS
 

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "factory-reset.h"
+#include "anduril/factory-reset.h"
 
 // allows setting channel mode per animation stage,
 // so it can ramp up in red then explode in white (as one example)

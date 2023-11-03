@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "fsm-states.h"
-#include "fsm-adc.h"
+#include "fsm/states.h"
+#include "fsm/adc.h"
 
 // TODO: if callback doesn't handle current event,
 //       pass event to next state on stack?

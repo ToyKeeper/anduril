@@ -4,7 +4,7 @@
 #pragma once
 
 #define MODEL_NUMBER "1618" // Golden Ratio... because I can
-#include "hwdef-gchart-fet1-t1616.h"
+#include "gchart/fet1-t1616/hwdef.h"
 // ATTINY: 1616
 
 // the button lights up

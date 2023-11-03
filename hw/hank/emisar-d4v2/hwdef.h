@@ -32,11 +32,11 @@
 #include <avr/io.h>
 
 #ifndef HWDEF_C_FILE
-#define HWDEF_C_FILE hwdef-emisar-d4v2.c
+#define HWDEF_C_FILE hank/emisar-d4v2/hwdef.c
 #endif
 
 // allow using aux LEDs as extra channel modes
-#include "chan-rgbaux.h"
+#include "fsm/chan-rgbaux.h"
 
 // channel modes:
 // * 0. FET+7135 stacked

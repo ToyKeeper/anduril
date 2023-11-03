@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "chan-rgbaux.c"
+#include "fsm/chan-rgbaux.c"
 
 
 void set_level_zero();

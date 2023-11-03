@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "load-save-config-fsm.h"
-#include "load-save-config.h"
+#include "anduril/load-save-config-fsm.h"
+#include "anduril/load-save-config.h"
 
 void load_config() {
     eeprom = (uint8_t *)&cfg;

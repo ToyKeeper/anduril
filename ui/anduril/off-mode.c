@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "off-mode.h"
+#include "anduril/off-mode.h"
 
 #ifdef USE_SUNSET_TIMER
-#include "sunset-timer.h"
+#include "anduril/sunset-timer.h"
 #endif
 
 // set level smooth maybe

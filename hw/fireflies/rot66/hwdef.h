@@ -15,7 +15,7 @@
 #define VOLTAGE_FUDGE_FACTOR 7  // add 0.35V
 #endif
 
-#include "hwdef-fw3a.h"
+#include "lumintop/fw3a/hwdef.h"
 
 // ... and no optic nerve
 #ifdef VISION_PIN

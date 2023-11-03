@@ -15,7 +15,7 @@
 #define ATTINY 85
 #include <avr/io.h>
 
-#define HWDEF_C_FILE hwdef-fw3a.c
+#define HWDEF_C_FILE lumintop/fw3a/hwdef.c
 
 // channel modes
 // * 0. FET+N+1 stacked

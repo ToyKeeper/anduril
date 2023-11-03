@@ -4,7 +4,7 @@
 #pragma once
 
 #define MODEL_NUMBER "0531"
-#include "hwdef-mateminco-mt35-mini.h"
+#include "mateminco/mt35-mini/hwdef.h"
 // ATTINY: 85
 
 // the button lights up

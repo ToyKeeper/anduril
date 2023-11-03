@@ -4,14 +4,14 @@
 
 #pragma once
 
-#include "ramp-mode.h"
+#include "anduril/ramp-mode.h"
 
 #ifdef USE_SUNSET_TIMER
-#include "sunset-timer.h"
+#include "anduril/sunset-timer.h"
 #endif
 
 #ifdef USE_SMOOTH_STEPS
-#include "smooth-steps.h"
+#include "anduril/smooth-steps.h"
 #endif
 
 

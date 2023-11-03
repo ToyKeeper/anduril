@@ -16,7 +16,7 @@
 #define ATTINY 1616
 #include <avr/io.h>
 
-#define HWDEF_C_FILE hwdef-sofirn-lt1s-pro.c
+#define HWDEF_C_FILE sofirn/lt1s-pro/hwdef.c
 
 // channel modes:
 // * 0. warm/cool white blend
