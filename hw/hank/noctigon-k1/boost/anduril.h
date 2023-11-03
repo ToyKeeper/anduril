@@ -4,7 +4,7 @@
 #pragma once
 
 #define MODEL_NUMBER "0253"
-#include "hank/noctigon-k1-boost/hwdef.h"
+#include "hank/noctigon-k1/boost/hwdef.h"
 #include "hank/anduril.h"
 // ATTINY: 1634
 

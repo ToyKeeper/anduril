@@ -25,18 +25,20 @@ FAILED=''
 # build targets are hw/*/**/$UI.h
 for TARGET in $( find hw/*/*/ -name "$UI".h ) ; do
 
+  # friendly name for this build
+  NAME=$(echo "$TARGET" | perl -ne 's|/|-|g; /hw-(.*)-'"$UI"'.h/ && print "$1\n";')
+
   # limit builds to searched patterns, if given
   SKIP=0
   if [ ! -z "$SEARCH" ]; then
     for text in $SEARCH ; do
-        echo "$TARGET" | grep -i "$text" > /dev/null
+        echo "$NAME $TARGET" | grep -i "$text" > /dev/null
         if [ 0 != $? ]; then SKIP=1 ; fi
     done
   fi
   if [ 1 = $SKIP ]; then continue ; fi
 
-  # friendly name for this build
-  NAME=$(echo "$TARGET" | perl -ne 's|/|-|g; /hw-(.*)-'"$UI"'.h/ && print "$1\n";')
+  # announce what we're going to build
   echo "===== $UI : $NAME ====="
 
   # figure out MCU type
@@ -44,7 +46,6 @@ for TARGET in $( find hw/*/*/ -name "$UI".h ) ; do
   #if [ -z "$ATTINY" ]; then ATTINY=85 ; fi
 
   # try to compile
-  #echo bin/build.sh "$UI" "$TARGET"
   bin/build.sh "$TARGET"
 
   # track result, and rename compiled files

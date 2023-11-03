@@ -5,7 +5,7 @@
 
 // (is a K1 host with a KR4-like driver and a really high-powered LED)
 #define MODEL_NUMBER "0252"
-#include "hank/noctigon-k1-sbt90/hwdef.h"
+#include "hank/noctigon-k1/sbt90/hwdef.h"
 #include "hank/anduril.h"
 // ATTINY: 1634
 

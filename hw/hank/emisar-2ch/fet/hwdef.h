@@ -35,7 +35,7 @@
 #define ATTINY 1634
 #include <avr/io.h>
 
-#define HWDEF_C_FILE hank/emisar-2ch-fet/hwdef.c
+#define HWDEF_C_FILE hank/emisar-2ch/fet/hwdef.c
 
 // allow using aux LEDs as extra channel modes
 #include "fsm/chan-rgbaux.h"

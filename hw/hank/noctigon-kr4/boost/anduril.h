@@ -7,8 +7,8 @@
 // the only things different from dm11-boost are:
 // - e-switch is on a different pin (defined in hwdef)
 // - different model number
-#include "hank/noctigon-dm11-boost/anduril.h"
-#include "hank/noctigon-kr4-boost/hwdef.h"
+#include "hank/noctigon-dm11/boost/anduril.h"
+#include "hank/noctigon-kr4/boost/hwdef.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0216"
 #include "hank/anduril.h"
