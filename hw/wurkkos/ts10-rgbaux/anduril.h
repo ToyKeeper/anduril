@@ -4,7 +4,7 @@
 #pragma once
 
 // most things are the same as TS25
-#include "wurkkos/ts25/cfg.h"
+#include "wurkkos/ts25/anduril.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0713"
 // ATTINY: 1616

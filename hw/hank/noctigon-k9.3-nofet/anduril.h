@@ -5,7 +5,7 @@
 
 // no functional differences from generic emisar-2ch build
 // (just use that one instead, this is only here for legacy reasons)
-#include "hank/emisar-2ch/cfg.h"
+#include "hank/emisar-2ch/anduril.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0262"
 // ATTINY: 1634

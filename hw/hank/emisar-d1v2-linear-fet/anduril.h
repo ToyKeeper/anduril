@@ -6,7 +6,7 @@
 
 // ATTINY: 1634
 // similar to a Noctigon KR4, sort of
-#include "hank/noctigon-kr4/cfg.h"
+#include "hank/noctigon-kr4/anduril.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0124"
 

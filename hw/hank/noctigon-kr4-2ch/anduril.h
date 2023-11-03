@@ -7,7 +7,7 @@
 // but switch on a different pin, and no lighted button)
 // ATTINY: 1634
 #include "hank/noctigon-kr4-2ch/hwdef.h"
-#include "hank/emisar-2ch/cfg.h"
+#include "hank/emisar-2ch/anduril.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0215"
 

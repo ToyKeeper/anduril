@@ -7,10 +7,10 @@
 // the only things different from dm11-boost are:
 // - e-switch is on a different pin (defined in hwdef)
 // - different model number
-#include "hank/noctigon-dm11-boost/cfg.h"
+#include "hank/noctigon-dm11-boost/anduril.h"
 #include "hank/noctigon-kr4-boost/hwdef.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0216"
-#include "hank/cfg.h"
+#include "hank/anduril.h"
 // ATTINY: 1634
 

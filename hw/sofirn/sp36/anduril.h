@@ -4,7 +4,7 @@
 #pragma once
 
 // same as  the  BLF Q8, mostly
-#include "sofirn/blf-q8/cfg.h"
+#include "sofirn/blf-q8/anduril.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0612"
 

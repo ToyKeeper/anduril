@@ -5,7 +5,7 @@
 
 #define MODEL_NUMBER "0135"
 #include "hank/emisar-2ch/hwdef.h"
-#include "hank/cfg.h"
+#include "hank/anduril.h"
 // ATTINY: 1634
 
 // this light has three aux LED channels: R, G, B

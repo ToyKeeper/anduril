@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "hank/noctigon-kr4/cfg.h"
+#include "hank/noctigon-kr4/anduril.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0213"
 // ATTINY: 1634

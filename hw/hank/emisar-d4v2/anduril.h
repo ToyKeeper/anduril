@@ -5,7 +5,7 @@
 
 #define MODEL_NUMBER "0113"
 #include "hank/emisar-d4v2/hwdef.h"
-#include "hank/cfg.h"
+#include "hank/anduril.h"
 // ATTINY: 1634
 
 #define RAMP_SIZE 150

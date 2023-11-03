@@ -6,7 +6,7 @@
 
 #define MODEL_NUMBER "0211"
 #include "hank/noctigon-kr4/hwdef.h"
-#include "hank/cfg.h"
+#include "hank/anduril.h"
 // ATTINY: 1634
 
 // brightness w/ SST-20 4000K LEDs:

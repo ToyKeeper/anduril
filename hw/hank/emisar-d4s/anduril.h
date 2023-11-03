@@ -5,7 +5,7 @@
 
 #define MODEL_NUMBER "0131"
 #include "hank/emisar-d4s/hwdef.h"
-#include "hank/cfg.h"
+#include "hank/anduril.h"
 // ATTINY: 85
 
 // the button lights up (on some models)

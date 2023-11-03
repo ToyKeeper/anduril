@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "hank/emisar-d4v2/cfg.h"
+#include "hank/emisar-d4v2/anduril.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0114"
 // ATTINY: 1634

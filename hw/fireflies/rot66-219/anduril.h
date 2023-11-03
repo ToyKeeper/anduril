@@ -4,7 +4,7 @@
 #pragma once
 
 // same as regular ROT66, but calibrated for Nichia 219B with 7x7135 chips
-#include "fireflies/rot66/cfg.h"
+#include "fireflies/rot66/anduril.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0412"
 

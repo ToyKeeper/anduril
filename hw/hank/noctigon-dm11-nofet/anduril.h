@@ -5,7 +5,7 @@
 
 // same support functions as a KR4
 #define HWDEF_C_FILE hank/noctigon-kr4-nofet/hwdef.c
-#include "hank/noctigon-dm11/cfg.h"
+#include "hank/noctigon-dm11/anduril.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0272"
 // ATTINY: 1634

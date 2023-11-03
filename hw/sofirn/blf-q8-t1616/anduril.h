@@ -5,7 +5,7 @@
 
 #define MODEL_NUMBER "0613"
 #include "sofirn/blf-q8-t1616/hwdef.h"
-#include "wurkkos/cfg.h"  // Sofirn lights are closely related to Wurkkos
+#include "wurkkos/anduril.h"  // Sofirn lights are closely related to Wurkkos
 // ATTINY: 1616
 
 // the button lights up

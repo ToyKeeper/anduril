@@ -6,7 +6,7 @@
 // (is a K1 host with a KR4-like driver and a really high-powered LED)
 #define MODEL_NUMBER "0252"
 #include "hank/noctigon-k1-sbt90/hwdef.h"
-#include "hank/cfg.h"
+#include "hank/anduril.h"
 // ATTINY: 1634
 
 // this light can safely run a bit hotter than most

@@ -5,7 +5,7 @@
 
 #define MODEL_NUMBER "0141"
 #include "hank/emisar-d18/hwdef.h"
-#include "hank/cfg.h"
+#include "hank/anduril.h"
 
 #define RAMP_SIZE 150
 

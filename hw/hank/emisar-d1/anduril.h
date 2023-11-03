@@ -5,7 +5,7 @@
 
 // same as Emisar D4, mostly
 #include "hank/emisar-d4/hwdef.h"
-#include "hank/emisar-d4/cfg.h"
+#include "hank/emisar-d4/anduril.h"
 #undef MODEL_NUMBER
 #define MODEL_NUMBER "0121"
 
