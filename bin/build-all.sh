@@ -19,7 +19,7 @@ FAIL=0
 PASSED=''
 FAILED=''
 
-for TARGET in hw/*/*/cfg.h ; do
+for TARGET in $(find hw/*/* -name "$UI".h) ; do
 
   # maybe limit builds to a specific pattern
   if [ ! -z "$SEARCH" ]; then
@@ -28,7 +28,7 @@ for TARGET in hw/*/*/cfg.h ; do
   fi
 
   # friendly name for this build
-  NAME=$(echo "$TARGET" | perl -ne 's|/|-|g; /hw-(.*)-cfg.h/ && print "$1\n";')
+  NAME=$(echo "$TARGET" | perl -ne 's|/|-|g; /hw-(.*)-'"$UI"'.h/ && print "$1\n";')
   echo "===== $NAME ====="
 
   # figure out MCU type
