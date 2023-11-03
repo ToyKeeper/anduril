@@ -52,8 +52,8 @@ function main() {
       help
       ;;
     clean)
-      echo 'rm -vf **/*.hex **/*~ **/*.elf **/*.o'
-      rm -vf **/*.hex **/*~ **/*.elf **/*.o
+      echo 'rm -vf **/*.hex **/*~ **/*.elf **/*.o **/*.cpp'
+      rm -vf **/*.hex **/*~ **/*.elf **/*.o **/*.cpp
       ;;
     flash)
       echo "Not implemented yet."
