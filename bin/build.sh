@@ -4,16 +4,16 @@
 # same exact way, here's a script to do the same thing
 
 if [ -z "$1" ]; then
-  echo "Usage: build.sh UI CFG USER"
-  echo "Example: build.sh ui/anduril hw/hank/emisar-d4 users/myuser"
+  echo "Usage: build.sh TARGET USER"
+  echo "Example: build.sh hw/hank/emisar-d4/anduril.h users/myuser"
   echo "(but USER isn't implemented yet)"
   exit
 fi
 
-UI=$1 ; shift
-CFG=$1 ; shift
+TARGET=$1 ; shift
+UI=$(basename $TARGET .h)
 
-ATTINY=$(grep 'ATTINY:' $CFG | awk '{ print $3 }')
+ATTINY=$(grep 'ATTINY:' $TARGET | awk '{ print $3 }')
 if [ -z "$ATTINY" ]; then ATTINY=85 ; fi
 
 PROGRAM="ui/$UI/$UI"
@@ -45,7 +45,7 @@ export LDFLAGS="-fgnu89-inline"
 export OBJCOPYFLAGS='--set-section-flags=.eeprom=alloc,load --change-section-lma .eeprom=0 --no-change-warnings -O ihex --remove-section .fuse'
 export OBJS=$PROGRAM.o
 
-OTHERFLAGS="-DCFG_H=$CFG"
+OTHERFLAGS="-DCFG_H=$TARGET"
 for arg in "$*" ; do
   OTHERFLAGS="$OTHERFLAGS $arg"
 done
@@ -64,4 +64,4 @@ run $CC $OFLAGS $LDFLAGS -o $PROGRAM.elf $PROGRAM.o
 run $OBJCOPY $OBJCOPYFLAGS $PROGRAM.elf $PROGRAM.hex
 # deprecated
 #run avr-size -C --mcu=$MCU $PROGRAM.elf | grep Full
-run avr-objdump -Pmem-usage $PROGRAM.elf | grep Full
+run avr-objdump -Pmem-usage $PROGRAM.elf | grep -E 'Full|Device' | sed 's/^/  /;'

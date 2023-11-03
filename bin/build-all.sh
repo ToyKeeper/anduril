@@ -4,14 +4,17 @@
 # If pattern given, only build targets which match.
 
 if [ ! -z "$1" ]; then
-  SEARCH="$1"
+  # multiple search terms with "AND"
+  SEARCH=$@
 fi
 
-# TODO: detect UI from $0
+# TODO: detect UI from $0 and/or $*
 UI=anduril
 
 mkdir -p hex
 
+# TODO: use a git tag for the version, instead of build date
+# TODO: use build/version.h instead of $UI/version.h ?
 date '+#define VERSION_NUMBER "%Y-%m-%d"' > ui/$UI/version.h
 
 PASS=0
@@ -19,17 +22,22 @@ FAIL=0
 PASSED=''
 FAILED=''
 
-for TARGET in $(find hw/*/* -name "$UI".h) ; do
+# build targets are hw/*/**/$UI.h
+for TARGET in $( find hw/*/*/ -name "$UI".h ) ; do
 
-  # maybe limit builds to a specific pattern
+  # limit builds to searched patterns, if given
+  SKIP=0
   if [ ! -z "$SEARCH" ]; then
-    echo "$TARGET" | grep -i "$SEARCH" > /dev/null
-    if [ 0 != $? ]; then continue ; fi
+    for text in $SEARCH ; do
+        echo "$TARGET" | grep -i "$text" > /dev/null
+        if [ 0 != $? ]; then SKIP=1 ; fi
+    done
   fi
+  if [ 1 = $SKIP ]; then continue ; fi
 
   # friendly name for this build
   NAME=$(echo "$TARGET" | perl -ne 's|/|-|g; /hw-(.*)-'"$UI"'.h/ && print "$1\n";')
-  echo "===== $NAME ====="
+  echo "===== $UI : $NAME ====="
 
   # figure out MCU type
   #ATTINY=$(grep 'ATTINY:' $TARGET | awk '{ print $3 }')
@@ -37,11 +45,12 @@ for TARGET in $(find hw/*/* -name "$UI".h) ; do
 
   # try to compile
   #echo bin/build.sh "$UI" "$TARGET"
-  bin/build.sh "$UI" "$TARGET"
+  bin/build.sh "$TARGET"
 
   # track result, and rename compiled files
   if [ 0 = $? ] ; then
     mv -f "ui/$UI/$UI".hex hex/"$UI".$NAME.hex
+    echo "  > hex/$UI.$NAME.hex"
     PASS=$(($PASS + 1))
     PASSED="$PASSED $NAME"
   else
