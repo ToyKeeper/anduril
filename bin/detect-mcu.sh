@@ -5,7 +5,7 @@
 
 if [ -z "$1" ]; then
   echo "Usage: detect-mcu.sh FILE"
-  echo "or: eval $(detect-mcu.sh FILE)"
+  echo 'or: eval $(detect-mcu.sh FILE)'
   echo "Example: detect-mcu.sh hw/hank/emisar-d4/anduril.h"
   echo "Figures out which MCU a build uses, and sets env vars for it"
   exit
