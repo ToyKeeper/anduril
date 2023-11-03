@@ -4,8 +4,6 @@
 #pragma once
 
 #include "hank/emisar-d18/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0142"
 
 // don't turn off first channels at turbo level
 #undef PWM1_LEVELS

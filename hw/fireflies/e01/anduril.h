@@ -3,9 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define MODEL_NUMBER "0441"
 #include "fireflies/pl47/hwdef.h"
-// ATTINY: 85
 
 // disable indicator LED; it's hardwired
 #ifdef USE_INDICATOR_LED

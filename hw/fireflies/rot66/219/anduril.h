@@ -5,8 +5,6 @@
 
 // same as regular ROT66, but calibrated for Nichia 219B with 7x7135 chips
 #include "fireflies/rot66/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0412"
 
 // driver is a FET+N+1,
 // where N=6 for the 219b version

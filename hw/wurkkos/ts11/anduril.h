@@ -3,10 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-// ATTINY: 1616
 #include "wurkkos/ts25/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0717"
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS

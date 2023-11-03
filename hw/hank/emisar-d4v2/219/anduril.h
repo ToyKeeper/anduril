@@ -4,9 +4,6 @@
 #pragma once
 
 #include "hank/emisar-d4v2/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0114"
-// ATTINY: 1634
 
 // don't turn off the low channel at turbo level
 #undef LOW_PWM_LEVELS

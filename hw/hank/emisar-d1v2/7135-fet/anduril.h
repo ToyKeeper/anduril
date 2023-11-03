@@ -3,12 +3,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-// ATTINY: 1634
 // same as Emisar D4v2, mostly
 // (was only made for a short time, not many people have one)
 #include "hank/emisar-d4v2/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0123"
 
 // some models use a simple button LED, others use RGB...
 // ... so include support for both

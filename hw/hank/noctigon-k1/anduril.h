@@ -3,11 +3,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define MODEL_NUMBER "0251"
 // (originally known as Emisar D1S v2)
 #include "hank/noctigon-k1/hwdef.h"
 #include "hank/anduril.h"
-// ATTINY: 1634
 
 // this light can safely run a bit hotter than most
 #undef DEFAULT_THERM_CEIL

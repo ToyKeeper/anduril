@@ -32,7 +32,6 @@
  * The first channel also has a direct-drive FET for turbo.
  */
 
-#define ATTINY 1634
 #include <avr/io.h>
 
 #define HWDEF_C_FILE hank/emisar-2ch/fet/hwdef.c

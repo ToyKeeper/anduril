@@ -30,7 +30,6 @@
  *      ADC12   thermal sensor
  */
 
-#define ATTINY 1634
 #include <avr/io.h>
 
 // move the switch to a different pin

@@ -6,8 +6,6 @@
 #include "lumintop/blf-gt-mini/hwdef.h"
 // Same as an Emisar D1S, except it has a lighted button
 #include "hank/emisar-d1s/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0322"
 
 // the button lights up
 #define USE_INDICATOR_LED

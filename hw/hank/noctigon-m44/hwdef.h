@@ -28,7 +28,6 @@
  *      ADC12   thermal sensor
  */
 
-#define ATTINY 1634
 #include <avr/io.h>
 
 #define HWDEF_C_FILE hank/noctigon-m44/hwdef.c

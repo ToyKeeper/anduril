@@ -13,7 +13,6 @@
  * Voltage:    VCC
  */
 
-#define ATTINY 1616
 #include <avr/io.h>
 
 #define HWDEF_C_FILE sofirn/lt1s-pro/hwdef.c

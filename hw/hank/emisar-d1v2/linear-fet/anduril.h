@@ -4,11 +4,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-// ATTINY: 1634
 // similar to a Noctigon KR4, sort of
 #include "hank/noctigon-kr4/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0124"
 
 // some models use a simple button LED, others use RGB...
 // ... so include support for both

@@ -9,8 +9,5 @@
 // - different model number
 #include "hank/noctigon-dm11/boost/anduril.h"
 #include "hank/noctigon-kr4/boost/hwdef.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0216"
 #include "hank/anduril.h"
-// ATTINY: 1634
 

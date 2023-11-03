@@ -3,9 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define MODEL_NUMBER "1632"
 #include "thefreeman/boost-fwaa-mp3432-hdr-dac-rgb/hwdef.h"
-// ATTINY: 1616
 
 // HPRsense : 4.2+0.3+20 = 24.5mR (DMN1004UFDF+trace resistance+20mR)
 // R1=165k Vsense=49.02 Iout=2001mA

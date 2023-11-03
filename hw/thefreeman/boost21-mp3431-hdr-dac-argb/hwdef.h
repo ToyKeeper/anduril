@@ -37,7 +37,6 @@
  * IN- NFET : pull up after BST enable to eliminate startup flash, pull down otherwise
  */
 
-#define ATTINY 1616
 #include <avr/io.h>
 
 #define HWDEF_C_FILE thefreeman/boost21-mp3431-hdr-dac-argb/hwdef.c

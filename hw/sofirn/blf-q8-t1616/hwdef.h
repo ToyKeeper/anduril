@@ -15,7 +15,6 @@
  * Voltage:    VCC
  */
 
-#define ATTINY 1616
 #include <avr/io.h>
 
 // nearly all t1616-based FET+1 drivers work pretty much the same

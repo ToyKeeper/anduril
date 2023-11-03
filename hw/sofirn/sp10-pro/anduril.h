@@ -3,9 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define MODEL_NUMBER "0631"
 #include "sofirn/sp10-pro/hwdef.h"
-// ATTINY: 1616
 
 // 1....15: level_calc.py 3.01 1  15 7135 1 0.1   2 --pwm dyn:15:64:64
 // 16..150: level_calc.py 5.01 1 135 7135 1   2 800 --pwm dyn:49:3072:255:3.0

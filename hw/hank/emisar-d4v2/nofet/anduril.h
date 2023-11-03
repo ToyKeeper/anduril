@@ -7,9 +7,6 @@
 #define HWDEF_C_FILE hank/emisar-d4v2/nofet/hwdef.c
 
 #include "hank/emisar-d4v2/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0115"
-// ATTINY: 1634
 
 // the ramp uses only 1x7135 chip, max ~130 lm
 #undef PWM_CHANNELS

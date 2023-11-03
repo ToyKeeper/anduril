@@ -6,8 +6,6 @@
 // same as D4S but with FET modes limited to 80% power
 // to avoid destroying the LEDs
 #include "hank/emisar-d4s/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0132"
 
 // don't turn off first channel at turbo level
 #undef PWM1_LEVELS

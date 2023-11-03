@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define MODEL_NUMBER "0141"
 #include "hank/emisar-d18/hwdef.h"
 #include "hank/anduril.h"
 

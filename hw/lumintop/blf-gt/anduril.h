@@ -3,9 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define MODEL_NUMBER "0321"
 #include "lumintop/blf-gt/hwdef.h"
-// ATTINY: 85
 
 // the button lights up
 #define USE_INDICATOR_LED

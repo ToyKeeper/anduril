@@ -36,7 +36,6 @@
  * not to change brightness.
  */
 
-#define ATTINY 1634
 #include <avr/io.h>
 
 #ifndef HWDEF_C_FILE

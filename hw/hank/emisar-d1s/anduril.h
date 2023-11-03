@@ -6,8 +6,6 @@
 // same as Emisar D4, mostly
 #include "hank/emisar-d4/hwdef.h"
 #include "hank/emisar-d4/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0122"
 
 // safe limit ~50% power
 #undef SIMPLE_UI_CEIL

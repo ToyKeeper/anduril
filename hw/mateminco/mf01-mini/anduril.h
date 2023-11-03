@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define MODEL_NUMBER "0521"
 #include "mateminco/mf01-mini/hwdef.h"
 
 // the button lights up

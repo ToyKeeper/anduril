@@ -4,8 +4,6 @@
 #pragma once
 
 #include "lumintop/fw3a/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0312"
 
 #undef PWM1_LEVELS
 #undef PWM2_LEVELS

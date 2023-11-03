@@ -4,9 +4,6 @@
 #pragma once
 
 #include "hank/noctigon-k9.3/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0263"
-// ATTINY: 1634
 
 // main LEDs
 #undef PWM2_LEVELS

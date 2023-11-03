@@ -12,7 +12,6 @@
  *           ----
  */
 
-#define ATTINY 85
 #include <avr/io.h>
 
 #define HWDEF_C_FILE hank/emisar-d4/hwdef.c

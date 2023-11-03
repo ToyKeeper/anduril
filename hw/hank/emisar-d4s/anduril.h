@@ -3,10 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define MODEL_NUMBER "0131"
 #include "hank/emisar-d4s/hwdef.h"
 #include "hank/anduril.h"
-// ATTINY: 85
 
 // the button lights up (on some models)
 #define USE_INDICATOR_LED

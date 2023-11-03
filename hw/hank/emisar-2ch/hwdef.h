@@ -31,7 +31,6 @@
  * and one pin to control the Opamp power level.
  */
 
-#define ATTINY 1634
 #include <avr/io.h>
 
 #define HWDEF_C_FILE hank/emisar-2ch/hwdef.c

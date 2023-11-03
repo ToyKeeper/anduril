@@ -3,10 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define MODEL_NUMBER "0151"
 #include "hank/emisar-d4k-3ch/hwdef.h"
 #include "hank/anduril.h"
-// ATTINY: 1634
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS

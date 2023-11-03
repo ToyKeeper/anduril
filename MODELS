@@ -1,72 +1,68 @@
+Models: 70
+
 Model	Name                          	MCU
 -----	----                          	---
-0111	emisar-d4                     	attiny85
-0112	emisar-d4-219c                	attiny85
-0113	emisar-d4v2                   	attiny1634
-0114	emisar-d4v2-219               	attiny1634
-0115	emisar-d4v2-nofet             	attiny1634
-0121	emisar-d1                     	attiny85
-0122	emisar-d1s                    	attiny85
-0123	emisar-d1v2-7135-fet          	attiny1634
-0124	emisar-d1v2-linear-fet        	attiny1634
-0125	emisar-d1v2-nofet             	attiny1634
-0131	emisar-d4s                    	attiny85
-0132	emisar-d4s-219c               	attiny85
-0133	emisar-d4sv2                  	attiny1634
-0134	emisar-d4sv2-219              	attiny1634
-0135	emisar-2ch                    	attiny1634
-0135	emisar-d4sv2-tintramp         	attiny1634	(old)
-0136	emisar-2ch-fet                	attiny1634
-0136	emisar-d4sv2-tintramp-fet     	attiny1634	(old)
-0141	emisar-d18                    	attiny85
-0142	emisar-d18-219                	attiny85
-0143	noctigon-m44                  	attiny1634
-0151	emisar-d4k-3ch                	attiny1634
-0211	noctigon-kr4                  	attiny1634
-0212	noctigon-kr4-nofet            	attiny1634
-0213	noctigon-kr4-219              	attiny1634
-0214	noctigon-kr4-219b             	attiny1634
-0215	noctigon-kr4-2ch              	attiny1634
-0215	noctigon-kr4-tintramp         	attiny1634	(old)
-0216	noctigon-kr4-boost            	attiny1634
-0216	noctigon-kr4-12v              	attiny1634	(old)
-0251	noctigon-k1                   	attiny1634
-0252	noctigon-k1-sbt90             	attiny1634
-0253	noctigon-k1-boost             	attiny1634
-0253	noctigon-k1-12v               	attiny1634	(old)
-0261	noctigon-k9.3                 	attiny1634
-0262	noctigon-k9.3-nofet           	attiny1634
-0263	noctigon-k9.3-219             	attiny1634
+0111	hank-emisar-d4                	attiny85
+0112	hank-emisar-d4-219            	attiny85
+0113	hank-emisar-d4v2              	attiny1634
+0114	hank-emisar-d4v2-219          	attiny1634
+0115	hank-emisar-d4v2-nofet        	attiny1634
+0121	hank-emisar-d1                	attiny85
+0122	hank-emisar-d1s               	attiny85
+0123	hank-emisar-d1v2-7135-fet     	attiny1634
+0124	hank-emisar-d1v2-linear-fet   	attiny1634
+0125	hank-emisar-d1v2-nofet        	attiny1634
+0131	hank-emisar-d4s               	attiny85
+0132	hank-emisar-d4s-219           	attiny85
+0133	hank-emisar-d4sv2             	attiny1634
+0134	hank-emisar-d4sv2-219         	attiny1634
+0135	hank-emisar-2ch               	attiny1634
+0136	hank-emisar-2ch-fet           	attiny1634
+0141	hank-emisar-d18               	attiny85
+0142	hank-emisar-d18-219           	attiny85
+0143	hank-noctigon-m44             	attiny1634
+0151	hank-emisar-d4k-3ch           	attiny1634
+0211	hank-noctigon-kr4             	attiny1634
+0212	hank-noctigon-kr4-nofet       	attiny1634
+0213	hank-noctigon-kr4-219         	attiny1634
+0214	hank-noctigon-kr4-219b        	attiny1634
+0215	hank-noctigon-kr4-2ch         	attiny1634
+0216	hank-noctigon-kr4-boost       	attiny1634
+0251	hank-noctigon-k1              	attiny1634
+0252	hank-noctigon-k1-sbt90        	attiny1634
+0253	hank-noctigon-k1-boost        	attiny1634
+0261	hank-noctigon-k9.3            	attiny1634
+0262	hank-noctigon-k9.3-nofet      	attiny1634
+0263	hank-noctigon-k9.3-219        	attiny1634
 0265	noctigon-k9.3-tintramp-nofet  	attiny1634	(old, use 0262)
 0266	noctigon-k9.3-tintramp-fet    	attiny1634	(old, use 0261)
 0267	noctigon-k9.3-tintramp-219    	attiny1634	(old, use 0263)
-0271	noctigon-dm11                 	attiny1634
-0272	noctigon-dm11-nofet           	attiny1634
-0273	noctigon-dm11-boost           	attiny1634
-0273	noctigon-dm11-12v             	attiny1634	(old)
-0274	noctigon-dm11-sbt90           	attiny1634
-0311	fw3a                          	attiny85
-0312	fw3a-219                      	attiny85
-0313	fw3a-nofet                    	attiny85
-0314	fw3x-lume1                    	attiny1634
-0321	blf-gt                        	attiny85
-0322	blf-gt-mini                   	attiny85
-0411	ff-rot66                      	attiny85
-0412	ff-rot66-219                  	attiny85
-0413	ff-rot66g2                    	attiny85
-0421	ff-pl47                       	attiny85
-0422	ff-pl47-219                   	attiny85
-0423	ff-pl47g2                     	attiny85
-0441	ff-e01                        	attiny85
+0271	hank-noctigon-dm11            	attiny1634
+0272	hank-noctigon-dm11-nofet      	attiny1634
+0273	hank-noctigon-dm11-boost      	attiny1634
+0274	hank-noctigon-dm11-sbt90      	attiny1634
+0311	lumintop-fw3a                 	attiny85
+0312	lumintop-fw3a-219             	attiny85
+0313	lumintop-fw3a-nofet           	attiny85
+0314	lumintop-fw3x-lume1           	attiny1634
+0321	lumintop-blf-gt               	attiny85
+0322	lumintop-blf-gt-mini          	attiny85
+0411	fireflies-rot66               	attiny85
+0412	fireflies-rot66-219           	attiny85
+0413	fireflies-rot66g2             	attiny85
+0421	fireflies-pl47                	attiny85
+0422	fireflies-pl47-219            	attiny85
+0423	fireflies-pl47g2              	attiny85
+0441	fireflies-e01                 	attiny85
 0511	mateminco-mf01s               	attiny85
 0521	mateminco-mf01-mini           	attiny85
 0531	mateminco-mt35-mini           	attiny85
-0611	blf-q8                        	attiny85
+0611	sofirn-blf-q8                 	attiny85
 0612	sofirn-sp36                   	attiny85
-0613	blf-q8-t1616                  	attiny1616
+0613	sofirn-blf-q8-t1616           	attiny1616
 0614	sofirn-sp36-t1616             	attiny1616
-0621	blf-lantern                   	attiny85
-0622	blf-lantern-t1616             	attiny1616
+0621	sofirn-blf-lt1                	attiny85
+0622	sofirn-blf-lt1-t1616          	attiny1616
 0623	sofirn-lt1s-pro               	attiny1616
 0631	sofirn-sp10-pro               	attiny1616
 0632	sofirn-sc21-pro               	attiny1616

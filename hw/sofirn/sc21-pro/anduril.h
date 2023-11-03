@@ -4,9 +4,6 @@
 #pragma once
 
 #include "wurkkos/ts10/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0632"
-// ATTINY: 1616
 
 // turn on the aux LED while main LED is on
 #ifndef USE_INDICATOR_LED_WHILE_RAMPING

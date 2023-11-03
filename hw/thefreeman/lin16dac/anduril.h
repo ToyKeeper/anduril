@@ -3,9 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define MODEL_NUMBER "1630"
 #include "thefreeman/lin16dac/hwdef.h"
-// ATTINY: 1616
 
 // the button lights up
 #define USE_INDICATOR_LED

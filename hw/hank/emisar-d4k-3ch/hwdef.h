@@ -35,7 +35,6 @@
  * So this code should support both wire layouts.
  */
 
-#define ATTINY 1634
 #include <avr/io.h>
 
 #define HWDEF_C_FILE hank/emisar-d4k-3ch/hwdef.c

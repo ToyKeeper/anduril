@@ -5,8 +5,6 @@
 
 // same as  the  BLF Q8, mostly
 #include "sofirn/blf-q8/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0612"
 
 // voltage readings were a little high with the Q8 value
 #undef VOLTAGE_FUDGE_FACTOR

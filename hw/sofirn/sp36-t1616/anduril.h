@@ -5,9 +5,6 @@
 
 // same as  the  BLF Q8, mostly
 #include "sofirn/blf-q8-t1616/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0614"
-// ATTINY: 1616
 
 // voltage readings were a little high with the Q8 value
 #undef VOLTAGE_FUDGE_FACTOR

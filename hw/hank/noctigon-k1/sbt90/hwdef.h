@@ -37,7 +37,6 @@
  * Also has a direct-drive FET for turbo.
  */
 
-#define ATTINY 1634
 #include <avr/io.h>
 
 #define HWDEF_C_FILE hank/noctigon-kr4/hwdef.c

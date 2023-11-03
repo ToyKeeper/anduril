@@ -4,9 +4,6 @@
 #pragma once
 
 #include "hank/noctigon-kr4/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0213"
-// ATTINY: 1634
 
 // don't turn off first channel at turbo level
 #undef PWM1_LEVELS

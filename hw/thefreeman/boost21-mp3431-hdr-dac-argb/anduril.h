@@ -3,9 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define MODEL_NUMBER "1631"
 #include "thefreeman/boost21-mp3431-hdr-dac-argb/hwdef.h"
-// ATTINY: 1616
 
 // HPRsense : 1.7+0.3+5 = 7mR (DMN22M5UFG+trace resistance+5mR)
 // Vsense=42.46mV, R1= 191k

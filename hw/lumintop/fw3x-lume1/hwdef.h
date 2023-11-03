@@ -34,7 +34,6 @@
  * Another pin is used for DD FET control.
  */
 
-#define ATTINY 1634
 #include <avr/io.h>
 
 #define HWDEF_C_FILE lumintop/fw3x-lume1/hwdef.c

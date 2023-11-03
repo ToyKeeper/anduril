@@ -4,8 +4,6 @@
 #pragma once
 
 #include "lumintop/fw3a/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0313"
 
 // don't use channel 3 (FET)
 #undef PWM_CHANNELS

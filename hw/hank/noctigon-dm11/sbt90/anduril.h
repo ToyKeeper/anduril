@@ -4,9 +4,6 @@
 #pragma once
 
 #include "hank/noctigon-kr4/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0274"
-// ATTINY: 1634
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS

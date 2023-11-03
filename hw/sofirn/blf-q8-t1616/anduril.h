@@ -3,10 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define MODEL_NUMBER "0613"
 #include "sofirn/blf-q8-t1616/hwdef.h"
 #include "wurkkos/anduril.h"  // Sofirn lights are closely related to Wurkkos
-// ATTINY: 1616
 
 // the button lights up
 #define USE_INDICATOR_LED

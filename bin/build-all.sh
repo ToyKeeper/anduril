@@ -1,4 +1,7 @@
 #!/bin/sh
+# Anduril / FSM build wrapper script
+# Copyright (C) 2017-2023 Selene ToyKeeper
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 # Usage: build-all.sh [pattern]
 # If pattern given, only build targets which match.
@@ -40,10 +43,6 @@ for TARGET in $( find hw/*/*/ -name "$UI".h ) ; do
 
   # announce what we're going to build
   echo "===== $UI : $NAME ====="
-
-  # figure out MCU type
-  #ATTINY=$(grep 'ATTINY:' $TARGET | awk '{ print $3 }')
-  #if [ -z "$ATTINY" ]; then ATTINY=85 ; fi
 
   # try to compile
   bin/build.sh "$TARGET"

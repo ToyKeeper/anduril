@@ -3,10 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define MODEL_NUMBER "0253"
 #include "hank/noctigon-k1/boost/hwdef.h"
 #include "hank/anduril.h"
-// ATTINY: 1634
 
 // Most K1 lights can run hotter than default, but the 12V model
 // is known to have issues with the driver itself getting too hot.

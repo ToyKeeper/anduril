@@ -3,9 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define MODEL_NUMBER "0623"
 #include "sofirn/lt1s-pro/hwdef.h"
-// ATTINY: 1616
 
 // off mode: low (1)
 // lockout: blinking (3)

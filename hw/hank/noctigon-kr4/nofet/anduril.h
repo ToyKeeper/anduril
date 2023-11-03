@@ -7,9 +7,6 @@
 // (and Emisar D4v2 E21A, a.k.a. "D4v2.5")
 #define HWDEF_C_FILE hank/noctigon-kr4/nofet/hwdef.c
 #include "hank/noctigon-kr4/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0212"
-// ATTINY: 1634
 
 // brightness w/ SST-20 4000K LEDs:
 // 0/1023: 0.35 lm

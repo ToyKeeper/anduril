@@ -4,8 +4,6 @@
 #pragma once
 
 #include "fireflies/rot66/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0413"
 
 // if the "low" mode was disabled, turn it back on
 #ifdef INDICATOR_LED_SKIP_LOW

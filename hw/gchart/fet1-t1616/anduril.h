@@ -3,9 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define MODEL_NUMBER "1618" // Golden Ratio... because I can
 #include "gchart/fet1-t1616/hwdef.h"
-// ATTINY: 1616
 
 // the button lights up
 #define USE_INDICATOR_LED

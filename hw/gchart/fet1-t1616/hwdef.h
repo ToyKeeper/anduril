@@ -11,7 +11,6 @@
  * Read voltage from VCC pin, has diode with ~0.4v drop
 */
 
-#define ATTINY 1616
 #include <avr/io.h>
 
 // nearly all t1616-based FET+1 drivers work pretty much the same

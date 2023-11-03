@@ -4,10 +4,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define MODEL_NUMBER "0211"
 #include "hank/noctigon-kr4/hwdef.h"
 #include "hank/anduril.h"
-// ATTINY: 1634
 
 // brightness w/ SST-20 4000K LEDs:
 // 0/1023: 0.35 lm

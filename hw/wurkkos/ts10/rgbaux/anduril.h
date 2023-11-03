@@ -5,9 +5,6 @@
 
 // most things are the same as TS25
 #include "wurkkos/ts25/anduril.h"
-#undef MODEL_NUMBER
-#define MODEL_NUMBER "0713"
-// ATTINY: 1616
 
 ///// apply some config from the TS10 /////
 

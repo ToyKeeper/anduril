@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define MODEL_NUMBER "0311"
 #include "lumintop/fw3a/hwdef.h"
 
 #define RAMP_SIZE 150

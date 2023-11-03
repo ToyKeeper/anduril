@@ -3,10 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define MODEL_NUMBER "0111"
 #include "hank/emisar-d4/hwdef.h"
 #include "hank/anduril.h"
-// ATTINY: 85
 
 #define RAMP_SIZE 150
 

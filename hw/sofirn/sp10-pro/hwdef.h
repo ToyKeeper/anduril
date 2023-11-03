@@ -12,7 +12,6 @@
  * PA1 : Boost Enable
  */
 
-#define ATTINY 1616
 #include <avr/io.h>
 
 #define HWDEF_C_FILE sofirn/sp10-pro/hwdef.c

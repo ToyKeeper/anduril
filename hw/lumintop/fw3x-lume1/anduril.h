@@ -11,9 +11,7 @@
  * - 85: https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf
  */
 
-#define MODEL_NUMBER "0314"
 #include "lumintop/fw3x-lume1/hwdef.h"
-// ATTINY: 1634
 
 // set this light for 50C thermal ceiling
 #undef DEFAULT_THERM_CEIL

@@ -12,7 +12,6 @@
  * Read voltage from VCC pin, has PFET so no drop
  */
 
-#define ATTINY 1616
 #include <avr/io.h>
 
 #define HWDEF_C_FILE thefreeman/lin16dac/hwdef.c
