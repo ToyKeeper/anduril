@@ -8,6 +8,7 @@ old/
 *.cpp
 *.elf
 *.hex
+*.html
 *.o
 *.old
 .*.swo

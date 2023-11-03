@@ -26,6 +26,7 @@ Usage: ./make TASK
   todo            Show tasks noted in source code files
   models          Generate the MODELS file
   release         Zip up all .hex files to prep for publishing a release
+  docs            Convert all .md files to .html
 
 ... or TASK can be the partial name of a build target.
 
@@ -55,6 +56,9 @@ function main() {
       echo 'rm -vf **/*.hex **/*~ **/*.elf **/*.o **/*.cpp'
       rm -vf **/*.hex **/*~ **/*.elf **/*.o **/*.cpp
       ;;
+    docs)
+      make-docs
+      ;;
     flash)
       echo "Not implemented yet."
       #./bin/flash.sh "$@"
@@ -73,6 +77,14 @@ function main() {
       ./bin/build-all.sh "$@"
       ;;
   esac
+}
+
+function make-docs () {
+  for md in **/*.md ; do
+    echo "$md"
+    html=$(echo "$md" | sed 's/.md$/.html/')
+    cmark-gfm "$md" > "$html"
+  done
 }
 
 main "$@"
