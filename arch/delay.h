@@ -1,10 +1,10 @@
-// tk-delay.h: Smaller, more flexible _delay_ms() functions.
+// delay.h: Smaller, more flexible _delay_ms() functions.
 // Copyright (C) 2015-2023 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
 #ifdef OWN_DELAY
-#include "tk-attiny.h"
+#include "arch/mcu.h"
 #include <util/delay_basic.h>
 #ifdef USE_DELAY_MS
 // Having own _delay_ms() saves some bytes AND adds possibility to use variables as input

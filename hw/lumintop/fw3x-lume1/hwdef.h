@@ -125,7 +125,7 @@ enum CHANNEL_MODES {
 #define ADC_22 450
 #endif
 
-// Default ADMUX_THERM for Temperature is: 0b10001110 in tk-attiny.h
+// Default ADMUX_THERM for Temperature is: 0b10001110 in arch/mcu.h
 // REFS[1:0] as 10 for analog reference at internal 1.1Vref
 // MUX[3:0] as 1110 for ADC'12' - temperature sensor internal
 

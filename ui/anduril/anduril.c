@@ -41,7 +41,7 @@
 // Anduril config file name (set it here or define it at the gcc command line)
 //#define CFG_H cfg-blf-q8.h
 
-#include "tk.h"
+#include "fsm/tk.h"
 #include incfile(CFG_H)
 
 

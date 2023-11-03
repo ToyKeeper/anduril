@@ -54,7 +54,7 @@
 #define USE_RAMP_CONFIG
 
 /***** specific settings for known driver types *****/
-#include "tk.h"
+#include "fsm/tk.h"
 #include incfile(CONFIGFILE)
 
 

@@ -1,4 +1,4 @@
-// tk-attiny.h: Attiny portability header.
+// arch/mcu.h: Attiny portability header.
 // Copyright (C) 2014-2023 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
@@ -79,7 +79,7 @@
 
 /******************** I/O pin and register layout ************************/
 #ifdef HWDEFFILE
-#include "tk.h"
+#include "fsm/tk.h"
 #include incfile(HWDEFFILE)
 #endif
 

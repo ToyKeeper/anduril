@@ -78,7 +78,7 @@
 //#define START_AT_MEMORIZED_LEVEL
 
 /***** specific settings for known driver types *****/
-#include "tk.h"
+#include "fsm/tk.h"
 #include incfile(CONFIGFILE)
 
 ///// Fireflies-specific configuration

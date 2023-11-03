@@ -13,7 +13,7 @@
  * - ...
  */
 
-#include "tk-attiny.h"
+#include "arch/mcu.h"
 
 #include <avr/eeprom.h>
 #include <avr/power.h>
@@ -36,7 +36,7 @@
 
 #if defined(USE_DELAY_MS) || defined(USE_DELAY_4MS) || defined(USE_DELAY_ZERO) || defined(USE_DEBUG_BLINK)
 #define OWN_DELAY
-#include "tk-delay.h"
+#include "arch/delay.h"
 #endif
 
 #ifdef USE_DEBUG_BLINK

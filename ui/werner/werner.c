@@ -39,7 +39,7 @@
 
 /***** specific settings for known driver types *****/
 #ifdef CONFIGFILE
-#include "tk.h"
+#include "fsm/tk.h"
 #include incfile(CONFIGFILE)
 #else
 #error You need to define CONFIGFILE
