@@ -31,10 +31,12 @@
 #define MIN_THERM_STEPDOWN 50
 #define DEFAULT_LEVEL 70
 #define MAX_1x7135 150
-// always run at 1/4th speed, because 4 kHz PWM is enough for this circuit
+// moon at 1/4th speed for max runtime
+// the rest at half speed, to reduce ripple
+// but not full speed because 8 kHz PWM is enough for this circuit
 // and speed changes make a big visible bump
 #define HALFSPEED_LEVEL     255
-#define QUARTERSPEED_LEVEL  255
+#define QUARTERSPEED_LEVEL  2
 
 #define RAMP_SMOOTH_FLOOR 1  // low levels may be unreliable
 #define RAMP_SMOOTH_CEIL  130
