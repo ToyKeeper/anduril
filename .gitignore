@@ -1,3 +1,4 @@
+arch/dfp/
 env/
 hex/
 ignore/
@@ -11,5 +12,6 @@ old/
 *.html
 *.o
 *.old
+*.otl
 .*.swo
 .*.swp

@@ -23,10 +23,11 @@ Usage: ./make TASK
   (nothing)       Compile all build targets
   flash FILE      Flash firmare FILE to a hardware device
   clean           Delete generated files
-  todo            Show tasks noted in source code files
+  dfp             Download and install Atmel DFPs
+  docs            Convert all .md files to .html
   models          Generate the MODELS file
   release         Zip up all .hex files to prep for publishing a release
-  docs            Convert all .md files to .html
+  todo            Show tasks noted in source code files
 
 ... or TASK can be the partial name of a build target.
 
@@ -55,6 +56,10 @@ function main() {
     clean)
       echo 'rm -vf **/*.hex **/*~ **/*.elf **/*.o **/*.cpp'
       rm -vf **/*.hex **/*~ **/*.elf **/*.o **/*.cpp
+      ;;
+    dfp)
+      shift
+      ./bin/dfp-install.sh "$@"
       ;;
     docs)
       make-docs
@@ -87,5 +92,10 @@ function make-docs () {
   done
 }
 
+# go to the repo root
+BASEDIR=$(dirname $0)
+cd "$BASEDIR"
+
+# do whatever the user requested
 main "$@"
 

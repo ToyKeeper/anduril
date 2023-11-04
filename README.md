@@ -21,6 +21,10 @@ for full details.
 
 If you want to know what changed recently, check the [ChangeLog](ChangeLog.md).
 
+For info about hardware-specific features, like what the channel modes are on
+multi-channel lights, browse into the [hw/](hw/) directories to find the
+hardware model and any hardware-specific documentation.
+
 ## Flashing Firmware
 
 Get the latest updates by flashing new firmware!
@@ -50,6 +54,9 @@ A few things are needed to flash firmware:
 
 One particularly useful guide is at https://anduril.click/ .
 
+More info about installing flashing programs is below, in
+[Flashing Programs](#flashing-programs).
+
 ## Compiling
 
 The firmware can be deeply customized by modifying it and compiling your own
@@ -63,30 +70,54 @@ convenient.
 
 ### Prerequisites:
 
-  - AVR toolchain packages:  
-    `sudo apt install gcc-avr avr-libc binutils-avr avrdude`
+- AVR toolchain packages:  
+  `sudo apt install gcc-avr avr-libc binutils-avr`
 
-  - One or more Atmel DFPs (Device Family Pack) may be needed, to add support
-    for recent AVR MCUs.
+- Other misc packages:  
+  `sudo apt install git wget unzip bash`
 
-    - Download the Atmel ATtiny Series Device Support pack:
-      http://packs.download.atmel.com/
-
-    - Unzip the pack somewhere on your build computer
-
-    - Set ATTINY_DFP=/path/to/where/you/unzipped/the/pack
-      (either in your shell, or in this repo's bin/build.sh script)
-
-      `export ATTINY_DFP=$HOME/src/torches/atmel/attiny-dfp`
+- Atmel DFPs (Device Family Packs).  A small script is included to
+  download and install these for you:  
+  `./make dfp`
 
 ### Building
 
 Use the `make` script included in this repo.  Run `./make --help` for details
 about how to use it.  In most cases though, you should be able to just run
 `./make` by itself to compile all available build targets.  Or give it a search
-term to limit builds to only a few, like `./make d4v2` to build all Emisar D4v2
-firmwares.
+term to limit builds to only a few, like `./make hank boost` to build all
+firmwares for Hanklights with optional boost drivers.
 
 The compiled firmware goes into the `hex/` directory, ready to be used by any
 firmware flashing program.
+
+## Customizing Settings Per User
+
+The build can be [customized per user](docs/per-user-config.md) by placing
+overrides into the `users/myname/` directory and letting the build script know
+your username.  That way, your favorite settings can be applied automatically
+without having to modify the original source files.
+
+## Flashing Programs
+
+### AVRdude
+
+Usually avrdude installs in a single command:
+
+`sudo apt install avrdude`
+
+### PyMCUprog
+
+If you use `pymcuprog` to flash firmware, a few extras are needed:
+
+```sh
+sudo apt install python3 python3-pip python3-venv
+python3 -m venv env
+source env/bin/activate
+pip install pymcuprog
+```
+
+You'll need to `source env/bin/activate` every time you start a fresh shell,
+if you want to use pymcuprog.  The activation lasts until the shell is
+closed or until you run `deactivate`.
 

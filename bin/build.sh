@@ -13,6 +13,9 @@ if [ -z "$1" ]; then
   exit
 fi
 
+# repo root dir
+BASEDIR=$(dirname $(dirname "$0"))
+
 TARGET=$1 ; shift
 UI=$(basename $TARGET .h)
 MODEL=$(dirname $TARGET)
@@ -24,24 +27,26 @@ MODEL_NUMBER=$(head -1 $MODEL/model)
 # figure out the MCU type and set some vars
 eval $( bin/detect-mcu.sh "$TARGET" )
 
-# TODO: add support for AVR DD
-# give a more useful error message when AVR DFP is needed but not installed
-# (Atmel ATtiny device family pack, for attiny1616 support)
-# http://packs.download.atmel.com/
-#if [ -z "$ATTINY_DFP" ]; then export ATTINY_DFP=~/avr/attiny_dfp ; fi
-SERIES1=' 416 417 816 817 1616 1617 3216 3217 '
-if [[ $SERIES1 =~ " $ATTINY " ]]; then
-  if [ -z "$ATTINY_DFP" ]; then
-    echo "ATtiny$ATTINY support requires Atmel attiny device family pack."
-    echo "More info is in /README under tiny1616 support."
-    exit 1
-  fi
+# detect and enable a relevant Atmel DFP
+if [[ $MCUNAME =~ "attiny" ]]; then
+  DFPPATH=$BASEDIR/arch/dfp/attiny
+elif [[ $MCUNAME =~ "avr" && $MCUNAME =~ "dd" ]]; then
+  DFPPATH=$BASEDIR/arch/dfp/avrdd
+else
+  echo "Unrecognized MCU type: '$MCUNAME'"
+  exit 1
+fi
+# ensure the DFP files exist
+if [ ! -d "$DFPPATH" ]; then
+  echo "Atmel DFP files not found: '$DFPPATH'"
+  echo "Install DFP files with './make dfp'"
+  exit 1
 fi
 
 export CC=avr-gcc
 export CPP=avr-cpp
 export OBJCOPY=avr-objcopy
-export DFPFLAGS="-B $ATTINY_DFP/gcc/dev/$MCUNAME/ -I $ATTINY_DFP/include/"
+export DFPFLAGS="-B $DFPPATH/gcc/dev/$MCUNAME/ -I $DFPPATH/include/"
 # TODO: include $user/ first so it can override other stuff
 INCLUDES="-I ui -I hw -I. -I.. -I../.. -I../../.."
 export CFLAGS="  -Wall -g -Os -mmcu=$MCUNAME -c -std=gnu99 -fgnu89-inline -fwhole-program $MCUFLAGS $INCLUDES -fshort-enums $DFPFLAGS"
