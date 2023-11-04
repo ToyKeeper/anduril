@@ -36,6 +36,8 @@ void set_level_zero() {
 
 // single set of LEDs with single power channel, boost
 void set_level_main(uint8_t level) {
+    if (level == actual_level - 1) return;  // prevent flicker on no-op
+
     PWM_DATATYPE ch1 = PWM_GET(pwm1_levels, level);
 
     // set delta-sigma soft levels
