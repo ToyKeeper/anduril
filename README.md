@@ -16,7 +16,7 @@ to use it are:
   - Click for on/off
   - Hold to change brightness
 
-For more in-depth use, read its [user manual](docs/anduril-manual.txt)
+For more in-depth use, read its [user manual](docs/anduril-manual.md)
 for full details.
 
 If you want to know what changed recently, check the [ChangeLog](ChangeLog.md).
