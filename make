@@ -54,8 +54,8 @@ function main() {
       help
       ;;
     clean)
-      echo 'rm -vf **/*.hex **/*~ **/*.elf **/*.o **/*.cpp'
-      rm -vf **/*.hex **/*~ **/*.elf **/*.o **/*.cpp
+      echo 'rm -vf **/*~ hex/*.hex ui/**/*.elf ui/**/*.o ui/**/*.cpp'
+      rm -vf **/*~ hex/*.hex ui/**/*.elf ui/**/*.o ui/**/*.cpp
       ;;
     dfp)
       shift
