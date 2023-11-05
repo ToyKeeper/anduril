@@ -20,11 +20,13 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
     uint8_t tint = cfg.channel_mode_args[channel_mode];
     #endif
 
+    if (0) {}
+
     // it's possible that a light may need 3H but not 3C,
     // so try to detect if 3C is needed
     #if NUM_CHANNEL_MODES > 1
     // 3 clicks: next channel mode
-    if (event == EV_3clicks) {
+    else if (event == EV_3clicks) {
         uint8_t next = channel_mode;
         // go to next channel mode until we find one which is enabled
         // (and don't do any infinite loops if the user disabled them all)
@@ -48,22 +50,22 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
         cfg.channel_mode = channel_mode;
         save_config();
         return EVENT_HANDLED;
-    } else
+    }
     #endif  // if NUM_CHANNEL_MODES > 1
 
     #ifdef USE_CUSTOM_CHANNEL_3H_MODES
     // defer to mode-specific function if defined
-    if (channel_3H_modes[channel_mode]) {
+    else if (channel_3H_modes[channel_mode]) {
         StatePtr tint_func = channel_3H_modes[channel_mode];
         uint8_t err = tint_func(event, arg);
         if (EVENT_HANDLED == err) return EVENT_HANDLED;
         // else let the default handler run
     }
     #endif
-    #ifdef USE_CHANNEL_MODE_ARGS
-    #ifndef DONT_USE_DEFAULT_CHANNEL_ARG_MODE
+
+    #if defined(USE_CHANNEL_MODE_ARGS) && !defined(DONT_USE_DEFAULT_CHANNEL_ARG_MODE)
     // click, click, hold: change the current channel's arg (like tint)
-    if (event == EV_click3_hold) {
+    else if (event == EV_click3_hold) {
         ///// adjust value from 0 to 255
         // reset at beginning of movement
         if (! arg) {
@@ -118,22 +120,18 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
         set_level(actual_level);
         return EVENT_HANDLED;
     }
-    #endif  // ifndef DONT_USE_DEFAULT_CHANNEL_ARG_MODE
-    #endif  // ifdef USE_CHANNEL_MODE_ARGS
+    #endif  // if defined(USE_CHANNEL_MODE_ARGS) && !defined(DONT_USE_DEFAULT_CHANNEL_ARG_MODE)
 
     #if defined(USE_SIMPLE_UI)
     // remaining mappings aren't "simple", so stop here
-    if (cfg.simple_ui_active) {
+    else if (cfg.simple_ui_active) {
         return EVENT_NOT_HANDLED;
     }
-    #if NUM_CHANNEL_MODES > 1
-    else
-    #endif
     #endif
 
     #if NUM_CHANNEL_MODES > 1
-    // channel toggle menu on ... 9H? (only if not in SIMPLE UI or if SIMPLE UI is inactive)
-    if (event == EV_click9_hold) {
+    // channel toggle menu on ... 9H?
+    else if (event == EV_click9_hold) {
         push_state(channel_mode_config_state, 0);
         return EVENT_HANDLED;
     }
