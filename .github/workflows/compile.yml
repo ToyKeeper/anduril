@@ -17,8 +17,8 @@ jobs:
 
     - name: Requirements
       run: |
-        sudo apt -qqy update
-        sudo apt -qqy install avr-libc binutils-avr gcc-avr unzip wget
+        sudo apt-get -qqy update
+        sudo apt-get -qqy install avr-libc binutils-avr gcc-avr unzip wget
 
     - name: Cache Atmel DFPs
       id: cache-dfp
@@ -41,7 +41,7 @@ jobs:
         echo "ARTIFACT_NAME=${GITHUB_WORKFLOW}-${GITHUB_REF_NAME}-$(git rev-parse --short ${GITHUB_SHA})-${GITHUB_RUN_NUMBER}" >> "${GITHUB_ENV}"
 
     - name: Store Artifacts
-      uses: actions/upload-artifact@master
+      uses: actions/upload-artifact@v3
       with:
         name: ${{ env.ARTIFACT_NAME }}
         if-no-files-found: error
