@@ -65,13 +65,13 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     #if defined(TICK_DURING_STANDBY) && (defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS))
     else if (event == EV_sleep_tick) {
         if (ticks_since_on < 255) ticks_since_on ++;
-        #ifdef USE_MANUAL_MEMORY_TIMER
+        #if defined(USE_MANUAL_MEMORY) && defined(USE_MANUAL_MEMORY_TIMER)
         // reset to manual memory level when timer expires
         if (cfg.manual_memory &&
                 (arg >= (cfg.manual_memory_timer * SLEEP_TICKS_PER_MINUTE))) {
             manual_memory_restore();
         }
-        #endif
+        #endif  // ifdef USE_MANUAL_MEMORY_TIMER
         #if defined(USE_INDICATOR_LED)
         indicator_led_update(cfg.indicator_led_mode >> 2, arg);
         #elif defined(USE_AUX_RGB_LEDS)
