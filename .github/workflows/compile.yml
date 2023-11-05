@@ -18,9 +18,20 @@ jobs:
     - name: Requirements
       run: |
         sudo apt -qqy update
-        sudo apt -qqy install avr-libc binutils-avr gcc-avr wget unzip
+        sudo apt -qqy install avr-libc binutils-avr gcc-avr unzip wget
 
-    - name: Install Device Family Pack
+    - name: Cache Atmel DFPs
+      id: cache-dfp
+      uses: actions/cache@v3
+      env:
+        cache-name: cache-dfp-files
+      with:
+        path: arch/dfp
+        # new cache whenever the dfp-install script changes
+        key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('bin/dfp-install.sh') }}
+
+    - name: Install Atmel DFPs
+      if: steps.cache-dfp.outputs.cache-hit != 'true'
       run: |
         ./make dfp
 
