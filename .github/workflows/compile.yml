@@ -38,7 +38,7 @@ jobs:
     - name: Compile All
       run: |
         ./make
-        echo "ARTIFACT_NAME=${GITHUB_WORKFLOW}-${GITHUB_REF_NAME}-$(git rev-parse --short ${GITHUB_SHA})-${GITHUB_RUN_NUMBER}" >> "${GITHUB_ENV}"
+        echo "ARTIFACT_NAME=${GITHUB_WORKFLOW}-$(git rev-parse --short ${GITHUB_SHA})-${GITHUB_RUN_NUMBER}" >> "${GITHUB_ENV}"
 
     - name: Store Artifacts
       uses: actions/upload-artifact@v3
