@@ -569,10 +569,14 @@ uint8_t simple_ui_config_state(Event event, uint16_t arg) {
 
 #ifdef USE_RAMP_EXTRAS_CONFIG
 void ramp_extras_config_save(uint8_t step, uint8_t value) {
+    if (0) { } //syntactic trick so USE_MANUAL_MEMORY can be #undef
+
+    #ifdef USE_MANUAL_MEMORY
     // item 1: disable manual memory, go back to automatic
-    if (manual_memory_config_step == step) {
+    else if (manual_memory_config_step == step) {
         cfg.manual_memory = 0;
     }
+    #endif
 
     #ifdef USE_MANUAL_MEMORY_TIMER
     // item 2: set manual memory timer duration
@@ -707,6 +711,7 @@ void set_level_and_therm_target(uint8_t level) {
 #define set_level_and_therm_target(level) set_level(level)
 #endif
 
+#ifdef USE_MANUAL_MEMORY
 void manual_memory_restore() {
     memorized_level = cfg.manual_memory;
     #if NUM_CHANNEL_MODES > 1
@@ -728,6 +733,7 @@ void manual_memory_save() {
           cfg.manual_memory_channel_args[i] = cfg.channel_mode_args[i];
     #endif
 }
+#endif
 
 #ifdef USE_SUNSET_TIMER
 void reset_sunset_timer() {
