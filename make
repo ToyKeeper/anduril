@@ -59,7 +59,7 @@ function main() {
       ;;
     dfp)
       shift
-      ./bin/dfp-install.sh "$@"
+      exec ./bin/dfp-install.sh "$@"
       ;;
     docs)
       make-docs
@@ -79,7 +79,7 @@ function main() {
       grep -E 'TODO:|FIXME:' **/*.[ch]
       ;;
     *)
-      ./bin/build-all.sh "$@"
+      exec ./bin/build-all.sh "$@"
       ;;
   esac
 }
