@@ -66,4 +66,5 @@ echo "===== $PASS builds succeeded, $FAIL failed ====="
 #echo "PASS: $PASSED"
 if [ 0 != $FAIL ]; then
   echo "FAIL:$FAILED"
+  exit 1
 fi
