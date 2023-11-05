@@ -36,6 +36,10 @@ while [ -n "$TARGET" ]; do
       fi
     fi
   fi
+  # move up one dir
+  # if target doesn't change here, exit to avoid infinite loop
+  FOO="$TARGET"
   TARGET=$(dirname $TARGET)
+  [ "$FOO" = "$TARGET" ] && exit 1
 done
 
