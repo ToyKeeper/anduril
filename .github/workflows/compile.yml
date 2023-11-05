@@ -2,7 +2,7 @@ name: build all
 
 on:
   push:
-    branches: [ "trunk", "gretel-actions" ]
+    branches: [ "trunk" ]
   pull_request:
     branches: [ "trunk" ]
 
