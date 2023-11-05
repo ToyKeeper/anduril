@@ -569,14 +569,13 @@ uint8_t simple_ui_config_state(Event event, uint16_t arg) {
 
 #ifdef USE_RAMP_EXTRAS_CONFIG
 void ramp_extras_config_save(uint8_t step, uint8_t value) {
-    if (0) { } //syntactic trick so USE_MANUAL_MEMORY can be #undef
+    if (0) {}
 
     #ifdef USE_MANUAL_MEMORY
     // item 1: disable manual memory, go back to automatic
     else if (manual_memory_config_step == step) {
         cfg.manual_memory = 0;
     }
-    #endif
 
     #ifdef USE_MANUAL_MEMORY_TIMER
     // item 2: set manual memory timer duration
@@ -587,6 +586,7 @@ void ramp_extras_config_save(uint8_t step, uint8_t value) {
         cfg.manual_memory_timer = value;
     }
     #endif
+    #endif  // ifdef USE_MANUAL_MEMORY
 
     #ifdef USE_RAMP_AFTER_MOON_CONFIG
     // item 3: ramp up after hold-from-off for moon?
@@ -733,7 +733,7 @@ void manual_memory_save() {
           cfg.manual_memory_channel_args[i] = cfg.channel_mode_args[i];
     #endif
 }
-#endif
+#endif  // ifdef USE_MANUAL_MEMORY
 
 #ifdef USE_SUNSET_TIMER
 void reset_sunset_timer() {
