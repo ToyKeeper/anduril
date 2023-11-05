@@ -188,6 +188,49 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     }
     #endif
 
+    #ifdef USE_QUICK_AUX_SWITCH
+        #if defined(USE_INDICATOR_LED)
+        // 8 clicks: if indicator LEDs (aka "aux LEDs") mode is not off, save it and change it to off; if it's already off, change it back to saved
+        //  See: https://budgetlightforum.com/t/anduril-2-feature-change-suggestions/218045/145
+        else if (event == EV_8clicks) {
+            uint8_t mode = cfg.indicator_led_mode >> 2;
+               uint8_t previous_mode = cfg.previous_indicator_led_mode >> 2;
+            if (mode) {
+                previous_mode = mode;
+                mode = 0;
+            } else {
+                mode = previous_mode;
+                previous_mode = 0;
+            }
+            cfg.indicator_led_mode = (mode << 2) + (cfg.indicator_led_mode & 0x03);
+            cfg.previous_indicator_led_mode = (previous_mode << 2) + (cfg.previous_indicator_led_mode & 0x03);
+            // redundant, sleep tick does the same thing
+            //indicator_led_update(cfg.indicator_led_mode >> 2, arg);
+            save_config();
+            return MISCHIEF_MANAGED;
+        }
+        #elif defined(USE_AUX_RGB_LEDS)
+        // 8 clicks: if RGB aux LED pattern mode is not off, save it and change it to off; if it's already off, change it back to saved
+        else if (event == EV_8clicks) {
+            uint8_t mode = (cfg.rgb_led_lockout_mode >> 4);
+            uint8_t previous_mode = (cfg.previous_rgb_led_lockout_mode >> 4);
+            if (mode) {
+                previous_mode = mode;
+                mode = 0;
+            } else {
+                mode = previous_mode;
+                previous_mode = 0;
+            }
+            cfg.rgb_led_lockout_mode = (mode << 4) | (cfg.rgb_led_lockout_mode & 0x0f);
+            cfg.previous_rgb_led_lockout_mode = (previous_mode << 4) | (cfg.previous_rgb_led_lockout_mode & 0x0f);
+            rgb_led_update(cfg.rgb_led_lockout_mode, 0);
+            save_config();
+            blink_once();
+            return MISCHIEF_MANAGED;
+        }
+        #endif // end 8 clicks
+    #endif
+
     #if defined(USE_EXTENDED_SIMPLE_UI) && defined(USE_SIMPLE_UI)
     ////////// Every action below here is blocked in the Extended Simple UI //////////
     if (cfg.simple_ui_active) {

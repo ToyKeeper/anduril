@@ -169,5 +169,16 @@ Config cfg = {
         .jump_start_level = DEFAULT_JUMP_START_LEVEL,
     #endif
 
+    ///// quick aux switch saved previous modes
+    #ifdef USE_QUICK_AUX_SWITCH
+       #ifdef USE_INDICATOR_LED
+               .previous_indicator_led_mode = ~INDICATOR_LED_DEFAULT_MODE,
+       #endif
+       #ifdef USE_AUX_RGB_LEDS
+               .previous_rgb_led_off_mode = ~RGB_LED_OFF_DEFAULT,
+               .previous_rgb_led_lockout_mode = ~RGB_LED_LOCKOUT_DEFAULT,
+       #endif
+    #endif
+
 };
 

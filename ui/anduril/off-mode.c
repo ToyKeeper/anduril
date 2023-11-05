@@ -324,6 +324,49 @@ uint8_t off_state(Event event, uint16_t arg) {
         return EVENT_HANDLED;
     }
     #endif  // end 7 clicks
+ 
+    #ifdef USE_QUICK_AUX_SWITCH
+        #ifdef USE_INDICATOR_LED
+        // 8 clicks: if indicator LEDs (aka "aux LEDs") are not off, change them to off; if they're already off, change them to low
+        //  See: https://budgetlightforum.com/t/anduril-2-feature-change-suggestions/218045/145
+        else if (event == EV_8clicks) {
+            uint8_t mode = (cfg.indicator_led_mode & 3);
+            uint8_t previous_mode = (cfg.previous_indicator_led_mode & 3);
+            if (mode) {
+                previous_mode = mode;
+                mode = 0;
+            } else {
+                mode = previous_mode;
+                previous_mode = 0;
+            }
+            cfg.indicator_led_mode = (cfg.indicator_led_mode & 0b11111100) | mode;
+            cfg.previous_indicator_led_mode = (cfg.previous_indicator_led_mode & 0b11111100) | previous_mode;
+            // redundant, sleep tick does the same thing
+            //indicator_led_update(cfg.indicator_led_mode & 0x03, arg);
+            save_config();
+            return EVENT_HANDLED;
+        }
+        #elif defined(USE_AUX_RGB_LEDS)
+        // 8 clicks: if RGB aux LED pattern is not off, change it to off; if it's already off, change it to low
+        else if (event == EV_8clicks) {
+            uint8_t mode = (cfg.rgb_led_off_mode >> 4);
+            uint8_t previous_mode = (cfg.previous_rgb_led_off_mode >> 4);
+            if (mode) {
+                previous_mode = mode;
+                mode = 0;
+            } else {
+                mode = previous_mode;
+                previous_mode = 0;
+            }
+            cfg.rgb_led_off_mode = (mode << 4) | (cfg.rgb_led_off_mode & 0x0f);
+            cfg.previous_rgb_led_off_mode = (previous_mode << 4) | (cfg.previous_rgb_led_off_mode & 0x0f);
+            rgb_led_update(cfg.rgb_led_off_mode, 0);
+            save_config();
+            blink_once();
+            return EVENT_HANDLED;
+        }
+        #endif  // end 8 clicks
+    #endif
 
     ////////// Every action below here is blocked in the Extended Simple UI //////////
 
