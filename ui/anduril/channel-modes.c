@@ -119,7 +119,6 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
         return EVENT_HANDLED;
     }
     #endif  // ifndef DONT_USE_DEFAULT_CHANNEL_ARG_MODE
-    #endif  // ifdef USE_CHANNEL_MODE_ARGS
 
     #if defined(USE_SIMPLE_UI)
     // remaining mappings aren't "simple", so stop here
@@ -135,6 +134,7 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
         return EVENT_HANDLED;
     }
     #endif
+    #endif  // ifdef USE_CHANNEL_MODE_ARGS
 
     return EVENT_NOT_HANDLED;
 }
