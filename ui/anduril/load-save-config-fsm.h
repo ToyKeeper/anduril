@@ -128,6 +128,15 @@ typedef struct Config {
 // auto-detect how many eeprom bytes
 #define EEPROM_BYTES sizeof(Config)
 
+#ifdef EEPROM_SIZE  // avr-gcc doesn't define EEPROM_SIZE for some MCUs (eg 1634) so we can only check this when it's defined
+       // Abort compilation if eeprom size exceeded
+       // Good explanation on how this works: https://scaryreasoner.wordpress.com/2009/02/28/checking-sizeof-at-compile-time/
+       #define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
+       __attribute__((unused)) static void build_bug_on() {    // this is never called and doesn't generate any code, serves only to expand the macro
+               BUILD_BUG_ON(EEPROM_BYTES > EEPROM_SIZE);       // EEPROM_SIZE comes from avr-gcc and so should adjust automatically for each MCU
+       }
+#endif
+
 // declare this so FSM can see it,
 // but define its values in a file which loads later
 Config cfg;
