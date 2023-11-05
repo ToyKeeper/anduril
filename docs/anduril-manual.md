@@ -225,8 +225,9 @@ While the light is on, a few actions are available:
   - `2C`: Go to or from the turbo level.  
           (or if it has regulated down, "bump" back up to turbo)  
           (turbo level / behavior is configurable)
-  - `1H`: Change brightness (up).  If the button was released less than a
-          second ago, or if it's already at the ceiling, it goes down instead.
+  - `1H`: Change brightness (up).  
+          If the button was released less than a second ago, or if it's already
+          at the ceiling, it goes down instead.
   - `2H`: Change brightness (down).
 
   - `3C`: Switch to the other ramp style.  (smooth / stepped)  
@@ -595,8 +596,8 @@ in Ramp Mode before entering momentary mode.
 In momentary strobe mode, the settings are copied from the last-used
 strobe mode, such as party strobe, tactical strobe, or lightning.
 
-To exit this mode, physically disconnect power by unscrewing the tailcap
-or battery tube.
+**To exit Momentary Mode, physically disconnect power** by unscrewing the
+tailcap or battery tube.
 
 
 Tactical Mode
@@ -678,23 +679,33 @@ not active, then do a `10H` action from Off.
 
 For smooth ramping mode, there are three menu options:
 
-  1. Floor.  (default = 1/150)
-  2. Ceiling.  (default = 120/150)
-  3. Ramp speed.  (default = 1, fastest speed)
+  1. Floor.  
+     (default = 1/150)
+  2. Ceiling.  
+     (default = 120/150)
+  3. Ramp speed.  
+     (default = 1, fastest speed)
 
 For the stepped ramping mode, there are three menu options:
 
-  1. Floor.  (default = 20/150)
-  2. Ceiling.  (default = 120/150)
-  3. Number of steps.  (default = 7)
+  1. Floor.  
+     (default = 20/150)
+  2. Ceiling.  
+     (default = 120/150)
+  3. Number of steps.  
+     (default = 7)
 
 For the Simple UI mode, there are four menu options.  The first three
 are the same as stepped ramping mode.
 
-  1. Floor.  (default = 20/150)
-  2. Ceiling.  (default = 120/150)
-  3. Number of steps.  (default = 5)
-  4. Turbo style.  (default = 0, no turbo)
+  1. Floor.  
+     (default = 20/150)
+  2. Ceiling.  
+     (default = 120/150)
+  3. Number of steps.  
+     (default = 5)
+  4. Turbo style.  
+     (default = 0, no turbo)
 
 **Default values are different for each model of flashlight.  The numbers
 above are only examples.**

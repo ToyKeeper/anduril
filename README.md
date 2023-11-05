@@ -8,6 +8,7 @@ you like, such as "Flashlight" or whatever suits your mood.  FSM also means
 "Finite State Machine", which is the type of abstraction used for defining user
 interfaces.  It is like a flowchart turned into executable code.
 
+
 ## Using Anduril
 
 Anduril has many features, but the only things a person *really* needs to know
@@ -24,6 +25,7 @@ If you want to know what changed recently, check the [ChangeLog](ChangeLog.md).
 For info about hardware-specific features, like what the channel modes are on
 multi-channel lights, browse into the [hw/](hw/) directories to find the
 hardware model and any hardware-specific documentation.
+
 
 ## Flashing Firmware
 
@@ -56,6 +58,7 @@ One particularly useful guide is at https://anduril.click/ .
 
 More info about installing flashing programs is below, in
 [Flashing Programs](#flashing-programs).
+
 
 ## Compiling
 
@@ -91,12 +94,14 @@ firmwares for Hanklights with optional boost drivers.
 The compiled firmware goes into the `hex/` directory, ready to be used by any
 firmware flashing program.
 
+
 ## Customizing Settings Per User
 
 The build can be [customized per user](docs/per-user-config.md) by placing
 overrides into the `users/myname/` directory and letting the build script know
 your username.  That way, your favorite settings can be applied automatically
 without having to modify the original source files.
+
 
 ## Flashing Programs
 
@@ -120,4 +125,22 @@ pip install pymcuprog
 You'll need to `source env/bin/activate` every time you start a fresh shell,
 if you want to use pymcuprog.  The activation lasts until the shell is
 closed or until you run `deactivate`.
+
+
+## Contributing
+
+If you'd like to help, there are several ways...
+
+  - ToyKeeper has a [Patreon site](https://patreon.com/ToyKeeper) for
+    donations, to help figuratively and literally keep the lights on.
+
+  - Send pull requests or patches, to improve things directly.  These can be
+    code, documentation, tools, or anything you think is useful.
+
+  - File bug reports for any problems you find.
+
+  - Answer people's questions on public forums.  If the same questions come up
+    a lot, consider adding it to the documentation here.
+
+  - Ask manufacturers to use this firmware, and to support its development.
 
