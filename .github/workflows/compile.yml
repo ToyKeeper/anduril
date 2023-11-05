@@ -1,0 +1,33 @@
+name: anduril
+
+on:
+  push:
+    branches: [ "main", "actions" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+    - name: Requirements
+      run: |
+        sudo apt-get -qqy update
+        sudo apt-get -qqy install avr-libc binutils-avr wget gcc-avr unzip
+    - name: Install Device Family Pack
+      run: |
+        ./make dfp
+    - name: Compile All
+      run: |
+        ./bin/build-all.sh
+        echo "ARTIFACT_NAME=${GITHUB_WORKFLOW}-${GITHUB_REF_NAME}-$(git rev-parse --short ${GITHUB_SHA})-${GITHUB_RUN_NUMBER}" >> "${GITHUB_ENV}"
+    - name: Store Artifacts
+      uses: actions/upload-artifact@master
+      with:
+        name: ${{ env.ARTIFACT_NAME }}
+        if-no-files-found: error
+        path: |
+          hex/*.hex
