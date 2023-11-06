@@ -35,7 +35,7 @@ for TARGET in $( find hw/*/*/ -name "$UI".h ) ; do
   SKIP=0
   if [ ! -z "$SEARCH" ]; then
     for text in $SEARCH ; do
-        echo "$NAME $TARGET" | grep -i "$text" > /dev/null
+        echo "$NAME $TARGET" | grep -i -- "$text" > /dev/null
         if [ 0 != $? ]; then SKIP=1 ; fi
     done
   fi
