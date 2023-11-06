@@ -205,6 +205,6 @@
 // (but allow disabling this feature per build)
 #define USE_CHANNEL_PER_STROBE
 
-// Uses 8C for quick aux LED switching
-// Won't compile for lights with 8KB flash MCUs (eg, ATTINY==85) unless some other stuff is undefined
+// Enables quick aux LED switching
+// Will cause build errors for lights with only 8KB flash MCUs (eg, ATTINY==85) unless some other stuff is undefined
 // #define USE_QUICK_AUX_SWITCH
