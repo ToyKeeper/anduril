@@ -93,7 +93,7 @@ function make-docs () {
 }
 
 # go to the repo root
-BASEDIR=$(dirname $0)
+BASEDIR="$(dirname $0)/.."
 cd "$BASEDIR"
 
 # do whatever the user requested
