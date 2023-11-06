@@ -41,9 +41,16 @@ inline void set_level_aux_leds(uint8_t level) {
 #include "anduril/aux-leds.h"  // for rgb_led_voltage_readout()
 inline void set_level_aux_rgb_leds(uint8_t level) {
     if (! go_to_standby) {
+        #ifdef USE_CONFIGURABLE_RGB_VOLTAGE_LEVELS
+        if ((level > 0) && (actual_level > cfg.use_aux_rgb_leds_while_on_min_level)){
+            rgb_led_voltage_readout(level > cfg.use_aux_rgb_leds_while_on);
+        }
+        #else
         if (level > 0) {
             rgb_led_voltage_readout(level > USE_AUX_RGB_LEDS_WHILE_ON);
-        } else {
+        }
+        #endif
+        else {
             rgb_led_set(0);
         }
         // some drivers can be wired with RGB or single color to button

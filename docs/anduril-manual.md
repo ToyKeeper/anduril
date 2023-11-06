@@ -453,11 +453,22 @@ The voltage config menu has these settings:
      `12C`: +0.25V  
      `13C`: +0.30V
 
-  2. Post-off voltage display timeout.  (only on lights with RGB aux)  
+  2. Post-off voltage display timeout.  (only on lights with RGB aux)
      This setting determines how many seconds the RGB aux LEDs
      display the voltage color after the torch goes to sleep.  Click
      once per desired second, or zero times to turn this function
      off.
+
+  3. RGB voltage while on high threshold. On lights where the battery
+     voltage is displayed using RGB aux while the light is on, sets
+     the ramp level at which the aux will switch to high brightness.
+     If set to 151, this effectively forces the voltage to only ever
+     be displayed using low brightness, or if set to 0, to only ever
+     use high brightness.
+
+  4. RGB voltage while on minimum level. Below this level, voltage will
+     not be displayed using the RGB aux at all. Setting this to 151+
+     effectively disables the entire feature.
 
 ### Temperature check:
 
