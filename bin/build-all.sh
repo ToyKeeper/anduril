@@ -9,6 +9,8 @@
 if [ ! -z "$1" ]; then
   # multiple search terms with "AND"
   SEARCH=$@
+  # memes
+  [ "$1" = "me" ] && shift && shift && echo "Make your own $*." && exit 1
 fi
 
 # TODO: detect UI from $0 and/or $*
