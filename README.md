@@ -117,8 +117,8 @@ If you use `pymcuprog` to flash firmware, a few extras are needed:
 
 ```sh
 sudo apt install python3 python3-pip python3-venv
-python3 -m venv env
-source env/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 pip install pymcuprog
 ```
 
