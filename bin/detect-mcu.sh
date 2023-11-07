@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 # Anduril / FSM MCU type detection script
 # Copyright (C) 2014-2023 Selene ToyKeeper
 # SPDX-License-Identifier: GPL-3.0-or-later

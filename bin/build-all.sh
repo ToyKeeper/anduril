@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 # Anduril / FSM build wrapper script
 # Copyright (C) 2017-2023 Selene ToyKeeper
 # SPDX-License-Identifier: GPL-3.0-or-later

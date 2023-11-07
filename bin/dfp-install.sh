@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 # Atmel DFP download/install/setup script
 # Copyright (C) 2023 Selene ToyKeeper
 # SPDX-License-Identifier: GPL-3.0-or-later
