@@ -90,18 +90,20 @@ function main() {
     docker-build)
       shift
       # Cygwin is its own special case; Linux/Mac/WSL can be handled the same way
-      if [[ $(uname -a | grep -i cygwin >/dev/null) ]]
+      # shellcheck disable=SC2143
+      if [[ $(uname -a | grep -i -q cygwin) ]]
       then
-        SCRIPTPATH_CYGWIN="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+        SCRIPTPATH_CYGWIN="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 || exit ; pwd -P )"
         if [[ "${SCRIPTPATH_CYGWIN}" =~ "^/cygdrive" ]]; then
-          SRC_PATH="$(sed 's|cygdrive||' <<< \"${SCRIPTPATH_CYGWIN}\")" # e.g. /cygdrive/c/users/foo -> //c/users/foo
+          # shellcheck disable=SC2001
+          SRC_PATH="$(sed 's|cygdrive||' <<< \""${SCRIPTPATH_CYGWIN}\"")" # e.g. /cygdrive/c/users/foo -> //c/users/foo
         else
           SRC_PATH="$(cygpath -m -w /)/${SCRIPTPATH_CYGWIN}"
         fi
       else
-        SRC_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )" # Handles various edge cases better than a naive ${PWD} or $(pwd)
+        SRC_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 || exit ; pwd -P )" # Handles various edge cases better than a naive ${PWD} or $(pwd)
       fi
-      docker run --pull=true --rm -v ${SRC_PATH}:/src -it siterelenby/anduril-builder:latest ${@}
+      docker run --pull=always --rm -v "${SRC_PATH}":/src -it siterelenby/anduril-builder:latest "${@}"
       ;;
     *)
       exec ./bin/build-all.sh "$@"
