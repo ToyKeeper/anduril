@@ -15,7 +15,7 @@ TARGET=$1
 while [ -n "$TARGET" ]; do
   #echo "... $TARGET"
   if [ -f "$TARGET" ]; then  # use the dir/$UI.h file
-    ATTINY=$(grep 'ATTINY:' $TARGET | awk '{ print $3 }')
+    ATTINY=$(grep 'ATTINY:' "$TARGET" | awk '{ print $3 }')
     if [ -n "$ATTINY" ]; then
       echo "export MCUNAME=attiny${ATTINY}"
       echo "export MCU=0x${ATTINY}"
@@ -39,7 +39,7 @@ while [ -n "$TARGET" ]; do
   # move up one dir
   # if target doesn't change here, exit to avoid infinite loop
   FOO="$TARGET"
-  TARGET=$(dirname $TARGET)
+  TARGET=$(dirname "$TARGET")
   [ "$FOO" = "$TARGET" ] && exit 1
 done
 
