@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Anduril / FSM build script
 # Copyright (C) 2014-2023 Selene ToyKeeper
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -10,7 +10,7 @@ if [ "${DEBUG}" == "1" ]; then
   set -x
 fi
 
-if [ -z "$1" ]; then
+if [ 0 = "$#" ]; then
   echo "Usage: build.sh TARGET USER"
   echo "Example: build.sh hw/hank/emisar-d4/anduril.h users/myuser"
   echo "(but USER isn't implemented yet)"
@@ -18,18 +18,19 @@ if [ -z "$1" ]; then
 fi
 
 # repo root dir
-BASEDIR=$(dirname $(dirname "$0"))
+BASEDIR=$(dirname "$(dirname "$0")")
 
-TARGET=$1 ; shift
-UI=$(basename $TARGET .h)
-MODEL=$(dirname $TARGET)
+TARGET="$1" ; shift
+ARGS="$*"
+UI=$(basename "$TARGET" .h)
+MODEL=$(dirname "$TARGET")
 PROGRAM="ui/$UI/$UI"
 
 # figure out the model number
-MODEL_NUMBER=$(head -1 $MODEL/model)
+MODEL_NUMBER=$(head -1 "$MODEL/model")
 
 # figure out the MCU type and set some vars
-eval $( bin/detect-mcu.sh "$TARGET" )
+eval "$( bin/detect-mcu.sh "$TARGET" )"
 
 # detect and enable a relevant Atmel DFP
 if [[ $MCUNAME =~ "attiny" ]]; then
@@ -60,23 +61,19 @@ export LDFLAGS="-fgnu89-inline"
 export OBJCOPYFLAGS='--set-section-flags=.eeprom=alloc,load --change-section-lma .eeprom=0 --no-change-warnings -O ihex --remove-section .fuse'
 export OBJS=$PROGRAM.o
 
-OTHERFLAGS="-DCFG_H=$TARGET -DMODEL_NUMBER=\"$MODEL_NUMBER\""
-for arg in "$*" ; do
-  OTHERFLAGS="$OTHERFLAGS $arg"
-done
+OTHERFLAGS="-DCFG_H=$TARGET -DMODEL_NUMBER=\"$MODEL_NUMBER\" $ARGS"
 
 function run () {
-  #echo $1 ; shift
-  #echo $*
-  $*
-  if [ x"$?" != x0 ]; then exit 1 ; fi
+  #echo "$1" ; shift
+  #echo "$*"
+  $* || exit 1
 }
 
-run $CPP $OTHERFLAGS $CPPFLAGS -o foo.cpp $PROGRAM.c
-grep -a -E -v '^#|^$' foo.cpp > $PROGRAM.cpp ; rm foo.cpp
-run $CC $OTHERFLAGS $CFLAGS -o $PROGRAM.o -c $PROGRAM.c
-run $CC $OFLAGS $LDFLAGS -o $PROGRAM.elf $PROGRAM.o
-run $OBJCOPY $OBJCOPYFLAGS $PROGRAM.elf $PROGRAM.hex
+run "$CPP" "$OTHERFLAGS" "$CPPFLAGS" -o foo.cpp "$PROGRAM.c"
+grep -a -E -v '^#|^$' foo.cpp > "$PROGRAM.cpp" ; rm foo.cpp
+run "$CC" "$OTHERFLAGS" "$CFLAGS" -o "$PROGRAM.o" -c "$PROGRAM.c"
+run "$CC" "$OFLAGS" "$LDFLAGS" -o "$PROGRAM.elf" "$PROGRAM.o"
+run "$OBJCOPY" "$OBJCOPYFLAGS" "$PROGRAM.elf" "$PROGRAM.hex"
 # deprecated
 #run avr-size -C --mcu=$MCUNAME $PROGRAM.elf | grep Full
-run avr-objdump -Pmem-usage $PROGRAM.elf | grep -E 'Full|Device' | sed 's/^/  /;'
+run avr-objdump -Pmem-usage "$PROGRAM".elf | grep -E 'Full|Device' | sed 's/^/  /;'
