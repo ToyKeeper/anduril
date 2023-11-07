@@ -5,14 +5,18 @@
 
 // This helps abstract away the differences between various attiny MCUs.
 
-// Choose your MCU here, or in the main .c file, or in the build script
-//#define ATTINY 13
-//#define ATTINY 25
+// auto-detect eeprom size from avr-libc headers
+#ifndef EEPROM_SIZE
+    #ifdef E2SIZE
+        #define EEPROM_SIZE E2SIZE
+    #elif defined(E2END)
+        #define EEPROM_SIZE (E2END+1)
+    #endif
+#endif
 
 /******************** hardware-specific values **************************/
 #if (ATTINY == 13)
     #define F_CPU 4800000UL
-    //#define EEPSIZE 64
     #define V_REF REFS0
     #define BOGOMIPS 950
     #define ADMUX_VCC 0b00001100
@@ -22,7 +26,6 @@
 #elif (ATTINY == 25)
     // TODO: Use 6.4 MHz instead of 8 MHz?
     #define F_CPU 8000000UL
-    //#define EEPSIZE 128
     #define V_REF REFS1
     #define BOGOMIPS (F_CPU/4000)
     #define ADMUX_VCC 0b00001100
@@ -33,7 +36,6 @@
 #elif (ATTINY == 85)
     // TODO: Use 6.4 MHz instead of 8 MHz?
     #define F_CPU 8000000UL
-    //#define EEPSIZE 512
     #define V_REF REFS1
     #define BOGOMIPS (F_CPU/4000)
     // (1 << V_REF) | (0 << ADLAR) | (VCC_CHANNEL)
@@ -59,19 +61,9 @@
     #define AVRXMEGA3
     #define F_CPU 10000000UL
     #define BOGOMIPS (F_CPU/4700)
-    #define EEPSIZE 128
     #define DELAY_ZERO_TIME 1020
 #else
     #error Hey, you need to define ATTINY.
-#endif
-
-// auto-detect eeprom size from avr-libc headers
-#ifndef EEPSIZE
-#ifdef E2SIZE
-#define EEPSIZE E2SIZE
-#else
-#define EEPSIZE (E2END+1)
-#endif
 #endif
 
 

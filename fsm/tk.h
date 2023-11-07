@@ -24,3 +24,17 @@
 // use it like this:
 //#include incfile(CONFIGFILE)
 
+
+// cause a build failure if `condition` is true
+// (gcc compile trick taken from an old version of include/linux/kernel.h)
+// more info here:
+// https://scaryreasoner.wordpress.com/2009/02/28/checking-sizeof-at-compile-time/
+#define BUILD_FAIL_IF(name, condition)  \
+    __attribute__((unused)) static void name() \
+    { ((void)sizeof(char[1 - 2*!!(condition)])); }
+
+// cause a build failure if `condition` is false
+#define BUILD_ASSERT(name, condition)  \
+    __attribute__((unused)) static void name() \
+    { ((void)sizeof(char[1 - 2*!(condition)])); }
+
