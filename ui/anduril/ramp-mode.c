@@ -468,11 +468,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
     #ifdef USE_MOMENTARY_MODE
     // 5 clicks: shortcut to momentary mode
     else if (event == EV_5clicks) {
-        // Allow to use turbo in momentary mode. It is safe to overwrite
-        // memorized_level because the only way to exit momentary mode is to
-        // reboot the flashlight which restores memorized_level to the default
-        // or EEPROM (but we don't write to EEPROM here).
-        memorized_level = actual_level;
+        memorized_level = actual_level;  // allow turbo in momentary mode
         set_level(0);
         set_state(momentary_state, 0);
         return EVENT_HANDLED;
