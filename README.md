@@ -122,7 +122,7 @@ source .venv/bin/activate
 pip install pymcuprog
 ```
 
-You'll need to `source env/bin/activate` every time you start a fresh shell,
+You'll need to `source .venv/bin/activate` every time you start a fresh shell,
 if you want to use pymcuprog.  The activation lasts until the shell is
 closed or until you run `deactivate`.
 
