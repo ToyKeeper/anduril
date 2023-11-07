@@ -29,7 +29,12 @@ uint8_t tactical_state(Event event, uint16_t arg) {
                     // use ramp mode's channel
                     channel_mode = cfg.channel_mode;
                 #endif
-                off_state_set_level(lvl);
+                #ifdef USE_TACTICAL_MODE_SMOOTH_STEPS
+                if (cfg.tactical_smooth_steps) off_state_set_level(lvl);
+                else set_level(lvl);
+                #else
+                set_level(lvl);
+                #endif
             } else {  // momentary strobe mode
                 momentary_mode = 1;
                 current_strobe_type = (lvl - RAMP_SIZE - 1) % strobe_mode_END;
@@ -43,7 +48,12 @@ uint8_t tactical_state(Event event, uint16_t arg) {
             set_level(0);
             interrupt_nice_delays();  // stop animations in progress
         } else {
-            off_state_set_level(0);
+            #ifdef USE_TACTICAL_MODE_SMOOTH_STEPS
+            if (cfg.tactical_smooth_steps) off_state_set_level(0);
+            else set_level(lvl);
+            #else
+            set_level(0);
+            #endif
         }
     }
 
@@ -98,10 +108,21 @@ void tactical_config_save(uint8_t step, uint8_t value) {
     // each value is 1 to 150, or other:
     // - 1..150 is a ramp level
     // - other means "strobe mode"
-    cfg.tactical_levels[step - 1] = value;
+    if (step <= 3){
+      cfg.tactical_levels[step - 1] = value;
+    }
+    #ifdef USE_TACTICAL_MODE_SMOOTH_STEPS
+    else if (step == 4){
+      cfg.tactical_smooth_steps = value;
+    }
+    #endif
 }
 
 uint8_t tactical_config_state(Event event, uint16_t arg) {
+    #ifdef USE_TACTICAL_MODE_SMOOTH_STEPS
     return config_state_base(event, arg, 3, tactical_config_save);
+    #else
+    return config_state_base(event, arg, 4, tactical_config_save);
+    #endif
 }
 
