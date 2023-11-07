@@ -15,6 +15,10 @@ jobs:
     - name: Checkout
       uses: actions/checkout@master
 
+    - name: Stop committing version.h
+      # reject commit if version.h was changed
+      run: grep 1969-07-20 ui/anduril/version.h
+
     - name: Requirements
       run: |
         sudo apt-get -qqy update
