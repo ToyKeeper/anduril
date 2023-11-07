@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Anduril / FSM "make" script
 # Copyright (C) 2023 Selene ToyKeeper
 # SPDX-License-Identifier: GPL-3.0-or-later
