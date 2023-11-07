@@ -10,6 +10,10 @@
 # enable "**" for recursive glob (requires bash)
 shopt -s globstar
 
+if [ "${DEBUG}" == "1" ]; then
+  set -x
+fi
+
 # figure out which operation was requested
 MODE="$1"
 
@@ -19,15 +23,16 @@ Anduril make: a build helper tool for Anduril flashlight firmware
 Usage: ./make TASK
 ... where TASK is:
 
-  help            Show this help text
-  (nothing)       Compile all build targets
-  flash FILE      Flash firmare FILE to a hardware device
-  clean           Delete generated files
-  dfp             Download and install Atmel DFPs
-  docs            Convert all .md files to .html
-  models          Generate the MODELS file
-  release         Zip up all .hex files to prep for publishing a release
-  todo            Show tasks noted in source code files
+  help                 Show this help text
+  (nothing)            Compile all build targets
+  flash FILE           Flash firmare FILE to a hardware device
+  clean                Delete generated files
+  dfp                  Download and install Atmel DFPs
+  docs                 Convert all .md files to .html
+  models               Generate the MODELS file
+  release              Zip up all .hex files to prep for publishing a release
+  todo                 Show tasks noted in source code files
+  docker-build TASK    Run TASK in the Docker builder (needs working Docker)
 
 ... or TASK can be the partial name of a build target.
 
@@ -44,6 +49,8 @@ Examples:
   # Flash the Q8 firmware built in the previous command
   # (copy/paste the file path printed by the build script)
   ./make flash hex/sofirn-blf-q8.hex
+  # build d4k-3ch firmware using the Docker builder
+  ./make docker-build d4k-3ch
 ENDOFHELP
 }
 
@@ -56,6 +63,8 @@ function main() {
     clean)
       echo 'rm -vf **/*~ hex/*.hex ui/**/*.elf ui/**/*.o ui/**/*.cpp'
       rm -vf **/*~ hex/*.hex ui/**/*.elf ui/**/*.o ui/**/*.cpp
+      echo 'git checkout -- ui/anduril/version.h'
+      git checkout -- ui/anduril/version.h
       ;;
     dfp)
       shift
@@ -77,6 +86,22 @@ function main() {
       ;;
     todo)
       grep -E 'TODO:|FIXME:' **/*.[ch]
+      ;;
+    docker-build)
+      shift
+      # Cygwin is its own special case; Linux/Mac/WSL can be handled the same way
+      if [[ $(uname -a | grep -i cygwin >/dev/null) ]]
+      then
+        SCRIPTPATH_CYGWIN="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+        if [[ "${SCRIPTPATH_CYGWIN}" =~ "^/cygdrive" ]]; then
+          SRC_PATH="$(sed 's|cygdrive||' <<< \"${SCRIPTPATH_CYGWIN}\")" # e.g. /cygdrive/c/users/foo -> //c/users/foo
+        else
+          SRC_PATH="$(cygpath -m -w /)/${SCRIPTPATH_CYGWIN}"
+        fi
+      else
+        SRC_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )" # Handles various edge cases better than a naive ${PWD} or $(pwd)
+      fi
+      docker run --pull=true --rm -v ${SRC_PATH}:/src -it siterelenby/anduril-builder:latest ${@}
       ;;
     *)
       exec ./bin/build-all.sh "$@"

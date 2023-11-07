@@ -6,6 +6,10 @@
 # Usage: build-all.sh [pattern]
 # If pattern given, only build targets which match.
 
+if [ "${DEBUG}" == "1" ]; then
+  set -x
+fi
+
 if [ ! -z "$1" ]; then
   # multiple search terms with "AND"
   SEARCH=$@

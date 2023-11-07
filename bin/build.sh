@@ -6,6 +6,10 @@
 # Instead of using a Makefile, since most of the firmwares here build in the
 # same exact way, here's a script to do the same thing
 
+if [ "${DEBUG}" == "1" ]; then
+  set -x
+fi
+
 if [ -z "$1" ]; then
   echo "Usage: build.sh TARGET USER"
   echo "Example: build.sh hw/hank/emisar-d4/anduril.h users/myuser"
@@ -36,8 +40,8 @@ else
   echo "Unrecognized MCU type: '$MCUNAME'"
   exit 1
 fi
-# ensure the DFP files exist
-if [ ! -d "$DFPPATH" ]; then
+# ensure the DFP files exist. Not necessary when running in the Docker builder (which will have SKIP_DFP_INSTALL set, unless the user *wants* to install the DFPs).
+if [ ! -d "$DFPPATH" ] && [ -z "${SKIP_DFP_INSTALL}" ]; then
   echo "Atmel DFP files not found: '$DFPPATH'"
   echo "Install DFP files with './make dfp'"
   exit 1
