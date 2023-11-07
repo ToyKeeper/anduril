@@ -12,6 +12,7 @@
 // turn on the aux LEDs while main LEDs are on
 // (in case there's a RGB button)
 #define USE_AUX_RGB_LEDS_WHILE_ON  40
+#define USE_NUMBER_ENTRY_BIGNUM
 #define USE_INDICATOR_LED_WHILE_RAMPING
 
 // channel modes...
@@ -102,3 +103,4 @@
 // for consistency with KR4 (not otherwise necessary though)
 #define USE_SOFT_FACTORY_RESET
 
+#define USE_NUMBER_ENTRY_BIGNUM
