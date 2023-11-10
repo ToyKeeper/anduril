@@ -52,8 +52,11 @@ for TARGET in hw/*/*/**/"$UI".h ; do
 
   # try to compile, track result, and rename compiled files
   if bin/build.sh "$TARGET" ; then
-    mv -f "ui/$UI/$UI".hex "hex/$UI.$NAME.hex"
-    echo "  > hex/$UI.$NAME.hex"
+    HEX_OUT="hex/$UI.$NAME.hex"
+    mv -f "ui/$UI/$UI".hex "$HEX_OUT"
+    MD5=$(md5sum "$HEX_OUT" | cut -d ' ' -f 1)
+    echo "  # $MD5"
+    echo "  > $HEX_OUT"
     PASS=$((PASS + 1))
     PASSED="$PASSED $NAME"
   else
