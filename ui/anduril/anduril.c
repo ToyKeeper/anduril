@@ -34,16 +34,19 @@
  * as possible.  These are mostly "USE" flags.
  */
 
+/********* load up MCU info, like ROM size and such *********/
+#include "arch/mcu.h"
+
 /********* User-configurable options *********/
 #include "anduril/config-default.h"
 
 /********* specific settings for known driver types *********/
-// Anduril config file name (set it here or define it at the gcc command line)
-//#define CFG_H cfg-blf-q8.h
 
-#include "fsm/tk.h"
 #include incfile(CFG_H)
 
+#ifdef HWDEF_H
+#include incfile(HWDEF_H)
+#endif
 
 /********* Include headers which need to be before FSM *********/
 
@@ -77,11 +80,12 @@
 #include "fsm/spaghetti-monster.h"
 
 /********* does this build target have special code to include? *********/
-#ifdef HWDEF_C_FILE
-#include incfile(HWDEF_C_FILE)
+#ifdef CFG_C
+#include incfile(CFG_C)
 #endif
-#ifdef CFG_C_FILE
-#include incfile(CFG_C_FILE)
+
+#ifdef HWDEF_C
+#include incfile(HWDEF_C)
 #endif
 
 

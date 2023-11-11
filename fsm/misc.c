@@ -288,25 +288,3 @@ uint8_t triangle_wave(uint8_t phase) {
 }
 #endif
 
-#ifdef USE_REBOOT
-void reboot() {
-    // put the WDT in hard reset mode, then trigger it
-    cli();
-    #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
-        WDTCR = 0xD8 | WDTO_15MS;
-    #elif (ATTINY == 1634)
-        // allow protected configuration changes for next 4 clock cycles
-        CCP = 0xD8;  // magic number
-        // reset (WDIF + WDE), no WDIE, fastest (16ms) timing (0000)
-        // (DS section 8.5.2 and table 8-4)
-        WDTCSR = 0b10001000;
-    #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc
-        CCP = CCP_IOREG_gc;  // temporarily disable change protection
-        WDT.CTRLA = WDT_PERIOD_8CLK_gc;  // Enable, timeout 8ms
-    #endif
-    sei();
-    wdt_reset();
-    while (1) {}
-}
-#endif
-

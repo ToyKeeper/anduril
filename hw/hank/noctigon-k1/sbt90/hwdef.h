@@ -37,9 +37,7 @@
  * Also has a direct-drive FET for turbo.
  */
 
-#include <avr/io.h>
-
-#define HWDEF_C_FILE hank/noctigon-kr4/hwdef.c
+#define HWDEF_C  hank/noctigon-kr4/hwdef.c
 
 // allow using aux LEDs as extra channel modes
 #include "fsm/chan-rgbaux.h"
@@ -93,7 +91,7 @@ enum CHANNEL_MODES {
 #define SWITCH_PCMSK PCMSK1  // PCMSK1 is for PCINT[11:8]
 #define SWITCH_PORT  PINB    // PINA or PINB or PINC
 #define SWITCH_PUE   PUEB    // pullup group B
-#define PCINT_vect   PCINT1_vect  // ISR for PCINT[11:8]
+#define SWITCH_VECT  PCINT1_vect  // ISR for PCINT[11:8]
 
 #define USE_VOLTAGE_DIVIDER  // use a dedicated pin, not VCC, because VCC input is flattened
 #define VOLTAGE_PIN PB1      // Pin 18 / PB1 / ADC6

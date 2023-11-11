@@ -20,7 +20,7 @@
 
 // overheat protection
 #define USE_THERMAL_REGULATION
-#if (ATTINY==85) || (ATTINY==1634)
+#if (MCU==0x85) || (MCU==0x1634)
 // sloppy temperature sensor needs bigger error margin
 #define DEFAULT_THERM_CEIL 45  // try not to get hotter than this (in C)
 #else
@@ -185,7 +185,7 @@
 // if the aux LEDs oscillate between "full battery" and "empty battery"
 // while in "voltage" mode, enable this to reduce the amplitude of
 // those oscillations
-#if (ATTINY==1616) || (ATTINY==1634)
+#if (ROM_SIZE > 10000)
 #define USE_LOWPASS_WHILE_ASLEEP
 #endif
 
@@ -195,7 +195,7 @@
 
 // Use "smooth steps" to soften on/off and step changes
 // on MCUs with enough room for extra stuff like this
-#if (ATTINY==1616) || (ATTINY==1634)
+#if (ROM_SIZE > 10000)
 #define USE_SMOOTH_STEPS
 #endif
 // 0 = none, 1 = smooth, 2+ = undefined

@@ -32,9 +32,7 @@
  * The first channel also has a direct-drive FET for turbo.
  */
 
-#include <avr/io.h>
-
-#define HWDEF_C_FILE hank/emisar-2ch/fet/hwdef.c
+#define HWDEF_C  hank/emisar-2ch/fet/hwdef.c
 
 // allow using aux LEDs as extra channel modes
 #include "fsm/chan-rgbaux.h"
@@ -106,7 +104,7 @@ enum channel_modes_e {
 #define SWITCH_PCMSK PCMSK0  // PCMSK1 is for PCINT[7:0]
 #define SWITCH_PORT  PINA    // PINA or PINB or PINC
 #define SWITCH_PUE   PUEA    // pullup group A
-#define PCINT_vect   PCINT0_vect  // ISR for PCINT[7:0]
+#define SWITCH_VECT  PCINT0_vect  // ISR for PCINT[7:0]
 #endif
 
 #define USE_VOLTAGE_DIVIDER  // use a dedicated pin, not VCC, because VCC input is flattened

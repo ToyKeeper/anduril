@@ -36,9 +36,7 @@
  * IN- NFET : pull up after BST enable to eliminate startup flash, pull down otherwise
  */
 
-#include <avr/io.h>
-
-#define HWDEF_C_FILE thefreeman/boost21-mp3431-hdr-dac-argb/hwdef.c
+#define HWDEF_C  thefreeman/boost21-mp3431-hdr-dac-argb/hwdef.c
 
 // allow using aux LEDs as extra channel modes
 #include "fsm/chan-rgbaux.h"
@@ -99,8 +97,6 @@ enum CHANNEL_MODES {
 #define SWITCH_ISC_REG  PORTC.PIN3CTRL
 #define SWITCH_VECT     PORTC_PORT_vect
 #define SWITCH_INTFLG   VPORTC.INTFLAGS
-#define SWITCH_PCINT    PCINT0
-#define PCINT_vect      PCINT0_vect
 #endif
 
 // Voltage divider battLVL

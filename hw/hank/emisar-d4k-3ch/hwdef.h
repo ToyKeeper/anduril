@@ -35,9 +35,7 @@
  * So this code should support both wire layouts.
  */
 
-#include <avr/io.h>
-
-#define HWDEF_C_FILE hank/emisar-d4k-3ch/hwdef.c
+#define HWDEF_C  hank/emisar-d4k-3ch/hwdef.c
 
 // allow using aux LEDs as extra channel modes
 #include "fsm/chan-rgbaux.h"
@@ -132,7 +130,7 @@ uint8_t led4_pwm, led4_dsm;
 #define SWITCH_PCMSK PCMSK0  // PCMSK1 is for PCINT[7:0]
 #define SWITCH_PORT  PINA    // PINA or PINB or PINC
 #define SWITCH_PUE   PUEA    // pullup group A
-#define PCINT_vect   PCINT0_vect  // ISR for PCINT[7:0]
+#define SWITCH_VECT  PCINT0_vect  // ISR for PCINT[7:0]
 #endif
 
 #define USE_VOLTAGE_DIVIDER  // use a dedicated pin, not VCC, because VCC input is flattened

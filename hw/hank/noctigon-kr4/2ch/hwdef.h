@@ -30,8 +30,6 @@
  *      ADC12   thermal sensor
  */
 
-#include <avr/io.h>
-
 // move the switch to a different pin
 #define SWITCH_PIN   PB2     // pin 17
 #define SWITCH_PCINT PCINT10 // pin 17 pin change interrupt
@@ -39,7 +37,7 @@
 #define SWITCH_PCMSK PCMSK1  // PCMSK1 is for PCINT[11:8]
 #define SWITCH_PORT  PINB    // PINA or PINB or PINC
 #define SWITCH_PUE   PUEB    // pullup group B
-#define PCINT_vect   PCINT1_vect  // ISR for PCINT[11:8]
+#define SWITCH_VECT  PCINT1_vect  // ISR for PCINT[11:8]
 
 // the rest of the config is the same as the generic Emisar 2ch build
 #include "hank/emisar-2ch/hwdef.h"

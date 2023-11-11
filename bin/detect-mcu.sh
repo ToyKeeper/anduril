@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 # Anduril / FSM MCU type detection script
 # Copyright (C) 2014-2023 Selene ToyKeeper
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -30,7 +30,7 @@ while [ -n "$TARGET" ]; do
         NUM=$( echo "$MCU" | sed 's/^avr//; s/^attiny//;' )
         echo "export MCUNAME=${MCU}"
         echo "export MCU=0x${NUM}"
-        echo "export ATTINY=${NUM}"
+        [[ "$MCU" =~ "attiny" ]] && echo "export ATTINY=${NUM}"
         echo "export MCUFLAGS=\"-DMCUNAME=${MCU} -DMCU=0x${NUM} -DATTINY=${NUM}\""
         exit
       fi

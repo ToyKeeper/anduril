@@ -102,11 +102,15 @@ static inline void ADC_temperature_handler();
 #endif  // ifdef USE_THERMAL_REGULATION
 
 
-inline void ADC_on();
-inline void ADC_off();
-inline void ADC_start_measurement();
+//inline void ADC_on();
+#define ADC_on   mcu_adc_on
+//inline void ADC_off();
+#define ADC_off  mcu_adc_off
+//inline void ADC_start_measurement();
+#define ADC_start_measurement  mcu_adc_start_measurement
 
 #ifdef TICK_DURING_STANDBY
-inline void adc_sleep_mode();
+    //inline void adc_sleep_mode();
+    #define adc_sleep_mode  mcu_adc_sleep_mode
 #endif
 

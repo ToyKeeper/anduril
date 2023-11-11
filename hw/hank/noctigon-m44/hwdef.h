@@ -28,9 +28,7 @@
  *      ADC12   thermal sensor
  */
 
-#include <avr/io.h>
-
-#define HWDEF_C_FILE hank/noctigon-m44/hwdef.c
+#define HWDEF_C  hank/noctigon-m44/hwdef.c
 
 // allow using aux LEDs as extra channel modes
 #include "fsm/chan-rgbaux.h"
@@ -110,7 +108,7 @@ uint8_t ch2_pwm, ch2_dsm;
 #define SWITCH_PCMSK PCMSK0  // PCMSK0 is for PCINT[7:0]
 #define SWITCH_PORT  PINA    // PINA or PINB or PINC
 #define SWITCH_PUE   PUEA    // pullup group A
-#define PCINT_vect   PCINT0_vect  // ISR for PCINT[7:0]
+#define SWITCH_VECT  PCINT0_vect  // ISR for PCINT[7:0]
 
 #define USE_VOLTAGE_DIVIDER  // use a dedicated pin, not VCC, because VCC input is flattened
 #define VOLTAGE_PIN PB1      // Pin 18 / PB1 / ADC6

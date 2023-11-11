@@ -13,58 +13,8 @@ uint8_t button_is_pressed() {
     return value;
 }
 
-inline void PCINT_on() {
-    #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
-        // enable pin change interrupt
-        GIMSK |= (1 << PCIE);
-        // only pay attention to the e-switch pin
-        #if 0  // this is redundant; was already done in main()
-        PCMSK = (1 << SWITCH_PCINT);
-        #endif
-        // set bits 1:0 to 0b01 (interrupt on rising *and* falling edge) (default)
-        // MCUCR &= 0b11111101;  MCUCR |= 0b00000001;
-    #elif (ATTINY == 1634)
-        // enable pin change interrupt
-        #ifdef SWITCH2_PCIE
-        GIMSK |= ((1 << SWITCH_PCIE) | (1 << SWITCH2_PCIE));
-        #else
-        GIMSK |= (1 << SWITCH_PCIE);
-        #endif
-    #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc)
-        SWITCH_ISC_REG |= PORT_ISC_BOTHEDGES_gc;
-    #else
-        #error Unrecognized MCU type
-    #endif
-}
-
-inline void PCINT_off() {
-    #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
-        // disable all pin-change interrupts
-        GIMSK &= ~(1 << PCIE);
-    #elif (ATTINY == 1634)
-        // disable all pin-change interrupts
-        GIMSK &= ~(1 << SWITCH_PCIE);
-    #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc)
-        SWITCH_ISC_REG &= ~(PORT_ISC_gm);
-    #else
-        #error Unrecognized MCU type
-    #endif
-}
-
-//void button_change_interrupt() {
-#if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85) || (ATTINY == 1634)
-    #ifdef PCINT_vect
-    ISR(PCINT_vect) {
-    #else
-    ISR(PCINT0_vect) {
-    #endif
-#elif defined(AVRXMEGA3)  // ATTINY816, 817, etc)
-    ISR(SWITCH_VECT) {
-        // Write a '1' to clear the interrupt flag
-        SWITCH_INTFLG |= (1 << SWITCH_PIN);
-#else
-    #error Unrecognized MCU type
-#endif
+ISR(SWITCH_VECT) {
+    mcu_switch_vect_clear();
 
     irq_pcint = 1;  // let deferred code know an interrupt happened
 

@@ -12,9 +12,7 @@
  * Read voltage from VCC pin, has PFET so no drop
  */
 
-#include <avr/io.h>
-
-#define HWDEF_C_FILE thefreeman/lin16dac/hwdef.c
+#define HWDEF_C  thefreeman/lin16dac/hwdef.c
 
 // allow using aux LEDs as extra channel modes
 #include "fsm/chan-aux.h"

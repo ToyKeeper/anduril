@@ -12,9 +12,7 @@
  * PA1 : Boost Enable
  */
 
-#include <avr/io.h>
-
-#define HWDEF_C_FILE sofirn/sp10-pro/hwdef.c
+#define HWDEF_C  sofirn/sp10-pro/hwdef.c
 
 // channel modes:
 // * 0. low+high PWM stacked
@@ -61,8 +59,6 @@ enum CHANNEL_MODES {
 #define SWITCH_ISC_REG  PORTB.PIN3CTRL
 #define SWITCH_VECT     PORTB_PORT_vect
 #define SWITCH_INTFLG   VPORTB.INTFLAGS
-#define SWITCH_PCINT    PCINT0
-#define PCINT_vect      PCINT0_vect  // ISR for PCINT[7:0]
 
 // Voltage divider battLVL
 #define USE_VOLTAGE_DIVIDER       // use a dedicated pin, not VCC, because VCC input is regulated

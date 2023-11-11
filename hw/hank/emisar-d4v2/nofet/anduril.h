@@ -4,7 +4,7 @@
 #pragma once
 
 // switch to 1-channel support functions
-#define HWDEF_C_FILE hank/emisar-d4v2/nofet/hwdef.c
+#define HWDEF_C  hank/emisar-d4v2/nofet/hwdef.c
 
 #include "hank/emisar-d4v2/anduril.h"
 
