@@ -123,6 +123,13 @@ typedef struct Config {
         uint8_t jump_start_level;
     #endif
 
+   ///// quick aux switch saved previous modes
+   #ifdef USE_QUICK_AUX_SWITCH
+       uint8_t previous_indicator_led_mode;
+       uint8_t previous_rgb_led_off_mode;
+       uint8_t previous_rgb_led_lockout_mode;
+   #endif
+
 } Config;
 
 // auto-detect how many eeprom bytes

@@ -205,3 +205,14 @@
 // (but allow disabling this feature per build)
 #define USE_CHANNEL_PER_STROBE
 
+// Enables quick aux LED switching
+// As the added code size would cause build errors for lights with only 8KB
+//	flash MCUs (currently the ATTiny85), we define this conditionally:
+#if ATTINY != 85
+#define USE_QUICK_AUX_SWITCH
+#endif
+// The following allows ATTiny85 to build with USE_QUICK_AUX_SWITCH by removing the Simple UI
+// #if ATTINY==85
+// #undef USE_SIMPLE_UI
+// #define USE_QUICK_AUX_SWITCH
+// #endif
