@@ -118,7 +118,8 @@ uint8_t blink_num(uint8_t num) {
 #ifdef USE_INDICATOR_LED
 void indicator_led(uint8_t lvl) {
     switch (lvl) {
-        #ifdef AVRXMEGA3  // ATTINY816, 817, etc
+        // FIXME: move this logic to arch/*
+        #if (MCU==0x1616) || (MCU==0x32dd20)  // ATTINY816, 817, etc
 
         case 0:  // indicator off
             AUXLED_PORT.DIRSET = (1 << AUXLED_PIN); // set as output
@@ -192,7 +193,8 @@ void indicator_led_auto() {
 void button_led_set(uint8_t lvl) {
     switch (lvl) {
 
-        #ifdef AVRXMEGA3  // ATTINY816, 817, etc
+        // FIXME: move this logic to arch/*
+        #if (MCU==0x1616) || (MCU==0x32dd20)  // ATTINY816, 817, etc
 
         case 0:  // LED off
             BUTTON_LED_PORT.DIRSET = (1 << BUTTON_LED_PIN); // set as output
@@ -240,7 +242,8 @@ void rgb_led_set(uint8_t value) {
         uint8_t pin = pins[i];
         switch (lvl) {
 
-            #ifdef AVRXMEGA3  // ATTINY816, 817, etc
+            // FIXME: move this logic to arch/*
+            #if (MCU==0x1616) || (MCU==0x32dd20)  // ATTINY816, 817, etc
 
             case 0:  // LED off
                 AUXLED_RGB_PORT.DIRSET = (1 << pin); // set as output
