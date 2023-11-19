@@ -113,6 +113,12 @@
 // timer is available in regular ramp mode and candle mode
 #define USE_SUNSET_TIMER
 
+// optionally make gradual ticks happen faster
+// Affects: thermal regulation speed, sunset mode, maybe other features
+// (default is calibrated for 8-bit PWM,
+//  but 10-bit should set this value to 4 instead of 1)
+#define GRADUAL_ADJUST_SPEED  1
+
 
 ///// What to do when power is connected /////
 // factory reset function erases user's runtime configuration in eeprom
