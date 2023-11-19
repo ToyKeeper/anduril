@@ -94,3 +94,5 @@ inline void mcu_pcint_off();
 
 void reboot();
 
+inline void prevent_reboot_loop();
+

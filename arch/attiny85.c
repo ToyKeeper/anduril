@@ -165,3 +165,24 @@ void reboot() {
     while (1) {}
 }
 
+inline void prevent_reboot_loop() {
+    // prevent WDT from rebooting MCU again
+    MCUSR &= ~(1<<WDRF);  // reset status flag
+    wdt_disable();
+}
+
+
+#if 0  // example for one way of creating a 4th PWM channel
+// 4th PWM channel requires manually turning the pin on/off via interrupt :(
+ISR(TIMER1_OVF_vect) {
+    //bitClear(PORTB, 3);
+    PORTB &= 0b11110111;
+    //PORTB |= 0b00001000;
+}
+ISR(TIMER1_COMPA_vect) {
+    //if (!bitRead(TIFR,TOV1)) bitSet(PORTB, 3);
+    if (! (TIFR & (1<<TOV1))) PORTB |= 0b00001000;
+    //if (! (TIFR & (1<<TOV1))) PORTB &= 0b11110111;
+}
+#endif
+

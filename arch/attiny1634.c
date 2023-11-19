@@ -123,3 +123,9 @@ void reboot() {
     while (1) {}
 }
 
+inline void prevent_reboot_loop() {
+    // prevent WDT from rebooting MCU again
+    MCUSR &= ~(1<<WDRF);  // reset status flag
+    wdt_disable();
+}
+

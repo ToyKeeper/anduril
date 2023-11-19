@@ -6,46 +6,14 @@
 
 #include "fsm/main.h"
 
-#if PWM_CHANNELS == 4
-#ifdef AVRXMEGA3  // ATTINY816, 817, etc
-#error 4-channel PWM not currently set up for the AVR 1-Series
-#endif
-// 4th PWM channel requires manually turning the pin on/off via interrupt :(
-ISR(TIMER1_OVF_vect) {
-    //bitClear(PORTB, 3);
-    PORTB &= 0b11110111;
-    //PORTB |= 0b00001000;
-}
-ISR(TIMER1_COMPA_vect) {
-    //if (!bitRead(TIFR,TOV1)) bitSet(PORTB, 3);
-    if (! (TIFR & (1<<TOV1))) PORTB |= 0b00001000;
-    //if (! (TIFR & (1<<TOV1))) PORTB &= 0b11110111;
-}
-#endif
-
-
-//#ifdef USE_REBOOT
-static inline void prevent_reboot_loop() {
-    // prevent WDT from rebooting MCU again
-    #ifdef AVRXMEGA3  // ATTINY816, 817, etc
-    RSTCTRL.RSTFR &= ~(RSTCTRL_WDRF_bm);  // reset status flag
-    #else
-    MCUSR &= ~(1<<WDRF);  // reset status flag
-    #endif
-    wdt_disable();
-}
-//#endif
-
 
 int main() {
     // Don't allow interrupts while booting
     cli();
 
-    //#ifdef USE_REBOOT
     // prevents cycling after a crash,
     // whether intentional (like factory reset) or not (bugs)
     prevent_reboot_loop();
-    //#endif
 
     hwdef_setup();
 
@@ -64,6 +32,9 @@ int main() {
 
     // all booted -- turn interrupts back on
     PCINT_on();
+    // FIXME: support both WDT *and* RTC PIT on newer devices
+    // (WDT to recover from crashes, PIT for task scheduling)
+    // (old AVR had only WDT, newer ones split it into WDT, RTC, and PIT)
     WDT_on();
     ADC_on();
     sei();
@@ -100,22 +71,7 @@ int main() {
         // enter standby mode if requested
         // (works better if deferred like this)
         if (go_to_standby) {
-            #ifdef USE_RAMPING
             set_level(0);
-            #else
-            #if PWM_CHANNELS >= 1
-            PWM1_LVL = 0;
-            #endif
-            #if PWM_CHANNELS >= 2
-            PWM2_LVL = 0;
-            #endif
-            #if PWM_CHANNELS >= 3
-            PWM3_LVL = 0;
-            #endif
-            #if PWM_CHANNELS >= 4
-            PWM4_LVL = 255;  // inverted  :(
-            #endif
-            #endif
             standby_mode();
         }
 

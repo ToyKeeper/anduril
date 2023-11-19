@@ -145,3 +145,9 @@ void reboot() {
     while (1) {}
 }
 
+inline void prevent_reboot_loop() {
+    // prevent WDT from rebooting MCU again
+    RSTCTRL.RSTFR &= ~(RSTCTRL_WDRF_bm);  // reset status flag
+    wdt_disable();
+}
+
