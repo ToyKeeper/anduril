@@ -70,11 +70,13 @@ enum CHANNEL_MODES {
 #define DAC_VREF  VREF.CTRLA   // 0.55V or 2.5V
 #define PWM_TOP_INIT  255      // highest value used in top half of ramp (unused?)
 // Vref values
-#define V055  16
-#define V11   17
-#define V25   18
-#define V43   19
-#define V15   20
+// (1.1V ADC + variable DAC)
+#define V05   V055
+#define V055  (VREF_ADC0REFSEL_1V1_gc|VREF_DAC0REFSEL_0V55_gc)
+#define V11   (VREF_ADC0REFSEL_1V1_gc|VREF_DAC0REFSEL_1V1_gc)
+#define V25   (VREF_ADC0REFSEL_1V1_gc|VREF_DAC0REFSEL_2V5_gc)
+#define V43   (VREF_ADC0REFSEL_1V1_gc|VREF_DAC0REFSEL_4V34_gc)
+#define V15   (VREF_ADC0REFSEL_1V1_gc|VREF_DAC0REFSEL_1V5_gc)
 
 // BST enable
 #define BST_ENABLE_PIN   PIN0_bp
