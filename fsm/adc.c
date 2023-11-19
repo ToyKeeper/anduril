@@ -15,35 +15,20 @@
 #include <avr/sleep.h>
 
 
-static inline void set_admux_therm() {
+static inline void adc_therm_mode() {
     hwdef_set_admux_therm();
     adc_channel = 1;
     adc_sample_count = 0;  // first result is unstable
     ADC_start_measurement();
 }
 
-inline void set_admux_voltage() {
+void adc_voltage_mode() {
     hwdef_set_admux_voltage();
     adc_channel = 0;
     adc_sample_count = 0;  // first result is unstable
     ADC_start_measurement();
 }
 
-
-#ifdef TICK_DURING_STANDBY
-    // needs a special sleep mode to get accurate measurements quickly 
-    // ... full power-down ends up using more power overall, and causes 
-    // some weird issues when the MCU doesn't stay awake enough cycles 
-    // to complete a reading
-    #define adc_sleep_mode  mcu_adc_sleep_mode
-#endif
-
-#define ADC_start_measurement  mcu_adc_start_measurement
-
-// set up ADC for reading battery voltage
-#define ADC_on   mcu_adc_on
-// stop the ADC
-#define ADC_off  mcu_adc_off
 
 #ifdef USE_VOLTAGE_DIVIDER
 static inline uint8_t calc_voltage_divider(uint16_t value) {
@@ -160,7 +145,7 @@ void adc_deferred() {
         ADC_voltage_handler();
         #ifdef USE_THERMAL_REGULATION
         // set the correct type of measurement for next time
-        if (! go_to_standby) set_admux_therm();
+        if (! go_to_standby) adc_therm_mode();
         #endif
     }
     #endif
@@ -170,7 +155,7 @@ void adc_deferred() {
         ADC_temperature_handler();
         #ifdef USE_LVP
         // set the correct type of measurement for next time
-        set_admux_voltage();
+        adc_voltage_mode();
         #endif
     }
     #endif

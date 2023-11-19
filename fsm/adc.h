@@ -32,6 +32,9 @@ volatile uint8_t adc_reset = 2;
 #endif
 #endif
 
+
+void adc_voltage_mode();
+
 #ifdef TICK_DURING_STANDBY
 volatile uint8_t adc_active_now = 0;  // sleep LVP needs a different sleep mode
 #endif
@@ -103,14 +106,16 @@ static inline void ADC_temperature_handler();
 
 
 //inline void ADC_on();
-#define ADC_on   mcu_adc_on
+#define ADC_on   adc_voltage_mode
 //inline void ADC_off();
 #define ADC_off  mcu_adc_off
 //inline void ADC_start_measurement();
 #define ADC_start_measurement  mcu_adc_start_measurement
 
-#ifdef TICK_DURING_STANDBY
-    //inline void adc_sleep_mode();
-    #define adc_sleep_mode  mcu_adc_sleep_mode
-#endif
+// needs a special sleep mode to get accurate measurements quickly 
+// ... full power-down ends up using more power overall, and causes 
+// some weird issues when the MCU doesn't stay awake enough cycles 
+// to complete a reading
+//inline void adc_sleep_mode();
+#define adc_sleep_mode  mcu_adc_sleep_mode
 
