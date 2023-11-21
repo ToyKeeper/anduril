@@ -52,19 +52,19 @@ inline void mcu_set_admux_therm() {
     ADC0.SAMPCTRL = 32;
     // set single-ended or differential
     // set resolution to 12 bits
-    // set left- or right-adjust (right)
+    // set left- or right-adjust
     // set free-running mode or not (yes)
     ADC0.CTRLA = ADC_CONVMODE_SINGLEENDED_gc
                | ADC_RESSEL_12BIT_gc
-               //| ADC_LEFTADJ_bm  // not in temperature mode
+               | ADC_LEFTADJ_bm
                | ADC_FREERUN_bm;
     // set number of samples (requires adjustment in formula too)
     ADC0.CTRLB = ADC_SAMPNUM_NONE_gc;
-    // TODO: accumulate more samples for more resolution
-    // (and probably set the prescale faster too)
-    //ADC0.CTRLB = ADC_SAMPNUM_ACC16_gc;  // 16 samples per result
+    // accumulate more samples for more resolution
+    ADC0.CTRLB = ADC_SAMPNUM_ACC16_gc;  // 16 samples per result
     // set a clock prescaler
-    ADC0.CTRLC = ADC_PRESC_DIV64_gc;
+    //ADC0.CTRLC = ADC_PRESC_DIV64_gc;  // use this when no accumulation
+    ADC0.CTRLC = ADC_PRESC_DIV4_gc;  // measure faster when oversampling
     // enable the ADC
     ADC0.CTRLA |= ADC_ENABLE_bm;
     // actually start measuring (happens in another function)
@@ -90,7 +90,7 @@ inline void mcu_set_admux_voltage() {
     // set number of samples
     ADC0.CTRLB = ADC_SAMPNUM_ACC16_gc;  // 16 samples per result
     // set a clock prescaler
-    ADC0.CTRLC = ADC_PRESC_DIV16_gc;  // not too fast, not too slow
+    ADC0.CTRLC = ADC_PRESC_DIV4_gc;  // measure faster when oversampling
     // select the positive ADC input with MUXPOS
     #ifdef USE_VOLTAGE_DIVIDER  // external voltage divider
         // ADC input pin / Vref
@@ -113,11 +113,8 @@ inline void mcu_adc_sleep_mode() {
 }
 
 inline void mcu_adc_start_measurement() {
-    // FIXME: enable this after getting ADC stuff fixed
-    #if 0
     ADC0.INTCTRL |= ADC_RESRDY_bm; // enable interrupt
     ADC0.COMMAND |= ADC_STCONV_bm; // actually start measuring
-    #endif
 }
 
 /*
@@ -135,24 +132,35 @@ inline void mcu_adc_vect_clear() {
     ADC0.INTFLAGS = ADC_RESRDY_bm; // clear the interrupt
 }
 
-inline uint16_t mcu_adc_result_temp() {
-    // FIXME: better math, higher precision
-    // Use the factory calibrated values in SIGROW.TEMPSENSE0 and
-    // SIGROW.TEMPSENSE1 to calculate a temperature reading in Kelvin, then
-    // left-align it.
-    int8_t sigrow_offset = SIGROW.TEMPSENSE1;  // Read signed value from signature row
-    uint8_t sigrow_gain = SIGROW.TEMPSENSE0;  // Read unsigned value from signature row
-    uint32_t temp = ADC0.RES - sigrow_offset;
-    temp *= sigrow_gain;  // Result might overflow 16 bit variable (10bit+8bit)
-    temp += 0x80;  // Add 1/2 to get correct rounding on division below
-    //temp >>= 8;  // Divide result to get Kelvin
-    //return temp << 6;  // left align it
-    return temp >> 2;  // left-aligned uint16_t
+inline uint16_t mcu_adc_result() {
+    // value is 12-bit left-aligned + 16x oversampling = 16 bits total
+    return ADC0.RES;
 }
 
-inline uint16_t mcu_adc_result_volts() {
-    // voltage is 12-bit right-aligned + 16x oversampling = 16 bits total
-    return ADC0.RES;
+inline uint16_t mcu_vdd_raw2cooked(uint16_t measurement) {
+    // In : 65535 * (Vbat / 10) / 1.024V
+    // Out: 65535 * (Vbat / 10) / 1.024V
+    // This MCU's native format is already correct
+    return measurement;
+}
+
+inline uint16_t mcu_temp_raw2cooked(uint16_t measurement) {
+    // convert raw ADC values to calibrated temperature
+    // In: ADC raw temperature (16-bit, or 12-bit left-aligned)
+    // Out: Kelvin << 6
+    // Precision: 1/64th Kelvin (but noisy)
+    // AVR DD datasheet section 33.3.3.8
+    uint16_t sigrow_slope  = SIGROW.TEMPSENSE0;  // factory calibration data
+    uint16_t sigrow_offset = SIGROW.TEMPSENSE1;  // 12-bit value
+    //const uint32_t scaling_factor = 4096;  // use top 12 bits of ADC data
+    //uint32_t temp = sigrow_offset - (measurement >> 4);
+    const uint32_t scaling_factor = 65536;  // use all 16 bits of ADC data
+    uint32_t temp = (sigrow_offset << 4) - measurement;
+    temp *= sigrow_slope;  // 24-bit result
+    temp += scaling_factor / 8;  // Add 1/8th K to get correct rounding on later divisions
+    //temp = temp >>  6;  // change (K << 12) to (K << 6)
+    temp = temp >> 10;  // change (K << 16) to (K << 6)
+    return temp;  // left-aligned uint16_t, 0 to 1023.98 Kelvin
 }
 
 inline uint8_t mcu_adc_lsb() {

@@ -50,12 +50,21 @@ inline void mcu_adc_off();
 #define ADC_vect  ADC0_RESRDY_vect
 inline void mcu_adc_vect_clear();
 
+// both readings are left-aligned
+inline uint16_t mcu_adc_result();
+
 // read ADC differently for temperature and voltage
-#define MCU_ADC_RESULT_PER_TYPE
+//#define MCU_ADC_RESULT_PER_TYPE
+//inline uint16_t mcu_adc_result_temp();
+//inline uint16_t mcu_adc_result_volts();
 
-inline uint16_t mcu_adc_result_temp();
+// return (centiVolts << 6), range 0 to 10.24V
+#define voltage_raw2cooked  mcu_vdd_raw2cooked
+inline uint16_t mcu_vdd_raw2cooked(uint16_t measurement);
 
-inline uint16_t mcu_adc_result_volts();
+// return (temp in Kelvin << 6)
+#define temp_raw2cooked  mcu_temp_raw2cooked
+inline uint16_t mcu_temp_raw2cooked(uint16_t measurement);
 
 inline uint8_t mcu_adc_lsb();
 
