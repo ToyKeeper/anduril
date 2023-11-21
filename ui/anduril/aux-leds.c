@@ -67,7 +67,7 @@ uint8_t voltage_to_rgb() {
          12, 4, //   G+B
          13, 5, //     B
          14, 6, // R + B
-         15, 7, // R+G+B
+         16, 7, // R+G+B
          20, 0, // black
         #endif
         // li-ion voltages
