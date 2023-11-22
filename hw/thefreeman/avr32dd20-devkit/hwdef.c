@@ -104,15 +104,15 @@ bool gradual_tick_main(uint8_t gt) {
 }
 
 
-uint16_t voltage_raw2cooked(uint16_t measurement) {
-    // In : 65535 * BATTLVL pin / 1.024 Vref
-    // Out: 65535 * (Vbat / 10) / 1.024V  (i.e. FSM Volt units)
+uint8_t voltage_raw2cooked(uint16_t measurement) {
+    // In : 65535 * BATTLVL / 1.024V
+    // Out: uint8_t: Vbat * 40
     // BATTLVL = Vbat * (100.0/(330+100)) = Vbat / 4.3
-    // So, Out = In * 4.3 / 10.24
-    // (plus 1.5% based on measured hardware)
-    // (plus a fudge factor of +0.04V to round up to nearest 1/10th Volt)
-    uint16_t result = ((uint32_t)measurement * 436 / 1024)
-                    + (65535 * 4 / 1024);
+    // So, Out = In * 4.3 / 1600
+    // (plus a bit of fudging to fix the slope and offset,
+    //  based on measuring actual hardware)
+    uint8_t result = (uint32_t)(measurement + (65535 * 4 / 1024))
+                     * 43 / 16128;
     return result;
 }
 

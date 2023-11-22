@@ -58,9 +58,9 @@ inline uint16_t mcu_adc_result();
 //inline uint16_t mcu_adc_result_temp();
 //inline uint16_t mcu_adc_result_volts();
 
-// return (centiVolts << 6), range 0 to 10.24V
+// return Volts * 40, range 0 to 6.375V
 #define voltage_raw2cooked  mcu_vdd_raw2cooked
-inline uint16_t mcu_vdd_raw2cooked(uint16_t measurement);
+inline uint8_t mcu_vdd_raw2cooked(uint16_t measurement);
 
 // return (temp in Kelvin << 6)
 #define temp_raw2cooked  mcu_temp_raw2cooked

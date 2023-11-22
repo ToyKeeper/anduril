@@ -111,11 +111,11 @@ enum CHANNEL_MODES {
 // AVR datasheet table 3.1 I/O Multiplexing, PA6 ADC0 = AIN26
 #define USE_VOLTAGE_DIVIDER    // use a dedicated pin, not VCC, because VCC input is regulated
 #define ADMUX_VOLTAGE_DIVIDER  ADC_MUXPOS_AIN26_gc
-#define DUAL_VOLTAGE_FLOOR     21 // for AA/14500 boost drivers, don't indicate low voltage if below this level
-#define DUAL_VOLTAGE_LOW_LOW   7  // the lower voltage range's danger zone 0.7 volts (NiMH)
+#define DUAL_VOLTAGE_FLOOR     (4*21) // for AA/14500 boost drivers, don't indicate low voltage if below this level
+#define DUAL_VOLTAGE_LOW_LOW   (4*7)  // the lower voltage range's danger zone 0.7 volts (NiMH)
 // convert BATT LVL pin readings to FSM volt units
 #undef voltage_raw2cooked
-uint16_t voltage_raw2cooked(uint16_t measurement);
+uint8_t voltage_raw2cooked(uint16_t measurement);
 
 
 // average drop across diode on this hardware

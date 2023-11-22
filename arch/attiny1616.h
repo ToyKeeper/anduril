@@ -9,8 +9,10 @@
 ////////// clock speed / delay stuff //////////
 
 #define F_CPU  10000000UL
-#define BOGOMIPS  (F_CPU/4700)
+#define BOGOMIPS  (F_CPU/4350)
 #define DELAY_ZERO_TIME  1020
+
+inline void mcu_clock_speed();
 
 ///// clock dividers
 // this should work, but needs further validation
@@ -44,19 +46,29 @@ inline void mcu_adc_sleep_mode();
 
 inline void mcu_adc_start_measurement();
 
-inline void mcu_adc_on();
+//inline void mcu_adc_on();
 
 inline void mcu_adc_off();
 
 #define ADC_vect  ADC0_RESRDY_vect
 inline void mcu_adc_vect_clear();
 
+//// both readings are left-aligned
+//inline uint16_t mcu_adc_result();
+
 // read ADC differently for temperature and voltage
 #define MCU_ADC_RESULT_PER_TYPE
-
 inline uint16_t mcu_adc_result_temp();
-
 inline uint16_t mcu_adc_result_volts();
+
+// return Volts * 40, range 0 to 6.375V
+#define voltage_raw2cooked  mcu_vdd_raw2cooked
+inline uint8_t mcu_vdd_raw2cooked(uint16_t measurement);
+inline uint8_t mcu_vdivider_raw2cooked(uint16_t measurement);
+
+// return (temp in Kelvin << 6)
+#define temp_raw2cooked  mcu_temp_raw2cooked
+inline uint16_t mcu_temp_raw2cooked(uint16_t measurement);
 
 inline uint8_t mcu_adc_lsb();
 

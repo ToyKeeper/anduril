@@ -209,10 +209,16 @@ static inline void ADC_voltage_handler() {
     #endif
     else measurement = adc_smooth[0];
 
-    // convert raw ADC value to FSM voltage units: (V * 100) << 6
-    // 0 .. 65535 = 0.0V .. 10.24V
-    measurement = voltage_raw2cooked(measurement) / (10 << 5);
+    // convert raw ADC value to FSM voltage units: Volts * 40
+    // 0 .. 200 = 0.0V .. 5.0V
+    voltage = voltage_raw2cooked(measurement)
+              + (VOLTAGE_FUDGE_FACTOR << 1)
+              #ifdef USE_VOLTAGE_CORRECTION
+                 + ((VOLT_CORR - 7) << 1)
+              #endif
+              ;
 
+    /*
     // calculate actual voltage: volts * 10
     // TODO: should be (volts * 40) for extra precision
     voltage = (measurement + VOLTAGE_FUDGE_FACTOR
@@ -220,6 +226,7 @@ static inline void ADC_voltage_handler() {
                   + VOLT_CORR - 7
                #endif
                ) >> 1;
+    */
 
     #if 0
     // values stair-step between intervals of 64, with random variations
@@ -433,33 +440,37 @@ static inline void ADC_temperature_handler() {
 #ifdef USE_BATTCHECK
 #ifdef BATTCHECK_4bars
 PROGMEM const uint8_t voltage_blinks[] = {
-    30, 35, 38, 40, 42, 99,
+    4*30, 4*35, 4*38, 4*40, 4*42, 255,
 };
 #endif
 #ifdef BATTCHECK_6bars
 PROGMEM const uint8_t voltage_blinks[] = {
-    30, 34, 36, 38, 40, 41, 43, 99,
+    4*30, 4*34, 4*36, 4*38, 4*40, 4*41, 4*43, 255,
 };
 #endif
 #ifdef BATTCHECK_8bars
 PROGMEM const uint8_t voltage_blinks[] = {
-    30, 33, 35, 37, 38, 39, 40, 41, 42, 99,
+    4*30, 4*33, 4*35, 4*37, 4*38, 4*39, 4*40, 4*41, 4*42, 255,
 };
 #endif
 void battcheck() {
     #ifdef BATTCHECK_VpT
-    blink_num(voltage);
+        blink_num(voltage / 4);
+        #ifdef USE_EXTRA_BATTCHECK_DIGIT
+            // 0 1 2 3 --> 0 2 5 7, representing x.x00 x.x25 x.x50 x.x75
+            blink_num(((voltage % 4)<<1) + ((voltage % 4)>>1));
+        #endif
     #else
-    uint8_t i;
-    for(i=0;
-        voltage >= pgm_read_byte(voltage_blinks + i);
-        i++) {}
-    #ifdef DONT_DELAY_AFTER_BATTCHECK
-    blink_digit(i);
-    #else
-    if (blink_digit(i))
-        nice_delay_ms(1000);
-    #endif
+        uint8_t i;
+        for(i=0;
+            voltage >= pgm_read_byte(voltage_blinks + i);
+            i++) {}
+        #ifdef DONT_DELAY_AFTER_BATTCHECK
+            blink_digit(i);
+        #else
+            if (blink_digit(i))
+                nice_delay_ms(1000);
+        #endif
     #endif
 }
 #endif

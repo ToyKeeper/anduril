@@ -103,21 +103,20 @@ enum CHANNEL_MODES {
 
 // Voltage divider battLVL
 #define USE_VOLTAGE_DIVIDER       // use a dedicated pin, not VCC, because VCC input is regulated
-#define DUAL_VOLTAGE_FLOOR     21 // for AA/14500 boost drivers, don't indicate low voltage if below this level
-#define DUAL_VOLTAGE_LOW_LOW   7  // the lower voltage range's danger zone 0.7 volts (NiMH)
+#define DUAL_VOLTAGE_FLOOR     (4*21) // for AA/14500 boost drivers, don't indicate low voltage if below this level
+#define DUAL_VOLTAGE_LOW_LOW   (4*7)  // the lower voltage range's danger zone 0.7 volts (NiMH)
 #define ADMUX_VOLTAGE_DIVIDER  ADC_MUXPOS_AIN2_gc  // which ADC channel to read
+#undef voltage_raw2cooked
+#define voltage_raw2cooked  mcu_vdivider_raw2cooked
+
 
 // Raw ADC readings at 4.4V and 2.2V
 // calibrate the voltage readout here
 // estimated / calculated values are:
-//   (voltage - D1) * (R2/(R2+R1) * 1024 / 1.1)
+//   (voltage - D1) * (R2/(R2+R1) * 4096 / 1.1)
 // Resistors are 330k and 100k
-#ifndef ADC_44
-#define ADC_44 951  // raw value at 4.40V
-#endif
-#ifndef ADC_22
-#define ADC_22 476  // raw value at 2.20V
-#endif
+#define ADC_44  3810  // raw value at 4.40V
+#define ADC_22  1905  // raw value at 2.20V
 
 // this driver allows for aux LEDs under the optic
 #define AUXLED_R_PIN  PIN3_bp

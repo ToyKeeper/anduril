@@ -1,7 +1,9 @@
-// arch/avr32dd20.h: avr32dd20 support header
+// arch/avr32dd20.h: avr32dd20 support functions
 // Copyright (C) 2023 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
+
+#include "arch/avr32dd20.h"
 
 ////////// clock speed / delay stuff //////////
 
@@ -137,12 +139,22 @@ inline uint16_t mcu_adc_result() {
     return ADC0.RES;
 }
 
-inline uint16_t mcu_vdd_raw2cooked(uint16_t measurement) {
+inline uint8_t mcu_vdd_raw2cooked(uint16_t measurement) {
+    // In : 65535 * (Vbat / 10) / 1.024V
+    // Out: uint8_t: Vbat * 40
+    // (add 80 to round up near a boundary)
+    uint8_t vbat40 = (uint16_t)(measurement + 80) / 160;
+    return vbat40;
+}
+
+#if 0
+inline uint16_t mcu_vdd_raw2fine(uint16_t measurement) {
     // In : 65535 * (Vbat / 10) / 1.024V
     // Out: 65535 * (Vbat / 10) / 1.024V
     // This MCU's native format is already correct
     return measurement;
 }
+#endif
 
 inline uint16_t mcu_temp_raw2cooked(uint16_t measurement) {
     // convert raw ADC values to calibrated temperature
@@ -164,29 +176,10 @@ inline uint16_t mcu_temp_raw2cooked(uint16_t measurement) {
 }
 
 inline uint8_t mcu_adc_lsb() {
-    // temp is right-aligned, voltage is 16-bit, both have a useful LSB
+    // volts and temp are both 16-bit, so the LSB is useful as-is
     return ADC0_RESL;
 }
 
-#ifdef USE_VOLTAGE_VDD
-uint8_t calc_voltage(uint16_t measurement) {
-    // calculate actual voltage: volts * 10
-    // FIXME
-    // ADC = 1.1 * 1024 / volts
-    // volts = 1.1 * 1024 / ADC
-    result = ((uint16_t)(2*1.1*1024*10)/(measurement>>6)
-              + VOLTAGE_FUDGE_FACTOR
-              #ifdef USE_VOLTAGE_CORRECTION
-                  + VOLT_CORR - 7
-              #endif
-              ) >> 1;
-    return result;
-}
-#elif defined(USE_VOLTAGE_VDDIO2)
-#elif defined(USE_VOLTAGE_VDDIO2)
-#else
-// hwdef must supply its own function
-#endif
 
 ////////// WDT //////////
 // this uses the RTC PIT interrupt instead of WDT,
