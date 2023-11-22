@@ -87,7 +87,7 @@
 
 // UI
 
-//#define SIMPLE_UI_ACTIVE 0 // advanced UI by default
+#define SIMPLE_UI_ACTIVE 0 // advanced UI by default, because it's a dev board
 
 // allow Aux Config and Strobe Modes in Simple UI
 //#define USE_EXTENDED_SIMPLE_UI
@@ -104,6 +104,10 @@
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
+// turn on the aux LEDs while main LEDs are on
+// because this is a dev board and it's useful to see that
+#define USE_AUX_RGB_LEDS_WHILE_ON  20
+#define USE_INDICATOR_LED_WHILE_RAMPING
 
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
