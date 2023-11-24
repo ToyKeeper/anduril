@@ -29,8 +29,7 @@ inline void clock_prescale_set(uint8_t n) {
 inline void mcu_set_admux_therm() {
     // put the ADC in temperature mode
     // attiny1616 datasheet section 30.3.2.6
-    VREF.CTRLA = (VREF.CTRLA & (~VREF_ADC0REFSEL_gm))
-                 | VREF_ADC0REFSEL_1V1_gc;  // Set Vbg ref to 1.1V
+    mcu_set_adc0_vref(VREF_ADC0REFSEL_1V1_gc);  // Set Vbg ref to 1.1V
     ADC0.MUXPOS = ADC_MUXPOS_TEMPSENSE_gc;  // read temperature
     ADC0.CTRLB = ADC_SAMPNUM_ACC4_gc;  // 10-bit result + 4x oversampling
     ADC0.CTRLC = ADC_SAMPCAP_bm
@@ -46,8 +45,7 @@ inline void mcu_set_admux_voltage() {
     ADC0.CTRLD |= ADC_INITDLY_DLY16_gc;
     #ifdef USE_VOLTAGE_DIVIDER  // measure an arbitrary pin
         // result = resolution * Vdiv / 1.1V
-        VREF.CTRLA = (VREF.CTRLA & (~VREF_ADC0REFSEL_gm))
-                     | VREF_ADC0REFSEL_1V1_gc;  // Set Vbg ref to 1.1V
+        mcu_set_adc0_vref(VREF_ADC0REFSEL_1V1_gc);  // Set Vbg ref to 1.1V
         ADC0.MUXPOS = ADMUX_VOLTAGE_DIVIDER;  // read the requested ADC pin
         ADC0.CTRLB = ADC_SAMPNUM_ACC4_gc;  // 12-bit result, 4x oversampling
         ADC0.CTRLC = ADC_SAMPCAP_bm
@@ -55,8 +53,7 @@ inline void mcu_set_admux_voltage() {
                    | ADC_REFSEL_INTREF_gc; // Use internal ADC reference
     #else  // measure VDD pin
         // result = resolution * 1.5V / Vbat
-        VREF.CTRLA = (VREF.CTRLA & (~VREF_ADC0REFSEL_gm))
-                     | VREF_ADC0REFSEL_1V5_gc;  // Set Vbg ref to 1.5V
+        mcu_set_adc0_vref(VREF_ADC0REFSEL_1V5_gc);  // Set Vbg ref to 1.5V
         ADC0.MUXPOS = ADC_MUXPOS_INTREF_gc;  // read internal reference
         ADC0.CTRLB = ADC_SAMPNUM_ACC4_gc;  // 12-bit result, 4x oversampling
         ADC0.CTRLC = ADC_SAMPCAP_bm

@@ -18,6 +18,8 @@ inline void mcu_clock_speed();
 // this should work, but needs further validation
 inline void clock_prescale_set(uint8_t n);
 
+// TODO: allow hwdef to define a base clock speed,
+//       and adjust these values accordingly
 typedef enum
 {
     // Actual clock is 20 MHz, but assume that 10 MHz is the top speed and work from there
@@ -34,7 +36,29 @@ typedef enum
 } clock_div_t;
 
 
+////////// DAC controls //////////
+
+#define DAC_LVL   DAC0.DATA    // 0 to 255, for 0V to Vref
+#define DAC_VREF  VREF.CTRLA   // 0.55V, 1.1V, 1.5V, 2.5V, or 4.3V
+
+// set only the relevant bits of the Vref register
+#define mcu_set_dac_vref(x) \
+    VREF.CTRLA = x | (VREF.CTRLA & (~VREF_DAC0REFSEL_gm));
+
+// Vref values
+// (for the DAC bits, not the ADC bits)
+#define V05   V055
+#define V055  VREF_DAC0REFSEL_0V55_gc
+#define V11   VREF_DAC0REFSEL_1V1_gc
+#define V25   VREF_DAC0REFSEL_2V5_gc
+#define V43   VREF_DAC0REFSEL_4V34_gc
+#define V15   VREF_DAC0REFSEL_1V5_gc
+
 ////////// ADC voltage / temperature //////////
+
+// set only the relevant bits of the Vref register
+#define mcu_set_adc0_vref(x) \
+    VREF.CTRLA = x | (VREF.CTRLA & (~VREF_ADC0REFSEL_gm));
 
 #define hwdef_set_admux_therm  mcu_set_admux_therm
 inline void mcu_set_admux_therm();

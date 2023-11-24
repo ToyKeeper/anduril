@@ -1,5 +1,5 @@
-// thefreeman's BST21 BST20-FWxA (no button LED)
-// Copyright (C) 2023 TBD (thefreeman), Selene ToyKeeper
+// thefreeman's avr32dd20 devkit board
+// Copyright (C) 2023 thefreeman, Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -20,7 +20,6 @@
 //   - high 2.5  V
 // HDR ratio: 160
 // PWM1: DAC Data
-#if 1
 // level_calc.py 4.3287 1 150 7135 5 0.01 1400 --pwm 400000
 // top level for each "gear": 30 40 120 150
 #define PWM1_LEVELS \
@@ -36,26 +35,6 @@
 #define MAX_1x7135            40
 #define HDR_ENABLE_LEVEL_MIN  41
 #define DEFAULT_LEVEL         50
-#else
-// level_calc.py 9.21 1 150 7135 5 0.2 1400 --pwm 400000
-// (plus dac-scale.py post-processing to get values for HDR+Vref ranges)
-// top level for each "gear": 35 48 127 150
-#define PWM1_LEVELS \
-           5,  11,  18,  25,  33,  41,  50,  60,  71,  83,  96, 110, 125, 141, 158, 177, 198, 220, 244, 269, 297, 326, 358, 392, 429, 469, 511, 556, 605, 657, 713, 772, 836, 904, 976, \
-         431, 465, 501, 539, 580, 624, 670, 720, 772, 828, 887, 950,1017, \
-          16,  17,  18,  20,  21,  23,  24,  26,  27,  29,  31,  33,  35,  37,  40,  42,  45,  48,  51,  54,  57,  60,  64,  68,  72,  76,  80,  85,  90,  95, 100, 106, 112, 118, 124, 131, 138, 145, 153, 161, 170, 179, 188, 198, 208, 219, 230, 242, 254, 266, 280, 294, 308, 323, 339, 355, 373, 391, 409, 429, 449, 470, 492, 515, 539, 564, 589, 616, 644, 673, 704, 735, 768, 802, 837, 874, 912, 952, 993, \
-         424, 442, 461, 480, 501, 522, 544, 566, 590, 614, 640, 666, 693, 721, 750, 780, 811, 844, 877, 912, 948, 985,1023
-// Vref selector (V10, V20, V25, V40 = 1.024V, 2.048V, 2.5V, 4.096V)
-#define PWM2_LEVELS \
-         V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, \
-         V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, \
-         V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, \
-         V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25
-
-#define MAX_1x7135           48
-#define DEFAULT_LEVEL        48
-#define HDR_ENABLE_LEVEL_MIN 49 // when HDR FET turns ON
-#endif
 
 // no PWM, so MCU clock speed can be slow
 #define HALFSPEED_LEVEL      41

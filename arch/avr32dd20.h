@@ -30,6 +30,19 @@ typedef enum
 } clock_div_t;
 
 
+////////// DAC controls //////////
+
+// main LED outputs
+#define DAC_LVL   DAC0_DATA    // 0 to 1023, for 0V to Vref
+#define DAC_VREF  VREF_DAC0REF // 1.024V, 2.048V, 4.096V, or 2.5V
+
+// Vref values (suitable for DAC and ADC0)
+#define V10   VREF_REFSEL_1V024_gc
+#define V20   VREF_REFSEL_2V048_gc
+#define V25   VREF_REFSEL_2V500_gc
+#define V40   VREF_REFSEL_4V096_gc
+
+
 ////////// ADC voltage / temperature //////////
 
 #define hwdef_set_admux_therm  mcu_set_admux_therm

@@ -39,7 +39,7 @@
  * LVB is for OTSM firmware, not used here
  */
 
-#define HWDEF_C thefreeman/avr32dd20-devkit/hwdef.c
+#define HWDEF_C  thefreeman/avr32dd20-devkit/hwdef.c
 
 // allow using aux LEDs as extra channel modes
 #include "fsm/chan-rgbaux.h"
@@ -59,8 +59,6 @@ enum CHANNEL_MODES {
 #define CHANNEL_MODES_ENABLED 0b0000000000000001
 
 
-#define PWM_CHANNELS  1  // old, remove this
-
 #undef  GRADUAL_ADJUST_SPEED
 #define GRADUAL_ADJUST_SPEED  4
 
@@ -73,15 +71,7 @@ enum CHANNEL_MODES {
 #define PWM2_GET(l)   PWM_GET8(pwm2_levels, l)
 
 // main LED outputs
-#define DAC_LVL   DAC0_DATA    // 0 to 255, for 0V to Vref
-#define DAC_VREF  VREF_DAC0REF // 1.024V, 2.048V, 4.096V, or 2.5V
-//#define DAC_VREF  VREF.ADC0REF // 1.024V, 2.048V, 4.096V, or 2.5V
-#define PWM_TOP_INIT  255      // highest value used in top half of ramp (unused?)
-// Vref values
-#define V10   VREF_REFSEL_1V024_gc
-#define V20   VREF_REFSEL_2V048_gc
-#define V25   VREF_REFSEL_2V500_gc
-#define V40   VREF_REFSEL_4V096_gc
+// (DAC_LVL + DAC_VREF + Vref values are defined in arch/*.h)
 
 // BST enable
 #define BST_ENABLE_PIN   PIN5_bp
@@ -113,6 +103,7 @@ enum CHANNEL_MODES {
 #define ADMUX_VOLTAGE_DIVIDER  ADC_MUXPOS_AIN26_gc
 #define DUAL_VOLTAGE_FLOOR     (4*21) // for AA/14500 boost drivers, don't indicate low voltage if below this level
 #define DUAL_VOLTAGE_LOW_LOW   (4*7)  // the lower voltage range's danger zone 0.7 volts (NiMH)
+// don't use the default VDD converter
 // convert BATT LVL pin readings to FSM volt units
 #undef voltage_raw2cooked
 uint8_t voltage_raw2cooked(uint16_t measurement);
@@ -135,7 +126,8 @@ uint8_t voltage_raw2cooked(uint16_t measurement);
 
 inline void hwdef_setup() {
 
-    // TODO? for this DAC controlled-light, try to decrease the clock speed
+    // TODO: for this DAC controlled-light, try to decrease the clock speed
+    // to reduce overall system power
     mcu_clock_speed();
 
     VPORTA.DIR = PIN0_bm   // R
@@ -180,7 +172,7 @@ inline void hwdef_setup() {
     DAC_VREF = V10;
     // TODO: try DAC_RUNSTDBY_bm for extra-efficient moon
     DAC0.CTRLA = DAC_ENABLE_bm | DAC_OUTEN_bm;
-    DAC_LVL = 0; // set the output voltage  (off at boot)
+    DAC_LVL = 0;  // turn off output at boot
     // TODO: instead of enabling the DAC at boot, pull pin down
     //       to generate a zero without spending power on the DAC
     //       (and do this in set_level_zero() too)
