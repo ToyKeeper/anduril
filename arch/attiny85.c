@@ -64,14 +64,21 @@ static inline void hwdef_setup() {
 ////////// ADC voltage / temperature //////////
 
 inline void mcu_set_admux_therm() {
+    // put the ADC in temperature mode
     ADMUX = ADMUX_THERM | (1 << ADLAR);
 }
 
 inline void mcu_set_admux_voltage() {
+    // put the ADC in battery voltage measurement mode
+    // TODO: avr datasheet references
     #ifdef USE_VOLTAGE_DIVIDER  // 1.1V / pin7
         ADMUX = ADMUX_VOLTAGE_DIVIDER | (1 << ADLAR);
+        // disable digital input on divider pin to reduce power consumption
+        VOLTAGE_ADC_DIDR |= (1 << VOLTAGE_ADC);
     #else  // VCC / 1.1V reference
         ADMUX = ADMUX_VCC | (1 << ADLAR);
+        // disable digital input on VCC pin to reduce power consumption
+        //VOLTAGE_ADC_DIDR |= (1 << VOLTAGE_ADC);  // FIXME: unsure how to handle for VCC pin
     #endif
 }
 
@@ -80,29 +87,59 @@ inline void mcu_adc_sleep_mode() {
 }
 
 inline void mcu_adc_start_measurement() {
-    ADCSRA |= (1 << ADSC) | (1 << ADIE);
-}
-
-inline void mcu_adc_on() {
-    hwdef_set_admux_voltage();
-    #ifdef USE_VOLTAGE_DIVIDER
-        // disable digital input on divider pin to reduce power consumption
-        VOLTAGE_ADC_DIDR |= (1 << VOLTAGE_ADC);
-    #else
-        // disable digital input on VCC pin to reduce power consumption
-        //VOLTAGE_ADC_DIDR |= (1 << VOLTAGE_ADC);  // FIXME: unsure how to handle for VCC pin
-    #endif
-    // enable, start, auto-retrigger, prescale
-    ADCSRA = (1 << ADEN) | (1 << ADSC) | (1 << ADATE) | ADC_PRSCL;
+    ADCSRA = (1 << ADEN)   // enable
+           | (1 << ADSC)   // start
+           | (1 << ADATE)  // auto-retrigger
+           | (1 << ADIE)   // interrupt enable
+           | ADC_PRSCL;    // prescale
 }
 
 inline void mcu_adc_off() {
     ADCSRA &= ~(1<<ADEN); //ADC off
 }
 
+// left-adjusted mode:
 inline uint16_t mcu_adc_result() { return ADC; }
 
-inline uint8_t mcu_adc_lsb() { return (ADCL >> 6) + (ADCH << 2); }
+inline uint8_t mcu_vdd_raw2cooked(uint16_t measurement) {
+    // In : 65535 * 1.1 / Vbat
+    // Out: uint8_t: Vbat * 40
+    // 1.1 = ADC Vref
+    // 1024 = how much ADC resolution we're using (10 bits)
+    // (12 bits available, but it costs an extra 84 bytes of ROM to calculate)
+    uint8_t vbat40 = (uint16_t)(40 * 1.1 * 1024) / (measurement >> 6);
+    return vbat40;
+}
+
+
+#ifdef USE_VOLTAGE_DIVIDER
+inline uint8_t mcu_vdivider_raw2cooked(uint16_t measurement) {
+    // In : 4095 * Vdiv / 1.1V
+    // Out: uint8_t: Vbat * 40
+    // Vdiv = Vbat / 4.3  (typically)
+    // 1.1 = ADC Vref
+    const uint16_t adc_per_volt =
+            (((uint16_t)ADC_44 << 4) - ((uint16_t)ADC_22 << 4))
+            / (4 * (44-22));
+    uint8_t result = measurement / adc_per_volt;
+    return result;
+}
+#endif
+
+inline uint16_t mcu_temp_raw2cooked(uint16_t measurement) {
+    // convert raw ADC values to calibrated temperature
+    // In: ADC raw temperature (16-bit, or left-aligned)
+    // Out: Kelvin << 6
+    // Precision: 1/64th Kelvin (but noisy)
+    // attiny1634 datasheet section 19.12
+    // nothing to do; input value is already "cooked"
+    return measurement;
+}
+
+inline uint8_t mcu_adc_lsb() {
+    // left-adjusted mode:
+    return (ADCL >> 6) + (ADCH << 2);
+}
 
 
 ////////// WDT //////////

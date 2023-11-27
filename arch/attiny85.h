@@ -21,8 +21,6 @@
 
 ////////// default hw_setup() //////////
 
-// FIXME: fsm/main should call hwdef_setup(), not hw_setup,
-//        and this function should be hwdef_setup
 #ifdef USE_GENERIC_HWDEF_SETUP
 static inline void hwdef_setup();
 #endif
@@ -48,14 +46,21 @@ inline void mcu_adc_sleep_mode();
 
 inline void mcu_adc_start_measurement();
 
-inline void mcu_adc_on();
-
 inline void mcu_adc_off();
 
 // NOP because interrupt flag clears itself
 #define mcu_adc_vect_clear()
 
 inline uint16_t mcu_adc_result();
+
+// return Volts * 40, range 0 to 6.375V
+#define voltage_raw2cooked  mcu_vdd_raw2cooked
+inline uint8_t mcu_vdd_raw2cooked(uint16_t measurement);
+inline uint8_t mcu_vdivider_raw2cooked(uint16_t measurement);
+
+// return (temp in Kelvin << 6)
+#define temp_raw2cooked  mcu_temp_raw2cooked
+inline uint16_t mcu_temp_raw2cooked(uint16_t measurement);
 
 inline uint8_t mcu_adc_lsb();
 
