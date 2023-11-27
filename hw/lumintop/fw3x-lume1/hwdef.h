@@ -8,9 +8,9 @@
  *
  * Pin / Name / Function in Lume1 Rev B
  *   1    PA6   Regulated PWM (PWM1B)
- *   2    PA5   R: red aux LED (PWM0B)
+ *   2    PA5   B: blue aux LED (PWM0B)
  *   3    PA4   G: green aux LED
- *   4    PA3   B: blue aux LED
+ *   4    PA3   R: red aux LED
  *   5    PA2   e-switch (PCINT2)
  *   6    PA1   Jumper 1
  *   7    PA0   Jumper 2
@@ -111,16 +111,19 @@ enum CHANNEL_MODES {
 #define ADMUX_VOLTAGE_DIVIDER 0b00000101
 #define ADC_PRSCL   0x06    // clk/64
 
+#undef voltage_raw2cooked
+#define voltage_raw2cooked  mcu_vdivider_raw2cooked
+
 // Raw ADC readings at 4.4V and 2.2V
 // calibrate the voltage readout here
 // estimated / calculated values are:
 // [(Vbatt)*(R2/(R2+R1)) / 2.5V] * 1023
 // R1 = R2 = 100kR
 #ifndef ADC_44
-#define ADC_44 900
+#define ADC_44 (4*900)
 #endif
 #ifndef ADC_22
-#define ADC_22 450
+#define ADC_22 (4*450)
 #endif
 
 // Default ADMUX_THERM for Temperature is: 0b10001110 in arch/mcu.h
@@ -139,9 +142,9 @@ enum CHANNEL_MODES {
 #define EXTERN_TEMP_FORMULA(m) (((m)-205)/4.09)
 
 // this driver allows for aux LEDs under the optic
-#define AUXLED_R_PIN    PA5    // pin 2
+#define AUXLED_R_PIN    PA3    // pin 2
 #define AUXLED_G_PIN    PA4    // pin 3
-#define AUXLED_B_PIN    PA3    // pin 4
+#define AUXLED_B_PIN    PA5    // pin 4
 #define AUXLED_RGB_PORT PORTA  // PORTA or PORTB or PORTC
 #define AUXLED_RGB_DDR  DDRA   // DDRA or DDRB or DDRC
 #define AUXLED_RGB_PUE  PUEA   // PUEA or PUEB or PUEC

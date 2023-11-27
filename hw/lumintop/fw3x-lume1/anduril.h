@@ -11,7 +11,7 @@
  * - 85: https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf
  */
 
-#include "lumintop/fw3x-lume1/hwdef.h"
+#define HWDEF_H  lumintop/fw3x-lume1/hwdef.h
 
 // set this light for 50C thermal ceiling
 #undef DEFAULT_THERM_CEIL
@@ -46,11 +46,6 @@
 #undef USE_DYNAMIC_UNDERCLOCKING
 #endif
 
-// the entire ramp is regulated except turbo; don't blink halfway up
-#ifdef BLINK_AT_RAMP_MIDDLE
-#undef BLINK_AT_RAMP_MIDDLE
-#endif
-
 #define RAMP_SMOOTH_FLOOR 1
 #define RAMP_SMOOTH_CEIL 149
 // turn on BuckBoost from level 1 to 149, but not 150
@@ -59,20 +54,38 @@
 #define LED_ENABLE_PIN_LEVEL_MAX 149
 // 10 33 56 79 102 125 [149]
 #define RAMP_DISCRETE_FLOOR 10
-#define RAMP_DISCRETE_CEIL RAMP_SMOOTH_CEIL
+#define RAMP_DISCRETE_CEIL  RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 7
 
 #define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
 #define SIMPLE_UI_CEIL 120
 #define SIMPLE_UI_STEPS 5
 
+// show each channel while it scroll by in the menu
+#define USE_CONFIG_COLORS
+
+// blink numbers on the main LEDs by default (but allow user to change it)
+#define DEFAULT_BLINK_CHANNEL  CM_MAIN
+
 // slow down party strobe; this driver can't pulse for too short a time
 #define PARTY_STROBE_ONTIME 4
+
+// use aux red + aux blue for police strobe
+#define USE_POLICE_COLOR_STROBE_MODE
+#define POLICE_STROBE_USES_AUX
+#define POLICE_COLOR_STROBE_CH1        CM_AUXRED
+#define POLICE_COLOR_STROBE_CH2        CM_AUXBLU
 
 // stop panicking at ~85% regulated power or ~750 lm
 #define THERM_FASTER_LEVEL 140
 
 #define THERM_CAL_OFFSET 0  // not needed due to external sensor
+
+// don't blink while ramping
+#ifdef BLINK_AT_RAMP_MIDDLE
+#undef BLINK_AT_RAMP_MIDDLE
+#endif
+
 
 // can't reset the normal way because power is connected before the button
 #define USE_SOFT_FACTORY_RESET
