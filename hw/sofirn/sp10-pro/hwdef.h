@@ -66,16 +66,19 @@ enum CHANNEL_MODES {
 #define DUAL_VOLTAGE_LOW_LOW   (4*7)  // the lower voltage range's danger zone 0.7 volts (NiMH)
 #define ADMUX_VOLTAGE_DIVIDER  ADC_MUXPOS_AIN9_gc  // which ADC channel to read
 
+#undef voltage_raw2cooked
+#define voltage_raw2cooked  mcu_vdivider_raw2cooked
+
 // Raw ADC readings at 4.4V and 2.2V
 // calibrate the voltage readout here
 // estimated / calculated values are:
 //   (voltage - D1) * (R2/(R2+R1) * 1024 / 1.1)
 // Resistors are 300,000 and 100,000
 #ifndef ADC_44
-#define ADC_44 1023  // raw value at 4.40V
+#define ADC_44 (4*1023)  // raw value at 4.40V
 #endif
 #ifndef ADC_22
-#define ADC_22 512  // raw value at 2.20V
+#define ADC_22 (4*512)  // raw value at 2.20V
 #endif
 
 
