@@ -218,42 +218,6 @@ static inline void ADC_voltage_handler() {
               #endif
               ;
 
-    /*
-    // calculate actual voltage: volts * 10
-    // TODO: should be (volts * 40) for extra precision
-    voltage = (measurement + VOLTAGE_FUDGE_FACTOR
-               #ifdef USE_VOLTAGE_CORRECTION
-                  + VOLT_CORR - 7
-               #endif
-               ) >> 1;
-    */
-
-    #if 0
-    // values stair-step between intervals of 64, with random variations
-    // of 1 or 2 in either direction, so if we chop off the last 6 bits
-    // it'll flap between N and N-1...  but if we add half an interval,
-    // the values should be really stable after right-alignment
-    // (instead of 99.98, 100.00, and 100.02, it'll hit values like
-    //  100.48, 100.50, and 100.52...  which are stable when truncated)
-    //measurement += 32;
-    //measurement = (measurement + 16) >> 5;
-    measurement = (measurement + 16) & 0xffe0;  // 1111 1111 1110 0000
-
-    #ifdef USE_VOLTAGE_DIVIDER
-    voltage = calc_voltage_divider(measurement);
-    #else
-    // calculate actual voltage: volts * 10
-    // ADC = 1.1 * 1024 / volts
-    // volts = 1.1 * 1024 / ADC
-    voltage = ((uint16_t)(2*1.1*1024*10)/(measurement>>6)
-               + VOLTAGE_FUDGE_FACTOR
-               #ifdef USE_VOLTAGE_CORRECTION
-                  + VOLT_CORR - 7
-               #endif
-               ) >> 1;
-    #endif
-    #endif
-
     // if low, callback EV_voltage_low / EV_voltage_critical
     //         (but only if it has been more than N seconds since last call)
     if (lvp_timer) {
@@ -316,10 +280,17 @@ static inline void ADC_temperature_handler() {
     // 0 .. 65535 = 0 K .. 1024 K
     uint16_t measurement = temp_raw2cooked(adc_smooth[1]);
 
+    // let the UI see the current temperature in C
     // (Kelvin << 6) to Celsius
+    // Why 275?  Because Atmel's docs use 275 instead of 273.
     temperature = (measurement>>6) + THERM_CAL_OFFSET + (int16_t)TH_CAL - 275;
 
-    #if 0
+    // instead of (K << 6), use (K << 1) now
+    // TODO: use more precision, if it can be done without overflow in 16 bits
+    //       (and still work on attiny85 without increasing ROM size)
+    #if 1
+    measurement = measurement >> 5;
+    #else  // TODO: is this still needed?
     // values stair-step between intervals of 64, with random variations
     // of 1 or 2 in either direction, so if we chop off the last 6 bits
     // it'll flap between N and N-1...  but if we add half an interval,
@@ -329,24 +300,7 @@ static inline void ADC_temperature_handler() {
     //measurement += 32;
     measurement = (measurement + 16) >> 5;
     //measurement = (measurement + 16) & 0xffe0;  // 1111 1111 1110 0000
-
-    // let the UI see the current temperature in C
-    // Convert ADC units to Celsius (ish)
-    // FIXME: call something in arch/$mcu.h or hwdef.h
-    //        instead of calculating this here
-    #ifndef USE_EXTERNAL_TEMP_SENSOR
-    // onboard sensor for attiny25/45/85/1634
-    temperature = (measurement>>1) + THERM_CAL_OFFSET + (int16_t)TH_CAL - 275;
-    #else
-    // external sensor
-    temperature = EXTERN_TEMP_FORMULA(measurement>>1) + THERM_CAL_OFFSET + (int16_t)TH_CAL;
     #endif
-    #endif
-
-    // instead of (K << 6), use (K << 1) now
-    // TODO: use more precision, if it can be done without overflow in 16 bits
-    //       (and still work on attiny85 without increasing ROM size)
-    measurement = measurement >> 5;
 
     // how much has the temperature changed between now and a few seconds ago?
     int16_t diff;
@@ -440,17 +394,38 @@ static inline void ADC_temperature_handler() {
 #ifdef USE_BATTCHECK
 #ifdef BATTCHECK_4bars
 PROGMEM const uint8_t voltage_blinks[] = {
-    4*30, 4*35, 4*38, 4*40, 4*42, 255,
+    4*30,
+    4*35,
+    4*38,
+    4*40,
+    4*42,
+     255,
 };
 #endif
 #ifdef BATTCHECK_6bars
 PROGMEM const uint8_t voltage_blinks[] = {
-    4*30, 4*34, 4*36, 4*38, 4*40, 4*41, 4*43, 255,
+    4*30,
+    4*34,
+    4*36,
+    4*38,
+    4*40,
+    4*41,
+    4*43,
+     255,
 };
 #endif
 #ifdef BATTCHECK_8bars
 PROGMEM const uint8_t voltage_blinks[] = {
-    4*30, 4*33, 4*35, 4*37, 4*38, 4*39, 4*40, 4*41, 4*42, 255,
+    4*30,
+    4*33,
+    4*35,
+    4*37,
+    4*38,
+    4*39,
+    4*40,
+    4*41,
+    4*42,
+     255,
 };
 #endif
 void battcheck() {
