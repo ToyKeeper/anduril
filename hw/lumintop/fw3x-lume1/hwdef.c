@@ -83,10 +83,8 @@ bool gradual_tick_main(uint8_t gt) {
     // 150/150 is full FET + zero regulated,
     // 149/150 is zero FET + full regulated,
     // so don't try to gradually adjust between
-    if ((RAMP_SIZE == actual_level) || (gt >= RAMP_SIZE-1)) {
-        set_level(gt + 1);
-        return true;
-    }
+    // if target is in the top 2 levels, just let the parent handle it
+    if (gt >= RAMP_SIZE-2) return true;
 
     PWM1_DATATYPE ch1 = PWM1_GET(gt);
 
@@ -109,6 +107,8 @@ bool gradual_tick_main(uint8_t gt) {
 }
 
 ////////// external temperature sensor //////////
+
+#ifdef ADMUX_THERM_EXTERNAL_SENSOR
 
 void hwdef_set_admux_therm() {
     // put the ADC in temperature mode
@@ -139,4 +139,6 @@ uint16_t temp_raw2cooked(uint16_t measurement) {
                   + (273 << 6);  // convert back from C to K
     return k6;
 }
+
+#endif
 
