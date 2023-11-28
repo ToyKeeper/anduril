@@ -142,13 +142,15 @@ uint8_t ch1_pwm, ch1_dsm;
 // Modified fsm-adc.c to use different ADMUX and ADC_temperature_handler()
 // based on USE_EXTERNAL_TEMP_SENSOR
 // See line 34 and line 209
-#define USE_EXTERNAL_TEMP_SENSOR
-#define ADMUX_THERM_EXTERNAL_SENSOR 0b00001011  // VCC reference (2.5V), Channel PC2
-// Used for Lume1 Driver: MCP9700 - T_Celsius = 100*(VOUT - 0.5V)
-// ADC is 2.5V reference, 0 to 1023
-// FIXME: due to floating point, this calculation takes 916 extra bytes
-//        (should use an integer equivalent instead)
-#define EXTERN_TEMP_FORMULA(m) (((m)-205)/4.09)
+//#define USE_EXTERNAL_TEMP_SENSOR
+
+// override the default temperature sensor code
+#undef hwdef_set_admux_therm
+void hwdef_set_admux_therm();
+#undef temp_raw2cooked
+uint16_t temp_raw2cooked(uint16_t measurement);
+// VCC reference (2.5V), Channel PC2
+#define ADMUX_THERM_EXTERNAL_SENSOR 0b00001011
 
 // this driver allows for aux LEDs under the optic
 #define AUXLED_R_PIN    PA3    // pin 2

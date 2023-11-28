@@ -108,3 +108,35 @@ bool gradual_tick_main(uint8_t gt) {
     return false;  // not done yet
 }
 
+////////// external temperature sensor //////////
+
+void hwdef_set_admux_therm() {
+    // put the ADC in temperature mode
+    // ADCSRB: [VDEN, VDPD, -, -, ADLAR, ADTS2, ADTS1, ADTS0]
+    ADCSRB = (1 << ADLAR);  // left-adjust, free-running
+    // DS table 19-3, 19-4
+    // [refs1, refs0, refen, adc0en, mux3, mux2, mux1, mux0]
+    // refs=0b00 : VCC (2.5V)
+    // mux=0b1011 : ADC11 (pin PC2)
+    ADMUX = ADMUX_THERM_EXTERNAL_SENSOR;
+    // other stuff is already set, so no need to re-set it
+}
+
+uint16_t temp_raw2cooked(uint16_t measurement) {
+    // In: (raw ADC average) << 6
+    // Out: Kelvin << 6
+    /* notes from old versions of the code...
+    // Used for Lume1 Driver: MCP9700 - T_Celsius = 100*(VOUT - 0.5V)
+    // ADC is 2.5V reference, 0 to 1023
+    // due to floating point, this calculation takes 916 extra bytes
+    // (should use an integer equivalent instead)
+    //#define EXTERN_TEMP_FORMULA(m) (((m)-205)/4.09)
+    //int16_t celsius = (((measurement-205)/4.09)) + THERM_CAL_OFFSET + (int16_t)therm_cal_offset;
+    */
+
+    // this formula could probably be simplified... but meh, it works
+    uint16_t k6 = ((uint32_t)(measurement - (205 << 6)) * 100 / 409)
+                  + (273 << 6);  // convert back from C to K
+    return k6;
+}
+
