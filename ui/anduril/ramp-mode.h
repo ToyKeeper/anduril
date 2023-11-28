@@ -4,14 +4,15 @@
 
 #pragma once
 
-#ifndef RAMP_LENGTH
-#define RAMP_LENGTH 150  // default, if not overridden in a driver cfg file
+#ifndef RAMP_SIZE
+#define RAMP_SIZE 150  // default, if not overridden in a driver cfg file
 #endif
+
+// TODO: Replace MAX_Xx7135 with MAX_CH1, MAX_CH2, MAX_REGULATED, etc
 
 // thermal properties, if not defined per-driver
 #ifndef MIN_THERM_STEPDOWN
-// TODO: Replace MAX_Xx7135 with MAX_CH1, MAX_CH2, MAX_REGULATED, etc
-#define MIN_THERM_STEPDOWN MAX_1x7135  // lowest value it'll step down to
+#define MIN_THERM_STEPDOWN  (RAMP_SIZE/3)  // lowest value it'll step down to
 #endif
 #ifndef THERM_FASTER_LEVEL
     #ifdef MAX_Nx7135
