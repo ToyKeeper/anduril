@@ -166,7 +166,7 @@ void adc_deferred() {
 
 
 #ifdef USE_LVP
-static inline void ADC_voltage_handler() {
+static void ADC_voltage_handler() {
     // rate-limit low-voltage warnings to a max of 1 per N seconds
     static uint8_t lvp_timer = 0;
     #define LVP_TIMER_START (VOLTAGE_WARNING_SECONDS*ADC_CYCLES_PER_SECOND)  // N seconds between LVP warnings
@@ -240,7 +240,7 @@ static inline void ADC_voltage_handler() {
 
 #ifdef USE_THERMAL_REGULATION
 // generally happens once per second while awake
-static inline void ADC_temperature_handler() {
+static void ADC_temperature_handler() {
     // coarse adjustment
     #ifndef THERM_LOOKAHEAD
     #define THERM_LOOKAHEAD 4
@@ -265,15 +265,7 @@ static inline void ADC_temperature_handler() {
     static uint16_t temperature_history[NUM_TEMP_HISTORY_STEPS];
     static int8_t warning_threshold = 0;
 
-    if (adc_reset) {  // wipe out old data
-        // ignore average, use latest sample
-        uint16_t foo = adc_raw[1];
-        adc_smooth[1] = foo;
-
-        // forget any past measurements
-        for(uint8_t i=0; i<NUM_TEMP_HISTORY_STEPS; i++)
-            temperature_history[i] = (foo + 16) >> 5;
-    }
+    if (adc_reset) adc_smooth[1] = adc_raw[1];
 
     // latest 16-bit ADC reading
     // convert raw ADC value to Kelvin << 6
@@ -301,6 +293,12 @@ static inline void ADC_temperature_handler() {
     measurement = (measurement + 16) >> 5;
     //measurement = (measurement + 16) & 0xffe0;  // 1111 1111 1110 0000
     #endif
+
+    if (adc_reset) {  // wipe out old data after waking up
+        // forget any past measurements
+        for(uint8_t i=0; i<NUM_TEMP_HISTORY_STEPS; i++)
+            temperature_history[i] = measurement;
+    }
 
     // how much has the temperature changed between now and a few seconds ago?
     int16_t diff;
