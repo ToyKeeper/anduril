@@ -55,9 +55,15 @@ inline void lightning_storm_iter();
 
 // bike mode config options
 #ifdef USE_BIKE_FLASHER_MODE
-#define MAX_BIKING_LEVEL 120  // should be 127 or less
-inline void bike_flasher_iter();
-#endif
+    #if !defined(DEFAULT_BIKING_LEVEL)
+        #define DEFAULT_BIKING_LEVEL  (RAMP_SIZE/3)
+    #elif DEFAULT_BIKING_LEVEL > MAX_BIKING_LEVEL
+        #undef DEFAULT_BIKING_LEVEL
+        #define DEFAULT_BIKING_LEVEL  MAX_BIKING_LEVEL
+    #endif
+    #define MAX_BIKING_LEVEL 120  // should be 127 or less
+    inline void bike_flasher_iter();
+#endif  // ifdef USE_BIKE_FLASHER_MODE
 
 #ifdef USE_CANDLE_MODE
 #include "anduril/candle-mode.h"
