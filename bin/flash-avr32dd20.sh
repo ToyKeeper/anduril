@@ -29,7 +29,7 @@ MCUTYPE="unset"
 
 # Do the actual flashing
 echo "Flashing $MCUTYPE MCU on port $TTYUSB: $HEX"
-echo pymcuprog write \
+pymcuprog write \
     --erase \
     --verify \
     --timing \
