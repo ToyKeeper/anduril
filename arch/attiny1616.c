@@ -210,8 +210,8 @@ inline void mcu_pcint_off() {
 void reboot() {
     // put the WDT in hard reset mode, then trigger it
     cli();
-    CCP = CCP_IOREG_gc;  // temporarily disable change protection
-    WDT.CTRLA = WDT_PERIOD_8CLK_gc;  // Enable, timeout 8ms
+    // Enable, timeout 8ms
+    _PROTECTED_WRITE(WDT.CTRLA, WDT_PERIOD_8CLK_gc);
     sei();
     wdt_reset();
     while (1) {}
