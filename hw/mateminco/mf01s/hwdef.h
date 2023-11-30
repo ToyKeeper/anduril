@@ -12,9 +12,7 @@
  *           ----
  */
 
-#include <avr/io.h>
-
-#define HWDEF_C_FILE hank/emisar-d4/hwdef.c
+#define HWDEF_C  hank/emisar-d4/hwdef.c
 
 // channel modes
 // * 0. small FET + big FET stacked
@@ -69,14 +67,18 @@ enum CHANNEL_MODES {
 // 1.1V reference, no left-adjust, ADC1/PB2
 #define ADMUX_VOLTAGE_DIVIDER ((1 << V_REF) | VOLTAGE_CHANNEL)
 #endif
+
+#undef voltage_raw2cooked
+#define voltage_raw2cooked  mcu_vdivider_raw2cooked
+
 #define ADC_PRSCL   0x07    // clk/128
 
 // Raw ADC readings at 4.4V and 2.2V (in-between, we assume values form a straight line)
 #ifndef ADC_44
-#define ADC_44 (234*4)
+#define ADC_44 (234*4*4)
 #endif
 #ifndef ADC_22
-#define ADC_22 (117*4)
+#define ADC_22 (117*4*4)
 #endif
 
 #define FAST 0xA3           // fast PWM both channels

@@ -16,9 +16,7 @@
  * and its output gets PWM'd by pin 5.
  */
 
-#include <avr/io.h>
-
-#define HWDEF_C_FILE hank/emisar-d4/hwdef.c
+#define HWDEF_C  hank/emisar-d4/hwdef.c
 
 // channel modes
 // * 0. main LEDs
@@ -69,14 +67,18 @@ enum CHANNEL_MODES {
 //#define ADMUX_VOLTAGE_DIVIDER ((1 << V_REF) | (1 << ADLAR) | VOLTAGE_CHANNEL)
 // 1.1V reference, no left-adjust, ADC1/PB2
 #define ADMUX_VOLTAGE_DIVIDER ((1 << V_REF) | VOLTAGE_CHANNEL)
+
+#undef voltage_raw2cooked
+#define voltage_raw2cooked  mcu_vdivider_raw2cooked
+
 #define ADC_PRSCL   0x07    // clk/128
 
 // Raw ADC readings at 4.4V and 2.2V (in-between, we assume values form a straight line)
 #ifndef ADC_44
-#define ADC_44 (184*4)
+#define ADC_44 (184*4*4)
 #endif
 #ifndef ADC_22
-#define ADC_22 (92*4)
+#define ADC_22 (92*4*4)
 #endif
 
 #define FAST 0xA3           // fast PWM both channels

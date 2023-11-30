@@ -20,7 +20,7 @@
 
 // overheat protection
 #define USE_THERMAL_REGULATION
-#if (ATTINY==85) || (ATTINY==1634)
+#if (MCU==0x85) || (MCU==0x1634)
 // sloppy temperature sensor needs bigger error margin
 #define DEFAULT_THERM_CEIL 45  // try not to get hotter than this (in C)
 #else
@@ -113,6 +113,12 @@
 // timer is available in regular ramp mode and candle mode
 #define USE_SUNSET_TIMER
 
+// optionally make gradual ticks happen faster
+// Affects: thermal regulation speed, sunset mode, maybe other features
+// (default is calibrated for 8-bit PWM,
+//  but 10-bit should set this value to 4 instead of 1)
+#define GRADUAL_ADJUST_SPEED  1
+
 
 ///// What to do when power is connected /////
 // factory reset function erases user's runtime configuration in eeprom
@@ -137,6 +143,10 @@
 #define BATTCHECK_VpT
 //#define BATTCHECK_8bars  // FIXME: breaks build
 //#define BATTCHECK_4bars  // FIXME: breaks build
+#if ROM_SIZE > 10000
+    // battcheck displays 1.25V instead of 1.2V
+    #define USE_EXTRA_BATTCHECK_DIGIT
+#endif
 // allow the user to calibrate the voltage readings?
 // (adjust in 0.05V increments from -0.30V to +0.30V)
 // (1 = -0.30V, 2 = -0.25V, ... 7 = 0V, ... 13 = +0.30V)
@@ -185,7 +195,7 @@
 // if the aux LEDs oscillate between "full battery" and "empty battery"
 // while in "voltage" mode, enable this to reduce the amplitude of
 // those oscillations
-#if (ATTINY==1616) || (ATTINY==1634)
+#if (ROM_SIZE > 10000)
 #define USE_LOWPASS_WHILE_ASLEEP
 #endif
 
@@ -195,7 +205,7 @@
 
 // Use "smooth steps" to soften on/off and step changes
 // on MCUs with enough room for extra stuff like this
-#if (ATTINY==1616) || (ATTINY==1634)
+#if (ROM_SIZE > 10000)
 #define USE_SMOOTH_STEPS
 #endif
 // 0 = none, 1 = smooth, 2+ = undefined

@@ -12,9 +12,7 @@
  * PA1 : Boost Enable
  */
 
-#include <avr/io.h>
-
-#define HWDEF_C_FILE sofirn/sp10-pro/hwdef.c
+#define HWDEF_C  sofirn/sp10-pro/hwdef.c
 
 // channel modes:
 // * 0. low+high PWM stacked
@@ -61,14 +59,15 @@ enum CHANNEL_MODES {
 #define SWITCH_ISC_REG  PORTB.PIN3CTRL
 #define SWITCH_VECT     PORTB_PORT_vect
 #define SWITCH_INTFLG   VPORTB.INTFLAGS
-#define SWITCH_PCINT    PCINT0
-#define PCINT_vect      PCINT0_vect  // ISR for PCINT[7:0]
 
 // Voltage divider battLVL
 #define USE_VOLTAGE_DIVIDER       // use a dedicated pin, not VCC, because VCC input is regulated
-#define DUAL_VOLTAGE_FLOOR     21 // for AA/14500 boost drivers, don't indicate low voltage if below this level
-#define DUAL_VOLTAGE_LOW_LOW   7  // the lower voltage range's danger zone 0.7 volts (NiMH)
+#define DUAL_VOLTAGE_FLOOR     (4*21) // for AA/14500 boost drivers, don't indicate low voltage if below this level
+#define DUAL_VOLTAGE_LOW_LOW   (4*7)  // the lower voltage range's danger zone 0.7 volts (NiMH)
 #define ADMUX_VOLTAGE_DIVIDER  ADC_MUXPOS_AIN9_gc  // which ADC channel to read
+
+#undef voltage_raw2cooked
+#define voltage_raw2cooked  mcu_vdivider_raw2cooked
 
 // Raw ADC readings at 4.4V and 2.2V
 // calibrate the voltage readout here
@@ -76,10 +75,10 @@ enum CHANNEL_MODES {
 //   (voltage - D1) * (R2/(R2+R1) * 1024 / 1.1)
 // Resistors are 300,000 and 100,000
 #ifndef ADC_44
-#define ADC_44 1023  // raw value at 4.40V
+#define ADC_44 (4*1023)  // raw value at 4.40V
 #endif
 #ifndef ADC_22
-#define ADC_22 512  // raw value at 2.20V
+#define ADC_22 (4*512)  // raw value at 2.20V
 #endif
 
 

@@ -5,7 +5,7 @@
 
 // (and Noctigon KR1)
 // (and Emisar D4v2 E21A, a.k.a. "D4v2.5")
-#define HWDEF_C_FILE hank/noctigon-kr4/nofet/hwdef.c
+#define HWDEF_C  hank/noctigon-kr4/nofet/hwdef.c
 #include "hank/noctigon-kr4/anduril.h"
 
 // brightness w/ SST-20 4000K LEDs:

@@ -37,9 +37,7 @@
  * IN- NFET : pull up after BST enable to eliminate startup flash, pull down otherwise
  */
 
-#include <avr/io.h>
-
-#define HWDEF_C_FILE thefreeman/boost21-mp3431-hdr-dac-argb/hwdef.c
+#define HWDEF_C  thefreeman/boost21-mp3431-hdr-dac-argb/hwdef.c
 
 // allow using aux LEDs as extra channel modes
 #include "fsm/chan-rgbaux.h"
@@ -59,24 +57,16 @@ enum CHANNEL_MODES {
 #define CHANNEL_MODES_ENABLED 0b0000000000000001
 
 
-#define PWM_CHANNELS  1  // old, remove this
-
 #define PWM_BITS      8         // 8-bit DAC
-#define PWM_GET       PWM_GET8
 #define PWM_DATATYPE  uint8_t
 #define PWM_DATATYPE2 uint16_t  // only needs 32-bit if ramp values go over 255
 #define PWM1_DATATYPE uint8_t   // main LED ramp
+#define PWM1_GET(l)   PWM_GET8(pwm1_levels, l)
+#define PWM2_DATATYPE uint8_t   // DAC Vref table
+#define PWM2_GET(l)   PWM_GET8(pwm2_levels, l)
 
 // main LED outputs
-#define DAC_LVL   DAC0.DATA    // 0 to 255, for 0V to Vref
-#define DAC_VREF  VREF.CTRLA   // 0.55V or 2.5V
-#define PWM_TOP_INIT  255      // highest value used in top half of ramp (unused?)
-// Vref values
-#define V055  16
-#define V11   17
-#define V25   18
-#define V43   19
-#define V15   20
+// (DAC_LVL + DAC_VREF + Vref values are defined in arch/*.h)
 
 // BST enable
 #define BST_ENABLE_PIN   PIN0_bp
@@ -100,8 +90,6 @@ enum CHANNEL_MODES {
 #define SWITCH_ISC_REG  PORTC.PIN2CTRL
 #define SWITCH_VECT     PORTC_PORT_vect
 #define SWITCH_INTFLG   VPORTC.INTFLAGS
-#define SWITCH_PCINT    PCINT0
-#define PCINT_vect      PCINT0_vect
 #endif
 
 // average drop across diode on this hardware
@@ -127,10 +115,9 @@ enum CHANNEL_MODES {
 
 inline void hwdef_setup() {
 
-    // TODO: for this DAC controlled-light, try to decrease the clock speed or use the ULP
-    // set up the system clock to run at 10 MHz to match other attiny1616 lights
-    _PROTECTED_WRITE( CLKCTRL.MCLKCTRLB,
-                      CLKCTRL_PDIV_2X_gc | CLKCTRL_PEN_bm );
+    // TODO: for this DAC controlled-light, try to decrease the clock speed
+    // to reduce overall system power
+    mcu_clock_speed();
 
     VPORTA.DIR = PIN6_bm;  // DAC
     VPORTB.DIR = PIN1_bm   // R
@@ -167,11 +154,10 @@ inline void hwdef_setup() {
     // set up the DAC
     // https://ww1.microchip.com/downloads/en/DeviceDoc/ATtiny1614-16-17-DataSheet-DS40002204A.pdf
     // DAC ranges from 0V to (255 * Vref) / 256
-    // also VREF_DAC0REFSEL_0V55_gc and VREF_DAC0REFSEL_1V1_gc and VREF_DAC0REFSEL_2V5_gc
-    VREF.CTRLA |= VREF_DAC0REFSEL_2V5_gc;
-    VREF.CTRLB |= VREF_DAC0REFEN_bm;
-    DAC0.CTRLA = DAC_ENABLE_bm | DAC_OUTEN_bm;
-    DAC0.DATA = 255; // set the output voltage
+    mcu_set_dac_vref(V05);  // boot at lowest Vref setting
+    VREF.CTRLB |= VREF_DAC0REFEN_bm;  // enable DAC Vref
+    DAC0.CTRLA = DAC_ENABLE_bm | DAC_OUTEN_bm;  // enable DAC
+    DAC_LVL = 0;  // turn off output at boot
 
 }
 

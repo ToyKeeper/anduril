@@ -22,7 +22,7 @@ Channel channels[] = {
 
 void set_level_zero() {
     DAC_LVL  = 0;  // DAC off
-    DAC_VREF = V055;  // low Vref
+    mcu_set_dac_vref(V055);  // low Vref
     HDR_ENABLE_PORT &= ~(1 << HDR_ENABLE_PIN);  // HDR off
 
     // prevent post-off flash
@@ -50,8 +50,8 @@ void set_level_main(uint8_t level) {
     OPAMP_ENABLE_PORT |= (1 << OPAMP_ENABLE_PIN);
 
     // pre-load ramp data so it can be assigned faster later
-    PWM_DATATYPE dac_lvl  = PWM_GET(pwm1_levels, level);
-    PWM_DATATYPE dac_vref = PWM_GET(pwm_tops, level);
+    PWM1_DATATYPE dac_lvl  = PWM1_GET(level);
+    PWM2_DATATYPE dac_vref = PWM2_GET(level);
 
     // enable HDR on top half of ramp
     if (level >= (HDR_ENABLE_LEVEL_MIN-1))
@@ -69,7 +69,8 @@ void set_level_main(uint8_t level) {
     // set these in successive clock cycles to avoid getting out of sync
     // (minimizes ramp bumps when changing gears)
     DAC_LVL  = dac_lvl;
-    DAC_VREF = dac_vref;
+    mcu_set_dac_vref(dac_vref);
+
 }
 
 bool gradual_tick_main(uint8_t gt) {
@@ -77,11 +78,11 @@ bool gradual_tick_main(uint8_t gt) {
     // otherwise, simply jump to the next ramp level
     //   and let set_level() handle any gear changes
 
-    PWM_DATATYPE dac_next  = PWM_GET(pwm1_levels, gt);
-    PWM_DATATYPE vref_next = PWM_GET(pwm_tops, gt);
+    PWM1_DATATYPE dac_next  = PWM1_GET(gt);
+    PWM2_DATATYPE vref_next = PWM2_GET(gt);
 
     // different gear = full adjustment
-    if (vref_next != DAC_VREF) return true;  // let parent set_level() for us
+    if (vref_next != (DAC_VREF & VREF_DAC0REFSEL_gm)) return true;  // let parent set_level() for us
 
     // same gear = small adjustment
     GRADUAL_ADJUST_SIMPLE(dac_next, DAC_LVL);
