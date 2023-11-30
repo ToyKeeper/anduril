@@ -118,14 +118,6 @@ Config cfg = {
         .strobe_delays = { 41, 67 },
     #endif
     #ifdef USE_BIKE_FLASHER_MODE
-        #ifndef DEFAULT_BIKING_LEVEL
-            #if MAX_1x7135 > MAX_BIKING_LEVEL
-                // Make sure fallback default doesn't exceed maximum (e.g. noFET)
-                #define DEFAULT_BIKING_LEVEL MAX_BIKING_LEVEL
-            #else
-                #define DEFAULT_BIKING_LEVEL MAX_1x7135
-            #endif
-        #endif
         .bike_flasher_brightness = DEFAULT_BIKING_LEVEL,
     #endif
     #ifdef USE_BEACON_MODE
