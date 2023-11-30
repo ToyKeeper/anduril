@@ -153,9 +153,15 @@ uint16_t temp_raw2cooked(uint16_t measurement);
 #define ADMUX_THERM_EXTERNAL_SENSOR 0b00001011
 
 // this driver allows for aux LEDs under the optic
-#define AUXLED_R_PIN    PA3    // pin 2
-#define AUXLED_G_PIN    PA4    // pin 3
-#define AUXLED_B_PIN    PA5    // pin 4
+#ifdef FW3X_RGB_SWAP  // wiring fixed by end user
+    #define AUXLED_R_PIN    PA5    // pin 2
+    #define AUXLED_G_PIN    PA4    // pin 3
+    #define AUXLED_B_PIN    PA3    // pin 4
+#else  // Lumintop's factory wiring
+    #define AUXLED_R_PIN    PA3    // pin 4
+    #define AUXLED_G_PIN    PA4    // pin 3
+    #define AUXLED_B_PIN    PA5    // pin 2
+#endif
 #define AUXLED_RGB_PORT PORTA  // PORTA or PORTB or PORTC
 #define AUXLED_RGB_DDR  DDRA   // DDRA or DDRB or DDRC
 #define AUXLED_RGB_PUE  PUEA   // PUEA or PUEB or PUEC
