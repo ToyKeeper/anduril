@@ -21,9 +21,21 @@ UI=anduril
 
 mkdir -p hex
 
-# TODO: use a git tag for the version, instead of build date
-# TODO: use build/version.h instead of $UI/version.h ?
-date '+#define VERSION_NUMBER "%Y-%m-%d"' > ui/$UI/version.h
+# old: version = build date
+#date '+#define VERSION_NUMBER "%Y-%m-%d"' > ui/$UI/version.h
+
+# version = git tag + revs since + dirty flag
+REV=$(git describe --tags --dirty --abbrev=8 --match='r2*')
+# reformatting this would be easier with a perl one-liner,
+# but I'm trying to avoid extra build dependencies
+REV="${REV:1}"  # strip the leading 'r'
+# strip rev hash (git won't give "commits since tag" without the rev hash)
+REV="${REV/-g[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]/}"
+REV="${REV/-dirty/.1}"  # convert '-dirty' to '.1'
+# save the version name to version.h
+mkdir -p ".build/$UI"
+echo '#define VERSION_NUMBER "'"$REV"'"' > ".build/$UI/version.h"
+
 
 PASS=0
 FAIL=0
@@ -48,7 +60,7 @@ for TARGET in hw/*/*/**/"$UI".h ; do
   if [ 1 = $SKIP ]; then continue ; fi
 
   # announce what we're going to build
-  echo "===== $UI : $NAME ====="
+  echo "===== $UI $REV : $NAME ====="
 
   # try to compile, track result, and rename compiled files
   if bin/build.sh "$TARGET" ; then

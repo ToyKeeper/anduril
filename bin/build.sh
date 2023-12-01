@@ -49,7 +49,7 @@ export CPP=avr-cpp
 export OBJCOPY=avr-objcopy
 export DFPFLAGS="-B $DFPPATH/gcc/dev/$MCUNAME/ -I $DFPPATH/include/"
 # TODO: include $user/ first so it can override other stuff
-INCLUDES="-I ui -I hw -I. -I.. -I../.. -I../../.."
+INCLUDES="-I .build -I ui -I hw -I. -I.. -I../.. -I../../.."
 export CFLAGS="  -Wall -g -Os -mmcu=$MCUNAME -c -std=gnu99 -fgnu89-inline -fwhole-program $MCUFLAGS $INCLUDES -fshort-enums $DFPFLAGS"
 export CPPFLAGS="-Wall -g -Os -mmcu=$MCUNAME -C -std=gnu99 -fgnu89-inline -fwhole-program $MCUFLAGS $INCLUDES -fshort-enums $DFPFLAGS"
 export OFLAGS="-Wall -g -Os -mmcu=$MCUNAME -mrelax $DFPFLAGS"
