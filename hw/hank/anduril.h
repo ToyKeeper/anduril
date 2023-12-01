@@ -19,8 +19,8 @@
 // Allow 3C (or 6C) in Simple UI (toggle smooth or stepped ramping)
 #define USE_SIMPLE_UI_RAMPING_TOGGLE
 
-// allow Aux Config and Strobe Modes in Simple UI
-#define USE_EXTENDED_SIMPLE_UI
+// allow Aux Config, Strobe Modes, and Sunset Timer in Simple UI
+#define USE_EXTENDED_SIMPLE_UI 2
 
 // double click while on goes to full-power turbo, not ramp ceiling
 #define DEFAULT_2C_STYLE 1
