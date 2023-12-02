@@ -73,7 +73,7 @@ function main() {
       cat MODELS
       ;;
     release)
-      echo "Not implemented yet."
+      ./bin/make-release.sh "$@"
       ;;
     todo)
       grep -E 'TODO:|FIXME:' -- **/*.[ch] **/*.md
