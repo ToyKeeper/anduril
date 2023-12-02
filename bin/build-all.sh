@@ -88,6 +88,11 @@ function make-version-h {
     # strip rev hash (git won't give "commits since tag" without the rev hash)
     REV="${REV/-g[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]/}"
     REV="${REV/-dirty/.1}"  # convert '-dirty' to '.1'
+    # handle an empty name (happens during github action runs)
+    if [[ -z "$REV" ]]; then
+        HASH=$(git describe --always)
+        REV="0.$HASH"
+    fi
     # save the version name to version.h
     mkdir -p ".build/$UI"
     echo '#define VERSION_NUMBER "'"$REV"'"' > ".build/$UI/version.h"

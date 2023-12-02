@@ -1,10 +1,13 @@
 name: build all
 
 on:
-  push:
-    branches: [ "trunk" ]
-  pull_request:
-    branches: [ "trunk" ]
+  # all branches:
+  [ push, pull_request ]
+  # trunk only:
+  #push:
+  #  branches: [ "trunk" ]
+  #pull_request:
+  #  branches: [ "trunk" ]
 
 jobs:
   compile:
@@ -14,6 +17,10 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@master
+      # allow 'git describe' to work, by fetching tags and history
+      with:
+        fetch-depth: 0
+        fetch-tags: true
 
     - name: Stop committing version.h
       # reject commit if version.h was changed
