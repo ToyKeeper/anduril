@@ -10,6 +10,11 @@ sensor.
 LoneOceans sent a fixed driver design to Lumintop, but the new design didn't
 get produced.  So to flash firmware, swap the wires for those two pins first.
 
+**Fuses**: Lumintop seems to have shipped the FW3X with the wrong fuse values,
+so it has the MCU severely underclocked and everything runs much slower than it
+should.  Use [flash-tiny1634-fuses.sh](../../../bin/flash-tiny1634-fuses.sh) to
+fix those fuse values and get it running at the correct speed.
+
 **RGB mixup**: Lumintop seems to have swapped the wires for aux R and aux B.
 This was fixed in firmware in 2023-12, but some lights were fixed in hardware
 before that, so the firmware fix might cause the colors to be swapped again.
