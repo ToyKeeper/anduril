@@ -1,4 +1,4 @@
-#/bin/sh
+#!/usr/bin/env sh
 # 8 MHz, 64ms boot delay, enable flashing
 # (everything else disabled)
 # Use low fuse 0xD2 for 4ms startup delay,

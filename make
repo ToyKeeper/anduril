@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Anduril / FSM "make" script
 # Copyright (C) 2023 Selene ToyKeeper
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -50,12 +50,12 @@ ENDOFHELP
 # sub-command parser / dispatcher
 function main() {
   case "$MODE" in
-    -h|--help|help|/?|/h|/help)
+    -h|--help|help|/\?|/h|/help)
       help
       ;;
     clean)
-      echo 'rm -vf **/*~ hex/*.hex ui/**/*.elf ui/**/*.o ui/**/*.cpp'
-      rm -vf **/*~ hex/*.hex ui/**/*.elf ui/**/*.o ui/**/*.cpp
+      echo 'rm -vf -- **/*~ hex/*.hex ui/**/*.elf ui/**/*.o ui/**/*.cpp'
+      rm -vf -- **/*~ hex/*.hex ui/**/*.elf ui/**/*.o ui/**/*.cpp
       ;;
     dfp)
       shift
@@ -73,10 +73,10 @@ function main() {
       cat MODELS
       ;;
     release)
-      echo "Not implemented yet."
+      ./bin/make-release.sh "$@"
       ;;
     todo)
-      grep -E 'TODO:|FIXME:' **/*.[ch]
+      grep -E 'TODO:|FIXME:' -- **/*.[ch] **/*.md
       ;;
     *)
       exec ./bin/build-all.sh "$@"
@@ -86,15 +86,15 @@ function main() {
 
 function make-docs () {
   for md in **/*.md ; do
-    echo "$md"
-    html=$(echo "$md" | sed 's/.md$/.html/')
+    html=${md//.md/.html}
+    echo "$md --> $html"
     cmark-gfm "$md" > "$html"
   done
 }
 
 # go to the repo root
-BASEDIR=$(dirname $0)
-cd "$BASEDIR"
+BASEDIR=$(dirname "$0")
+cd "$BASEDIR" || (echo "Error: Can't cd to basedir." && exit 1)
 
 # do whatever the user requested
 main "$@"

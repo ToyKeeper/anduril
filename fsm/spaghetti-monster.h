@@ -13,10 +13,9 @@
  * - ...
  */
 
-#include "arch/mcu.h"
+////////// include all the .h files //////////
 
-#include <avr/eeprom.h>
-#include <avr/power.h>
+#include "arch/mcu.h"
 
 // include project definitions to help with recognizing symbols
 #include "fsm/events.h"
@@ -38,6 +37,10 @@
 #define OWN_DELAY
 #include "arch/delay.h"
 #endif
+
+////////// include all the .c files //////////
+
+#include "arch/mcu.c"
 
 #ifdef USE_DEBUG_BLINK
 #define DEBUG_FLASH PWM1_LVL = 64; delay_4ms(2); PWM1_LVL = 0;

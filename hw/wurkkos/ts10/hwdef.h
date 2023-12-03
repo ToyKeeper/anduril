@@ -13,9 +13,7 @@
  * Voltage:    VCC
  */
 
-#include <avr/io.h>
-
-#define HWDEF_C_FILE wurkkos/ts10/hwdef.c
+#define HWDEF_C  wurkkos/ts10/hwdef.c
 
 // allow using aux LEDs as extra channel modes
 #include "fsm/chan-aux.h"
@@ -60,12 +58,10 @@ enum CHANNEL_MODES {
 
 // e-switch
 #define SWITCH_PIN      PIN5_bp
-//#define SWITCH_PCINT    PCINT0
 #define SWITCH_PORT     VPORTA.IN
 #define SWITCH_ISC_REG  PORTA.PIN2CTRL
 #define SWITCH_VECT     PORTA_PORT_vect
 #define SWITCH_INTFLG   VPORTA.INTFLAGS
-//#define PCINT_vect      PCINT0_vect
 
 // average drop across diode on this hardware
 #ifndef VOLTAGE_FUDGE_FACTOR

@@ -36,12 +36,12 @@ Button presses
 
 Button presses are abbreviated using a simple notation:
 
-  - `1C`: One click.  Press and then quickly release the button.
-  - `1H`: Hold.  Press the button, but keep holding it.
-  - `2C`: Two clicks.  Press and release quickly, twice.
-  - `2H`: Click, hold.  Click two times, but hold the second press.
-  - `3C`: Three clicks.  Press and release quickly, three times.
-  - `3H`: Click, click, hold.  Click three times, but hold the final press.
+  - `1C`: **One click.**  Press and then quickly release the button.
+  - `1H`: **Hold.**  Press the button, but keep holding it.
+  - `2C`: **Two clicks.**  Press and release quickly, twice.
+  - `2H`: **Click, hold.**  Click two times, but hold the second press.
+  - `3C`: **Three clicks.**  Press and release quickly, three times.
+  - `3H`: **Click, click, hold.**  Click three times, but hold the final press.
 
 The same pattern is used with higher numbers too.  For example, `10C`
 means ten clicks...  and `10H` means ten clicks but hold the final press.

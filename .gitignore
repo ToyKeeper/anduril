@@ -1,8 +1,15 @@
+.build/
+.env/
+.venv/
+.*.swo
+.*.swp
 arch/dfp/
 env/
 hex/
 ignore/
 old/
+releases/
+venv/
 *~
 *.cpp
 *.elf
@@ -11,5 +18,3 @@ old/
 *.o
 *.old
 *.otl
-.*.swo
-.*.swp

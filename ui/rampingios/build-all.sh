@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 cp -av ../anduril/cfg-emisar*.h .
 

@@ -47,14 +47,17 @@ uint8_t momentary_state(Event event, uint16_t arg) {
         }
         else {
         #endif
+            // turn off lighted button
+            #ifdef USE_INDICATOR_LED
+                indicator_led(0);
+            #elif defined(USE_AUX_RGB_LEDS)
+                rgb_led_set(0);
+            #endif
+            #ifdef USE_BUTTON_LED
+                button_led_set(0);
+            #endif
             if (arg > TICKS_PER_SECOND*5) {  // sleep after 5 seconds
                 go_to_standby = 1;  // sleep while light is off
-                // turn off lighted button
-                #ifdef USE_INDICATOR_LED
-                indicator_led(0);
-                #elif defined(USE_AUX_RGB_LEDS)
-                rgb_led_update(0, 0);
-                #endif
             }
         #ifdef USE_STROBE_STATE
         }

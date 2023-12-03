@@ -287,7 +287,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
         static uint16_t ticks_since_adjust = 0;
         ticks_since_adjust++;
         if (diff) {
-            uint16_t ticks_per_adjust = 256;
+            uint16_t ticks_per_adjust = 256 / GRADUAL_ADJUST_SPEED;
             if (diff < 0) {
                 //diff = -diff;
                 if (actual_level > THERM_FASTER_LEVEL) {
@@ -468,6 +468,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
     #ifdef USE_MOMENTARY_MODE
     // 5 clicks: shortcut to momentary mode
     else if (event == EV_5clicks) {
+        memorized_level = actual_level;  // allow turbo in momentary mode
         set_level(0);
         set_state(momentary_state, 0);
         return EVENT_HANDLED;

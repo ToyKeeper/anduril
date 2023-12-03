@@ -10,6 +10,14 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@master
+      # allow 'git describe' to work, by fetching tags and history
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+
+    - name: Stop committing version.h
+      # reject commit if version.h was changed
+      run: grep 1969-07-20 ui/anduril/version.h
 
     - name: Requirements
       run: |

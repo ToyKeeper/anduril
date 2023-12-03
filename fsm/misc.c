@@ -118,7 +118,8 @@ uint8_t blink_num(uint8_t num) {
 #ifdef USE_INDICATOR_LED
 void indicator_led(uint8_t lvl) {
     switch (lvl) {
-        #ifdef AVRXMEGA3  // ATTINY816, 817, etc
+        // FIXME: move this logic to arch/*
+        #if (MCU==0x1616) || (MCU==0x32dd20)  // ATTINY816, 817, etc
 
         case 0:  // indicator off
             AUXLED_PORT.DIRSET = (1 << AUXLED_PIN); // set as output
@@ -192,7 +193,8 @@ void indicator_led_auto() {
 void button_led_set(uint8_t lvl) {
     switch (lvl) {
 
-        #ifdef AVRXMEGA3  // ATTINY816, 817, etc
+        // FIXME: move this logic to arch/*
+        #if (MCU==0x1616) || (MCU==0x32dd20)  // ATTINY816, 817, etc
 
         case 0:  // LED off
             BUTTON_LED_PORT.DIRSET = (1 << BUTTON_LED_PIN); // set as output
@@ -240,7 +242,8 @@ void rgb_led_set(uint8_t value) {
         uint8_t pin = pins[i];
         switch (lvl) {
 
-            #ifdef AVRXMEGA3  // ATTINY816, 817, etc
+            // FIXME: move this logic to arch/*
+            #if (MCU==0x1616) || (MCU==0x32dd20)  // ATTINY816, 817, etc
 
             case 0:  // LED off
                 AUXLED_RGB_PORT.DIRSET = (1 << pin); // set as output
@@ -285,28 +288,6 @@ uint8_t triangle_wave(uint8_t phase) {
     uint8_t result = phase << 1;
     if (phase > 127) result = 255 - result;
     return result;
-}
-#endif
-
-#ifdef USE_REBOOT
-void reboot() {
-    // put the WDT in hard reset mode, then trigger it
-    cli();
-    #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
-        WDTCR = 0xD8 | WDTO_15MS;
-    #elif (ATTINY == 1634)
-        // allow protected configuration changes for next 4 clock cycles
-        CCP = 0xD8;  // magic number
-        // reset (WDIF + WDE), no WDIE, fastest (16ms) timing (0000)
-        // (DS section 8.5.2 and table 8-4)
-        WDTCSR = 0b10001000;
-    #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc
-        CCP = CCP_IOREG_gc;  // temporarily disable change protection
-        WDT.CTRLA = WDT_PERIOD_8CLK_gc;  // Enable, timeout 8ms
-    #endif
-    sei();
-    wdt_reset();
-    while (1) {}
 }
 #endif
 

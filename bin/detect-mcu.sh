@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # Anduril / FSM MCU type detection script
 # Copyright (C) 2014-2023 Selene ToyKeeper
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -15,7 +15,7 @@ TARGET=$1
 while [ -n "$TARGET" ]; do
   #echo "... $TARGET"
   if [ -f "$TARGET" ]; then  # use the dir/$UI.h file
-    ATTINY=$(grep 'ATTINY:' $TARGET | awk '{ print $3 }')
+    ATTINY=$(grep 'ATTINY:' "$TARGET" | awk '{ print $3 }')
     if [ -n "$ATTINY" ]; then
       echo "export MCUNAME=attiny${ATTINY}"
       echo "export MCU=0x${ATTINY}"
@@ -30,7 +30,7 @@ while [ -n "$TARGET" ]; do
         NUM=$( echo "$MCU" | sed 's/^avr//; s/^attiny//;' )
         echo "export MCUNAME=${MCU}"
         echo "export MCU=0x${NUM}"
-        echo "export ATTINY=${NUM}"
+        [[ "$MCU" =~ "attiny" ]] && echo "export ATTINY=${NUM}"
         echo "export MCUFLAGS=\"-DMCUNAME=${MCU} -DMCU=0x${NUM} -DATTINY=${NUM}\""
         exit
       fi
@@ -39,7 +39,7 @@ while [ -n "$TARGET" ]; do
   # move up one dir
   # if target doesn't change here, exit to avoid infinite loop
   FOO="$TARGET"
-  TARGET=$(dirname $TARGET)
+  TARGET=$(dirname "$TARGET")
   [ "$FOO" = "$TARGET" ] && exit 1
 done
 

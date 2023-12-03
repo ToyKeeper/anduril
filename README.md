@@ -117,12 +117,12 @@ If you use `pymcuprog` to flash firmware, a few extras are needed:
 
 ```sh
 sudo apt install python3 python3-pip python3-venv
-python3 -m venv env
-source env/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 pip install pymcuprog
 ```
 
-You'll need to `source env/bin/activate` every time you start a fresh shell,
+You'll need to `source .venv/bin/activate` every time you start a fresh shell,
 if you want to use pymcuprog.  The activation lasts until the shell is
 closed or until you run `deactivate`.
 

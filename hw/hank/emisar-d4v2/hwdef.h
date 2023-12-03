@@ -28,10 +28,8 @@
  *      ADC12   thermal sensor
  */
 
-#include <avr/io.h>
-
-#ifndef HWDEF_C_FILE
-#define HWDEF_C_FILE hank/emisar-d4v2/hwdef.c
+#ifndef HWDEF_C
+#define HWDEF_C  hank/emisar-d4v2/hwdef.c
 #endif
 
 // allow using aux LEDs as extra channel modes
@@ -84,7 +82,7 @@ enum CHANNEL_MODES {
 #define SWITCH_PCMSK PCMSK0 // PCMSK0 is for PCINT[7:0]
 #define SWITCH_PORT  PINA   // PINA or PINB or PINC
 #define SWITCH_PUE   PUEA   // pullup group A
-#define PCINT_vect   PCINT0_vect  // ISR for PCINT[7:0]
+#define SWITCH_VECT  PCINT0_vect  // ISR for PCINT[7:0]
 
 
 #define ADC_PRSCL   0x07    // clk/128

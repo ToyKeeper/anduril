@@ -4,10 +4,11 @@
    which flavor of the firmware the light has installed.  
    **WRITE THIS DOWN.**
 
-2. Look up the model number in the MODELS file, to get the name and MCU type:  
-   https://toykeeper.net/torches/fsm/anduril2/MODELS
+2. Look up the model number in the [MODELS file](../MODELS),
+   to get the name and MCU type.
 
 3. Find the newest firmware for that model.  
+   https://github.com/ToyKeeper/anduril/releases  
    https://toykeeper.net/torches/fsm/anduril2/?C=M;O=D
 
 If the version doesn't include a model number, you may be able to find

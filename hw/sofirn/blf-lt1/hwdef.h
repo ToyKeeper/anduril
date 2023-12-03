@@ -12,9 +12,7 @@
  *           ----
  */
 
-#include <avr/io.h>
-
-#define HWDEF_C_FILE sofirn/blf-lt1/hwdef.c
+#define HWDEF_C  sofirn/blf-lt1/hwdef.c
 
 // channel modes:
 // * 0. channel 1 only
