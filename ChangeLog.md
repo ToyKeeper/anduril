@@ -34,6 +34,8 @@ General:
 - Upgraded **battery voltage resolution** from 0.1V steps to **0.025V** steps.
   Battery check has an extra digit which can be 0, 2, 5, or 7 (for example, for
   3.70V, 3.725V, .3.75V, and 3.775V).
+- Made Battery Check more consistent, so it's less likely to give different
+  values on the 1st and 2nd readout.
 - Re-calibrated timing on each MCU type, so a 1-second beacon flasher should be
   closer to 1 actual second now... mostly.  Timing still varies significantly
   from one light to another.
