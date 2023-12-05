@@ -80,19 +80,7 @@ function make-version-h {
     # old: version = build date
     #date '+#define VERSION_NUMBER "%Y-%m-%d"' > ui/$UI/version.h
 
-    # version = git tag + revs since + dirty flag
-    REV=$(git describe --tags --dirty --abbrev=8 --match='r2*')
-    # reformatting this would be easier with a perl one-liner,
-    # but I'm trying to avoid extra build dependencies
-    REV="${REV:1}"  # strip the leading 'r'
-    # strip rev hash (git won't give "commits since tag" without the rev hash)
-    REV="${REV/-g[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]/}"
-    REV="${REV/-dirty/.1}"  # convert '-dirty' to '.1'
-    # handle an empty name (happens during github action runs)
-    if [[ -z "$REV" ]]; then
-        HASH=$(git describe --always)
-        REV="0.$HASH"
-    fi
+    REV=$(bin/version-string.sh c)
     # save the version name to version.h
     mkdir -p ".build/$UI"
     echo '#define VERSION_NUMBER "'"$REV"'"' > ".build/$UI/version.h"
