@@ -37,12 +37,14 @@ else
   echo "Unrecognized MCU type: '$MCUNAME'"
   exit 1
 fi
-# ensure the DFP files exist
-if [ ! -d "$DFPPATH" ]; then
-  echo "Atmel DFP files not found: '$DFPPATH'"
-  echo "Install DFP files with './make dfp'"
-  exit 1
-fi
+# skip verification because newer avr-libc doesn't need DFPs,
+# so the DFP shouldn't be mandatory
+## ensure the DFP files exist
+#if [ ! -d "$DFPPATH" ]; then
+#  echo "Atmel DFP files not found: '$DFPPATH'"
+#  echo "Install DFP files with './make dfp'"
+#  exit 1
+#fi
 
 export CC=avr-gcc
 export CPP=avr-cpp
