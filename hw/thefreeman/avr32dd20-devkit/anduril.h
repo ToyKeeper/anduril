@@ -110,6 +110,7 @@
 
 #define PARTY_STROBE_ONTIME 1  // slow down party strobe
 #define STROBE_OFF_LEVEL 1  // keep the regulator chip on between pulses
+#define BLIP_LEVEL 1  // same
 
 // smoother candle mode with bigger oscillations
 #define CANDLE_AMPLITUDE 40
