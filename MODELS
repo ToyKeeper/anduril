@@ -34,9 +34,9 @@ Model     MCU         Name
 0261      attiny1634  hank-noctigon-k9.3
 0262      attiny1634  hank-noctigon-k9.3-nofet
 0263      attiny1634  hank-noctigon-k9.3-219
-0265	  attiny1634  noctigon-k9.3-tintramp-nofet  (old, use 0262)
-0266	  attiny1634  noctigon-k9.3-tintramp-fet    (old, use 0261)
-0267	  attiny1634  noctigon-k9.3-tintramp-219    (old, use 0263)
+0265      attiny1634  noctigon-k9.3-tintramp-nofet  (old, use 0262)
+0266      attiny1634  noctigon-k9.3-tintramp-fet    (old, use 0261)
+0267      attiny1634  noctigon-k9.3-tintramp-219    (old, use 0263)
 0271      attiny1634  hank-noctigon-dm11
 0272      attiny1634  hank-noctigon-dm11-nofet
 0273      attiny1634  hank-noctigon-dm11-boost
@@ -69,9 +69,9 @@ Model     MCU         Name
 0632      attiny1616  sofirn-sc21-pro
 0713      attiny1616  wurkkos-ts10-rgbaux
 0714      attiny1616  wurkkos-ts10
-0715      attiny1616  wurkkos-ts25
-0716      attiny1616  wurkkos-fc13
-0717      attiny1616  wurkkos-ts11
+0715      attiny1616  wurkkos-ts25 (may need 0716 / 0717 on some models)
+0716      attiny1616  wurkkos-fc13 (may ship with 0715) (also, TS30S Pro)
+0717      attiny1616  wurkkos-ts11 (may ship with 0715)
 1618      attiny1616  gchart-fet1-t1616
 1630      attiny1616  thefreeman-lin16dac
 1631      attiny1616  thefreeman-boost21-mp3431-hdr-dac-argb
