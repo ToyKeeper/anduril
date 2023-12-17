@@ -62,7 +62,3 @@ void rgb_led_set(uint8_t value);
 uint8_t triangle_wave(uint8_t phase);
 #endif
 
-#ifdef USE_REBOOT
-void reboot();
-#endif
-

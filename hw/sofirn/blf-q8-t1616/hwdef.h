@@ -15,11 +15,9 @@
  * Voltage:    VCC
  */
 
-#include <avr/io.h>
-
 // nearly all t1616-based FET+1 drivers work pretty much the same
 // (this one has single-color aux like the TS10)
-#define HWDEF_C_FILE wurkkos/ts10/hwdef.c
+#define HWDEF_C  wurkkos/ts10/hwdef.c
 
 // allow using aux LEDs as extra channel modes
 #include "fsm/chan-aux.h"

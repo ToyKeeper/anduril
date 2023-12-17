@@ -1,3 +1,4 @@
+.build/
 .env/
 .venv/
 .*.swo
@@ -7,6 +8,7 @@ env/
 hex/
 ignore/
 old/
+releases/
 venv/
 *~
 *.cpp

@@ -31,6 +31,7 @@ Usage: ./make TASK
   docs                 Convert all .md files to .html
   models               Generate the MODELS file
   release              Zip up all .hex files to prep for publishing a release
+  version              Show the current version string
   todo                 Show tasks noted in source code files
   docker-build TASK    Run TASK in the Docker builder (needs working Docker)
 
@@ -82,7 +83,10 @@ function main() {
       cat MODELS
       ;;
     release)
-      echo "Not implemented yet."
+      ./bin/make-release.sh "$@"
+      ;;
+    version)
+      ./bin/version-string.sh "$@"
       ;;
     todo)
       grep -E 'TODO:|FIXME:' -- **/*.[ch] **/*.md

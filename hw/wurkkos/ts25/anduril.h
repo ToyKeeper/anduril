@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "wurkkos/ts25/hwdef.h"
+//#include "wurkkos/ts25/hwdef.h"
+#define HWDEF_H  wurkkos/ts25/hwdef.h
 #include "wurkkos/anduril.h"
 
 // this light has three aux LED channels: R, G, B

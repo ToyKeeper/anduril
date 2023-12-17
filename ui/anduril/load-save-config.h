@@ -118,7 +118,7 @@ Config cfg = {
         .strobe_delays = { 41, 67 },
     #endif
     #ifdef USE_BIKE_FLASHER_MODE
-        .bike_flasher_brightness = MAX_1x7135,
+        .bike_flasher_brightness = DEFAULT_BIKING_LEVEL,
     #endif
     #ifdef USE_BEACON_MODE
         // beacon timing

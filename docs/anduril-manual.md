@@ -36,12 +36,12 @@ Button presses
 
 Button presses are abbreviated using a simple notation:
 
-  - `1C`: One click.  Press and then quickly release the button.
-  - `1H`: Hold.  Press the button, but keep holding it.
-  - `2C`: Two clicks.  Press and release quickly, twice.
-  - `2H`: Click, hold.  Click two times, but hold the second press.
-  - `3C`: Three clicks.  Press and release quickly, three times.
-  - `3H`: Click, click, hold.  Click three times, but hold the final press.
+  - `1C`: **One click.**  Press and then quickly release the button.
+  - `1H`: **Hold.**  Press the button, but keep holding it.
+  - `2C`: **Two clicks.**  Press and release quickly, twice.
+  - `2H`: **Click, hold.**  Click two times, but hold the second press.
+  - `3C`: **Three clicks.**  Press and release quickly, three times.
+  - `3H`: **Click, click, hold.**  Click three times, but hold the final press.
 
 The same pattern is used with higher numbers too.  For example, `10C`
 means ten clicks...  and `10H` means ten clicks but hold the final press.
@@ -728,26 +728,63 @@ Version Check Mode
 ------------------
 
 This allows people to see which version of the firmware is installed on
-their light.  The format for this is (usually) 12 digits -- a model
-number and a date.  `BBPP.YYYY-MM-DD`
+their light.  The format for this is usually a model number and a date.
+`MODEL.YYYY-MM-DD`
 
-  - `BB`: Brand ID
-  - `PP`: Product ID
+  - `MODEL`: Model number  
+     (usually `BBPP` where BB is the brand ID, and PP is the product ID)
   - `YYYY`: Year
   - `MM`: Month
   - `DD`: Day
 
-Versions before 2023-05-30 used `YYYYMMDDBBPP` format.
-Anduril 1 used only `YYYYMMDD` format, or none at all.
+The version number format has changed a few times, so write down the version
+info and check it against the formats below.
 
-The date is when the firmware was compiled.  If the vendor did not set
-this value, it defaults to 1969-07-20, the date of first human contact
-with the moon.  However, it might not be a date at all; some vendors may
-specify a completely different type of value here.
+The model number is very important when flashing new firmware.  Make sure
+the new firmware has the same model number as the old firmware.  More details
+on this are in [Which Hex File](which-hex-file.md).  Use the
+[MODELS](../MODELS) file to map a model number to the name of a .hex file.
 
-The brand/product values are also known as the model number.  These are
-hard-coded in the source code for each light's build target, and can be
-looked up in the "MODELS" file or by using the "make models" command.
+## Version Check Formats
+
+The Version Check function should blink out a series of numbers in one of
+several formats:
+
+ - `MODEL-YYYY-MM-DD-SINCE-DIRTY`
+   Anduril 2 from 2023-12 or later.  "SINCE" and "DIRTY" may be omitted.
+   Punctuation makes a "buzz" between sections.
+   - `MODEL`: model number
+   - `YYYY-MM-DD`: Year, month, day.  This uses the most recent release tag
+     from git, not the build date.
+   - `SINCE`: How many commits since the last official release tag?
+   - `DIRTY`: Adds a "-1" to the end if the repository was locally modified
+     without committing changes.
+
+ - `NNNN-YYYY-MM-DD`
+   Anduril 2 from 2023-05 or later.  
+   It's a model number and build date,
+   with "buzz" flashes between sections.
+   - `NNNN`: model number
+   - `YYYY`: year
+   - `MM`: month
+   - `DD`: day
+
+ - `YYYYMMDDNNNN`
+   Anduril 2 from 2023-05 or earlier.  
+   It's a build date and model number.
+
+- `YYYYMMDD`
+   This is an old Anduril 1 version.  It's just a build date.  
+   If the model name isn't obvious, try looking it up in the PRODUCTS file.
+
+- `1969-07-20`
+  The date of first human contact with the moon.  This value indicates that
+  the person who built the firmware probably made some sort of error.
+
+If the version doesn't include a model number, you may be able to find
+the model in the PRODUCTS file to see which firmware model it probably uses:
+
+  https://bazaar.launchpad.net/~toykeeper/flashlight-firmware/anduril2/view/head:/PRODUCTS
 
 
 Protection Features
@@ -810,6 +847,8 @@ On most lights, the colors follow this sequence:
 In voltage mode, the colors follow the same sequence, in the same order
 as a rainbow...  with red indicating a low battery and purple indicating
 a full battery.
+
+![battery charge colors](battery-rainbow.png)
 
 For lights with a button LED, the button LED typically stays on while
 the main emitters are on.  Its brightness level is set in a way which

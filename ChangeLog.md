@@ -10,9 +10,74 @@ formats:
   - Removed
   - Changed
   - Documented
-  - @brand-model: Hardware-specific change (NNNN, NNNN, ...)
+  - &brand-model: Hardware-specific change (NNNN, NNNN, ...)
 
 # Next
+
+# 2023-12-03
+
+This release is somewhat higher risk than usual, because so many large things
+changed deep in the code.  I did major restructuring and refactoring across the
+entire project.  It should work fine, but be on the lookout for any weird
+problems.
+
+General:
+
+- Moved from Bzr + Launchpad to **Git + GitHub**, by popular request.
+- **Completely reorganized the project** files.  Really, a *massive* amount of
+  restructuring.  The flashlight end-user interface is still the same, but
+  expect to have to learn the code layout from scratch.  Read the [README.md]
+  for info about getting started with the new project layout.
+- Added support for AVR DD MCUs like **avr32dd20**.  This is the recommended
+  MCU to use in new flashlights.
+- Added ability to use turbo in momentary mode.
+- Upgraded **battery voltage resolution** from 0.1V steps to **0.025V** steps.
+  Battery check has an extra digit which can be 0, 2, 5, or 7 (for example, for
+  3.70V, 3.725V, .3.75V, and 3.775V).
+- Made Battery Check more consistent, so it's less likely to give different
+  values on the 1st and 2nd readout.
+- Re-calibrated timing on each MCU type, so a 1-second beacon flasher should be
+  closer to 1 actual second now... mostly.  Timing still varies significantly
+  from one light to another.
+- Fixed default bike flasher brightness on some builds.  It was sometimes way
+  too high.
+- Fixed RGB aux turning on during momentary mode sometimes.
+- Converted documentation to markdown format, and rewrote a lot of it.
+- Fixed some build issues with specific compile-time options.
+- Changed the format of **version numbers**.  It now uses the most recent
+  release tag instead of the build date, and **may have additional numbers at
+  the end** to indicate distance from the last official release, and whether
+  the repo was clean or dirty.  Today's release is `MODEL-2023-12-03`.  A
+  derivative built 52 commits later in a dirty repo would look like
+  `MODEL-2023-12-03-52-1`.
+
+New lights:
+
+- Added &thefreeman-avr32dd20-devkit.  It's only used for development purposes,
+  but otherwise it's pretty neat.  It'll be the basis for many new lights in
+  the future.  (model 1632dd20)
+
+Hardware-specific changes:
+
+- Improved idle efficiency on attiny1616, which was spending entirely too much
+  time doing math it didn't actually need.
+- &hank-\*-boost: Fixed flicker while holding button at moon level.  Reduced
+  ripple on low modes. (0216, 0253, 0273)
+- &lumintop-blf-gt: Added smooth steps.  Removed a couple other things to make
+  room.  (0321)
+- &lumintop-fw3x: Multiple fixes and upgrades...  (0314, 0315)
+  - Fixed thermal regulation.  Also fixed the external temperature sensor.
+  - Made moon much lower, and made ramp much smoother, by upgrading to DSM.
+  - Fixed the aux RGB pinouts because Lumintop got the wiring backward.
+  - Added a second build target for people who fixed the wires manually.
+  - Added red/blue police color strobe.
+  - Made low modes more efficient with underclocking.  Moon should run at least
+    4X as long as it did before.
+  - Fixed party strobe being blurry.
+  - Added documentation for the FW3X's multiple, uh, quirks.
+- &sofirn-lt1s-pro: Disabled manual memory, memory timer, and extended simple
+  UI by default.  Simple mode is simpler, and the factory settings should be
+  more consistent with other lights now.  (0623)
 
 # 2023-10-31
 
@@ -37,30 +102,30 @@ General:
 
 New lights:
 
-- @thefreeman-boost21-6a: Added.  (1631)
+- &thefreeman-boost21-6a: Added.  (1631)
   (very nice HDR boost driver which fits into a FW3A)
-- @thefreeman-boost-fwaa: Added.  (1632)
+- &thefreeman-boost-fwaa: Added.  (1632)
   (very nice AA/li-ion HDR boost driver which fits into a FWAA)
 
 Hardware-specific changes:
 
 - Upgraded several builds to use delta-sigma modulation (DSM), for
   lower lows and smoother ramping with less flicker or ripple:
-  - @blf-lt1  (0621)
-  - @blf-lt1-t1616  (0622)
-  - @emisar-d4k-3ch  (0151)
+  - &blf-lt1  (0621)
+  - &blf-lt1-t1616  (0622)
+  - &emisar-d4k-3ch  (0151)
     (**dramatically** improves resolution and low modes on its 8-bit channel)
-  - @noctigon-dm11-boost  (0273)
-  - @noctigon-kr4-boost  (0216)
-  - @noctigon-k1-boost  (0253)
-  - @noctigon-m44  (0143)
+  - &noctigon-dm11-boost  (0273)
+  - &noctigon-kr4-boost  (0216)
+  - &noctigon-k1-boost  (0253)
+  - &noctigon-m44  (0143)
 
 - Upgraded some builds to use dynamic PWM, for lower lows and smoother ramping:
-  - @blf-q8-t1616,  @sofirn-sp36-t1616  (0613, 0614)
-  - @gchart-fet1-t1616  (1618)
-  - @noctigon-k1-sbt90  (0252)
+  - &blf-q8-t1616,  &sofirn-sp36-t1616  (0613, 0614)
+  - &gchart-fet1-t1616  (1618)
+  - &noctigon-k1-sbt90  (0252)
 
-- @wurkkos-ts10, @wurkkos-ts10-rgbaux: Fixed too-high default ceiling.  (0713, 0714)
+- &wurkkos-ts10, &wurkkos-ts10-rgbaux: Fixed too-high default ceiling.  (0713, 0714)
 
 # 2023-10-01
 
@@ -75,42 +140,42 @@ General:
 - Fixed some minor post-off voltage display bugs.
 - Made RGB button brightness update faster in blinky modes.
 - Fixed bug: Wrong channel after colored factory reset.
-- @attiny1616, @attiny1634: Partially fixed oscillating aux LED voltage 
+- &attiny1616, &attiny1634: Partially fixed oscillating aux LED voltage 
   colors while off.  Better than before, but can still happen in some cases.
-- @attiny1616: Fixed spurious voltage warnings in sleep mode.  (it could 
+- &attiny1616: Fixed spurious voltage warnings in sleep mode.  (it could 
   sometimes go from Lockout mode to Off mode by itself)
 - Lots of internal refactoring.
 
 New lights:
 
-- @emisar-2ch-fet: Added.  (0136)
-- @emisar-d4k-3ch: Added.  (0151)
-- @noctigon-m44: Added.  (0143)
-- @wurkkos-ts10-rgbaux: Added.  (0713)
+- &emisar-2ch-fet: Added.  (0136)
+- &emisar-d4k-3ch: Added.  (0151)
+- &noctigon-m44: Added.  (0143)
+- &wurkkos-ts10-rgbaux: Added.  (0713)
 
 Hardware-specific changes:
 
-- @ff-e01, @ff-pl47, @ff-pl47g2: Enabled smooth steps instead of SOS mode.
+- &ff-e01, &ff-pl47, &ff-pl47g2: Enabled smooth steps instead of SOS mode.
   (0421, 0422, 0423, 0441)
-- @emisar-2ch, @noctigon-m44: Added RGB aux channel modes.  (0135, 0143)
-- @emisar-2ch-fet, @noctigon-k9.3: New ramps with better-calibrated shape.
+- &emisar-2ch, &noctigon-m44: Added RGB aux channel modes.  (0135, 0143)
+- &emisar-2ch-fet, &noctigon-k9.3: New ramps with better-calibrated shape.
   (0136, 0261)
-- @emisar-d4v2-nofet: New ramp table.  (0115)
-- @emisar-d4sv2-tintramp: Removed / renamed.  (0135, 0136)
-- @noctigon-k9.3: Fixed years-old mess.  Merged builds, converted to
+- &emisar-d4v2-nofet: New ramp table.  (0115)
+- &emisar-d4sv2-tintramp: Removed / renamed.  (0135, 0136)
+- &noctigon-k9.3: Fixed years-old mess.  Merged builds, converted to
   multi-channel, removed old builds, generally got K9.3 working quite a bit
   better.  (0261, 0262, 0263, 0265, 0266, 0267)
-- @noctigon-m44: Lower moon, and greatly reduced flicker.  (0143)
-- @sofirn-lt1s-pro: Allow configuring the blink channel.  (0623)
-- @wurkkos: Raised default temperature limit to 50 C.  (07xx)
-- @wurkkos-ts10: Better / smoother ramp.  (0713, 0714)
+- &noctigon-m44: Lower moon, and greatly reduced flicker.  (0143)
+- &sofirn-lt1s-pro: Allow configuring the blink channel.  (0623)
+- &wurkkos: Raised default temperature limit to 50 C.  (07xx)
+- &wurkkos-ts10: Better / smoother ramp.  (0713, 0714)
 
 # 2023-06-29
 
 - Fixed red aux blink on 1st frame of post-off voltage display
 - Removed Harry Potter references because its author (J.K. Rowling) spreads 
   hate
-- @noctigon-kr4: Fixed thermal regulation (0211, 0212, 0213, 0214, 0215, 0216)
+- &noctigon-kr4: Fixed thermal regulation (0211, 0212, 0213, 0214, 0215, 0216)
 
 # 2023-05-30
 
@@ -126,18 +191,18 @@ Hardware-specific changes:
   help ensure it works on all lights.
 - Minor code changes with no runtime impact
 - Documented new version check format
-- @wurkkos: Added red+blue police strobe (0715, 0716, 0717)
-- @noctigon-kr4: Broke thermal regulation (oops) (0211, 0212, 0213, 0214, 
+- &wurkkos: Added red+blue police strobe (0715, 0716, 0717)
+- &noctigon-kr4: Broke thermal regulation (oops) (0211, 0212, 0213, 0214, 
   0215, 0216)
-- @noctigon-kr4: Use 7 aux channel modes instead of 3 (0211, 0212, 0213, 0214, 
+- &noctigon-kr4: Use 7 aux channel modes instead of 3 (0211, 0212, 0213, 0214, 
   0215, 0216)
-- @emisar-d4v2: Changed number blinks from aux to main LEDs by default (0113, 
+- &emisar-d4v2: Changed number blinks from aux to main LEDs by default (0113, 
   0114, 0115, 0123)
 
 # 2023-05-17
 
-- @noctigon-dm11-12v: Renamed to noctigon-dm11-boost (0273)
-- @noctigon-dm11-boost: Now supported in multi-channel branch (0273)
+- &noctigon-dm11-12v: Renamed to noctigon-dm11-boost (0273)
+- &noctigon-dm11-boost: Now supported in multi-channel branch (0273)
 
 # 2023-05-02
 
@@ -160,14 +225,14 @@ Hardware-specific changes:
   it to the value it saved, which was wrong)
 - Documented ramp 6C, ramp 4C, ramp 4H, lockout 3H, battcheck 3C, and post-off 
   voltage display config
-- @emisar-d4v2: Added the rest of the aux RGB colors as channel modes, and set 
+- &emisar-d4v2: Added the rest of the aux RGB colors as channel modes, and set 
   aux "white" as the mode it uses to blink out numbers (0113, 0114, 0115, 
   0123)
-- @wurkkos-ts10: Converted to multi-channel, and gave it a new ramp with 
+- &wurkkos-ts10: Converted to multi-channel, and gave it a new ramp with 
   better low modes (0714)
-- @wurkkos-ts25: Converted to multi-channel, and gave it a smoother ramp 
+- &wurkkos-ts25: Converted to multi-channel, and gave it a smoother ramp 
   (0715)
-- @wurkkos: Added Wurkkos FC13 and TS11 (0716, 0717)
+- &wurkkos: Added Wurkkos FC13 and TS11 (0716, 0717)
 
 # 2023-04-29
 
@@ -178,13 +243,13 @@ Hardware-specific changes:
   - Made 3H+ use mem level instead of lowest moon (this is needed for
     making the channel discernible, and also helps make aux LED controls
     stand out more)
-- @emisar, @noctigon: Added Extended Simple UI to Hank's config, so a few more 
+- &emisar, &noctigon: Added Extended Simple UI to Hank's config, so a few more 
   features are allowed in simple mode
-- @emisar-d4v2, @noctigon-kr4: Slightly smaller ROM size
-- @emisar-d4sv2: Converted to multi-channel, and updated it to use dynamic PWM 
+- &emisar-d4v2, &noctigon-kr4: Slightly smaller ROM size
+- &emisar-d4sv2: Converted to multi-channel, and updated it to use dynamic PWM 
   for a smoother ramp with lower lows (0133, 0134)
-- @noctigon-kr4: Converted to multi-channel (0211, 0212, 0213, 0214)
-- @noctigon-kr4: Don't blink at top of regulated power (0211, 0213, 0214)
+- &noctigon-kr4: Converted to multi-channel (0211, 0212, 0213, 0214)
+- &noctigon-kr4: Don't blink at top of regulated power (0211, 0213, 0214)
 
 # 2023-04-28
 
@@ -196,8 +261,8 @@ Hardware-specific changes:
   default)
 - Changed tactical mode default config: only use 2-color strobe if it's on 
   main LEDs, not aux LEDs
-- @emisar-d4v2: Smoother ramp (0113, 0114)
-- @emisar-d4v2: Added hidden channel modes for RGB aux LEDs (0113, 0114, 0115)
+- &emisar-d4v2: Smoother ramp (0113, 0114)
+- &emisar-d4v2: Added hidden channel modes for RGB aux LEDs (0113, 0114, 0115)
 
 # 2023-04-27
 
@@ -207,7 +272,7 @@ Hardware-specific changes:
 - Fixed unnecessary flickering when changing channel modes from/to the same 
   value
 - Fixed sleep voltage measurement on attiny1616
-- @noctigon-kr4-tintramp: Converted to multi-channel, renamed to 
+- &noctigon-kr4-tintramp: Converted to multi-channel, renamed to 
   noctigon-kr4-2ch (0215)
 
 # 2023-04-25
@@ -226,15 +291,15 @@ Hardware-specific changes:
     (this change was obsoleted soon by a better post-off voltage display)
   - Broke sleep voltage measurement on attiny1616 (oops)
 - Changed internal details for how gradual ramping works
-- @emisar-d4sv2-tintramp: Converted to multi-channel, renamed to emisar-2ch. 
+- &emisar-d4sv2-tintramp: Converted to multi-channel, renamed to emisar-2ch. 
   (0135)
-- @sofirn-lt1s-pro: Updated to use today's new code internals (0623)
+- &sofirn-lt1s-pro: Updated to use today's new code internals (0623)
 
 # 2023-04-19
 
 - Added stepped tint ramping
 - Documented new channel modes system
-- @sofirn-lt1s-pro: Added white-only auto-tint mode (0623)
+- &sofirn-lt1s-pro: Added white-only auto-tint mode (0623)
 
 # Older: TODO
 

@@ -15,139 +15,22 @@
 #include <avr/sleep.h>
 
 
-static inline void set_admux_therm() {
-    #if (ATTINY == 1634)
-        ADMUX = ADMUX_THERM;
-    #elif (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
-        ADMUX = ADMUX_THERM | (1 << ADLAR);
-    #elif (ATTINY == 841)  // FIXME: not tested
-        ADMUXA = ADMUXA_THERM;
-        ADMUXB = ADMUXB_THERM;
-    #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc
-        ADC0.MUXPOS = ADC_MUXPOS_TEMPSENSE_gc;  // read temperature
-        ADC0.CTRLC = ADC_SAMPCAP_bm | ADC_PRESC_DIV64_gc | ADC_REFSEL_INTREF_gc; // Internal ADC reference
-    #else
-        #error Unrecognized MCU type
-    #endif
+static inline void adc_therm_mode() {
+    hwdef_set_admux_therm();
     adc_channel = 1;
     adc_sample_count = 0;  // first result is unstable
     ADC_start_measurement();
 }
 
-inline void set_admux_voltage() {
-    #if (ATTINY == 1634)
-        #ifdef USE_VOLTAGE_DIVIDER // 1.1V / pin7
-            ADMUX = ADMUX_VOLTAGE_DIVIDER;
-        #else  // VCC / 1.1V reference
-            ADMUX = ADMUX_VCC;
-        #endif
-    #elif (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85)
-        #ifdef USE_VOLTAGE_DIVIDER  // 1.1V / pin7
-            ADMUX = ADMUX_VOLTAGE_DIVIDER | (1 << ADLAR);
-        #else  // VCC / 1.1V reference
-            ADMUX = ADMUX_VCC | (1 << ADLAR);
-        #endif
-    #elif (ATTINY == 841)  // FIXME: not tested
-        #ifdef USE_VOLTAGE_DIVIDER  // 1.1V / pin7
-            ADMUXA = ADMUXA_VOLTAGE_DIVIDER;
-            ADMUXB = ADMUXB_VOLTAGE_DIVIDER;
-        #else  // VCC / 1.1V reference
-            ADMUXA = ADMUXA_VCC;
-            ADMUXB = ADMUXB_VCC;
-        #endif
-    #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc
-        #ifdef USE_VOLTAGE_DIVIDER  // 1.1V / ADC input pin
-            // verify that this is correct!!!  untested
-            ADC0.MUXPOS = ADMUX_VOLTAGE_DIVIDER;  // read the requested ADC pin
-            ADC0.CTRLC = ADC_SAMPCAP_bm | ADC_PRESC_DIV64_gc | ADC_REFSEL_INTREF_gc; // Use internal ADC reference
-        #else  // VCC / 1.1V reference
-            ADC0.MUXPOS = ADC_MUXPOS_INTREF_gc;  // read internal reference
-            ADC0.CTRLC = ADC_SAMPCAP_bm | ADC_PRESC_DIV64_gc | ADC_REFSEL_VDDREF_gc; // Vdd (Vcc) be ADC reference
-        #endif
-    #else
-        #error Unrecognized MCU type
-    #endif
+void adc_voltage_mode() {
+    hwdef_set_admux_voltage();
     adc_channel = 0;
     adc_sample_count = 0;  // first result is unstable
     ADC_start_measurement();
 }
 
 
-#ifdef TICK_DURING_STANDBY
-inline void adc_sleep_mode() {
-    // needs a special sleep mode to get accurate measurements quickly 
-    // ... full power-down ends up using more power overall, and causes 
-    // some weird issues when the MCU doesn't stay awake enough cycles 
-    // to complete a reading
-    #ifdef SLEEP_MODE_ADC
-        // attiny1634
-        set_sleep_mode(SLEEP_MODE_ADC);
-    #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc
-        set_sleep_mode(SLEEP_MODE_STANDBY);
-    #else
-        #error No ADC sleep mode defined for this hardware.
-    #endif
-}
-#endif
-
-inline void ADC_start_measurement() {
-    #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85) || (ATTINY == 841) || (ATTINY == 1634)
-        ADCSRA |= (1 << ADSC) | (1 << ADIE);
-    #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc
-        ADC0.INTCTRL |= ADC_RESRDY_bm; // enable interrupt
-        ADC0.COMMAND |= ADC_STCONV_bm; // Start the ADC conversions
-    #else
-        #error unrecognized MCU type
-    #endif
-}
-
-// set up ADC for reading battery voltage
-inline void ADC_on()
-{
-    #if (ATTINY == 25) || (ATTINY == 45) || (ATTINY == 85) || (ATTINY == 1634)
-        set_admux_voltage();
-        #ifdef USE_VOLTAGE_DIVIDER
-            // disable digital input on divider pin to reduce power consumption
-            VOLTAGE_ADC_DIDR |= (1 << VOLTAGE_ADC);
-        #else
-            // disable digital input on VCC pin to reduce power consumption
-            //VOLTAGE_ADC_DIDR |= (1 << VOLTAGE_ADC);  // FIXME: unsure how to handle for VCC pin
-        #endif
-        #if (ATTINY == 1634)
-            //ACSRA |= (1 << ACD);  // turn off analog comparator to save power
-            ADCSRB |= (1 << ADLAR);  // left-adjust flag is here instead of ADMUX
-        #endif
-        // enable, start, auto-retrigger, prescale
-        ADCSRA = (1 << ADEN) | (1 << ADSC) | (1 << ADATE) | ADC_PRSCL;
-        // end tiny25/45/85
-    #elif (ATTINY == 841)  // FIXME: not tested, missing left-adjust
-        ADCSRB = 0;  // Right adjusted, auto trigger bits cleared.
-        //ADCSRA = (1 << ADEN ) | 0b011;  // ADC on, prescaler division factor 8.
-        set_admux_voltage();
-        // enable, start, auto-retrigger, prescale
-        ADCSRA = (1 << ADEN) | (1 << ADSC) | (1 << ADATE) | ADC_PRSCL;
-        //ADCSRA |= (1 << ADSC);  // start measuring
-    #elif defined(AVRXMEGA3)  // ATTINY816, 817, etc
-        VREF.CTRLA |= VREF_ADC0REFSEL_1V1_gc; // Set Vbg ref to 1.1V
-        // Enabled, free-running (aka, auto-retrigger), run in standby
-        ADC0.CTRLA = ADC_ENABLE_bm | ADC_FREERUN_bm | ADC_RUNSTBY_bm;
-        // set a INITDLY value because the AVR manual says so (section 30.3.5)
-        // (delay 1st reading until Vref is stable)
-        ADC0.CTRLD |= ADC_INITDLY_DLY16_gc;
-        set_admux_voltage();
-    #else
-        #error Unrecognized MCU type
-    #endif
-}
-
-inline void ADC_off() {
-    #ifdef AVRXMEGA3  // ATTINY816, 817, etc
-        ADC0.CTRLA &= ~(ADC_ENABLE_bm);  // disable the ADC
-    #else
-        ADCSRA &= ~(1<<ADEN); //ADC off
-    #endif
-}
-
+#if 0
 #ifdef USE_VOLTAGE_DIVIDER
 static inline uint8_t calc_voltage_divider(uint16_t value) {
     // use 9.7 fixed-point to get sufficient precision
@@ -162,6 +45,7 @@ static inline uint8_t calc_voltage_divider(uint16_t value) {
     return result;
 }
 #endif
+#endif
 
 // Each full cycle runs ~2X per second with just voltage enabled,
 // or ~1X per second with voltage and temperature.
@@ -171,15 +55,11 @@ static inline uint8_t calc_voltage_divider(uint16_t value) {
 #define ADC_CYCLES_PER_SECOND 2
 #endif
 
-#ifdef AVRXMEGA3  // ATTINY816, 817, etc
-#define ADC_vect ADC0_RESRDY_vect
-#endif
 // happens every time the ADC sampler finishes a measurement
 ISR(ADC_vect) {
 
-    #ifdef AVRXMEGA3  // ATTINY816, 817, etc
-    ADC0.INTFLAGS = ADC_RESRDY_bm; // clear the interrupt
-    #endif
+    // clear the interrupt flag
+    mcu_adc_vect_clear();
 
     if (adc_sample_count) {
 
@@ -188,22 +68,11 @@ ISR(ADC_vect) {
         uint8_t channel = adc_channel;
 
         // update the latest value
-        #ifdef AVRXMEGA3  // ATTINY816, 817, etc
-        // Use the factory calibrated values in SIGROW.TEMPSENSE0 and SIGROW.TEMPSENSE1
-        // to calculate a temperature reading in Kelvin, then left-align it. 
-        if (channel == 1) { // thermal, convert ADC reading to left-aligned Kelvin
-            int8_t sigrow_offset = SIGROW.TEMPSENSE1; // Read signed value from signature row
-            uint8_t sigrow_gain = SIGROW.TEMPSENSE0; // Read unsigned value from signature row
-            uint32_t temp = ADC0.RES - sigrow_offset;
-            temp *= sigrow_gain; // Result might overflow 16 bit variable (10bit+8bit)
-            temp += 0x80; // Add 1/2 to get correct rounding on division below
-            temp >>= 8; // Divide result to get Kelvin
-            m = (temp << 6); // left align it
-        }
-        else { m = (ADC0.RES << 6); } // voltage, force left-alignment
-
+        #ifdef MCU_ADC_RESULT_PER_TYPE
+            if (channel) m = mcu_adc_result_temp();
+            else m = mcu_adc_result_volts();
         #else
-        m = ADC;
+            m = mcu_adc_result();
         #endif
         adc_raw[channel] = m;
 
@@ -235,11 +104,7 @@ void adc_deferred() {
     // real-world entropy makes this a true random, not pseudo
     // Why here instead of the ISR?  Because it makes the time-critical ISR
     // code a few cycles faster and we don't need crypto-grade randomness.
-    #ifdef AVRXMEGA3  // ATTINY816, 817, etc
-    pseudo_rand_seed += ADC0.RESL; // right aligned, not left... so should be equivalent?
-    #else
-    pseudo_rand_seed += (ADCL >> 6) + (ADCH << 2);
-    #endif
+    pseudo_rand_seed += mcu_adc_lsb();
     #endif
 
     // the ADC triggers repeatedly when it's on, but we only need to run the
@@ -281,7 +146,7 @@ void adc_deferred() {
         ADC_voltage_handler();
         #ifdef USE_THERMAL_REGULATION
         // set the correct type of measurement for next time
-        if (! go_to_standby) set_admux_therm();
+        if (! go_to_standby) adc_therm_mode();
         #endif
     }
     #endif
@@ -291,7 +156,7 @@ void adc_deferred() {
         ADC_temperature_handler();
         #ifdef USE_LVP
         // set the correct type of measurement for next time
-        set_admux_voltage();
+        adc_voltage_mode();
         #endif
     }
     #endif
@@ -301,7 +166,7 @@ void adc_deferred() {
 
 
 #ifdef USE_LVP
-static inline void ADC_voltage_handler() {
+static void ADC_voltage_handler() {
     // rate-limit low-voltage warnings to a max of 1 per N seconds
     static uint8_t lvp_timer = 0;
     #define LVP_TIMER_START (VOLTAGE_WARNING_SECONDS*ADC_CYCLES_PER_SECOND)  // N seconds between LVP warnings
@@ -344,38 +209,23 @@ static inline void ADC_voltage_handler() {
     #endif
     else measurement = adc_smooth[0];
 
-    // values stair-step between intervals of 64, with random variations
-    // of 1 or 2 in either direction, so if we chop off the last 6 bits
-    // it'll flap between N and N-1...  but if we add half an interval,
-    // the values should be really stable after right-alignment
-    // (instead of 99.98, 100.00, and 100.02, it'll hit values like
-    //  100.48, 100.50, and 100.52...  which are stable when truncated)
-    //measurement += 32;
-    //measurement = (measurement + 16) >> 5;
-    measurement = (measurement + 16) & 0xffe0;  // 1111 1111 1110 0000
-
-    #ifdef USE_VOLTAGE_DIVIDER
-    voltage = calc_voltage_divider(measurement);
-    #else
-    // calculate actual voltage: volts * 10
-    // ADC = 1.1 * 1024 / volts
-    // volts = 1.1 * 1024 / ADC
-    voltage = ((uint16_t)(2*1.1*1024*10)/(measurement>>6)
-               + VOLTAGE_FUDGE_FACTOR
-               #ifdef USE_VOLTAGE_CORRECTION
-                  + VOLT_CORR - 7
-               #endif
-               ) >> 1;
-    #endif
+    // convert raw ADC value to FSM voltage units: Volts * 40
+    // 0 .. 200 = 0.0V .. 5.0V
+    voltage = voltage_raw2cooked(measurement)
+              + (VOLTAGE_FUDGE_FACTOR << 1)
+              #ifdef USE_VOLTAGE_CORRECTION
+                 + ((VOLT_CORR - 7) << 1)
+              #endif
+              ;
 
     // if low, callback EV_voltage_low / EV_voltage_critical
     //         (but only if it has been more than N seconds since last call)
     if (lvp_timer) {
         lvp_timer --;
     } else {  // it has been long enough since the last warning
-    	#ifdef DUAL_VOLTAGE_FLOOR
-    	if (((voltage < VOLTAGE_LOW) && (voltage > DUAL_VOLTAGE_FLOOR)) || (voltage < DUAL_VOLTAGE_LOW_LOW)) {
-    	#else
+        #ifdef DUAL_VOLTAGE_FLOOR
+        if (((voltage < VOLTAGE_LOW) && (voltage > DUAL_VOLTAGE_FLOOR)) || (voltage < DUAL_VOLTAGE_LOW_LOW)) {
+        #else
         if (voltage < VOLTAGE_LOW) {
         #endif
             // send out a warning
@@ -390,7 +240,7 @@ static inline void ADC_voltage_handler() {
 
 #ifdef USE_THERMAL_REGULATION
 // generally happens once per second while awake
-static inline void ADC_temperature_handler() {
+static void ADC_temperature_handler() {
     // coarse adjustment
     #ifndef THERM_LOOKAHEAD
     #define THERM_LOOKAHEAD 4
@@ -415,19 +265,24 @@ static inline void ADC_temperature_handler() {
     static uint16_t temperature_history[NUM_TEMP_HISTORY_STEPS];
     static int8_t warning_threshold = 0;
 
-    if (adc_reset) {  // wipe out old data
-        // ignore average, use latest sample
-        uint16_t foo = adc_raw[1];
-        adc_smooth[1] = foo;
-
-        // forget any past measurements
-        for(uint8_t i=0; i<NUM_TEMP_HISTORY_STEPS; i++)
-            temperature_history[i] = (foo + 16) >> 5;
-    }
+    if (adc_reset) adc_smooth[1] = adc_raw[1];
 
     // latest 16-bit ADC reading
-    uint16_t measurement = adc_smooth[1];
+    // convert raw ADC value to Kelvin << 6
+    // 0 .. 65535 = 0 K .. 1024 K
+    uint16_t measurement = temp_raw2cooked(adc_smooth[1]);
 
+    // let the UI see the current temperature in C
+    // (Kelvin << 6) to Celsius
+    // Why 275?  Because Atmel's docs use 275 instead of 273.
+    temperature = (measurement>>6) + THERM_CAL_OFFSET + (int16_t)TH_CAL - 275;
+
+    // instead of (K << 6), use (K << 1) now
+    // TODO: use more precision, if it can be done without overflow in 16 bits
+    //       (and still work on attiny85 without increasing ROM size)
+    #if 1
+    measurement = measurement >> 5;
+    #else  // TODO: is this still needed?
     // values stair-step between intervals of 64, with random variations
     // of 1 or 2 in either direction, so if we chop off the last 6 bits
     // it'll flap between N and N-1...  but if we add half an interval,
@@ -437,16 +292,13 @@ static inline void ADC_temperature_handler() {
     //measurement += 32;
     measurement = (measurement + 16) >> 5;
     //measurement = (measurement + 16) & 0xffe0;  // 1111 1111 1110 0000
-
-    // let the UI see the current temperature in C
-    // Convert ADC units to Celsius (ish)
-    #ifndef USE_EXTERNAL_TEMP_SENSOR
-    // onboard sensor for attiny25/45/85/1634
-    temperature = (measurement>>1) + THERM_CAL_OFFSET + (int16_t)TH_CAL - 275;
-    #else
-    // external sensor
-    temperature = EXTERN_TEMP_FORMULA(measurement>>1) + THERM_CAL_OFFSET + (int16_t)TH_CAL;
     #endif
+
+    if (adc_reset) {  // wipe out old data after waking up
+        // forget any past measurements
+        for(uint8_t i=0; i<NUM_TEMP_HISTORY_STEPS; i++)
+            temperature_history[i] = measurement;
+    }
 
     // how much has the temperature changed between now and a few seconds ago?
     int16_t diff;
@@ -540,33 +392,58 @@ static inline void ADC_temperature_handler() {
 #ifdef USE_BATTCHECK
 #ifdef BATTCHECK_4bars
 PROGMEM const uint8_t voltage_blinks[] = {
-    30, 35, 38, 40, 42, 99,
+    4*30,
+    4*35,
+    4*38,
+    4*40,
+    4*42,
+     255,
 };
 #endif
 #ifdef BATTCHECK_6bars
 PROGMEM const uint8_t voltage_blinks[] = {
-    30, 34, 36, 38, 40, 41, 43, 99,
+    4*30,
+    4*34,
+    4*36,
+    4*38,
+    4*40,
+    4*41,
+    4*43,
+     255,
 };
 #endif
 #ifdef BATTCHECK_8bars
 PROGMEM const uint8_t voltage_blinks[] = {
-    30, 33, 35, 37, 38, 39, 40, 41, 42, 99,
+    4*30,
+    4*33,
+    4*35,
+    4*37,
+    4*38,
+    4*39,
+    4*40,
+    4*41,
+    4*42,
+     255,
 };
 #endif
 void battcheck() {
     #ifdef BATTCHECK_VpT
-    blink_num(voltage);
+        blink_num(voltage / 4);
+        #ifdef USE_EXTRA_BATTCHECK_DIGIT
+            // 0 1 2 3 --> 0 2 5 7, representing x.x00 x.x25 x.x50 x.x75
+            blink_num(((voltage % 4)<<1) + ((voltage % 4)>>1));
+        #endif
     #else
-    uint8_t i;
-    for(i=0;
-        voltage >= pgm_read_byte(voltage_blinks + i);
-        i++) {}
-    #ifdef DONT_DELAY_AFTER_BATTCHECK
-    blink_digit(i);
-    #else
-    if (blink_digit(i))
-        nice_delay_ms(1000);
-    #endif
+        uint8_t i;
+        for(i=0;
+            voltage >= pgm_read_byte(voltage_blinks + i);
+            i++) {}
+        #ifdef DONT_DELAY_AFTER_BATTCHECK
+            blink_digit(i);
+        #else
+            if (blink_digit(i))
+                nice_delay_ms(1000);
+        #endif
     #endif
 }
 #endif

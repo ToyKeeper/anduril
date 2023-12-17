@@ -24,12 +24,18 @@ def main(args):
     foo.sort()
     models = [x[-1] for x in foo]
 
+    colsizes = [
+            max(len(m.model) for m in models),
+            max(len(m.mcu) for m in models),
+            max(len(m.name) for m in models),
+            ]
+
     print('Models: %i\n' % len(models))
-    fmt = '%s\t%-30s\t%s'
-    print(fmt % ('Model', 'Name', 'MCU'))
-    print(fmt % ('-----', '----', '---'))
+    fmt = '%%-%is  %%-%is  %%s' % (colsizes[0], colsizes[1])
+    print(fmt % ('Model', 'MCU', 'Name'))
+    print(fmt % ('-----', '---', '----'))
     for m in models:
-        print(fmt % (m.model, m.name, m.mcu))
+        print(fmt % (m.model, m.mcu, m.name))
 
     print('\nDuplicates:')
     for i, m in enumerate(models):
@@ -56,6 +62,7 @@ def load_model(path):
     m.name = path.replace('hw/','').replace('/', '-')
     m.mcu = inherit(path, 'arch')
     m.model = inherit(path, 'model')
+    if m.model: m.model = model_translate(m.model)
 
     return m
 
@@ -71,6 +78,24 @@ def inherit(path, field):
         if parent:
             return inherit(parent, field)
     return None
+
+
+def model_translate(m):
+    """Convert raw ordinal hex codes into human-friendly a-f digits.
+    """
+    m = str(m)
+    replace = {
+            chr(ord('0') + 10): 'a',
+            chr(ord('0') + 11): 'b',
+            chr(ord('0') + 12): 'c',
+            chr(ord('0') + 13): 'd',
+            chr(ord('0') + 14): 'e',
+            chr(ord('0') + 15): 'f',
+            }
+    for s, r in replace.items():
+        m = m.replace(s, r)
+
+    return m
 
 
 if __name__ == "__main__":

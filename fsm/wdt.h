@@ -6,8 +6,11 @@
 
 #define TICKS_PER_SECOND 62
 
-void WDT_on();
-inline void WDT_off();
+//void WDT_on();
+//inline void WDT_off();
+#define WDT_on    mcu_wdt_active
+#define WDT_slow  mcu_wdt_standby
+#define WDT_off   mcu_wdt_stop
 
 volatile uint8_t irq_wdt = 0;  // WDT interrupt happened?
 

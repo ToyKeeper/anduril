@@ -17,11 +17,11 @@ volatile uint8_t adc_reset = 2;
 #endif
 // low-battery threshold in volts * 10
 #ifndef VOLTAGE_LOW
-#define VOLTAGE_LOW 29
+#define VOLTAGE_LOW (4*29)
 #endif
 // battery is low but not critical
 #ifndef VOLTAGE_RED
-#define VOLTAGE_RED 33
+#define VOLTAGE_RED (4*33)
 #endif
 // MCU sees voltage 0.X volts lower than actual, add X/2 to readings
 #ifndef VOLTAGE_FUDGE_FACTOR
@@ -31,6 +31,9 @@ volatile uint8_t adc_reset = 2;
 #define VOLTAGE_FUDGE_FACTOR 5
 #endif
 #endif
+
+
+void adc_voltage_mode();
 
 #ifdef TICK_DURING_STANDBY
 volatile uint8_t adc_active_now = 0;  // sleep LVP needs a different sleep mode
@@ -46,7 +49,7 @@ uint16_t adc_smooth[2];  // lowpassed ADC measurements (0=voltage, 1=temperature
 uint8_t adc_deferred_enable = 0;  // stop waiting and run the deferred code
 void adc_deferred();  // do the actual ADC-related calculations
 
-static inline void ADC_voltage_handler();
+static void ADC_voltage_handler();
 uint8_t voltage = 0;
 #ifdef USE_VOLTAGE_CORRECTION
     #ifdef USE_CFG
@@ -98,15 +101,21 @@ int16_t temperature;
     uint8_t therm_ceil = DEFAULT_THERM_CEIL;
     int8_t therm_cal_offset = 0;
 #endif
-static inline void ADC_temperature_handler();
+static void ADC_temperature_handler();
 #endif  // ifdef USE_THERMAL_REGULATION
 
 
-inline void ADC_on();
-inline void ADC_off();
-inline void ADC_start_measurement();
+//inline void ADC_on();
+#define ADC_on   adc_voltage_mode
+//inline void ADC_off();
+#define ADC_off  mcu_adc_off
+//inline void ADC_start_measurement();
+#define ADC_start_measurement  mcu_adc_start_measurement
 
-#ifdef TICK_DURING_STANDBY
-inline void adc_sleep_mode();
-#endif
+// needs a special sleep mode to get accurate measurements quickly 
+// ... full power-down ends up using more power overall, and causes 
+// some weird issues when the MCU doesn't stay awake enough cycles 
+// to complete a reading
+//inline void adc_sleep_mode();
+#define adc_sleep_mode  mcu_adc_sleep_mode
 

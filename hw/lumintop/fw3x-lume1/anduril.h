@@ -8,10 +8,9 @@
  * For more information: www.loneoceans.com/labs/
  * Datasheets:
  * - 1634: http://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-8303-8-bit-AVR-Microcontroller-tinyAVR-ATtiny1634_Datasheet.pdf
- * - 85: https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf
  */
 
-#include "lumintop/fw3x-lume1/hwdef.h"
+#define HWDEF_H  lumintop/fw3x-lume1/hwdef.h
 
 // set this light for 50C thermal ceiling
 #undef DEFAULT_THERM_CEIL
@@ -20,59 +19,60 @@
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
 
-// it has no independent LED in the button unlike emisar d4
-//#define USE_BUTTON_LED
-
 // the aux LEDs are front-facing, so turn them off while main LEDs are on
 #ifdef USE_INDICATOR_LED_WHILE_RAMPING
 #undef USE_INDICATOR_LED_WHILE_RAMPING
 #endif
 
-// ../../bin/level_calc.py cube 1 149 7135 0 0.5 1000, with 0 appended to the end.
-// for FET PWM (PWM2), all values are 0, except for last value of 1023
-// (with max_pwm set to 1023)
 #define RAMP_SIZE 150
-//#define PWM1_LEVELS 0,0,0,0,1,1,1,1,2,2,2,3,3,4,4,5,5,6,7,7,8,9,10,11,12,13,14,15,16,17,19,20,22,23,25,26,28,30,32,34,36,38,40,42,45,47,49,52,55,58,60,63,66,70,73,76,80,83,87,91,94,98,102,107,111,115,120,124,129,134,139,144,150,155,160,166,172,178,184,190,196,203,209,216,223,230,237,244,252,259,267,275,283,291,299,308,316,325,334,343,353,362,372,382,392,402,412,423,433,444,455,466,478,489,501,513,525,538,550,563,576,589,602,616,630,644,658,672,687,701,716,731,747,762,778,794,810,827,844,861,878,895,913,930,948,967,985,1004,1023,0
-#define PWM1_LEVELS 1,1,1,1,2,2,2,2,3,3,3,4,4,5,5,6,6,7,8,8,9,10,11,12,13,14,15,16,17,18,20,21,23,24,26,27,29,31,33,35,37,39,41,43,45,48,50,53,56,58,61,64,67,70,74,77,80,84,88,91,95,99,103,108,112,116,121,125,130,135,140,145,150,156,161,167,173,178,184,191,197,203,210,217,223,230,238,245,252,260,268,275,283,292,300,308,317,326,335,344,353,363,372,382,392,402,413,423,434,445,456,467,478,490,502,514,526,538,551,563,576,589,603,616,630,644,658,672,687,702,717,732,747,763,778,794,811,827,844,861,878,895,913,931,949,967,985,1004,1023,0
-#define PWM2_LEVELS 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1023
+
+// level_calc.py 5.01 1 149 7135 0 0.2 2000 --pwm 32640
+// regulated channel: 16-bit PWM+DSM for low lows and very smooth ramp
+#define PWM1_LEVELS  0,1,2,3,4,5,6,7,9,10,12,14,17,19,22,25,29,33,37,41,46,51,57,63,70,77,85,93,103,112,123,134,146,159,172,187,203,219,237,256,276,297,319,343,368,394,422,452,483,516,551,587,625,666,708,753,799,848,900,954,1010,1069,1131,1195,1263,1333,1407,1483,1563,1647,1734,1825,1919,2017,2119,2226,2336,2451,2571,2694,2823,2957,3095,3239,3388,3542,3702,3868,4040,4217,4401,4591,4788,4992,5202,5419,5644,5876,6115,6362,6617,6880,7152,7432,7721,8018,8325,8641,8967,9302,9647,10003,10369,10745,11133,11531,11941,12363,12796,13241,13699,14169,14652,15148,15657,16180,16717,17268,17834,18414,19009,19620,20246,20888,21546,22221,22913,23621,24348,25091,25853,26634,27433,28251,29089,29946,30823,31721,32640,0
+// DD FET: 8-bit PWM (but hardware can only handle 0 and MAX)
+#define PWM2_LEVELS  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,255
 #define DEFAULT_LEVEL 56
 #define MAX_1x7135 149
-// TODO: test if underclocking works on lume1
-//#define HALFSPEED_LEVEL 14
-//#define QUARTERSPEED_LEVEL 5
-// don't slow down at low levels; this isn't that sort of light
-// (it needs to stay at full speed for the 10-bit PWM to work)
-#ifdef USE_DYNAMIC_UNDERCLOCKING
-#undef USE_DYNAMIC_UNDERCLOCKING
-#endif
-
-// the entire ramp is regulated except turbo; don't blink halfway up
-#ifdef BLINK_AT_RAMP_MIDDLE
-#undef BLINK_AT_RAMP_MIDDLE
-#endif
+#define MIN_THERM_STEPDOWN 50
+#define HALFSPEED_LEVEL 11
+#define QUARTERSPEED_LEVEL 2
 
 #define RAMP_SMOOTH_FLOOR 1
 #define RAMP_SMOOTH_CEIL 149
-// turn on BuckBoost from level 1 to 149, but not 150
-// Level 150 is when BuckBoost is off and FET is ON 100%
-#define LED_ENABLE_PIN_LEVEL_MIN 1
-#define LED_ENABLE_PIN_LEVEL_MAX 149
 // 10 33 56 79 102 125 [149]
 #define RAMP_DISCRETE_FLOOR 10
-#define RAMP_DISCRETE_CEIL RAMP_SMOOTH_CEIL
+#define RAMP_DISCRETE_CEIL  RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS 7
 
 #define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
 #define SIMPLE_UI_CEIL 120
 #define SIMPLE_UI_STEPS 5
 
+// show each channel while it scroll by in the menu
+#define USE_CONFIG_COLORS
+
+// blink numbers on the main LEDs by default (but allow user to change it)
+#define DEFAULT_BLINK_CHANNEL  CM_MAIN
+
 // slow down party strobe; this driver can't pulse for too short a time
-#define PARTY_STROBE_ONTIME 4
+#define PARTY_STROBE_ONTIME 1
+
+// use aux red + aux blue for police strobe
+#define USE_POLICE_COLOR_STROBE_MODE
+#define POLICE_STROBE_USES_AUX
+#define POLICE_COLOR_STROBE_CH1        CM_AUXRED
+#define POLICE_COLOR_STROBE_CH2        CM_AUXBLU
 
 // stop panicking at ~85% regulated power or ~750 lm
 #define THERM_FASTER_LEVEL 140
 
 #define THERM_CAL_OFFSET 0  // not needed due to external sensor
+
+// don't blink while ramping
+#ifdef BLINK_AT_RAMP_MIDDLE
+#undef BLINK_AT_RAMP_MIDDLE
+#endif
+
 
 // can't reset the normal way because power is connected before the button
 #define USE_SOFT_FACTORY_RESET

@@ -1,40 +1,24 @@
 # How to figure out which .hex file to use
 
-1. Use the version check function (15 or more clicks from Off) to find out
+Using the wrong firmware will make the light stop working, so when flashing
+firmware, **be sure the model number matches**!
+
+The name of a product is *not* enough information to find the right .hex
+file.  Ask the light what firmware it needs:
+
+1. Use the Version Check function (15 or more clicks from Off) to find out
    which flavor of the firmware the light has installed.  
    **WRITE THIS DOWN.**
 
-2. Look up the model number in the MODELS file, to get the name and MCU type:  
-   https://toykeeper.net/torches/fsm/anduril2/MODELS
+2. Look up the model number in the [MODELS file](../MODELS),
+   to get the name and MCU type.
 
-3. Find the newest firmware for that model.  
-   https://toykeeper.net/torches/fsm/anduril2/?C=M;O=D
+3. Find (or build) the newest firmware for that model.  
+   https://github.com/ToyKeeper/anduril/releases
 
-If the version doesn't include a model number, you may be able to find
-the model in the PRODUCTS file to see which version it probably uses:
-
-  https://bazaar.launchpad.net/~toykeeper/flashlight-firmware/anduril2/view/head:/PRODUCTS
-
-
-## Version Check Formats
-
-The Version Check function should blink out a series of numbers in one of
-several formats:
-
- - `NNNN-YYYY-MM-DD`
-   Anduril 2 from 2023-05 or later.  
-   It's a model number and build date,
-   with "buzz" flashes between sections.
-   - `NNNN`: model number
-   - `YYYY`: year
-   - `MM`: month
-   - `DD`: day
-
- - `YYYYMMDDNNNN`
-   Anduril 2 from 2023-05 or earlier.  
-   It's a build date and model number.
-
-- `YYYYMMDD`
-   This is an old Anduril 1 version.  It's just a build date.  
-   If the model name isn't obvious, try looking it up in the PRODUCTS file.
+The Version Check format has changed a few times.  Use
+[this section of the manual](anduril-manual.md#Version_Check_Formats)
+to learn about those formats and how to use them.  In most cases, it should
+have a model number and a date... and **you need the model number** to find
+the correct .hex file.
 

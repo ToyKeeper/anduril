@@ -12,9 +12,7 @@
  *           ----
  */
 
-#include <avr/io.h>
-
-#define HWDEF_C_FILE hank/emisar-d4/hwdef.c
+#define HWDEF_C  hank/emisar-d4/hwdef.c
 
 // allow using aux LEDs as extra channel modes (when they exist)
 //#ifdef AUXLED_PIN

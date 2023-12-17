@@ -13,9 +13,7 @@
  * Voltage:    VCC
  */
 
-#include <avr/io.h>
-
-#define HWDEF_C_FILE sofirn/lt1s-pro/hwdef.c
+#define HWDEF_C  sofirn/lt1s-pro/hwdef.c
 
 // channel modes:
 // * 0. warm/cool white blend
