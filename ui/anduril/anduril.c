@@ -279,8 +279,13 @@ void loop() {
 
     #ifdef USE_AUX_RGB_LEDS_WHILE_ON
     // display battery charge on RGB button during use
-    if (state == steady_state)
+    if ((state == steady_state)
+    #ifdef USE_CHANNEL_USES_AUX
+    && (!channel_uses_aux(channel_mode))
+    #endif
+    ){
         rgb_led_voltage_readout(actual_level > USE_AUX_RGB_LEDS_WHILE_ON);
+    }
     #endif
 
     if (0) {}  // placeholder

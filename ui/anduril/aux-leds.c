@@ -202,9 +202,15 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
 }
 
 void rgb_led_voltage_readout(uint8_t bright) {
+    #ifdef USE_CHANNEL_USES_AUX
+    if (!channel_uses_aux(channel_mode)){
+    #endif
     uint8_t color = voltage_to_rgb();
     if (bright) color = color << 1;
     rgb_led_set(color);
+    #ifdef USE_CHANNEL_USES_AUX
+    }
+    #endif
 }
 #endif
 
