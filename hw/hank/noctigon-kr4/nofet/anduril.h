@@ -8,6 +8,8 @@
 #define HWDEF_C  hank/noctigon-kr4/nofet/hwdef.c
 #include "hank/noctigon-kr4/anduril.h"
 
+#define USE_AUX_RGB_LEDS_WHILE_ON 1
+
 // brightness w/ SST-20 4000K LEDs:
 // 0/1023: 0.35 lm
 // 1/1023: 2.56 lm

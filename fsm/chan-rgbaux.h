@@ -22,17 +22,25 @@
 #else
     #define AUX_RGB_HAS_ARGS
 #endif
+#ifdef USE_CHANNEL_USES_AUX
+    //USE_CHANNEL_USES_AUX
+    #define AUX_RGB_USES_AUX , .uses_aux = 1
+#else
+    #define AUX_RGB_USES_AUX
+#endif
 
 #define RGB_AUX_CHANNELS \
     { \
         .set_level    = set_level_auxred, \
         .gradual_tick = gradual_tick_null \
         AUX_RGB_HAS_ARGS \
+        AUX_RGB_USES_AUX \
     }, \
     { \
         .set_level    = set_level_auxyel, \
         .gradual_tick = gradual_tick_null \
         AUX_RGB_HAS_ARGS \
+        AUX_RGB_USES_AUX \
     }, \
     { \
         .set_level    = set_level_auxgrn, \
@@ -43,21 +51,25 @@
         .set_level    = set_level_auxcyn, \
         .gradual_tick = gradual_tick_null \
         AUX_RGB_HAS_ARGS \
+        AUX_RGB_USES_AUX \
     }, \
     { \
         .set_level    = set_level_auxblu, \
         .gradual_tick = gradual_tick_null \
         AUX_RGB_HAS_ARGS \
+        AUX_RGB_USES_AUX \
     }, \
     { \
         .set_level    = set_level_auxprp, \
         .gradual_tick = gradual_tick_null \
         AUX_RGB_HAS_ARGS \
+        AUX_RGB_USES_AUX \
     }, \
     { \
         .set_level    = set_level_auxwht, \
         .gradual_tick = gradual_tick_null \
         AUX_RGB_HAS_ARGS \
+        AUX_RGB_USES_AUX \
     }
 
 void set_level_auxred(uint8_t level);

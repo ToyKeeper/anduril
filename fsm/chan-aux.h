@@ -12,11 +12,18 @@
     #define AUX_HAS_ARGS
 #endif
 
+#ifdef USE_CHANNEL_USES_AUX
+    #define AUX_USES_AUX , .uses_aux = 0
+#else
+    #define AUX_USES_AUX
+#endif
+
 #define AUX_CHANNELS \
     { \
         .set_level    = set_level_aux, \
         .gradual_tick = gradual_tick_null \
         AUX_HAS_ARGS \
+        AUX_USES_AUX \
     }
 
 void set_level_aux(uint8_t level);

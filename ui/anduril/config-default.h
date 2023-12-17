@@ -215,3 +215,5 @@
 // (but allow disabling this feature per build)
 #define USE_CHANNEL_PER_STROBE
 
+// enable channel mode config prerequisites for channel_uses_aux()
+#define USE_CHANNEL_USES_AUX

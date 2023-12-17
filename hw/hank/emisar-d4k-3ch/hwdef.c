@@ -31,42 +31,50 @@ Channel channels[] = {
     { // main 2 LEDs only
         .set_level    = set_level_main2,
         .gradual_tick = gradual_tick_main2,
-        .has_args     = 0
+        .has_args     = 0,
+        .uses_aux     = 0
     },
     { // 3rd LED only
         .set_level    = set_level_led3,
         .gradual_tick = gradual_tick_led3,
-        .has_args     = 0
+        .has_args     = 0,
+        .uses_aux     = 0
     },
     { // 4th LED only
         .set_level    = set_level_led4,
         .gradual_tick = gradual_tick_led4,
-        .has_args     = 0
+        .has_args     = 0,
+        .uses_aux     = 0
     },
     { // all channels, tied together (equal amounts, max power)
         .set_level    = set_level_all,
         .gradual_tick = gradual_tick_all,
-        .has_args     = 0
+        .has_args     = 0,
+        .uses_aux     = 0
     },
     { // 3rd + 4th LEDs, manual blend (max "100%" power) (8/16/16)
         .set_level    = set_level_led34a_blend,
         .gradual_tick = gradual_tick_led34a_blend,
-        .has_args     = 1
+        .has_args     = 1,
+        .uses_aux     = 0
     },
     { // 3rd + 4th LEDs, manual blend (max "100%" power) (16/16/8)
         .set_level    = set_level_led34b_blend,
         .gradual_tick = gradual_tick_led34b_blend,
-        .has_args     = 1
+        .has_args     = 1,
+        .uses_aux     = 0
     },
     { // 3ch blend (HSV style)
         .set_level    = set_level_hsv,
         .gradual_tick = gradual_tick_hsv,
-        .has_args     = 1
+        .has_args     = 1,
+        .uses_aux     = 0
     },
     { // 3ch auto blend (red-warm-cool style, led4-led3-main2)
         .set_level    = set_level_auto3,
         .gradual_tick = gradual_tick_auto3,
-        .has_args     = 0
+        .has_args     = 0,
+        .uses_aux     = 0
     },
     RGB_AUX_CHANNELS
 };
