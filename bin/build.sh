@@ -6,6 +6,10 @@
 # Instead of using a Makefile, since most of the firmwares here build in the
 # same exact way, here's a script to do the same thing
 
+if [ "${DEBUG}" == "1" ]; then
+  set -x
+fi
+
 if [ 0 = "$#" ]; then
   echo "Usage: build.sh TARGET USER"
   echo "Example: build.sh hw/hank/emisar-d4/anduril.h users/myuser"

@@ -3,6 +3,10 @@
 # Copyright (C) 2023 Selene ToyKeeper
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+if [ "${DEBUG}" == "1" ]; then
+  set -x
+fi
+
 set -e
 
 V_ATTINY='2.0.368'
