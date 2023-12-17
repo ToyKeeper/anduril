@@ -12,6 +12,7 @@
 // turn on the aux LEDs while main LEDs are on
 // (in case there's a RGB button)
 #define USE_AUX_RGB_LEDS_WHILE_ON  40
+#define USE_CONFIGURABLE_RGB_VOLTAGE_LEVELS
 #define USE_INDICATOR_LED_WHILE_RAMPING
 
 // channel modes...

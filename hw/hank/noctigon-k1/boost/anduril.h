@@ -17,6 +17,7 @@
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
 #define USE_AUX_RGB_LEDS_WHILE_ON  25
+#define USE_CONFIGURABLE_RGB_VOLTAGE_LEVELS
 #define USE_INDICATOR_LED_WHILE_RAMPING
 
 #if 0  // old, 10-bit PWM method
