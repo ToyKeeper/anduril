@@ -639,6 +639,8 @@ This assumes the light has a ramp 150 levels long.  Strobe modes start
 at the ramp size plus 1, so it may be different if a light has a
 different ramp size.
 
+In Tactical Mode, the aux LED settings are inherited from Lockout Mode.
+
 
 Configuration Menus
 -------------------
