@@ -63,8 +63,8 @@
 // Allow 3C (or 6C) in Simple UI (toggle smooth or stepped ramping)
 #define USE_SIMPLE_UI_RAMPING_TOGGLE
 
-// allow Aux Config and Strobe Modes in Simple UI
-#define USE_EXTENDED_SIMPLE_UI
+// allow Aux Config, Sunset Timer, and Strobe Modes in Simple UI
+#define USE_EXTENDED_SIMPLE_UI 2
 
 #define USE_SOS_MODE
 #define USE_SOS_MODE_IN_BLINKY_GROUP

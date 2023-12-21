@@ -255,7 +255,15 @@ uint8_t off_state(Event event, uint16_t arg) {
         return EVENT_HANDLED;
     }
 
-    ////////// Every action below here is blocked in the (non-Extended) Simple UI //////////
+    ////////// Every action below here is blocked in the (non-Extended) Simple UI, //////////
+    ////////// depending on the value of USE_EXTENDED_SIMPLE_UI //////////
+
+    // If USE_EXTENDED_SIMPLE_UI == 0, block all extended actions
+    #if defined(USE_SIMPLE_UI) && (!defined(USE_EXTENDED_SIMPLE_UI) || USE_EXTENDED_SIMPLE_UI == 0)
+    if (cfg.simple_ui_active) {
+        return EVENT_NOT_HANDLED;
+    }
+    #endif
 
     #ifndef USE_EXTENDED_SIMPLE_UI
     if (cfg.simple_ui_active) {
@@ -263,6 +271,13 @@ uint8_t off_state(Event event, uint16_t arg) {
     }
     #endif  // ifndef USE_EXTENDED_SIMPLE_UI
     #endif  // ifdef USE_SIMPLE_UI
+
+    // If USE_EXTENDED_SIMPLE_UI == 1, allow aux config but block strobes
+    #if defined(USE_SIMPLE_UI) && (USE_EXTENDED_SIMPLE_UI == 1)
+    if (cfg.simple_ui_active) {
+        return EVENT_NOT_HANDLED;
+    }
+    #endif
 
     // click, click, long-click: strobe mode
     #ifdef USE_STROBE_STATE

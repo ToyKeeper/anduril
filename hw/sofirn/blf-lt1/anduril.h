@@ -60,7 +60,9 @@
 
 // Allow 3C in Simple UI for switching between smooth and stepped ramping
 #define USE_SIMPLE_UI_RAMPING_TOGGLE
-#define USE_EXTENDED_SIMPLE_UI
+
+// allow Aux Config, Sunset Timer, and Strobe Modes in Simple UI
+#define USE_EXTENDED_SIMPLE_UI 2
 
 // also at Sofirn's request, enable 2 click turbo (Anduril 1 style)
 #define DEFAULT_2C_STYLE  1
