@@ -14,6 +14,7 @@ void set_level_led4(uint8_t level);
 void set_level_all(uint8_t level);
 void set_level_led34a_blend(uint8_t level);
 void set_level_led34b_blend(uint8_t level);
+void set_level_led14_blend(uint8_t level);
 void set_level_hsv(uint8_t level);
 void set_level_auto3(uint8_t level);
 
@@ -23,6 +24,7 @@ bool gradual_tick_led4(uint8_t gt);
 bool gradual_tick_all(uint8_t gt);
 bool gradual_tick_led34a_blend(uint8_t gt);
 bool gradual_tick_led34b_blend(uint8_t gt);
+bool gradual_tick_led14_blend(uint8_t gt);
 bool gradual_tick_hsv(uint8_t gt);
 bool gradual_tick_auto3(uint8_t gt);
 
@@ -48,16 +50,22 @@ Channel channels[] = {
         .gradual_tick = gradual_tick_all,
         .has_args     = 0
     },
-    { // 3rd + 4th LEDs, manual blend (max "100%" power) (8/16/16)
+    { // 3rd + 4th LEDs (8/16/16) or 3rd + main LEDs (16/16/8), manual blend (max "100%" power)
         .set_level    = set_level_led34a_blend,
         .gradual_tick = gradual_tick_led34a_blend,
         .has_args     = 1
     },
-    { // 3rd + 4th LEDs, manual blend (max "100%" power) (16/16/8)
+    { // main + 3rd LEDs (8/16/16) or 4th + 3rd LEDs (16/16/8), manual blend (max "100%" power)
         .set_level    = set_level_led34b_blend,
         .gradual_tick = gradual_tick_led34b_blend,
         .has_args     = 1
     },
+    { // main + 4th LEDs (8/16/16) or 4th + main LEDs (16/16/8), manual blend (max "100%" power)
+        .set_level    = set_level_led14_blend,
+        .gradual_tick = gradual_tick_led14_blend,
+        .has_args     = 1
+    },
+
     { // 3ch blend (HSV style)
         .set_level    = set_level_hsv,
         .gradual_tick = gradual_tick_hsv,
@@ -74,7 +82,7 @@ Channel channels[] = {
 // HSV mode needs a different 3H handler
 StatePtr channel_3H_modes[NUM_CHANNEL_MODES] = {
     NULL, NULL, NULL, NULL,
-    NULL, NULL, circular_tint_3h, NULL,
+    NULL, NULL, NULL, circular_tint_3h, NULL,
 };
 
 void set_level_zero() {
@@ -213,6 +221,19 @@ void set_level_led34b_blend(uint8_t level) {
                   (blend>85), (blend<170), 0);
 }
 
+// 16/16/8 wiring, mix other 16+8
+void set_level_led14_blend(uint8_t level) {
+    PWM_DATATYPE warm_PWM, cool_PWM;
+    PWM_DATATYPE brightness = PWM_GET(pwm1_levels, level);
+    uint8_t blend = cfg.channel_mode_args[channel_mode];
+
+    calc_2ch_blend(&warm_PWM, &cool_PWM, brightness, DSM_TOP, blend);
+
+    set_hw_levels(cool_PWM,   0,    warm_PWM,
+                  (blend>85), 0, (blend<170));
+}
+
+
 void set_level_hsv(uint8_t level) {
     RGB_t color;
     uint8_t h = cfg.channel_mode_args[channel_mode];
@@ -340,6 +361,16 @@ bool gradual_tick_led34b_blend(uint8_t gt) {
     calc_2ch_blend(&warm_PWM, &cool_PWM, brightness, DSM_TOP, blend);
 
     return gradual_adjust(cool_PWM, warm_PWM, 0);
+}
+
+bool gradual_tick_led14_blend(uint8_t gt) {
+    PWM_DATATYPE warm_PWM, cool_PWM;
+    PWM_DATATYPE brightness = PWM_GET(pwm1_levels, gt);
+    uint8_t blend = cfg.channel_mode_args[channel_mode];
+
+    calc_2ch_blend(&warm_PWM, &cool_PWM, brightness, DSM_TOP, blend);
+
+    return gradual_adjust(cool_PWM, 0, warm_PWM);
 }
 
 bool gradual_tick_hsv(uint8_t gt) {
