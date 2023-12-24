@@ -116,6 +116,9 @@ typedef struct Config {
     #endif
     #ifdef USE_TACTICAL_MODE
         uint8_t tactical_levels[3];
+      #ifdef USE_TACTICAL_MODE_SMOOTH_STEPS
+        uint8_t tactical_smooth_steps;
+      #endif
     #endif
 
     ///// hardware config / globals menu
