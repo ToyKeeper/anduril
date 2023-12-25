@@ -28,6 +28,9 @@ void auto_clock_speed();
 #ifdef USE_BLINK_NUM
 //#define USE_BLINK
 uint8_t blink_num(uint8_t num);
+#ifdef USE_LONG_BLINK_FOR_NEGATIVE_SIGN
+void blink_negative();
+#endif
 #endif
 
 /*

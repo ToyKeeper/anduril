@@ -28,6 +28,8 @@ uint8_t beacon_state(Event event, uint16_t arg) {
     else if (event == EV_2clicks) {
         #if defined(USE_SOS_MODE) && defined(USE_SOS_MODE_IN_BLINKY_GROUP)
         set_state(sos_state, 0);
+        #elif defined(USE_BEACONTOWER_MODE)
+        set_state(beacontower_state, 0);
         #elif defined(USE_BATTCHECK)
         set_state(battcheck_state, 0);
         #elif defined(USE_THERMAL_REGULATION)
