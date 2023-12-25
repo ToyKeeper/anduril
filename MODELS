@@ -77,6 +77,8 @@ Model     MCU         Name
 1631      attiny1616  thefreeman-boost21-mp3431-hdr-dac-argb
 1632      attiny1616  thefreeman-boost-fwaa-mp3432-hdr-dac-rgb
 1632dd20  avr32dd20   thefreeman-avr32dd20-devkit
+4201      attiny1616  loneoceans-lume1-6af (6A buck driver + FET)
+4211      attiny1616  loneoceans-lume-x1-40w (40W boost driver)
 
 Duplicates:
 
