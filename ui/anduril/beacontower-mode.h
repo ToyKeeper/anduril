@@ -1,6 +1,6 @@
 // beacon-mode.h: Beacon mode for Anduril.
 // Copyright (C) 2017-2023 Selene ToyKeeper
-//               2020 loneoceans
+//               2019 loneoceans
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
