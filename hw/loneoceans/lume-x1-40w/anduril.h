@@ -78,8 +78,10 @@
 //**       THERMAL SETTINGS            **
 //***************************************
 
-// set this light for 50C thermal ceiling
+// set thermal ceiling
+#ifdef DEFAULT_THERM_CEIL
 #undef DEFAULT_THERM_CEIL
+#endif
 #define DEFAULT_THERM_CEIL 50
 
 // stop panicking at ~1.5A (not sure of this numbers yet since it depends on the host..)
@@ -111,13 +113,13 @@
 #undef RAMP_STYLE
 #define RAMP_STYLE 1
 
-// smooth steps still requires a bit of tweaking to look right
-#ifdef USE_SMOOTH_STEPS
-#undef USE_SMOOTH_STEPS
-#endif
+// uncomment to disable smooth steps
+//#ifdef USE_SMOOTH_STEPS
+//#undef USE_SMOOTH_STEPS
+//#endif
 
 #define BLINK_BRIGHTNESS (MAX_LEVEL/4)  // increase blink brightness from max/6
-#define BLINK_ONCE_TIME 28              // increase from 10 to make brighter
+#define BLINK_ONCE_TIME 32              // increase from 10 to make brighter
 
 //***************************************
 //**       AUX LEDs and MISC           **
@@ -127,7 +129,6 @@
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
-#define AUXLED_RGB_DIFFERENT_PORTS 
 
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
@@ -135,6 +136,7 @@
 // blink numbers on the main LEDs by default
 #define DEFAULT_BLINK_CHANNEL  CM_MAIN
 
+// this light only has one main led channel
 // use aux red + aux blue for police strobe
 #define USE_POLICE_COLOR_STROBE_MODE
 #define POLICE_STROBE_USES_AUX
@@ -173,7 +175,7 @@
 #define STROBE_OFF_LEVEL 1  // keep regulators on between strobes
 
 // smoother candle mode with bigger oscillations
-//#define CANDLE_AMPLITUDE 40
+#define CANDLE_AMPLITUDE 30 // default 25
 
 // attiny1616 has enough space to smooth out voltage readings
 #define USE_VOLTAGE_LOWPASS

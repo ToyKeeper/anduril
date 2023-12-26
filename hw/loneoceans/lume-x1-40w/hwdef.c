@@ -11,8 +11,8 @@
 #include "fsm/chan-rgbaux.c"
 
 // Declare variables and functions to support UDR multiple power paths
-
-uint8_t power_path_level = 0; // 0 = off, 1 = firefly, 2 = low, 3 = high
+uint8_t power_path_level = 0;       // 0 = off, 1 = firefly, 2 = low, 3 = high
+uint8_t is_boost_currently_on = 0;  // for turn-on delay during first turn on
 
 void set_level_udr(uint8_t level);
 void set_power_path(uint8_t ramp_level);
@@ -32,23 +32,31 @@ void set_level_zero() {
     power_path_level = 0;   // Set power path level to 0
     DAC_LVL  = 0;           // Set DAC to 0
     mcu_set_dac_vref(V055); // Set DAC Vref to lowest 
-    LED_PATH1_PORT &= ~LED_PATH1_PIN;   // turn off all UDR paths
-    LED_PATH2_PORT &= ~LED_PATH2_PIN;
-    LED_PATH3_PORT &= ~LED_PATH3_PIN;
 
     // turn off DC/DC converter and amplifier 
     BST_ENABLE_PORT &= ~BST_ENABLE_PIN; 
+    is_boost_currently_on = 0;
+
+    // turn off all UDR paths
+    LED_PATH1_PORT &= ~LED_PATH1_PIN;   
+    LED_PATH2_PORT &= ~LED_PATH2_PIN;
+    LED_PATH3_PORT &= ~LED_PATH3_PIN;
 }
 
-// UDR power path control for set_level, which sets the led brightness based on ramp tables
+// UDR for set_level, which sets the led brightness based on ramp tables
 void set_level_udr(uint8_t level) {
-
-    BST_ENABLE_PORT |= (1 << BST_ENABLE_PIN);   // Turn on DC/DC and amplifier
-    delay_4ms(LED_ON_DELAY/4); // small delay to allow boot-up
+    if (level == actual_level - 1) return;  //  no-op
 
     // get the ramp data
     PWM1_DATATYPE dac_lvl  = PWM1_GET(level);
     PWM2_DATATYPE dac_vref = PWM2_GET(level);
+
+    if (is_boost_currently_on != 1){
+        // boost is not on, enable boost and add boot-up delay
+        is_boost_currently_on = 1;
+        BST_ENABLE_PORT |= (1 << BST_ENABLE_PIN);   // turn on boost and amplifier
+        delay_4ms(BST_ON_DELAY/4);                  // boot-up delay
+    }
 
     // set the DAC
     DAC_LVL  = dac_lvl;
@@ -61,10 +69,11 @@ void set_level_udr(uint8_t level) {
 // handles dynamic Vref used in the ramp tables 
 bool gradual_tick_main(uint8_t gt) {
 
-    // if Vref power path is the same, make gradual adjustments. 
-    // else, jump to the next ramp level and use set_level() to handle power paths.
-    // not quite smooth, need to look at this code a bit more..
+    // TODO overall smoothness can be improved due to gt using linear
+    // adjustments, but ramp table is non-linear.
 
+    // if Vref is the same, make gradual adjustments. 
+    // else, jump to the next ramp level and use set_level() to handle power paths.
     PWM1_DATATYPE dac_next  = PWM1_GET(gt); // DAC ramp table data
     PWM2_DATATYPE vref_next = PWM2_GET(gt); // DAC ramp table Vref
 

@@ -7,13 +7,11 @@
 //**  HARDWARE DEFINITIONS FOR LUME-X1-40W   **
 //*********************************************
 
-/*  Loneoceans Lume-X1-40W
+/*  Loneoceans Lume-X1-40W with ATTINY1616
+
     40W Boost Driver with UDR (Ultra Dynamic Range), RGB & Switch Aux LEDs
-    
-    ATTINY1616
 
     The following pins are invariant (20 QFN package 3x3 0.4mm BSC)
-
     - PA6 / PP7  - DAC OUT
     - PA0 / PP19 - nRST / UPDI pin
 
@@ -25,7 +23,6 @@
     - PP4 / VDD - Read voltage from VDD pin, uses PFET RPP, no voltage drop
 
     Used Pins
-
     - PB3 / PP11 - Enable Pin for Boost, Op Amp Supply
     - PC3 / PP18 - E-Switch pin (no need internal pull-up)
 
@@ -41,7 +38,6 @@
 
     - PA2 / PP1 / AIN2 - MIC Analog Input
     - PA1 / PP20 - MIC Enable / Supply pin
-
 */
 
 #define HWDEF_C  loneoceans/lume-x1-40w/hwdef.c
@@ -83,7 +79,7 @@ enum CHANNEL_MODES {
 // Boost and Amplifier Enable (PB3)
 #define BST_ENABLE_PIN   PIN3_bp
 #define BST_ENABLE_PORT  PORTB_OUT
-#define LED_ON_DELAY 8  // ms delay turning on the led after enable
+#define BST_ON_DELAY 8  // ms delay turning on the led after enable
 
 // Ultra Dynamic Range (UDR)
 /* 
@@ -128,6 +124,9 @@ enum CHANNEL_MODES {
 #define AUXLED_R_PORT   PORTC
 #define AUXLED_G_PORT   PORTB
 #define AUXLED_B_PORT   PORTB
+
+// aux leds are on different ports
+#define AUXLED_RGB_DIFFERENT_PORTS 
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
