@@ -34,6 +34,9 @@ uint8_t steady_state(Event event, uint16_t arg) {
 
     uint8_t mode_min = ramp_floor;
     uint8_t mode_max = ramp_ceil;
+    #ifdef USE_ADDITIONAL_TURBO_STYLES
+    uint8_t turbo_from_level = 0;
+    #endif
     uint8_t step_size;
     if (cfg.ramp_style) { step_size = ramp_discrete_step_size; }
     else { step_size = 1; }
@@ -48,11 +51,18 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #endif
         // 0 = no turbo
         // 1 = Anduril 1 direct to turbo
-        // 2 = Anduril 2 direct to ceiling, or turbo if already at ceiling
+        // 2 = Anduril 2 direct to ceiling, or turbo if already ramped to ceiling
+        // 3 = Anduril 2 direct to ceiling, or turbo if already at ceiling in any way
         if (0 == style_2c) turbo_level = mode_max;
         else if (1 == style_2c) turbo_level = MAX_LEVEL;
         else {
+            #ifdef USE_ADDITIONAL_TURBO_STYLES
+            if (2 == style_2c) { turbo_from_level = memorized_level; }
+            else { turbo_from_level = actual_level; }
+            if (turbo_from_level < mode_max) { turbo_level = mode_max; }
+            #else
             if (memorized_level < mode_max) { turbo_level = mode_max; }
+            #endif
             else { turbo_level = MAX_LEVEL; }
         }
     #elif defined(USE_2C_MAX_TURBO)  // Anduril 1 style always
