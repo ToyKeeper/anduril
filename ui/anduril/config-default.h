@@ -215,3 +215,5 @@
 // (but allow disabling this feature per build)
 #define USE_CHANNEL_PER_STROBE
 
+//enable additional turbo styles by default (size impact of these should be minimal)
+#define USE_ADDITIONAL_TURBO_STYLES

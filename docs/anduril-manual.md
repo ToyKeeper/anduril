@@ -270,6 +270,11 @@ While the light is on, a few actions are available:
               1: Anduril 1 style.  `Ramp -> 2C` goes to full power.  
               2: Anduril 2 style.  `Ramp -> 2C` goes to ceiling,
                  or goes to full power if user ramped up to ceiling first.
+              3: Anduril 2 style, with turbo always available from ceiling.
+                 `Ramp -> 2C` goes to ceiling, or to turbo if already at
+                 ceiling, including from a previous 2C (allowing 2C to be
+                 used twice to directly access turbo from any ramp level 
+                 without needing to ramp up to ceiling first).
               This value also affects momentary turbo in Ramp and Off modes.
     - Item 5: Configure "smooth steps".  
               0: Disable smooth steps.  
