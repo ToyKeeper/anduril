@@ -9,7 +9,6 @@
 
 uint8_t tactical_state(Event event, uint16_t arg) {
     // momentary(ish) tactical mode
-    uint8_t mem_lvl = memorized_level;  // save this to restore it later
     uint8_t ret = EVENT_NOT_HANDLED;
 
     // button is being held
@@ -23,36 +22,35 @@ uint8_t tactical_state(Event event, uint16_t arg) {
         uint8_t click = event & 0x0f; // click number
         if (click <= 3) {
             momentary_active = 1;
-            uint8_t lvl;
-            lvl = cfg.tactical_levels[click-1];
-            if ((1 <= lvl) && (lvl <= RAMP_SIZE)) {  // steady output
-                memorized_level = lvl;
+            uint8_t lvl = cfg.tactical_levels[click-1];
+            if (lvl <= RAMP_SIZE) {  // steady output
                 momentary_mode = 0;
                 #if NUM_CHANNEL_MODES > 1
                     // use ramp mode's channel
                     channel_mode = cfg.channel_mode;
                 #endif
+                off_state_set_level(lvl);
             } else {  // momentary strobe mode
                 momentary_mode = 1;
-                if (lvl > RAMP_SIZE) {
-                    current_strobe_type = (lvl - RAMP_SIZE - 1) % strobe_mode_END;
-                }
+                current_strobe_type = (lvl - RAMP_SIZE - 1) % strobe_mode_END;
             }
         }
     }
     // button was released
     else if ((event & (B_CLICK | B_PRESS)) == (B_CLICK)) {
         momentary_active = 0;
-        set_level(0);
-        interrupt_nice_delays();  // stop animations in progress
+        if (momentary_mode) {
+            set_level(0);
+            interrupt_nice_delays();  // stop animations in progress
+        } else {
+            off_state_set_level(0);
+        }
     }
 
     // delegate to momentary mode while button is pressed
-    if (momentary_active) {
+    if (momentary_active && momentary_mode) {
         momentary_state(event, arg);
     }
-
-    memorized_level = mem_lvl;  // restore temporarily overridden mem level
 
     // copy lockout mode's aux LED and sleep behaviors
     if (event == EV_enter_state) {
