@@ -1,15 +1,15 @@
 # Lumintop FW3X Lume1
 
-A BLF FW3A with a new driver from LoneOceans.  The new driver adds efficient
+A BLF FW3A with a new driver from Loneoceans.  The new driver adds efficient
 constant-current power regulation, RGB aux LEDs, and an upgraded temperature
 sensor.
 
 ## Notes of interest
 
 **Flashing firmware**:  The MOSI and MISO pin are swapped on PCBs dated 01/20,
-compared to a Hanklight.  LoneOceans sent a fixed driver design (dated 06/20)
+compared to a Hanklight.  Loneoceans sent a fixed driver design (dated 06/20)
 to Lumintop, but the new design didn't get produced.  So to flash firmware,
-swap the wires for those two pins first.
+swap the wires for those two pins first. The silkscreen is labeled correctly. 
 
 **Fuses**: Lumintop seems to have shipped the FW3X with the wrong fuse values,
 so it has the MCU severely underclocked and everything runs much slower than it
@@ -30,6 +30,6 @@ output is unstable so there is very visible ripple.  The user can either raise
 the ramp floor to a level high enough to avoid these issues, or learn to live
 with the ripple and preflash.
 
-LoneOceans has some extra notes here, which mostly apply only to older versions
+Loneoceans has some extra notes here, which mostly apply only to older versions
 of the code: https://budgetlightforum.com/t/anduril-2/62656/531
 

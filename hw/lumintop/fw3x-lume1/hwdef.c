@@ -4,7 +4,7 @@
 #pragma once
 
 #include "fsm/chan-rgbaux.c"
-
+uint8_t is_buck_currently_on = 0;   // for turn-on delay during first turn on
 
 void set_level_zero();
 
@@ -26,6 +26,8 @@ void set_level_zero() {
     // (helps improve button press handling from Off state)
     DSM_INTCTRL &= ~DSM_OVF_bm;
 
+    is_buck_currently_on = 0;
+
     // turn off all LEDs
     ch1_dsm_lvl = 0;
     CH1_PWM = 0;
@@ -38,9 +40,26 @@ void set_level_zero() {
 void set_level_main(uint8_t level) {
     if (level == actual_level - 1) return;  // prevent flicker on no-op
 
+    // get the ramp level
     PWM1_DATATYPE ch1 = PWM1_GET(level);
     PWM2_DATATYPE ch2 = PWM2_GET(level);
 
+    // check if FET is on; if it is, disable buck 
+    if (ch2 > 0){
+        CH1_ENABLE_PORT &= ~(1 << CH1_ENABLE_PIN);  // disable regulator
+        is_buck_currently_on = 0;                   // regulator is off
+    }
+    else{
+        // buck is on
+        if (is_buck_currently_on == 0){
+            // first time turning on regulator
+            CH1_PWM = 0;
+            PWM_CNT = 0;
+            is_buck_currently_on = 1;
+            CH1_ENABLE_PORT |= (1 << CH1_ENABLE_PIN);   // enable regulator
+            //delay_4ms(BCK_ON_DELAY/4);                   // start-up delay
+        }
+    }
     // set delta-sigma soft levels
     ch1_dsm_lvl = ch1;
 
@@ -56,8 +75,8 @@ void set_level_main(uint8_t level) {
     if (! actual_level) PWM_CNT = 0;
 
     // don't enable ch1 and ch2 at the same time
-    if (ch2) CH1_ENABLE_PORT &= ~(1 << CH1_ENABLE_PIN);  // disable regulator
-    else CH1_ENABLE_PORT |= (1 << CH1_ENABLE_PIN);  // enable regulator
+    //if (ch2) CH1_ENABLE_PORT &= ~(1 << CH1_ENABLE_PIN);  // disable regulator
+    //else CH1_ENABLE_PORT |= (1 << CH1_ENABLE_PIN);  // enable regulator
 }
 
 // delta-sigma modulation of PWM outputs
