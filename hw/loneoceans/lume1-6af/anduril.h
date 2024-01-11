@@ -1,5 +1,5 @@
 // Copyright (C) 2017-2023 Selene ToyKeeper
-//               2021-2023 loneoceans
+//               2021-2023 Loneoceans
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -98,7 +98,10 @@
 #ifdef DEFAULT_THERM_CEIL
 #undef DEFAULT_THERM_CEIL
 #endif
-#define DEFAULT_THERM_CEIL 60
+#define DEFAULT_THERM_CEIL 50
+
+// extra boost during turbo, lower when temp = temp_ceil + extra
+#define TURBO_TEMP_EXTRA 10
 
 // stop panicking at ~1.5A (not sure of this numbers yet since it depends on the host..)
 #define THERM_FASTER_LEVEL 125          // About 8-9W

@@ -349,9 +349,19 @@ static void ADC_temperature_handler() {
             int16_t howmuch = (offset + offset - 3) * THERM_RESPONSE_MAGNITUDE / 128;
             if (howmuch < 1) howmuch = 1;
             warning_threshold = THERM_NEXT_WARNING_THRESHOLD - (uint8_t)howmuch;
-
+            
+            // if TURBO_TEMP_EXTRA is defined, allow to run hotter in turbo until limit is hit
+            #ifdef TURBO_TEMP_EXTRA
+            if ((temperature < (TH_CEIL + TURBO_TEMP_EXTRA)) && (actual_level >= RAMP_SIZE-1) ){
+                ; // take no action
+            } 
+            else{
+                emit(EV_temperature_high, howmuch);
+            }
+            #else
             // send a warning
             emit(EV_temperature_high, howmuch);
+            #endif
         }
     }
 
