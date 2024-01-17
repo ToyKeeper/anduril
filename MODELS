@@ -55,6 +55,10 @@ Model     MCU         Name
 0422      attiny85    fireflies-pl47-219
 0423      attiny85    fireflies-pl47g2
 0441      attiny85    fireflies-e01
+0445      attiny85    fireflies-e12c
+0451      attiny1616  fireflies-lume1-6af       (E07X, E12R, NOV-Mu, etc)
+0452      attiny1616  fireflies-lume1-6af-nofet (T9R, T1R, etc)
+0461      attiny1616  fireflies-lume-x1-40w     (X1S, X1L, etc)
 0511      attiny85    mateminco-mf01s
 0521      attiny85    mateminco-mf01-mini
 0531      attiny85    mateminco-mt35-mini
