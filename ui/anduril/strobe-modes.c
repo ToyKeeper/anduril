@@ -46,8 +46,35 @@ uint8_t strobe_state(Event event, uint16_t arg) {
     #if (NUM_CHANNEL_MODES > 1) && defined(USE_CHANNEL_PER_STROBE)
     // 3 clicks: rotate through channel modes for the current strobe
     else if (event == EV_3clicks) {
-        // TODO: maybe skip aux modes?
-        set_channel_mode((channel_mode + 1) % NUM_CHANNEL_MODES);
+        uint8_t next_ch = (channel_mode);
+        // TODO: police flasher mode isn't handled by this, doesn't really matter as it sets modes anyway,
+        // but maybe should do something sensible to handle it here as well?
+        #if (defined(USE_BIKE_FLASHER_MODE) || defined(USE_CANDLE_MODE))
+          if (
+          #ifdef USE_BIKE_FLASHER_MODE
+              (current_strobe_type == bike_flasher_e)
+            #ifdef USE_CANDLE_MODE
+              ||
+            #endif
+          #endif
+          #ifdef USE_CANDLE_MODE
+              (current_strobe_type == candle_mode_e)
+          #endif
+          ){
+//              uint8_t next_ch = (channel_mode);
+              uint8_t count = 0;
+              do {
+                  count ++; //e.g. 1
+                  next_ch = ((next_ch + 1) % NUM_CHANNEL_MODES);
+                  if (!channel_uses_aux(next_ch)) break;
+              } while (count < NUM_CHANNEL_MODES);
+          } else {
+              next_ch = ((channel_mode + 1) % NUM_CHANNEL_MODES);
+          }
+          set_channel_mode(next_ch);
+        #else
+          set_channel_mode((channel_mode + 1) % NUM_CHANNEL_MODES);
+        #endif
         cfg.strobe_channels[st] = channel_mode;
         save_config();
         return EVENT_HANDLED;
