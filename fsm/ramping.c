@@ -40,13 +40,9 @@ inline void set_level_aux_leds(uint8_t level) {
 // TODO: maybe move this stuff into FSM
 #include "anduril/aux-leds.h"  // for rgb_led_voltage_readout()
 inline void set_level_aux_rgb_leds(uint8_t level) {
-//    if ((! go_to_standby)
-       if (
+    if ((! go_to_standby)
        #ifdef USE_CHANNEL_USES_AUX
-//       && (!channel_uses_aux(channel_mode))
-       (!channel_uses_aux(channel_mode))
-       #else
-       (! go_to_standby)
+       && (!channel_uses_aux(channel_mode))
        #endif
        ){
         if (level > 0) {
@@ -99,7 +95,7 @@ void set_level(uint8_t level) {
 
     if (0 == level) {
         set_level_zero();
-        #ifdef USE_CHANNEL_USES_AUX
+        #if(defined(USE_CHANNEL_USES_AUX) && defined(USE_AUX_RGB_LEDS))
             if (channel_uses_aux(channel_mode)){
                 rgb_led_set(0);
             }
@@ -107,6 +103,7 @@ void set_level(uint8_t level) {
     } else {
         // call the relevant hardware-specific set_level_*()
         SetLevelFuncPtr set_level_func = channels[channel_mode].set_level;
+        //when using set_level_func(), ramp levels start at 0 and go up to 149 instead of 1-150:
         set_level_func(level - 1);
     }
 
