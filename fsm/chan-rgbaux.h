@@ -46,6 +46,7 @@
         .set_level    = set_level_auxgrn, \
         .gradual_tick = gradual_tick_null \
         AUX_RGB_HAS_ARGS \
+        AUX_RGB_USES_AUX \
     }, \
     { \
         .set_level    = set_level_auxcyn, \
