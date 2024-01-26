@@ -298,7 +298,7 @@ bool gradual_adjust(PWM_DATATYPE main2, PWM_DATATYPE led3, PWM_DATATYPE led4) {
     // (so it adjusts faster/coarser when bright, slower/finer when dim)
 
     // higher shift = slower/finer adjustments
-    const uint8_t shift = 9;  // ((255 << 7) >> 9) = 63 max
+    const uint8_t shift = 8;  // ((255 << 7) >> 8) = 127 max
     uint8_t steps;
 
     steps = main2_dsm_lvl >> shift;
