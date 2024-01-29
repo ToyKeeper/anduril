@@ -34,7 +34,7 @@ void set_level_zero() {
     mcu_set_dac_vref(V055); // Set DAC Vref to lowest 
 
     // turn off DC/DC converter and amplifier 
-    BST_ENABLE_PORT &= ~BST_ENABLE_PIN; 
+    BST_ENABLE_PORT &= ~(1 << BST_ENABLE_PIN); 
     is_boost_currently_on = 0;
 
     // turn off all UDR paths
