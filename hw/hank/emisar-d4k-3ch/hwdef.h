@@ -45,12 +45,13 @@
 // - 2. 3rd LED only
 // - 3. 4th LED only (8/16/16 wiring) or main 2 LEDs only (16/16/8)
 // - 4. all 3 channels (equal amounts)
-// - 5. 2ch blend (3rd + 4th LEDs, 8/16/16 wiring)
-// - 6. 2ch blend (3rd + 4th LEDs, 16/16/8 wiring)
-// - 7. 3ch blend (HSV style)
-// - 8. 3ch auto blend (red-warm-cool style, led4-led3-main2)
-// - 9+. RGB aux (hidden)
-#define NUM_CHANNEL_MODES   (8 + NUM_RGB_AUX_CHANNEL_MODES)
+// - 5. 2ch blend (3rd + 4th LEDs, 8/16/16 wiring, or main 2 + 3rd LEs, 16/16/8 wiring)
+// - 6. 2ch blend (main 2 + 3rd LEDs, 8/16/16 wiring, or 3rd + 4th LEDs, 16/16/8 wiring)
+// - 7. 2ch blend (main 2 + 4th LEDs, either wiring (wiring difference only affects initial direction))
+// - 8. 3ch blend (HSV style)
+// - 9. 3ch auto blend (red-warm-cool style, led4-led3-main2)
+// - 10+. RGB aux (hidden)
+#define NUM_CHANNEL_MODES   (9 + NUM_RGB_AUX_CHANNEL_MODES)
 enum channel_modes_e {
     CM_MAIN2 = 0,
     CM_LED3,
@@ -58,6 +59,7 @@ enum channel_modes_e {
     CM_ALL,
     CM_BLEND34A,  // 8 / [16+16]
     CM_BLEND34B,  // 16 / [16+8]
+    CM_BLEND14,
     CM_HSV,
     CM_AUTO3,
     RGB_AUX_ENUMS
@@ -66,7 +68,7 @@ enum channel_modes_e {
 #define CHANNEL_MODES_ENABLED 0b0000000000001111
 #define USE_CHANNEL_MODE_ARGS
 // _, _, _, _, 128=middle CCT, 128=middle CCT, 213=purple, _
-#define CHANNEL_MODE_ARGS 0,0,0,0,128,128,213,0,RGB_AUX_CM_ARGS
+#define CHANNEL_MODE_ARGS 0,0,0,0,128,128,128,213,0,RGB_AUX_CM_ARGS
 #define USE_CUSTOM_CHANNEL_3H_MODES
 #define USE_CIRCULAR_TINT_3H
 
