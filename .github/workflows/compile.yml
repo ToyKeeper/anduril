@@ -1,13 +1,6 @@
-name: build all
+name: anduril
 
-on:
-  # all branches:
-  [ push, pull_request ]
-  # trunk only:
-  #push:
-  #  branches: [ "trunk" ]
-  #pull_request:
-  #  branches: [ "trunk" ]
+on: [ push, pull_request ]
 
 jobs:
   compile:
@@ -49,7 +42,7 @@ jobs:
     - name: Compile All
       run: |
         ./make
-        echo "ARTIFACT_NAME=${GITHUB_WORKFLOW}-$(git rev-parse --short ${GITHUB_SHA})-${GITHUB_RUN_NUMBER}" >> "${GITHUB_ENV}"
+        echo "ARTIFACT_NAME=${GITHUB_WORKFLOW}-$(echo "${GITHUB_REF_NAME}" | tr '":<>|*?\\/' '_')-$(git rev-parse --short ${GITHUB_SHA})-${GITHUB_RUN_NUMBER}" >> "${GITHUB_ENV}"
 
     - name: Store Artifacts
       uses: actions/upload-artifact@v3
