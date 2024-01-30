@@ -9,7 +9,6 @@
 
 uint8_t tactical_state(Event event, uint16_t arg) {
     // momentary(ish) tactical mode
-    uint8_t mem_lvl = memorized_level;  // save this to restore it later
     uint8_t ret = EVENT_NOT_HANDLED;
 
     // button is being held
@@ -23,36 +22,45 @@ uint8_t tactical_state(Event event, uint16_t arg) {
         uint8_t click = event & 0x0f; // click number
         if (click <= 3) {
             momentary_active = 1;
-            uint8_t lvl;
-            lvl = cfg.tactical_levels[click-1];
-            if ((1 <= lvl) && (lvl <= RAMP_SIZE)) {  // steady output
-                memorized_level = lvl;
+            uint8_t lvl = cfg.tactical_levels[click-1];
+            if (lvl <= RAMP_SIZE) {  // steady output
                 momentary_mode = 0;
                 #if NUM_CHANNEL_MODES > 1
                     // use ramp mode's channel
                     channel_mode = cfg.channel_mode;
                 #endif
+                #ifdef USE_TACTICAL_MODE_SMOOTH_STEPS
+                if (cfg.tactical_smooth_steps) off_state_set_level(lvl);
+                else set_level(lvl);
+                #else
+                set_level(lvl);
+                #endif
             } else {  // momentary strobe mode
                 momentary_mode = 1;
-                if (lvl > RAMP_SIZE) {
-                    current_strobe_type = (lvl - RAMP_SIZE - 1) % strobe_mode_END;
-                }
+                current_strobe_type = (lvl - RAMP_SIZE - 1) % strobe_mode_END;
             }
         }
     }
     // button was released
     else if ((event & (B_CLICK | B_PRESS)) == (B_CLICK)) {
         momentary_active = 0;
-        set_level(0);
-        interrupt_nice_delays();  // stop animations in progress
+        if (momentary_mode) {
+            set_level(0);
+            interrupt_nice_delays();  // stop animations in progress
+        } else {
+            #ifdef USE_TACTICAL_MODE_SMOOTH_STEPS
+            if (cfg.tactical_smooth_steps) off_state_set_level(0);
+            else set_level(lvl);
+            #else
+            set_level(0);
+            #endif
+        }
     }
 
     // delegate to momentary mode while button is pressed
-    if (momentary_active) {
+    if (momentary_active && momentary_mode) {
         momentary_state(event, arg);
     }
-
-    memorized_level = mem_lvl;  // restore temporarily overridden mem level
 
     // copy lockout mode's aux LED and sleep behaviors
     if (event == EV_enter_state) {
@@ -100,10 +108,21 @@ void tactical_config_save(uint8_t step, uint8_t value) {
     // each value is 1 to 150, or other:
     // - 1..150 is a ramp level
     // - other means "strobe mode"
-    cfg.tactical_levels[step - 1] = value;
+    if (step <= 3){
+      cfg.tactical_levels[step - 1] = value;
+    }
+    #ifdef USE_TACTICAL_MODE_SMOOTH_STEPS
+    else if (step == 4){
+      cfg.tactical_smooth_steps = value;
+    }
+    #endif
 }
 
 uint8_t tactical_config_state(Event event, uint16_t arg) {
+    #ifdef USE_TACTICAL_MODE_SMOOTH_STEPS
     return config_state_base(event, arg, 3, tactical_config_save);
+    #else
+    return config_state_base(event, arg, 4, tactical_config_save);
+    #endif
 }
 
