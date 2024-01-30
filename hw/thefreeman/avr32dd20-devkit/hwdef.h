@@ -28,6 +28,7 @@
  *  18   PA1    G: aux green
  *  19   PA2    B: aux blue
  *  20   PA3    CH: detect charging
+ *              or BBY: boost bypass PFET
  *
  * BST EN enable the boost regulator and Op-Amp
  * DAC sets the current, max current depends on Vset voltage divider and Rsense
@@ -35,6 +36,8 @@
  *         and low value Rsense (high current range, pin high)
  * IN- NFET : pull up after BST enable to eliminate startup flash, pull down otherwise
  * CH senses the status of the onboard charger
+ * BBY routes power around the boost converter in li-ion 3V mode
+ *   (pin low = bypass, pin high = boost)
  * BATT LVL : Vbat * (100.0/(330+100))
  * LVB is for OTSM firmware, not used here
  */
@@ -76,6 +79,11 @@ enum CHANNEL_MODES {
 // BST enable
 #define BST_ENABLE_PIN   PIN5_bp
 #define BST_ENABLE_PORT  PORTD_OUT
+
+// BST bypass
+#define USE_BST_BYPASS
+#define BST_BYPASS_PIN   PIN3_bp
+#define BST_BYPASS_PORT  PORTA_OUT
 
 // HDR
 // turns on HDR FET for the high current range
@@ -133,7 +141,9 @@ inline void hwdef_setup() {
     VPORTA.DIR = PIN0_bm   // R
                | PIN1_bm   // G
                | PIN2_bm   // B
-               //| PIN3_bm   // CH
+               #ifdef USE_BST_BYPASS
+               | PIN3_bm   // BBY
+               #endif
                | PIN7_bm;  // HDR
     VPORTD.DIR = PIN5_bm   // EN
                | PIN6_bm   // DAC
@@ -143,7 +153,9 @@ inline void hwdef_setup() {
     //PORTA.PIN0CTRL = PORT_PULLUPEN_bm;  // R
     //PORTA.PIN1CTRL = PORT_PULLUPEN_bm;  // G
     //PORTA.PIN2CTRL = PORT_PULLUPEN_bm;  // B
-    //PORTA.PIN3CTRL = PORT_PULLUPEN_bm;  // CH
+    #ifdef USE_BST_BYPASS
+    PORTA.PIN3CTRL = PORT_PULLUPEN_bm;  // BBY
+    #endif
     PORTA.PIN4CTRL = PORT_PULLUPEN_bm;
     PORTA.PIN5CTRL = PORT_PULLUPEN_bm;
     //PORTA.PIN6CTRL = PORT_PULLUPEN_bm;  // BATT LVL
@@ -176,6 +188,12 @@ inline void hwdef_setup() {
     // TODO: instead of enabling the DAC at boot, pull pin down
     //       to generate a zero without spending power on the DAC
     //       (and do this in set_level_zero() too)
+
+    // TCA/TCB/TCD aren't being used, so turn them off
+    TCA0.SINGLE.CTRLA = 0;
+    TCB0.CTRLA = 0;
+    TCB1.CTRLA = 0;
+    TCD0.CTRLA = 0;
 
 }
 
