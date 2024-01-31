@@ -181,6 +181,10 @@
 #include "anduril/beacon-mode.c"
 #endif
 
+#ifdef USE_BEACONTOWER_MODE
+#include "anduril/beacontower-mode.c"
+#endif
+
 #ifdef USE_THERMAL_REGULATION
 #include "anduril/tempcheck-mode.c"
 #endif
@@ -331,7 +335,18 @@ void loop() {
     #ifdef USE_THERMAL_REGULATION
     // TODO: blink out therm_ceil during thermal_config_state?
     else if (state == tempcheck_state) {
+        // temperature is type int16_t
+        // but blink_num is uint8_t, so -10 will blink as 246
+        #ifdef USE_LONG_BLINK_FOR_NEGATIVE_SIGN
+        if (temperature < 0){
+            blink_negative();
+            blink_num(-temperature);
+        }
+        else {blink_num(temperature);}
+        #endif
+        #ifndef USE_LONG_BLINK_FOR_NEGATIVE_SIGN
         blink_num(temperature);
+        #endif
         nice_delay_ms(1000);
     }
     #endif
@@ -339,6 +354,12 @@ void loop() {
     #ifdef USE_BEACON_MODE
     else if (state == beacon_state) {
         beacon_mode_iter();
+    }
+    #endif
+
+    #ifdef USE_BEACONTOWER_MODE
+    else if (state == beacontower_state) {
+        beacontower_mode_iter();
     }
     #endif
 

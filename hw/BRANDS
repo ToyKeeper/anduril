@@ -4,7 +4,7 @@ Undefined	0000
 Emisar		0100 - 0199
 Noctigon	0200 - 0199
 Lumintop	0300 - 0399
-Fireflies	0400 - 0499
+Fireflies	0400 - 0499 (name changed to FireflyLite in 2020)
 Mateminco	0500 - 0599
 Sofirn		0600 - 0699
 Wurkkos		0700 - 0799
@@ -13,3 +13,5 @@ gChart		1600 - 1699	(also thefreeman, since he picked 163X)
 ...
 reserved	1900 - 2199	(to ensure no overlap between years and model numbers)
 				(assumes this project won't be relevant in the year 2200 or later)
+...
+loneoceans  4200 - 4299
