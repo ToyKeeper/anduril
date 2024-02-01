@@ -12,5 +12,6 @@
 // (but not until the main LEDs are bright enough to overpower the aux)
 // (setting this lower makes an annoying effect on some levels)
 #define USE_AUX_RGB_LEDS_WHILE_ON  50
+#define USE_NUMBER_ENTRY_BIGNUM
 #define USE_INDICATOR_LED_WHILE_RAMPING
 
