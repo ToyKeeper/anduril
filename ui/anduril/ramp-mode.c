@@ -220,8 +220,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
                 || (memorized_level == BLINK_AT_RAMP_MIDDLE_2)
                 #endif
                 #ifdef BLINK_AT_RAMP_CEIL
-                // FIXME: only blink at top when going up, not down
-                || (memorized_level == mode_max)
+                || ((memorized_level == mode_max) && (ramp_direction == 1))
                 #endif
                 #ifdef BLINK_AT_RAMP_FLOOR
                 || (memorized_level == mode_min)
