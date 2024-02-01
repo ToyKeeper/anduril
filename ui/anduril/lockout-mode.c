@@ -26,11 +26,11 @@ uint8_t lockout_state(Event event, uint16_t arg) {
             if (cfg.manual_memory) lvl = cfg.manual_memory;
             #endif
         }
-        set_level(lvl);
+        off_state_set_level(lvl);
     }
     // button was released
     else if ((event & (B_CLICK | B_PRESS)) == (B_CLICK)) {
-        set_level(0);
+        off_state_set_level(0);
     }
     #endif  // ifdef USE_MOON_DURING_LOCKOUT_MODE
 
