@@ -101,6 +101,10 @@
     #define BLINK_AT_RAMP_MIDDLE_1 MAX_1x7135
     #endif
   #endif
+#else
+  #ifdef BLINK_AT_RAMP_MIDDLE_DELAY
+  #undef BLINK_AT_RAMP_MIDDLE_DELAY
+  #endif
 #endif
 
 
