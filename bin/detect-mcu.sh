@@ -3,6 +3,10 @@
 # Copyright (C) 2014-2023 Selene ToyKeeper
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+if [ "${DEBUG}" == "1" ]; then
+  set -x
+fi
+
 if [ -z "$1" ]; then
   echo "Usage: detect-mcu.sh FILE"
   echo 'or: eval $(detect-mcu.sh FILE)'
