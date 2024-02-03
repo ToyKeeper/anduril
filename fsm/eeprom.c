@@ -14,7 +14,7 @@ uint8_t eeprom[EEPROM_BYTES];
 #endif
 
 uint8_t load_eeprom() {
-    #if defined(LED_ENABLE_PIN) || defined(LED2_ENABLE_PIN)
+    #ifdef USE_EEP_DELAY
     delay_4ms(2);  // wait for power to stabilize
     #endif
 
@@ -32,7 +32,7 @@ uint8_t load_eeprom() {
 }
 
 void save_eeprom() {
-    #if defined(LED_ENABLE_PIN) || defined(LED2_ENABLE_PIN)
+    #ifdef USE_EEP_DELAY
     delay_4ms(2);  // wait for power to stabilize
     #endif
 
@@ -54,7 +54,7 @@ uint8_t eeprom_wl[EEPROM_WL_BYTES];
 uint8_t * eep_wl_prev_offset;
 
 uint8_t load_eeprom_wl() {
-    #if defined(LED_ENABLE_PIN) || defined(LED2_ENABLE_PIN)
+    #ifdef USE_EEP_DELAY
     delay_4ms(2);  // wait for power to stabilize
     #endif
 
@@ -83,7 +83,7 @@ uint8_t load_eeprom_wl() {
 }
 
 void save_eeprom_wl() {
-    #if defined(LED_ENABLE_PIN) || defined(LED2_ENABLE_PIN)
+    #ifdef USE_EEP_DELAY
     delay_4ms(2);  // wait for power to stabilize
     #endif
 

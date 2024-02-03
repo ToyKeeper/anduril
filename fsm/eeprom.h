@@ -55,3 +55,11 @@
 // if this marker isn't found, the eeprom is assumed to be blank
 #define EEP_MARKER 0b10100101
 
+// wait a few ms before eeprom operations, to wait for power to stabilize
+// (otherwise reads or writes can get corrupt data)
+// (not necessary on some hardware,
+//  but enabled by default when there's space)
+#if defined(LED_ENABLE_PIN) || defined(LED2_ENABLE_PIN) || (ROM_SIZE > 10000)
+    #define USE_EEP_DELAY
+#endif
+
