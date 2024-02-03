@@ -155,6 +155,7 @@ inline void hwdef_setup() {
     //PORTA.PIN2CTRL = PORT_PULLUPEN_bm;  // B
     #ifdef USE_BST_BYPASS
     PORTA.PIN3CTRL = PORT_PULLUPEN_bm;  // BBY
+    BST_BYPASS_PORT |= (1 << BST_BYPASS_PIN);
     #endif
     PORTA.PIN4CTRL = PORT_PULLUPEN_bm;
     PORTA.PIN5CTRL = PORT_PULLUPEN_bm;
