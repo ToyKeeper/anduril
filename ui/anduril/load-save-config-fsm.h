@@ -97,6 +97,10 @@ typedef struct Config {
         uint8_t therm_ceil;
         int8_t therm_cal_offset;
     #endif
+    #if defined(USE_AUX_RGB_LEDS_WHILE_ON) && defined(USE_CONFIGURABLE_RGB_VOLTAGE_LEVELS)
+        uint8_t use_aux_rgb_leds_while_on;
+        uint8_t use_aux_rgb_leds_while_on_min_level;
+    #endif
 
     ///// aux LEDs
     #ifdef USE_INDICATOR_LED

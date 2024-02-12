@@ -61,21 +61,23 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
 // ...
 // 13 = add 0.30V
 void voltage_config_save(uint8_t step, uint8_t value) {
-    #ifdef USE_POST_OFF_VOLTAGE
-        if (2 == step) cfg.post_off_voltage = value;
-        else
+    #if defined(USE_AUX_RGB_LEDS_WHILE_ON) && defined(USE_CONFIGURABLE_RGB_VOLTAGE_LEVELS)
+      if (use_aux_rgb_leds_while_on_config_step == step) cfg.use_aux_rgb_leds_while_on = value;
+      else if (use_aux_rgb_leds_while_on_min_level_step == step) cfg.use_aux_rgb_leds_while_on_min_level = value;
+      else
     #endif
-    if (value) cfg.voltage_correction = value;
+    #ifdef USE_POST_OFF_VOLTAGE
+      if (post_off_voltage_config_step == step) cfg.post_off_voltage = value;
+      else
+    #endif
+    #ifdef USE_VOLTAGE_CORRECTION
+      if (value) cfg.voltage_correction = value;
+    #endif
 }
 
 uint8_t voltage_config_state(Event event, uint16_t arg) {
-    #ifdef USE_POST_OFF_VOLTAGE
-        #define VOLTAGE_CONFIG_STEPS  2
-    #else
-        #define VOLTAGE_CONFIG_STEPS  1
-    #endif
     return config_state_base(event, arg,
-                             VOLTAGE_CONFIG_STEPS,
+                             (voltage_config_num_steps - 1),
                              voltage_config_save);
 }
 #endif  // #ifdef USE_VOLTAGE_CORRECTION
