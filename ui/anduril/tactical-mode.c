@@ -68,6 +68,11 @@ uint8_t tactical_state(Event event, uint16_t arg) {
         return lockout_state(event, arg);
     }
 
+    // handle 3C here to prevent changing channel modes unintentionally
+    if (event == EV_3clicks) {
+        return EVENT_HANDLED;
+    }
+
     // 6 clicks: exit and turn off
     else if (event == EV_6clicks) {
         blink_once();
