@@ -239,7 +239,9 @@ While the light is on, a few actions are available:
   - `3H`: Tint ramping (only when current channel has adjustable tint).
   - `4H`: Momentary turbo, when `3H` is mapped to tint.
 
-  - `4C`: Go to lockout mode.
+  - `4C`: Go to lockout mode. On some lights with multiple channel modes, this
+          can instead be configured to select the previous channel. See 10H for
+          details.
 
   - `5C`: Go to momentary mode.
   - `5H`: Start a sunset timer.  Details are below in the Sunset Timer section.
@@ -274,6 +276,10 @@ While the light is on, a few actions are available:
     - Item 5: Configure "smooth steps".  
               0: Disable smooth steps.  
               1: Enable smooth steps.
+    - Item 6: Configure the function of 4C when in ramp mode (only on lights
+              with more than one defined channel mode)
+              0: 4C switches off the light and enters lockout mode.
+              1: 4C selects the previous channel mode.
 
 Memory determines which brightness level the light goes to with 1 click
 from off.  There are three types of brightness memory to choose from:

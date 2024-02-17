@@ -83,6 +83,9 @@ Config cfg = {
             // blink numbers in a specific channel (user configurable)
             .blink_channel = DEFAULT_BLINK_CHANNEL,
         #endif
+        #if (defined(USE_PREVIOUS_CHANNEL) && !defined(PREVIOUS_CHANNEL_REPLACES_LOCKOUT))
+            .previous_channel_enabled = 0,
+        #endif
     #endif
     #ifdef USE_CHANNEL_MODE_ARGS
         // one byte of extra data per channel mode, like for tint value
