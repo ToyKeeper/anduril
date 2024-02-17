@@ -53,6 +53,32 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
     }
     #endif  // if NUM_CHANNEL_MODES > 1
 
+    #ifdef USE_PREVIOUS_CHANNEL
+    if (
+        (event == EV_4clicks)
+        #ifndef PREVIOUS_CHANNEL_REPLACES_LOCKOUT
+          && (cfg.previous_channel_enabled)
+        #endif
+        ){
+        uint8_t next = cfg.channel_mode;
+        uint8_t count = 0;
+        do {
+            count ++;
+            if (next > 0){ next--; }
+            else if (next == 0) { next = (NUM_CHANNEL_MODES - 1); }
+        } while ((! channel_mode_enabled(next)) && count < NUM_CHANNEL_MODES);
+        // if mode hasn't changed, abort
+        if (cfg.channel_mode == next)
+            return EVENT_NOT_HANDLED;
+
+        set_channel_mode(next);
+        // remember after battery changes
+        cfg.channel_mode = channel_mode;
+        save_config();
+        return EVENT_HANDLED;
+    }
+    #endif
+
     #ifdef USE_CUSTOM_CHANNEL_3H_MODES
     // defer to mode-specific function if defined
     else if (channel_3H_modes[channel_mode]) {
