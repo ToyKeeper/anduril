@@ -30,6 +30,7 @@ more modes and features available for people who want more.
 For a full list of button mappings, scroll down to the
 [UI Reference Table](#ui-reference-table) at the end of this file.
 
+If you have a specific question, it may be covered in the [FAQ](#faq).
 
 Button presses
 --------------
@@ -105,15 +106,15 @@ Functions available in Simple UI include:
   - `2H`: If light is on : ramp down  
           If light is off: momentary high mode
   - `2C`: Double click to go to / from highest safe level
-  - `4C`: Lockout mode.
+  - `4C`: [Lockout mode](#lockout-mode).
 
 Some other modes and functions are available too.  When the light is
 off, these are the options:
 
-  - `3C`: Battery check mode.  (displays voltage once, then turns off)
-  - `4C`: Lockout mode.
-  - `10H`: Switch to Advanced UI.
-  - `15C` or more: Version check.
+  - `3C`: [Battery check mode](#battery-check).  (displays voltage once, then turns off)
+  - `4C`: [Lockout mode](#lockout-mode).
+  - `10H`: Switch to [Advanced UI](#advanced-ui).
+  - `15C` or more: [Version check](#version-check-mode).
 
 In Lockout mode with Simple UI, there are a few functions:
 
@@ -129,7 +130,7 @@ do one of these:
 
   In Simple UI:
 
-  - `10H`: Go to Advanced UI.
+  - `10H`: Go to [Advanced UI](#advanced-ui).
 
   In Advanced UI:
 
@@ -140,11 +141,11 @@ do one of these:
 Some lights have additional features enabled in Simple UI, at the
 manufacturer's request.  This typically includes:
 
-  - `Ramp -> 3C`: Toggle smooth or stepped ramp shape.
-  - `Ramp -> 5H`: Sunset timer.
-  - `Off -> 3H`: Access the strobe/mood modes.
-  - `Off -> 7C/7H`: Change the aux LED pattern.
-  - `Lockout -> 7C/7H`: Change the aux LED pattern.
+  - `Ramp -> 3C`: Toggle smooth or stepped [ramp shape](#ramping--stepped-ramping-modes).
+  - `Ramp -> 5H`: [Sunset timer](#sunset-timer).
+  - `Off -> 3H`: Access the [strobe/mood modes](#strobe--mood-modes).
+  - `Off -> 7C/7H`: Change the [aux LED brightness](#aux-leds--button-leds).
+  - `Lockout -> 7C/7H`: Change the [aux LED pattern](#aux-leds--button-leds).
 
 If your light uses Extended Simple UI, *think twice about letting kids use it*,
 because the strobe/mood modes were not intended to be used in simple mode, and
@@ -160,7 +161,7 @@ Simple UI can be configured in several ways, but not while Simple UI is
 active.  So go to the Advanced UI, configure things, then go back to
 Simple UI.
 
-In Advanced UI's "Off" mode:
+In [Advanced UI](#advanced-ui)'s "Off" mode:
 
   - `10H`: Configure Simple UI.
 
@@ -190,6 +191,8 @@ Advanced UI
 
 Most of the information below this is for the Advanced UI.  Anything not
 already noted above is blocked in the Simple UI.
+
+To return to Simple UI from advanced UI, enter 10C while the light is off.
 
 
 Ramping / Stepped Ramping Modes
@@ -230,21 +233,20 @@ While the light is on, a few actions are available:
           at the ceiling, it goes down instead.
   - `2H`: Change brightness (down).
 
-  - `3C`: Switch to the other ramp style.  (smooth / stepped)  
-          (or activate the next channel mode, when more than one is enabled)  
+  - `3C`: Switch to the other [ramp style](#ramping--stepped-ramping-modes).  (smooth / stepped)  
+          (or activate the next [channel mode](#channel-modes-aka-tint-ramping-or-multi-channel-controls), when more than one is enabled)  
           (then use 6C instead, for smooth / stepped toggle)
   - `6C`: Switch to the other ramp style.  (when `3C` is mapped to next channel)
 
   - `3H`: Momentary turbo (when current channel has no tint to ramp).
-  - `3H`: Tint ramping (only when current channel has adjustable tint).
+  - `3H`: [Tint ramping](#channel-modes-aka-tint-ramping-or-multi-channel-controls) (only when current channel has adjustable tint).
   - `4H`: Momentary turbo, when `3H` is mapped to tint.
 
-  - `4C`: Go to lockout mode.
+  - `4C`: Go to [lockout mode](#lockout-mode).
 
-  - `5C`: Go to momentary mode.
-  - `5H`: Start a sunset timer.  Details are below in the Sunset Timer section.
-
-  - `7H`: Ramp config menu.
+  - `5C`: Go to [momentary mode](#momentary-mode).
+  - `5H`: Start a [sunset timer](#sunset-timer).
+  - `7H`: [Ramp config menu](#ramp-config-menu).
     - Item 1: Floor level.
     - Item 2: Ceiling level.
     - Item 3:  
@@ -256,6 +258,7 @@ While the light is on, a few actions are available:
         4 = Quarter speed, ~10s.
 
   - `10C`: Activate manual memory and save the current brightness.
+<a name="ramp-extras-config-menu">
   - `10H`: Ramp extras config menu.
     - Item 1: Disable manual memory and go back to automatic memory.  
               (doesn't matter what value the user enters at the prompt)
@@ -337,16 +340,16 @@ Other Modes
 Anduril has several other modes too.  To access these, press the button
 more than 2 times when the light is off:
 
-  - `3C`: Blinky / utility modes, starting with battery check.
-  - `3H`: Strobe modes, starting with the most recently used strobe.
-  - `4C`: Lockout mode.
-  - `5C`: Momentary mode.
-  - `6C`: Tactical mode.
-  - `7C` / `7H`: Aux LED configuration.
-  - `9H`: Misc Config menu. (only on some lights)
-  - `10H`: Simple UI configuration menu.
-  - `13H`: Factory reset (on some lights).
-  - `15C` or more: Version check.
+  - `3C`: [Blinky / utility modes](#blinky--utility-modes), starting with battery check.
+  - `3H`: [Strobe modes](#strobe--mood-modes), starting with the most recently used strobe.
+  - `4C`: [Lockout mode](#lockout-mode).
+  - `5C`: [Momentary mode](#momentary-mode).
+  - `6C`: [Tactical mode](#tactical-mode).
+  - `7C` / `7H`: [Aux LED configuration](#aux-leds--button-leds).
+  - `9H`: [Misc Config menu](#misc-config-menu). (only on some lights)
+  - `10H`: [Simple UI](#simple-ui) configuration menu.
+  - `13H`: [Factory reset](#factory-reset) (on some lights).
+  - `15C` or more: [Version check](#version-check-mode).
 
 
 Lockout Mode
@@ -379,7 +382,7 @@ lockout mode has two levels:
           (or the manual mem level, if there is one)
 
   - `3H`: Next channel mode (if more than one is enabled).
-
+<a name="autolock-config">
 It is also possible to make the light lock itself automatically after
 being turned off.  To enable this, go to lockout mode and use a `10H`
 action to activate the auto-lock config menu.  Release the button after
@@ -390,11 +393,9 @@ timeout to N minutes.
            A value of zero disables the auto-lock feature.
            So, to turn off auto-lock, don't click at all.
 
-And on lights which have aux LEDs, there may be additional functions:
+On lights which have aux LEDs, there may be additional functions:
 
-  - `7C` / `7H`: Change Lockout Mode's aux LED pattern.  More details on
-    this below, in a separate section.
-
+  - `7C` / `7H`: Change Lockout Mode's [aux LED pattern](#aux-leds--button-leds).
 
 Blinky / Utility Modes
 ----------------------
@@ -403,10 +404,10 @@ Click 3 times from Off to access Anduril's blinky / utility modes.  This
 always starts at battery check and the user can proceed to other blinky
 modes if Advanced UI is enabled.  The sequence is:
 
-  - Battery check.
-  - Temperature check (if light has a temperature sensor).
-  - Beacon mode.
-  - SOS mode (if enabled).
+  - [Battery check](#battery-check).
+  - [Temperature check](#temperature-check) (if light has a temperature sensor).
+  - [Beacon mode](#beacon-mode).
+  - [SOS mode](#sos-mode) (if enabled).
 
 In all of these modes, some basic actions are available:
 
@@ -526,12 +527,12 @@ In all of these modes, a few actions are available:
   - `1H`: Increase brightness, or strobe faster.  (except lightning)
   - `2H`: Decrease brightness, or strobe slower.  (except lightning)
   - `4C`: Previous strobe / mood mode.
-  - `5C`: Go to momentary mode, for a momentary strobe.
+  - `5C`: Go to [momentary mode](#momentary-mode), for a momentary strobe.
           (this is useful for light painting)
 
 Additionally, candle mode has one more action:
 
-  - `5H`: Activate Sunset Timer, and/or add 5 minutes to the timer.
+  - `5H`: Activate [Sunset Timer](#sunset-timer), and/or add 5 minutes to the timer.
 
 In more detail, here is what each mode does:
 
@@ -784,7 +785,7 @@ several formats:
 If the version doesn't include a model number, you may be able to find
 the model in the PRODUCTS file to see which firmware model it probably uses:
 
-  https://bazaar.launchpad.net/~toykeeper/flashlight-firmware/anduril2/view/head:/PRODUCTS
+  https://github.com/ToyKeeper/anduril/blob/trunk/MODELS
 
 
 Protection Features
@@ -942,7 +943,7 @@ smooth or stepped brightness ramp.  Additionally, when a channel mode
 has nothing to adjust with `3H`, the `3H` action also reverts to its
 single-channel behavior -- momentary turbo.
 
-The Misc Config Menu (`Off -> 9H`) may also have a setting to choose a
+The [Misc Config Menu](#misc-config-menu) (`Off -> 9H`) may also have a setting to choose a
 tint ramp style.  There are a few styles available, by entering
 different numbers into that config menu:
 
@@ -955,7 +956,14 @@ This setting only applies to modes with channel ramping (i.e. tint
 ramping), and only when that mode uses the default `3H` event handler.
 Custom channel modes may work differently.
 
-
+FAQ
+---
+* Q: Why do the aux LEDs come on whenever I switch the light off, regardless
+of aux settings?
+* A: This is the post-off voltage display feature. It can be configured or
+disabled under [battery check](#battery-check) mode.
+* Q: What can I do to contribute to Anduril development?
+* A: See [Contributing](https://github.com/ToyKeeper/anduril#contributing).
 
 UI Reference Table
 ------------------
