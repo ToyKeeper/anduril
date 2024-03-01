@@ -2,7 +2,7 @@ name: build all
 
 on:
   # all branches:
-  [ push, pull_request ]
+  [ push, pull_request, workflow_dispatch ]
   # trunk only:
   #push:
   #  branches: [ "trunk" ]
