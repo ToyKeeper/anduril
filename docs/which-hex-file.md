@@ -1,3 +1,6 @@
+[![en](https://img.shields.io/badge/lang-en-red)](https://github.com/ToyKeeper/anduril/blob/trunk/docs/which-hex-file.md)
+[![de](https://img.shields.io/badge/lang-de-green)](https://github.com/ToyKeeper/anduril/blob/trunk/docs/which-hex-file.de.md)
+
 # How to figure out which .hex file to use
 
 Using the wrong firmware will make the light stop working, so when flashing

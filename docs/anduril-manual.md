@@ -1,3 +1,6 @@
+[![en](https://img.shields.io/badge/lang-en-red)](https://github.com/ToyKeeper/anduril/blob/trunk/docs/anduril-manual.md)
+[![de](https://img.shields.io/badge/lang-de-green)](https://github.com/ToyKeeper/anduril/blob/trunk/docs/anduril-manual.de.md)
+
 Anduril User Manual
 -------------------
 
