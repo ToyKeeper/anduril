@@ -26,10 +26,9 @@
 #define DEFAULT_LEVEL 70
 #define MAX_1x7135 150
 // moon at 1/4th speed for max runtime
-// the rest at half speed, to reduce ripple
-// but not full speed because 8 kHz PWM is enough for this circuit
-// and speed changes make a big visible bump
-#define HALFSPEED_LEVEL      255
+// the rest at full speed, to reduce PWM
+// (speed changes make a big visible bump because PWM)
+#define HALFSPEED_LEVEL      2
 #define QUARTERSPEED_LEVEL   2
 
 #define RAMP_SMOOTH_FLOOR    1
@@ -61,7 +60,8 @@
 //#define DEFAULT_BLINK_CHANNEL  CM_AUXWHT
 
 // slow down party strobe; this driver can't pulse for 2ms or less
-#define PARTY_STROBE_ONTIME 3
+#define PARTY_STROBE_ONTIME 1
+//#define STROBE_OFF_LEVEL 1  // keep the regulator chip on between pulses
 
 // use aux red + aux blue for police strobe
 #define USE_POLICE_COLOR_STROBE_MODE
