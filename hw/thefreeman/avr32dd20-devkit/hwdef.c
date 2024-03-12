@@ -30,6 +30,11 @@ void set_level_zero() {
     delay_4ms(IN_NFET_DELAY_TIME/4);
     IN_NFET_ENABLE_PORT &= ~(1 << IN_NFET_ENABLE_PIN);
 
+    #ifdef USE_BST_BYPASS
+    // turn off bypass
+    BST_BYPASS_PORT |= (1 << BST_BYPASS_PIN);
+    #endif
+
     // turn off boost last
     BST_ENABLE_PORT &= ~(1 << BST_ENABLE_PIN);  // BST off
 }
@@ -47,6 +52,14 @@ void set_level_main(uint8_t level) {
 
     // BST on first, to give it a few extra microseconds to spin up
     BST_ENABLE_PORT |= (1 << BST_ENABLE_PIN);
+
+    #ifdef USE_BST_BYPASS
+    // turn on bypass in li-ion mode
+    if (voltage > DUAL_VOLTAGE_FLOOR)
+        BST_BYPASS_PORT &= ~(1 << BST_BYPASS_PIN);  // low = bypass
+    else  // turn off bypass in AA/NiMH mode
+        BST_BYPASS_PORT |= (1 << BST_BYPASS_PIN);  // high = boost
+    #endif
 
     // pre-load ramp data so it can be assigned faster later
     // DAC level register is left-aligned
