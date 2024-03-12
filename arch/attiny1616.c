@@ -129,14 +129,15 @@ inline uint16_t mcu_vdd_raw2fine(uint16_t measurement) {
 
 #ifdef USE_VOLTAGE_DIVIDER
 inline uint8_t mcu_vdivider_raw2cooked(uint16_t measurement) {
-    // In : 4095 * Vdiv / 1.1V
+    // In : (4095 * Vdiv / 1.1V) << 4
     // Out: uint8_t: Vbat * 40
     // Vdiv = Vbat / 4.3  (typically)
     // 1.1 = ADC Vref
     const uint16_t adc_per_volt =
             (((uint16_t)ADC_44 << 4) - ((uint16_t)ADC_22 << 4))
             / (4 * (44-22));
-    uint8_t result = measurement / adc_per_volt;
+    const uint16_t adc_offset = (ADC_22 - (ADC_44 - ADC_22)) << 4;
+    uint8_t result = (measurement - adc_offset) / adc_per_volt;
     return result;
 }
 #endif
