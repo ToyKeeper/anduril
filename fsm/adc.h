@@ -15,7 +15,7 @@ volatile uint8_t adc_reset = 2;
 #ifndef VOLTAGE_WARNING_SECONDS
 #define VOLTAGE_WARNING_SECONDS 5
 #endif
-// low-battery threshold in volts * 10
+// low-battery threshold in volts * 40
 #ifndef VOLTAGE_LOW
 #define VOLTAGE_LOW (4*29)
 #endif
