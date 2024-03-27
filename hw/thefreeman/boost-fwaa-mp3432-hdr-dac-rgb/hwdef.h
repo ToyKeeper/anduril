@@ -94,8 +94,8 @@ enum CHANNEL_MODES {
 // Voltage divider battLVL
 #define USE_VOLTAGE_DIVIDER       // use a dedicated pin, not VCC, because VCC input is regulated
 #define ADMUX_VOLTAGE_DIVIDER  ADC_MUXPOS_AIN2_gc  // which ADC channel to read
-#define DUAL_VOLTAGE_FLOOR     (4*21) // for AA/14500 boost drivers, don't indicate low voltage if below this level
-#define DUAL_VOLTAGE_LOW_LOW   (4*7)  // the lower voltage range's danger zone 0.7 volts (NiMH)
+#define DUAL_VOLTAGE_FLOOR     (21*dV)  // for AA/14500 boost drivers, don't indicate low voltage if below this level
+#define DUAL_VOLTAGE_LOW_LOW   ( 7*dV)  // the lower voltage range's danger zone 0.7 volts (NiMH)
 // don't use the default VDD converter
 #undef voltage_raw2cooked
 #define voltage_raw2cooked  mcu_vdivider_raw2cooked

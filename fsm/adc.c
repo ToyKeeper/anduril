@@ -209,8 +209,8 @@ static void ADC_voltage_handler() {
     #endif
     else measurement = adc_smooth[0];
 
-    // convert raw ADC value to FSM voltage units: Volts * 40
-    // 0 .. 200 = 0.0V .. 5.0V
+    // convert raw ADC value to FSM voltage units: Volts * 50
+    // 0 .. 250 = 0.0V .. 5.0V
     voltage = voltage_raw2cooked(measurement)
               + (VOLTAGE_FUDGE_FACTOR << 1)
               #ifdef USE_VOLTAGE_CORRECTION
@@ -392,46 +392,46 @@ static void ADC_temperature_handler() {
 #ifdef USE_BATTCHECK
 #ifdef BATTCHECK_4bars
 PROGMEM const uint8_t voltage_blinks[] = {
-    4*30,
-    4*35,
-    4*38,
-    4*40,
-    4*42,
-     255,
+    30*dV,
+    35*dV,
+    38*dV,
+    40*dV,
+    42*dV,
+    255,
 };
 #endif
 #ifdef BATTCHECK_6bars
 PROGMEM const uint8_t voltage_blinks[] = {
-    4*30,
-    4*34,
-    4*36,
-    4*38,
-    4*40,
-    4*41,
-    4*43,
-     255,
+    30*dV,
+    34*dV,
+    36*dV,
+    38*dV,
+    40*dV,
+    41*dV,
+    43*dV,
+    255,
 };
 #endif
 #ifdef BATTCHECK_8bars
 PROGMEM const uint8_t voltage_blinks[] = {
-    4*30,
-    4*33,
-    4*35,
-    4*37,
-    4*38,
-    4*39,
-    4*40,
-    4*41,
-    4*42,
-     255,
+    30*dV,
+    33*dV,
+    35*dV,
+    37*dV,
+    38*dV,
+    39*dV,
+    40*dV,
+    41*dV,
+    42*dV,
+    255,
 };
 #endif
 void battcheck() {
     #ifdef BATTCHECK_VpT
-        blink_num(voltage / 4);
+        blink_num(voltage / dV);
         #ifdef USE_EXTRA_BATTCHECK_DIGIT
-            // 0 1 2 3 --> 0 2 5 7, representing x.x00 x.x25 x.x50 x.x75
-            blink_num(((voltage % 4)<<1) + ((voltage % 4)>>1));
+            // 0.02V precision, 0 1 2 3 4 remainder -> .00 .02 .04 .06 .08V
+            blink_num((voltage % dV) * (10/dV));
         #endif
     #else
         uint8_t i;

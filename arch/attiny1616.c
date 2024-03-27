@@ -104,18 +104,18 @@ inline uint16_t mcu_adc_result_volts() {
 
 inline uint8_t mcu_vdd_raw2cooked(uint16_t measurement) {
     // In : 65535 * 1.5 / Vbat
-    // Out: uint8_t: Vbat * 40
+    // Out: uint8_t: Vbat * 50
     // 1.5 = ADC Vref
     #if 0
     // 1024 = how much ADC resolution we're using (10 bits)
     // (12 bits available, but it costs an extra 84 bytes of ROM to calculate)
-    uint8_t vbat40 = (uint16_t)(40 * 1.5 * 1024) / (measurement >> 6);
+    uint8_t vbat = (uint16_t)(10 * dV * 1.5 * 1024) / (measurement >> 6);
     #else
     // ... spend the extra 84 bytes of ROM for better precision
     // 4096 = how much ADC resolution we're using (12 bits)
-    uint8_t vbat40 = (uint32_t)(40 * 1.5 * 4096) / (measurement >> 4);
+    uint8_t vbat = (uint32_t)(10 * dV * 1.5 * 4096) / (measurement >> 4);
     #endif
-    return vbat40;
+    return vbat;
 }
 
 #if 0  // fine voltage, 0 to 10.24V in 1/6400th V steps
@@ -130,12 +130,12 @@ inline uint16_t mcu_vdd_raw2fine(uint16_t measurement) {
 #ifdef USE_VOLTAGE_DIVIDER
 inline uint8_t mcu_vdivider_raw2cooked(uint16_t measurement) {
     // In : 4095 * Vdiv / 1.1V
-    // Out: uint8_t: Vbat * 40
+    // Out: uint8_t: Vbat * 50
     // Vdiv = Vbat / 4.3  (typically)
     // 1.1 = ADC Vref
     const uint16_t adc_per_volt =
             (((uint16_t)ADC_44 << 4) - ((uint16_t)ADC_22 << 4))
-            / (4 * (44-22));
+            / (dV * (44-22));
     uint8_t result = measurement / adc_per_volt;
     return result;
 }
