@@ -121,7 +121,7 @@
 #include "anduril/lockout-mode.h"
 #endif
 
-#ifdef USE_MOMENTARY_MODE
+#if (defined(USE_MOMENTARY_MODE) || defined(USE_TACTICAL_MODE))
 #include "anduril/momentary-mode.h"
 #endif
 
@@ -189,7 +189,7 @@
 #include "anduril/lockout-mode.c"
 #endif
 
-#ifdef USE_MOMENTARY_MODE
+#if (defined(USE_MOMENTARY_MODE) || defined(USE_TACTICAL_MODE))
 #include "anduril/momentary-mode.c"
 #endif
 

@@ -13,7 +13,7 @@ uint8_t strobe_state(Event event, uint16_t arg) {
     // 'st' reduces ROM size slightly
     strobe_mode_te st = current_strobe_type;
 
-    #ifdef USE_MOMENTARY_MODE
+    #if defined(USE_MOMENTARY_MODE) || defined(USE_TACTICAL_MODE)
     momentary_mode = 1;  // 0 = ramping, 1 = strobes
     #endif
 
