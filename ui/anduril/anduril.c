@@ -121,7 +121,7 @@
 #include "anduril/lockout-mode.h"
 #endif
 
-#ifdef USE_MOMENTARY_MODE
+#if (defined(USE_MOMENTARY_MODE) || defined(USE_TACTICAL_MODE))
 #include "anduril/momentary-mode.h"
 #endif
 
@@ -189,7 +189,7 @@
 #include "anduril/lockout-mode.c"
 #endif
 
-#ifdef USE_MOMENTARY_MODE
+#if (defined(USE_MOMENTARY_MODE) || defined(USE_TACTICAL_MODE))
 #include "anduril/momentary-mode.c"
 #endif
 
@@ -293,10 +293,12 @@ void loop() {
 
     #ifdef USE_STROBE_STATE
     else if ((state == strobe_state)
-         #ifdef USE_MOMENTARY_MODE
+         #if defined(USE_MOMENTARY_MODE) || defined(USE_TACTICAL_MODE)
          // also handle momentary strobes
-         || ((
-              (state == momentary_state)
+         || ((0
+              #ifdef USE_MOMENTARY_MODE
+              || (state == momentary_state)
+              #endif
               #ifdef USE_TACTICAL_MODE
               || (state == tactical_state)
               #endif
