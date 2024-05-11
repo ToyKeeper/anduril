@@ -128,13 +128,15 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     }
     #endif
 
-    ////////// Every action below here is blocked in the (non-Extended) Simple UI //////////
+    ////////// Every action below here is blocked in the (non-Extended) Simple UI,
+    ////////// depending on the value of USE_EXTENDED_SIMPLE_UI //////////
 
-    #if defined(USE_SIMPLE_UI) && !defined(USE_EXTENDED_SIMPLE_UI)
+    // If USE_EXTENDED_SIMPLE_UI == 0, block all extended actions
+    #if defined(USE_SIMPLE_UI) && (!defined(USE_EXTENDED_SIMPLE_UI) || USE_EXTENDED_SIMPLE_UI == 0)
     if (cfg.simple_ui_active) {
         return EVENT_NOT_HANDLED;
     }
-    #endif  // if simple UI but not extended simple UI
+    #endif
 
     #if defined(USE_INDICATOR_LED)
     // 7 clicks: rotate through indicator LED modes (lockout mode)
@@ -188,7 +190,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     }
     #endif
 
-    #if defined(USE_EXTENDED_SIMPLE_UI) && defined(USE_SIMPLE_UI)
+    #if (defined(USE_EXTENDED_SIMPLE_UI) && USE_EXTENDED_SIMPLE_UI > 0) && defined(USE_SIMPLE_UI)
     ////////// Every action below here is blocked in the Extended Simple UI //////////
     if (cfg.simple_ui_active) {
         return EVENT_NOT_HANDLED;

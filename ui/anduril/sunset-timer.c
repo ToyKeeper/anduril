@@ -8,9 +8,12 @@
 
 uint8_t sunset_timer_state(Event event, uint16_t arg) {
 
-    #if defined(USE_SIMPLE_UI) && !defined(USE_EXTENDED_SIMPLE_UI)
-    // No timer functions in Simple UI
-    if (cfg.simple_ui_active) return EVENT_NOT_HANDLED;
+    // No timer functions in (non-extended) Simple UI
+    // If USE_EXTENDED_SIMPLE_UI >= 2, allow sunset timer
+    #if defined(USE_SIMPLE_UI) && (!defined(USE_EXTENDED_SIMPLE_UI) || USE_EXTENDED_SIMPLE_UI <= 1)
+    if (cfg.simple_ui_active) {
+        return EVENT_NOT_HANDLED;
+    }
     #endif
 
     // reset on start
