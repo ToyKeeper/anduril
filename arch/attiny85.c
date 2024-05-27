@@ -9,6 +9,9 @@
 
 ///// clock dividers
 
+inline void mcu_setup() {
+}
+
 ////////// default hw_setup() //////////
 
 // FIXME: fsm/main should call hwdef_setup(), not hw_setup,

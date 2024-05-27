@@ -15,6 +15,7 @@ int main() {
     // whether intentional (like factory reset) or not (bugs)
     prevent_reboot_loop();
 
+    mcu_setup();
     hwdef_setup();
 
     #if 0

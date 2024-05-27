@@ -9,6 +9,7 @@
 #define BOGOMIPS  (F_CPU/3800)
 #define DELAY_ZERO_TIME  1020
 
+inline void mcu_setup();
 inline void mcu_clock_speed();
 
 ///// clock dividers
