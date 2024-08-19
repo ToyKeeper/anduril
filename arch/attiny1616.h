@@ -85,7 +85,7 @@ inline void mcu_adc_vect_clear();
 inline uint16_t mcu_adc_result_temp();
 inline uint16_t mcu_adc_result_volts();
 
-// return Volts * 40, range 0 to 6.375V
+// return Volts * 50, range 0 to 5.10V
 #define voltage_raw2cooked  mcu_vdd_raw2cooked
 inline uint8_t mcu_vdd_raw2cooked(uint16_t measurement);
 inline uint8_t mcu_vdivider_raw2cooked(uint16_t measurement);

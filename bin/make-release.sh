@@ -18,9 +18,7 @@ cd "$REPODIR"
 #make
 
 # release name
-#REV=$(date +'%Y-%m-%d')
-REV=$(git describe --tags --dirty --match='r2*')
-REV="${REV:1}"  # convert 'r2023-...' to '2023-...'
+REV=$(bin/version-string.sh git)
 # allow manually specifying a release name
 [[ -n "$1" ]] && REV="$1"
 
@@ -41,6 +39,12 @@ cp -a \
     docs/battery-rainbow.png \
     docs/which-hex-file.md \
     "$RELDIR"
+
+# add hardware-specific docs
+for f in $(find hw -name '*.md') ; do
+    d=$(echo "$f" | sed 's/^hw.//; s|/readme||i; s/^/readme./; s|/|-|g;')
+    cp -a "$f" "$RELDIR/$d"
+done
 
 # add the .hex files
 rename -f 's|hex/anduril.|'"$RELDIR/hex/$RELNAME"'.|;' hex/*.hex

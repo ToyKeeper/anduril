@@ -142,17 +142,13 @@ manufacturer's request.  This typically includes:
 
   - `Ramp -> 3C`: Toggle smooth or stepped ramp shape.
   - `Ramp -> 5H`: Sunset timer.
-  - `Off -> 3H`: Access the strobe/mood modes.
   - `Off -> 7C/7H`: Change the aux LED pattern.
   - `Lockout -> 7C/7H`: Change the aux LED pattern.
 
-If your light uses Extended Simple UI, *think twice about letting kids use it*,
-because the strobe/mood modes were not intended to be used in simple mode, and
-can reach full power with no thermal regulation.
-
-It is likely that strobe/mood modes will be removed from Extended Simple UI in
-the future, for safety reasons, or maybe have already been removed.  But that
-doesn't help with older firmware, so be careful.
+Old versions (before 2024-08) also allowed access to strobe/mood modes, which
+can be dangerous, so if you have one of those, *think twice about letting kids
+use it*.  Those modes were never intended to be child-safe, and can reach full
+power with no thermal regulation.
 
 ### Configuring Simple UI
 

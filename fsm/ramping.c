@@ -57,6 +57,11 @@ inline void set_level_aux_rgb_leds(uint8_t level) {
 
 
 void set_level(uint8_t level) {
+    #ifdef USE_RAMP_LEVEL_HARD_LIMIT
+    if (ramp_level_hard_limit && (level > ramp_level_hard_limit))
+        level = ramp_level_hard_limit;
+    #endif
+
     #ifdef USE_JUMP_START
     // maybe "jump start" the engine, if it's prone to slow starts
     // (pulse the output high for a moment to wake up the power regulator)

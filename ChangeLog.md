@@ -14,6 +14,39 @@ formats:
 
 # Next
 
+# 2024-04-20
+
+General:
+
+- Smooth steps now work in Lockout Mode, if enabled.
+- Made eeprom access more reliable, by waiting for power to stabilize before
+  reads and writes.
+- Increased voltage resolution to 0.02V.  It can, for example, read out 1.20V,
+  1.22V, 1.24V, 1.26V, 1.28V, or 1.30V.
+- Added weak battery detection, to limit power on alkaline, on empty cells, and
+  while powered by a flashing adapter.  Should prevent cell overload and magic
+  smoke.  Weak battery mode blinks 3X at boot.  (d3aa only, so far)
+- Made dark "blip"s work better on some types of regulators.
+- Fixed bug: 3C in Tactical Mode would change the channel when it shouldn't.
+- Fixed bug: Aux channels were off/off/high for levels 0/1/2.  Now uses
+  off/low/high.
+- Misc improvements to the build process.  Can build with Tactical Mode without
+  Momentary Mode.  Can build with newer avr-libc.  Version strings calculated
+  better now.  Github actions can be run manually.
+- Documentation updates.
+
+New lights:
+
+- Added &hank-emisar-2ch-fet-joined, for the lighted-switch variant of the D4S.
+  It uses a 2-channel driver with only 1 channel of LEDs.  (0137)
+- Added &hank-emisar-d3aa, the first "3rd generation" torch (avr32dd20,
+  thefreeman HDR driver).  (0161)
+- Added &fireflies-pl47g2-219, a reduced-power version of the PL47G2.
+
+Hardware-specific changes:
+
+- &lumintop-fw3x-lume1: Reduced visible pulsing on low modes.
+
 # 2023-12-03
 
 This release is somewhat higher risk than usual, because so many large things

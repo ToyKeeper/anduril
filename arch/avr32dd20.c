@@ -141,10 +141,10 @@ inline uint16_t mcu_adc_result() {
 
 inline uint8_t mcu_vdd_raw2cooked(uint16_t measurement) {
     // In : 65535 * (Vbat / 10) / 1.024V
-    // Out: uint8_t: Vbat * 40
+    // Out: uint8_t: Vbat * 50
     // (add 80 to round up near a boundary)
-    uint8_t vbat40 = (uint16_t)(measurement + 80) / 160;
-    return vbat40;
+    uint8_t vbat50 = (uint16_t)(measurement + 64) / 128;
+    return vbat50;
 }
 
 #if 0

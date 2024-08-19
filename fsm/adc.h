@@ -4,6 +4,10 @@
 
 #pragma once
 
+// voltage is 0.00V to 5.10V in 0.02V steps, from 0 to 255
+// so one deci-Volt is 5 steps
+#define dV 5
+
 #if defined(USE_LVP) || defined(USE_THERMAL_REGULATION)
 // use raw value instead of lowpassed value for the next N measurements
 // (2 = 1 for voltage + 1 for temperature)
@@ -15,13 +19,13 @@ volatile uint8_t adc_reset = 2;
 #ifndef VOLTAGE_WARNING_SECONDS
 #define VOLTAGE_WARNING_SECONDS 5
 #endif
-// low-battery threshold in volts * 10
+// low-battery threshold in volts * 50
 #ifndef VOLTAGE_LOW
-#define VOLTAGE_LOW (4*29)
+#define VOLTAGE_LOW (29*dV)
 #endif
 // battery is low but not critical
 #ifndef VOLTAGE_RED
-#define VOLTAGE_RED (4*33)
+#define VOLTAGE_RED (33*dV)
 #endif
 // MCU sees voltage 0.X volts lower than actual, add X/2 to readings
 #ifndef VOLTAGE_FUDGE_FACTOR

@@ -4,7 +4,7 @@
 #pragma once
 
 void set_level_aux(uint8_t level) {
-    indicator_led(!(!(level)) << 1);  // high (or off)
+    indicator_led((!(!(level)) << 1) + 1);  // high (level > 0) or low
 }
 
 bool gradual_tick_null(uint8_t gt) { return true; }  // do nothing
