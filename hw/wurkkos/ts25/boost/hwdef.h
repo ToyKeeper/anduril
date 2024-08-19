@@ -100,8 +100,8 @@ uint8_t ch1_pwm, ch1_dsm;
 // estimated / calculated values are:
 //   (voltage - D1) * (R2/(R2+R1) * 4096 / 1.1)
 // Resistors are 330k and 100k
-#define ADC_44  4274  // raw value at 4.40V
-#define ADC_22  2256  // raw value at 2.20V
+#define ADC_44  3830  // raw value at 4.40V
+#define ADC_22  1840  // raw value at 2.20V
 
 // this light has aux LEDs under the optic
 #define AUXLED_R_PIN    PIN3_bp    // pin 3

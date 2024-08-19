@@ -10,9 +10,14 @@
 #define USE_AUX_RGB_LEDS
 
 // don't turn on the aux LEDs while main LEDs are on
-#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-#undef USE_INDICATOR_LED_WHILE_RAMPING
-#endif
+//#ifdef USE_INDICATOR_LED_WHILE_RAMPING
+//#undef USE_INDICATOR_LED_WHILE_RAMPING
+//#endif
+// show real-time battery status on RGB button
+// when main LEDs are bright enough to overpower the front aux
+#define USE_INDICATOR_LED_WHILE_RAMPING
+#define USE_AUX_RGB_LEDS_WHILE_ON  20
+
 
 #define VOLTAGE_FUDGE_FACTOR 5  // add 0.25V, not 0.35V
 
@@ -28,8 +33,8 @@
 // moon at 1/4th speed for max runtime
 // the rest at full speed, to reduce PWM
 // (speed changes make a big visible bump because PWM)
-#define HALFSPEED_LEVEL      2
-#define QUARTERSPEED_LEVEL   2
+#define HALFSPEED_LEVEL      1
+#define QUARTERSPEED_LEVEL   1
 
 #define RAMP_SMOOTH_FLOOR    1
 #define RAMP_SMOOTH_CEIL     150
@@ -47,7 +52,7 @@
 // stop panicking at ~50% power
 #define THERM_FASTER_LEVEL 120  // throttle back faster when high
 
-#define BLINK_BRIGHTNESS 50
+#define BLINK_BRIGHTNESS 30
 #define BLINK_ONCE_TIME 12
 
 // show each channel while it scroll by in the menu
