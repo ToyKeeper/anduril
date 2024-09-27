@@ -10,6 +10,11 @@
 # enable "**" for recursive glob (requires bash)
 shopt -s globstar
 
+if [ "${DEBUG}" == "1" ]; then
+  set -x
+  export DEBUG
+fi
+
 # figure out which operation was requested
 MODE="$1"
 
@@ -20,6 +25,7 @@ Usage: ./make TASK
 ... where TASK is:
 
   help            Show this help text
+  build-help      Show help for advanced build options
   (nothing)       Compile all build targets
   flash FILE      Flash firmare FILE to a hardware device
   clean           Delete generated files
@@ -53,6 +59,10 @@ function main() {
   case "$MODE" in
     -h|--help|help|/\?|/h|/help)
       help
+      ;;
+    build-help|--build-help)
+        set -- "--build-help"
+        shift # past arg
       ;;
     clean)
       echo 'rm -vf -- **/*~ hex/*.hex ui/**/*.elf ui/**/*.o ui/**/*.cpp'

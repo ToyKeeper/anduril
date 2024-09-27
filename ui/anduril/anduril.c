@@ -48,6 +48,16 @@
 #include incfile(HWDEF_H)
 #endif
 
+// Per-user global overrides
+#ifdef USER_DEFAULT_CFG
+#include incfile(USER_DEFAULT_CFG)
+#endif
+
+// Per-user model-specific overrides
+#ifdef USER_MODEL_CFG
+#include incfile(USER_MODEL_CFG)
+#endif
+
 /********* Include headers which need to be before FSM *********/
 
 // enable FSM features needed by basic ramping functions

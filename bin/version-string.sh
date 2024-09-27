@@ -45,6 +45,9 @@ function c-version-string {
                 s/^([0-9]{4}-[0-9]{2}-[0-9]{2})-/\1+/;
                 '
         )
+    # Add an extra blink on the end if this build contains custom user config
+    [ ! -z "${USER_CFG_DIR}" ] && REV="${REV}#"
+
     # handle an empty name (can happen during github action runs)
     if [[ -z "$REV" ]]; then
         HASH=$(git describe --always)

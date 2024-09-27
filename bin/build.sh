@@ -6,10 +6,14 @@
 # Instead of using a Makefile, since most of the firmwares here build in the
 # same exact way, here's a script to do the same thing
 
+if [ "${DEBUG}" == "1" ]; then
+  set -x
+  export DEBUG
+fi
+
 if [ 0 = "$#" ]; then
-  echo "Usage: build.sh TARGET USER"
-  echo "Example: build.sh hw/hank/emisar-d4/anduril.h users/myuser"
-  echo "(but USER isn't implemented yet)"
+  echo "Usage: build.sh TARGET" >&2
+  echo "Example: build.sh hw/hank/emisar-d4/anduril.h" >&2
   exit
 fi
 
@@ -21,6 +25,8 @@ ARGS="$*"
 UI=$(basename "$TARGET" .h)
 MODEL=$(dirname "$TARGET")
 PROGRAM="ui/$UI/$UI"
+#USER_MODEL_CFG
+#USER_DEFAULT_CFG
 
 # figure out the model number
 MODEL_NUMBER=$(head -1 "$MODEL/model")
@@ -34,7 +40,7 @@ if [[ $MCUNAME =~ "attiny" ]]; then
 elif [[ $MCUNAME =~ "avr" && $MCUNAME =~ "dd" ]]; then
   DFPPATH=$BASEDIR/arch/dfp/avrdd
 else
-  echo "Unrecognized MCU type: '$MCUNAME'"
+  echo "Unrecognized MCU type: '$MCUNAME'" >&2
   exit 1
 fi
 # skip verification because newer avr-libc doesn't need DFPs,
@@ -50,7 +56,6 @@ export CC=avr-gcc
 export CPP=avr-cpp
 export OBJCOPY=avr-objcopy
 export DFPFLAGS="-B $DFPPATH/gcc/dev/$MCUNAME/ -I $DFPPATH/include/"
-# TODO: include $user/ first so it can override other stuff
 INCLUDES="-I .build -I ui -I hw -I. -I.. -I../.. -I../../.."
 export CFLAGS="  -Wall -g -Os -mmcu=$MCUNAME -c -std=gnu99 -fgnu89-inline -fwhole-program $MCUFLAGS $INCLUDES -fshort-enums $DFPFLAGS"
 export CPPFLAGS="-Wall -g -Os -mmcu=$MCUNAME -C -std=gnu99 -fgnu89-inline -fwhole-program $MCUFLAGS $INCLUDES -fshort-enums $DFPFLAGS"
@@ -61,6 +66,17 @@ export OBJS=$PROGRAM.o
 
 OTHERFLAGS="-DCFG_H=$TARGET -DMODEL_NUMBER=\"$MODEL_NUMBER\" $ARGS"
 
+if [ -n "${USER_DEFAULT_CFG}" ] && [ -f "$USER_DEFAULT_CFG" ]; then
+  echo "  Using custom user default (global) configuration from $USER_DEFAULT_CFG" >&2
+  OTHERFLAGS="$OTHERFLAGS -DUSER_DEFAULT_CFG=$USER_DEFAULT_CFG"
+fi
+
+if [ -n "${USER_MODEL_CFG}" ] && [ -f "$USER_MODEL_CFG" ]; then
+  # TODO: allow multiple custom model builds per user
+  echo "  Using custom user model configuration from $USER_MODEL_CFG" >&2
+  OTHERFLAGS="$OTHERFLAGS -DUSER_MODEL_CFG=$USER_MODEL_CFG"
+fi
+
 function run () {
   #echo "$1" ; shift
   #echo "$*"
@@ -68,6 +84,7 @@ function run () {
 }
 
 run "$CPP" "$OTHERFLAGS" "$CPPFLAGS" -o foo.cpp "$PROGRAM.c"
+[ -n "${CPP_SAVE}" ] && cp -f foo.cpp "$CPP_SAVE"
 grep -a -E -v '^#|^$' foo.cpp > "$PROGRAM.cpp" ; rm foo.cpp
 run "$CC" "$OTHERFLAGS" "$CFLAGS" -o "$PROGRAM.o" -c "$PROGRAM.c"
 run "$CC" "$OFLAGS" "$LDFLAGS" -o "$PROGRAM.elf" "$PROGRAM.o"
