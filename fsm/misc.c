@@ -65,6 +65,16 @@ uint8_t blink_digit(uint8_t num) {
 
     return nice_delay_ms(BLINK_SPEED * 8 / 12);
 }
+#ifdef USE_LONG_BLINK_FOR_NEGATIVE_SIGN
+void blink_negative(){
+    // "negative" symbol gets a single long blink
+    uint8_t ontime = BLINK_SPEED * 2 / 12;
+    set_level(BLINK_BRIGHTNESS);
+    nice_delay_ms(ontime*3);
+    set_level(0);
+    nice_delay_ms(ontime*5);
+}
+#endif
 #endif
 
 #ifdef USE_BLINK_BIG_NUM
@@ -245,6 +255,28 @@ void rgb_led_set(uint8_t value) {
             // FIXME: move this logic to arch/*
             #if (MCU==0x1616) || (MCU==0x32dd20)  // ATTINY816, 817, etc
 
+            #ifdef AUXLED_RGB_DIFFERENT_PORTS
+
+            case 0:  // LED off
+                if (i==0){AUXLED_R_PORT.DIRSET = (1 << pin); AUXLED_R_PORT.OUTCLR = (1 << pin);}
+                if (i==1){AUXLED_G_PORT.DIRSET = (1 << pin); AUXLED_G_PORT.OUTCLR = (1 << pin);}
+                if (i==2){AUXLED_B_PORT.DIRSET = (1 << pin); AUXLED_B_PORT.OUTCLR = (1 << pin);}
+                break;
+
+            case 1:  // LED low
+                if (i==0){AUXLED_R_PORT.DIRCLR = (1 << pin); *((uint8_t *)&AUXLED_R_PORT + 0x10 + pin) = PORT_PULLUPEN_bm;}
+                if (i==1){AUXLED_G_PORT.DIRCLR = (1 << pin); *((uint8_t *)&AUXLED_G_PORT + 0x10 + pin) = PORT_PULLUPEN_bm;}
+                if (i==2){AUXLED_B_PORT.DIRCLR = (1 << pin); *((uint8_t *)&AUXLED_B_PORT + 0x10 + pin) = PORT_PULLUPEN_bm;}
+                break;
+
+            default:  // LED high
+                if (i==0){AUXLED_R_PORT.DIRSET = (1 << pin); AUXLED_R_PORT.OUTSET = (1 << pin);}
+                if (i==1){AUXLED_G_PORT.DIRSET = (1 << pin); AUXLED_G_PORT.OUTSET = (1 << pin);}
+                if (i==2){AUXLED_B_PORT.DIRSET = (1 << pin); AUXLED_B_PORT.OUTSET = (1 << pin);}
+                break;
+
+            #else
+            
             case 0:  // LED off
                 AUXLED_RGB_PORT.DIRSET = (1 << pin); // set as output
                 AUXLED_RGB_PORT.OUTCLR = (1 << pin); // set output low
@@ -258,6 +290,8 @@ void rgb_led_set(uint8_t value) {
                 AUXLED_RGB_PORT.DIRSET = (1 << pin); // set as output
                 AUXLED_RGB_PORT.OUTSET = (1 << pin); // set as high
                 break;
+            
+            #endif
 
             #else
 

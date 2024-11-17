@@ -15,7 +15,9 @@ uint8_t sos_state(Event event, uint16_t arg) {
     }
     // 2 clicks: next blinky mode
     else if (event == EV_2clicks) {
-        #if defined(USE_BATTCHECK_MODE)
+        #if defined(USE_BEACONTOWER_MODE)
+        set_state(beacontower_state, 0);
+        #elif defined(USE_BATTCHECK_MODE)
         set_state(battcheck_state, 0);
         #elif defined(USE_THERMAL_REGULATION)
         set_state(tempcheck_state, 0);

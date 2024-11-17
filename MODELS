@@ -43,6 +43,7 @@ Model     MCU         Name
 0272      attiny1634  hank-noctigon-dm11-nofet
 0273      attiny1634  hank-noctigon-dm11-boost
 0274      attiny1634  hank-noctigon-dm11-sbt90
+0281      avr32dd20   hank-lume-x1 (40W boost)
 0311      attiny85    lumintop-fw3a
 0312      attiny85    lumintop-fw3a-219
 0313      attiny85    lumintop-fw3a-nofet
@@ -58,6 +59,12 @@ Model     MCU         Name
 0423      attiny85    fireflies-pl47g2
 0424      attiny85    fireflies-pl47g2-219
 0441      attiny85    fireflies-e01
+0443      attiny1634  fireflies-lume1-2020       (E07X, E12R, NOV-mu, etc)
+0444      attiny1634  fireflies-lume1-2020-nofet (T9R, T1R, etc)
+0445      attiny85    fireflies-e12c
+0451      attiny1616  fireflies-lume1-6af        (E07X, E12R, NOV-Mu, etc)
+0452      attiny1616  fireflies-lume1-6af-nofet  (T9R, T1R, etc)
+0461      attiny1616  fireflies-lume-x1-40w      (X1S, X1L, etc)
 0511      attiny85    mateminco-mf01s
 0521      attiny85    mateminco-mf01-mini
 0531      attiny85    mateminco-mt35-mini
@@ -81,6 +88,10 @@ Model     MCU         Name
 1631      attiny1616  thefreeman-boost21-mp3431-hdr-dac-argb
 1632      attiny1616  thefreeman-boost-fwaa-mp3432-hdr-dac-rgb
 1632dd20  avr32dd20   thefreeman-avr32dd20-devkit
+4201      attiny1616  loneoceans-lume1-6af (6A buck + FET)
+4202      attiny1634  loneoceans-lume1-2020 (6A buck + FET, 2020 ver.)
+4211      attiny1616  loneoceans-lume-x1-40w (40W boost)
+4212      avr32dd20   loneoceans-lume-x1-avr32dd20 (40W boost)
 
 Duplicates:
 

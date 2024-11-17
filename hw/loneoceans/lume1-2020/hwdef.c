@@ -1,4 +1,4 @@
-// FW3X Lume1 helper functions
+// Lume1-2020 helper functions
 // Copyright (C) 2023 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
@@ -19,7 +19,6 @@ Channel channels[] = {
     },
     RGB_AUX_CHANNELS
 };
-
 
 void set_level_zero() {
     // disable timer overflow interrupt
@@ -57,7 +56,7 @@ void set_level_main(uint8_t level) {
             PWM_CNT = 0;
             is_buck_currently_on = 1;
             CH1_ENABLE_PORT |= (1 << CH1_ENABLE_PIN);   // enable regulator
-            //delay_4ms(BCK_ON_DELAY/4);                   // start-up delay
+            //delay_4ms(BCK_ON_DELAY/4);                // start-up delay
         }
     }
     // set delta-sigma soft levels
@@ -96,7 +95,6 @@ ISR(DSM_vect) {
     // clear carry bit
     ch1_dsm &= 0x7f;
 }
-
 
 bool gradual_tick_main(uint8_t gt) {
     // 150/150 is full FET + zero regulated,
@@ -160,4 +158,3 @@ uint16_t temp_raw2cooked(uint16_t measurement) {
 }
 
 #endif
-

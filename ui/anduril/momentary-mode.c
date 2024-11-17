@@ -7,6 +7,12 @@
 #include "anduril/momentary-mode.h"
 
 uint8_t momentary_state(Event event, uint16_t arg) {
+
+    // enable OTG mode, if defined 
+    #ifdef USE_OTG_IN_MOMENTARY
+    POWER_BANK_EN_PORT |= POWER_BANK_EN_PIN; 
+    #endif
+
     // init strobe mode, if relevant
     #ifdef USE_STROBE_STATE
     if ((event == EV_enter_state) && (momentary_mode != 0)) {
