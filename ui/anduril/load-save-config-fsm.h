@@ -105,6 +105,9 @@ typedef struct Config {
     #ifdef USE_AUX_RGB_LEDS
         uint8_t rgb_led_off_mode;
         uint8_t rgb_led_lockout_mode;
+        #ifdef INDEPENDENT_AUX_RGB_LEDS
+        uint8_t rgb_led_simple_off_mode;
+        #endif
         #ifdef USE_POST_OFF_VOLTAGE
             uint8_t post_off_voltage;
         #endif

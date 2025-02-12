@@ -44,6 +44,8 @@
 // Include a simplified UI for non-enthusiasts?
 #define USE_SIMPLE_UI
 
+// Allows use of two different auxiliary LED colors between simple and advanced modes
+#define INDEPENDENT_AUX_RGB_LEDS
 
 ///// Ramp mode options /////
 
