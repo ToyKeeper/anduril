@@ -204,9 +204,11 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     // 1C: Add 1 to the counter value
     else if (event == EV_1click) {
         lockout_counter ++;
+        blink_once();
         return EVENT_HANDLED;
     }
     else if (event == EV_2clicks) {
+        set_level(0);
         set_state(lockout_counter_readout_state, 0);
         return EVENT_HANDLED;
     }
@@ -248,6 +250,7 @@ uint8_t lockout_counter_readout_state(Event event, uint16_t arg) {
 }
 
 inline void lockout_counter_readout_iter() {
+    nice_delay_ms(1000);
     blink_big_num(lockout_counter);
     set_state_deferred(lockout_state, 0);
 }
