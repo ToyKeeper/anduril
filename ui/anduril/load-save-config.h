@@ -161,6 +161,9 @@ Config cfg = {
     #endif
     #ifdef USE_TACTICAL_MODE
         .tactical_levels = { TACTICAL_LEVELS },
+    #ifdef USE_TACTICAL_MODE_SMOOTH_STEPS
+        .tactical_smooth_steps = 0;
+    #endif
     #endif
 
     ///// hardware config / globals menu
