@@ -14,6 +14,22 @@ formats:
 
 # Next
 
+# 2025-04-29
+
+Pretty minor release.  Things have been weird lately.
+
+General:
+
+- Removed access to strobe/mood modes in Extended Simple UI, to make it more
+  safe and simple by default.
+
+New lights:
+
+- Added &hank-lume-x1 (0281): Covers all of Hank's recent Lume X1-based lights.
+- Added &wurkkos-ts10-rgbaux-lowfet (0712): Variant with lower max power,
+  created at Wurkkos's request, to stop new batches of low-Vf lights from
+  damaging themselves.
+
 # 2024-04-20
 
 General:

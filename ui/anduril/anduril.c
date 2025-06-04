@@ -341,6 +341,15 @@ void loop() {
     #ifdef USE_THERMAL_REGULATION
     // TODO: blink out therm_ceil during thermal_config_state?
     else if (state == tempcheck_state) {
+        // temperature is type int16_t
+        // but blink_num is uint8_t, so -10 will blink as 246
+        #ifdef USE_LONG_BLINK_FOR_NEGATIVE_SIGN
+        if (temperature < 0) {
+            blink_negative();
+            blink_num(-temperature);
+        }
+        else
+        #endif
         blink_num(temperature);
         nice_delay_ms(1000);
     }

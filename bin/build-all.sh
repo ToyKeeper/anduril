@@ -11,12 +11,8 @@ shopt -s globstar
 
 function main {
 
-    if [ "$#" -gt 0 ]; then
-        # multiple search terms with "AND"
-        SEARCH=( "$@" )
-        # memes
-        [ "$1" = "me" ] && shift && shift && echo "Make your own $*." && exit 1
-    fi
+    # multiple search terms with "AND"
+    [ "$#" -gt 0 ] && SEARCH=( "$@" )
 
     # TODO: detect UI from $0 and/or $*
     UI=anduril

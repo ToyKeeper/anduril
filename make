@@ -82,6 +82,9 @@ function main() {
     todo)
       grep -E 'TODO:|FIXME:' -- **/*.[ch] **/*.md
       ;;
+    me)
+      memes "$@"
+      ;;
     *)
       exec ./bin/build-all.sh "$@"
       ;;
@@ -94,6 +97,23 @@ function make-docs () {
     echo "$md --> $html"
     cmark-gfm "$md" > "$html"
   done
+}
+
+function memes () {
+    # memes
+    shift ; shift
+    if [ "$UID" = "0" ]; then
+        echo "Okay."
+        for l in . . . ' 10%' ' .' . . ' 20%' ' .' . . '' "!" '' . . . ' 35%' ' .' . . . . ' 69%' '' '' '' ' (nice)' '' '' '' '\b\b\b\b\b\b      \b\b\b\b\b\b.' . . ' 95%' ' .' . . ' 99%' ' .' . . ' 99.5%' ' .' . . '' ' ?' '' ' .' . . ' 99.7%' ' .' . . '' '' ' processing...' '' ' .' . . ' 99.8%' ' .' . . '' . '' '' ' urgh!' '' ' .' . . '' '' '' ' #@*%!\a' '' '' ' .' . . '' '' ' PROCESSING!' '' ' .' '' . '' . '' . '' . ' 99.9% ' '' . '' . '' . '' '' '' ' HRRRNNGH!!' '' '' ' .' '' '' . '' '' ' 99.95%' '' '' ' .' '' '' '' . '' '' " j/k NOT!" ; do
+            t=$( printf '%.3f' $(( 500 + $RANDOM / 32 ))e-3 )
+            sleep "$t"
+            echo -ne "$l"
+        done ; echo
+        echo "Make your own $*, dammit!"
+    else
+        echo "Make your own $*."
+    fi
+    exit 1
 }
 
 # go to the repo root

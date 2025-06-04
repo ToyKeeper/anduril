@@ -22,15 +22,26 @@ Channel channels[] = {
 };
 
 
+inline void nfet_delay() {
+    #if IN_NFET_DELAY_TIME > 0
+    delay_4ms(IN_NFET_DELAY_TIME/4);
+    #else
+    delay_zero();
+    delay_zero();
+    #endif
+}
+
 void set_level_zero() {
     DAC_LVL  = 0;  // DAC off
     DAC_VREF = V10;  // low Vref
     HDR_ENABLE_PORT &= ~(1 << HDR_ENABLE_PIN);  // HDR off
 
-    // prevent post-off flash
-    IN_NFET_ENABLE_PORT |= (1 << IN_NFET_ENABLE_PIN);
-    delay_4ms(IN_NFET_DELAY_TIME/4);
-    IN_NFET_ENABLE_PORT &= ~(1 << IN_NFET_ENABLE_PIN);
+    if (actual_level) {
+        // prevent post-off flash
+        IN_NFET_ENABLE_PORT |= (1 << IN_NFET_ENABLE_PIN);
+        nfet_delay();
+        IN_NFET_ENABLE_PORT &= ~(1 << IN_NFET_ENABLE_PIN);
+    }
 
     // turn off boost last
     BST_ENABLE_PORT &= ~(1 << BST_ENABLE_PIN);  // BST off
@@ -45,10 +56,8 @@ void set_level_main(uint8_t level) {
     if ((! actual_level) && (level < HDR_ENABLE_LEVEL_MIN)) {
         noflash = 1;
         IN_NFET_ENABLE_PORT |= (1 << IN_NFET_ENABLE_PIN);
+        //nfet_delay();
     }
-
-    // BST on first, to give it a few extra microseconds to spin up
-    BST_ENABLE_PORT |= (1 << BST_ENABLE_PIN);
 
     // pre-load ramp data so it can be assigned faster later
     // DAC level register is left-aligned
@@ -66,9 +75,15 @@ void set_level_main(uint8_t level) {
     DAC_LVL  = dac_lvl;
     DAC_VREF = dac_vref;
 
+    // if turning on from off, let things stabilize before enabling power
+    if (noflash) { nfet_delay(); }
+
+    // BST on last, after its inputs are set and stabilized
+    BST_ENABLE_PORT |= (1 << BST_ENABLE_PIN);
+
     if (noflash) {
         // wait for flash prevention to finish
-        delay_4ms(IN_NFET_DELAY_TIME/4);
+        nfet_delay();
         IN_NFET_ENABLE_PORT &= ~(1 << IN_NFET_ENABLE_PIN);
     }
 }

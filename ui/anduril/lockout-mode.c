@@ -12,24 +12,30 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     // button is being held
     #ifdef USE_AUX_RGB_LEDS
     // don't turn on during RGB aux LED configuration
-    if (event == EV_click7_hold) { set_level(0); } else
+    //if (event == EV_click7_hold) { set_level(0); } else
     #endif
-    if ((event & (B_CLICK | B_PRESS)) == (B_CLICK | B_PRESS)) {
-        // hold: lowest floor
-        // click, hold: highest floor (or manual mem level)
+    uint8_t click_num = event & B_COUNT;
+    if (  // button pressed 1st or 2nd time
+        ((B_CLICK | B_PRESS) == (event & (B_CLICK | B_PRESS)))
+        && (click_num <= 2)
+    ) {
         uint8_t lvl = cfg.ramp_floors[0];
-        if (1 == (event & 0x0f)) {  // first click
+        // hold: lowest floor
+        if (1 == click_num) {  // 1st click
             if (cfg.ramp_floors[1] < lvl) lvl = cfg.ramp_floors[1];
-        } else {  // 2nd click or later
-            if (cfg.ramp_floors[1] > lvl) lvl = cfg.ramp_floors[1];
+        }
+        // click, hold: highest floor (or manual mem level)
+        else {  // 2nd click
             #ifdef USE_MANUAL_MEMORY
             if (cfg.manual_memory) lvl = cfg.manual_memory;
+            else
             #endif
+            if (cfg.ramp_floors[1] > lvl) lvl = cfg.ramp_floors[1];
         }
         off_state_set_level(lvl);
     }
     // button was released
-    else if ((event & (B_CLICK | B_PRESS)) == (B_CLICK)) {
+    else if ((B_CLICK) == (event & (B_CLICK | B_PRESS))) {
         off_state_set_level(0);
     }
     #endif  // ifdef USE_MOON_DURING_LOCKOUT_MODE

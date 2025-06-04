@@ -43,6 +43,7 @@ Model     MCU         Name
 0272      attiny1634  hank-noctigon-dm11-nofet
 0273      attiny1634  hank-noctigon-dm11-boost
 0274      attiny1634  hank-noctigon-dm11-sbt90
+0281      avr32dd20   hank-lume-x1
 0311      attiny85    lumintop-fw3a
 0312      attiny85    lumintop-fw3a-219
 0313      attiny85    lumintop-fw3a-nofet
@@ -70,6 +71,7 @@ Model     MCU         Name
 0623      attiny1616  sofirn-lt1s-pro
 0631      attiny1616  sofirn-sp10-pro
 0632      attiny1616  sofirn-sc21-pro
+0712      attiny1616  wurkkos-ts10-rgbaux-lowfet
 0713      attiny1616  wurkkos-ts10-rgbaux
 0714      attiny1616  wurkkos-ts10
 0715      attiny1616  wurkkos-ts25 (may need 0716 / 0717 on some models)
