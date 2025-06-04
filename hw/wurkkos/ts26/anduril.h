@@ -1,9 +1,9 @@
-// Wurkkos TS25 Boost
+// Wurkkos TS26
 // Copyright (C) 2023 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define HWDEF_H  wurkkos/ts25/boost/hwdef.h
+#define HWDEF_H  wurkkos/ts26/hwdef.h
 #include "wurkkos/anduril.h"
 
 // this light has three aux LED channels: R, G, B

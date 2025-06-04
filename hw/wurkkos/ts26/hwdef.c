@@ -1,4 +1,4 @@
-// Wurkkos TS25 Boost helper functions
+// Wurkkos TS26 helper functions
 // Copyright (C) 2023 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once

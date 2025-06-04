@@ -1,4 +1,4 @@
-// Wurkkos TS25 driver layout
+// Wurkkos TS26 driver layout
 // Copyright (C) 2023 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
@@ -32,7 +32,7 @@
  *
  */
 
-#define HWDEF_C  wurkkos/ts25/boost/hwdef.c
+#define HWDEF_C  wurkkos/ts26/hwdef.c
 
 // allow using aux LEDs as extra channel modes
 #include "fsm/chan-rgbaux.h"

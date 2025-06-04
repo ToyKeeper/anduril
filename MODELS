@@ -1,5 +1,3 @@
-Models: 78
-
 Model     MCU         Name
 -----     ---         ----
 0111      attiny85    hank-emisar-d4
@@ -77,6 +75,7 @@ Model     MCU         Name
 0715      attiny1616  wurkkos-ts25 (may need 0716 / 0717 on some models)
 0716      attiny1616  wurkkos-fc13 (may ship with 0715) (also, TS30S Pro)
 0717      attiny1616  wurkkos-ts11 (may ship with 0715)
+0721      attiny1616  wurkkos-ts26
 1618      attiny1616  gchart-fet1-t1616
 1630      attiny1616  thefreeman-lin16dac
 1631      attiny1616  thefreeman-boost21-mp3431-hdr-dac-argb
