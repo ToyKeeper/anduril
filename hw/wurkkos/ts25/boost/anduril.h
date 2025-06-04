@@ -10,16 +10,15 @@
 #define USE_AUX_RGB_LEDS
 
 // don't turn on the aux LEDs while main LEDs are on
-//#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-//#undef USE_INDICATOR_LED_WHILE_RAMPING
-//#endif
+#ifdef USE_INDICATOR_LED_WHILE_RAMPING
+#undef USE_INDICATOR_LED_WHILE_RAMPING
+#endif
+// (nope, 20250210 prototype has front aux instead of RGB button)
 // show real-time battery status on RGB button
 // when main LEDs are bright enough to overpower the front aux
-#define USE_INDICATOR_LED_WHILE_RAMPING
-#define USE_AUX_RGB_LEDS_WHILE_ON  20
+//#define USE_INDICATOR_LED_WHILE_RAMPING
+//#define USE_AUX_RGB_LEDS_WHILE_ON  20
 
-
-#define VOLTAGE_FUDGE_FACTOR 5  // add 0.25V, not 0.35V
 
 #define RAMP_SIZE 150
 
@@ -64,8 +63,8 @@
 // blink numbers on the aux LEDs by default
 //#define DEFAULT_BLINK_CHANNEL  CM_AUXWHT
 
-// slow down party strobe; this driver can't pulse for 2ms or less
-#define PARTY_STROBE_ONTIME 1
+// slow down party strobe; this driver can't pulse for less than 2ms
+#define PARTY_STROBE_ONTIME 2
 //#define STROBE_OFF_LEVEL 1  // keep the regulator chip on between pulses
 
 // use aux red + aux blue for police strobe
