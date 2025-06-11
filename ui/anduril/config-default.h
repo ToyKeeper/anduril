@@ -215,3 +215,19 @@
 // (but allow disabling this feature per build)
 #define USE_CHANNEL_PER_STROBE
 
+// Use channel_uses_aux() where needed and practical to.
+// See issue: https://github.com/ToyKeeper/anduril/issues/29
+// We want to avoid including this functionality for code size reasons on t85.
+// By default there are no t85 builds with RGB aux (it is unlikely to be *able*
+// to fit on a t85) - this does leave one known issue, that strobe modes on t85
+// lights will be able to be configured to use aux channels, including strobes
+// that wouldn't work with aux (e.g. bike flasher or candle mode), but we need
+// this for any t1634 or newer light with RGB aux to fix some more significant
+// edge cases around RGB, but this also applies to *any* light with aux-based
+// channels for the aforementioned issue. This has to be included here because
+// we need this to be defined *before* the light-specific anduril.h and hwdefs
+// are loaded, as ramp tables could be shared between two lghts with different
+// aux configurations.
+#if (MCU==0x1634) || (MCU==0x1616) || (MCU==0x32dd20)
+#define USE_CHANNEL_USES_AUX
+#endif

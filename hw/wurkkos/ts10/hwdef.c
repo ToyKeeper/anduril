@@ -15,11 +15,17 @@ bool gradual_tick_main(uint8_t gt);
 Channel channels[] = {
     { // main LEDs
         .set_level    = set_level_main,
-        .gradual_tick = gradual_tick_main
+        .gradual_tick = gradual_tick_main,
+        #ifdef USE_CHANNEL_USES_AUX
+        .uses_aux     = 0
+        #endif
     },
     { // aux LEDs
         .set_level    = set_level_aux,
-        .gradual_tick = gradual_tick_null
+        .gradual_tick = gradual_tick_null,
+        #ifdef USE_CHANNEL_USES_AUX
+        .uses_aux     = 1
+        #endif
     }
 };
 
