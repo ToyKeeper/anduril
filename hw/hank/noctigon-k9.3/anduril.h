@@ -107,3 +107,4 @@
 #undef BLINK_AT_RAMP_MIDDLE
 #endif
 
+#define USE_PREVIOUS_CHANNEL

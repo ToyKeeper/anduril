@@ -55,6 +55,10 @@ typedef struct Config {
         #ifdef DEFAULT_BLINK_CHANNEL
             uint8_t blink_channel;
         #endif
+
+        #if (defined(USE_PREVIOUS_CHANNEL) && !defined(PREVIOUS_CHANNEL_REPLACES_LOCKOUT))
+            uint8_t previous_channel_enabled;
+        #endif
     #endif
     #ifdef USE_CHANNEL_MODE_ARGS
         // this is an array, needs a few bytes

@@ -141,14 +141,18 @@ uint8_t steady_state(Event event, uint16_t arg) {
         return EVENT_HANDLED;
     }
 
-    #ifdef USE_LOCKOUT_MODE
-    // 4 clicks: shortcut to lockout mode
-    else if (event == EV_4clicks) {
+    #if defined(USE_LOCKOUT_MODE) && !defined(PREVIOUS_CHANNEL_REPLACES_LOCKOUT)
+    #ifdef USE_PREVIOUS_CHANNEL
+    else if ((event == EV_4clicks) && (!cfg.previous_channel_enabled))
+    #else
+    else if (event == EV_4clicks)
+    #endif //ifdef USE_PREVIOUS_CHANNEL
+    {
         set_level(0);
         set_state(lockout_state, 0);
         return EVENT_HANDLED;
     }
-    #endif
+    #endif //ifdef USE_LOCKOUT_MODE
 
     // hold: change brightness (brighter, dimmer)
     // click, hold: change brightness (dimmer)
@@ -612,6 +616,13 @@ void ramp_extras_config_save(uint8_t step, uint8_t value) {
         cfg.smooth_steps_style = value;
     }
     #endif
+
+    #if (defined(USE_PREVIOUS_CHANNEL) && !defined(PREVIOUS_CHANNEL_REPLACES_LOCKOUT))
+    else if (previous_channel_enabled_config_step == step) {
+        cfg.previous_channel_enabled = value;
+    }
+    #endif
+
 }
 
 uint8_t ramp_extras_config_state(Event event, uint16_t arg) {

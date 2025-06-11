@@ -203,6 +203,9 @@ typedef enum {
     #ifdef USE_SMOOTH_STEPS
     smooth_steps_style_config_step,
     #endif
+    #if (defined(USE_PREVIOUS_CHANNEL) && !defined(PREVIOUS_CHANNEL_REPLACES_LOCKOUT))
+    previous_channel_enabled_config_step,
+    #endif
     ramp_extras_config_num_steps
 } ramp_extras_config_steps_e;
 #endif
