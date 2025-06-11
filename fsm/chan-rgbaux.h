@@ -13,14 +13,24 @@
     CM_AUXWHT
 
 #define RGB_AUX_CM_ARGS  0,0,0,0,0,0,0
+#define RGB_AUX_SCM_ARGS 0,0,0,0,0,0,0
 
 #define NUM_RGB_AUX_CHANNEL_MODES  7
 
 // include / exclude field based on compile options
-#ifdef USE_CHANNEL_MODE_ARGS
+#ifdef USE_SECONDARY_CHANNEL_MODE_ARGS
+    #define AUX_RGB_HAS_ARGS , .has_args = 0, .has_secondary_args = 0
+#elif defined(USE_CHANNEL_MODE_ARGS)
     #define AUX_RGB_HAS_ARGS , .has_args = 0
 #else
     #define AUX_RGB_HAS_ARGS
+#endif
+
+#ifdef USE_CHANNEL_USES_AUX
+    //USE_CHANNEL_USES_AUX
+    #define AUX_RGB_USES_AUX , .uses_aux = 1
+#else
+    #define AUX_RGB_USES_AUX
 #endif
 
 #define RGB_AUX_CHANNELS \
@@ -28,36 +38,43 @@
         .set_level    = set_level_auxred, \
         .gradual_tick = gradual_tick_null \
         AUX_RGB_HAS_ARGS \
+        AUX_RGB_USES_AUX \
     }, \
     { \
         .set_level    = set_level_auxyel, \
         .gradual_tick = gradual_tick_null \
         AUX_RGB_HAS_ARGS \
+        AUX_RGB_USES_AUX \
     }, \
     { \
         .set_level    = set_level_auxgrn, \
         .gradual_tick = gradual_tick_null \
         AUX_RGB_HAS_ARGS \
+        AUX_RGB_USES_AUX \
     }, \
     { \
         .set_level    = set_level_auxcyn, \
         .gradual_tick = gradual_tick_null \
         AUX_RGB_HAS_ARGS \
+        AUX_RGB_USES_AUX \
     }, \
     { \
         .set_level    = set_level_auxblu, \
         .gradual_tick = gradual_tick_null \
         AUX_RGB_HAS_ARGS \
+        AUX_RGB_USES_AUX \
     }, \
     { \
         .set_level    = set_level_auxprp, \
         .gradual_tick = gradual_tick_null \
         AUX_RGB_HAS_ARGS \
+        AUX_RGB_USES_AUX \
     }, \
     { \
         .set_level    = set_level_auxwht, \
         .gradual_tick = gradual_tick_null \
         AUX_RGB_HAS_ARGS \
+        AUX_RGB_USES_AUX \
     }
 
 void set_level_auxred(uint8_t level);

@@ -6,18 +6,34 @@
 
 #include "anduril/channel-modes.h"
 
+typedef struct RampState {
+    int8_t tint_ramp_direction;
+    uint8_t prev_tint;
+    // Blip when the user hits the end of the ramp.
+    uint8_t past_edge_counter;
+} RampState;
+
+uint8_t default_channel_ramp(uint16_t arg, RampState *state, uint8_t channel_args[]);
+uint8_t default_channel_ramp_reverse(RampState *state, uint8_t channel_args[]);
+
 uint8_t channel_mode_state(Event event, uint16_t arg) {
     #ifdef USE_CHANNEL_MODE_ARGS
-    static int8_t tint_ramp_direction = 1;
-    static uint8_t prev_tint = 0;
-    // don't activate auto-tint modes unless the user hits the edge
-    // and keeps pressing for a while
-    static uint8_t past_edge_counter = 0;
     // bugfix: click-click-hold from off to strobes would invoke tint ramping
-    // in addition to changing state...  so ignore any tint-ramp events which
+    // in addition to changing state...  so ignore any tint-ramp events which                                                                                                     -    // don't look like they were meant to be here 
     // don't look like they were meant to be here
     static uint8_t active = 0;
-    uint8_t tint = cfg.channel_mode_args[channel_mode];
+    static RampState ramp_state = {
+        .tint_ramp_direction = 1,
+        .prev_tint           = 0,
+        .past_edge_counter   = 0,
+    };
+    #endif
+    #ifdef USE_SECONDARY_CHANNEL_MODE_ARGS
+    static RampState secondary_ramp_state = {
+        .tint_ramp_direction = 1,
+        .prev_tint           = 0,
+        .past_edge_counter   = 0,
+    };
     #endif
 
     if (0) {}
@@ -55,7 +71,8 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
 
     #ifdef USE_CUSTOM_CHANNEL_3H_MODES
     // defer to mode-specific function if defined
-    else if (channel_3H_modes[channel_mode]) {
+    else if ((event == EV_click3_hold || event == EV_click3_hold_release) &&
+            channel_3H_modes[channel_mode]) {
         StatePtr tint_func = channel_3H_modes[channel_mode];
         uint8_t err = tint_func(event, arg);
         if (EVENT_HANDLED == err) return EVENT_HANDLED;
@@ -66,61 +83,38 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
     #if defined(USE_CHANNEL_MODE_ARGS) && !defined(DONT_USE_DEFAULT_CHANNEL_ARG_MODE)
     // click, click, hold: change the current channel's arg (like tint)
     else if (event == EV_click3_hold) {
-        ///// adjust value from 0 to 255
-        // reset at beginning of movement
         if (! arg) {
             active = 1;  // first frame means this is for us
-            past_edge_counter = 0;  // doesn't start until user hits the edge
         }
-        // ignore event if we weren't the ones who handled the first frame
         if (! active) return EVENT_NOT_HANDLED;
-
-        #ifdef USE_STEPPED_TINT_RAMPING
-            if ((tint_ramp_direction > 0 && tint < 255) ||
-                (tint_ramp_direction < 0 && tint > 0)) {
-                // ramp slower in stepped mode
-                if (cfg.tint_ramp_style && (arg % HOLD_TIMEOUT != 0))
-                    return EVENT_HANDLED;
-
-                const uint8_t step_size = (cfg.tint_ramp_style < 2)
-                                        ? 1 : 254 / (cfg.tint_ramp_style-1);
-                tint = nearest_tint_value(
-                          tint + ((int16_t)step_size * tint_ramp_direction)
-                          );
-            }
-        #else  // smooth tint ramping only
-            if ((tint_ramp_direction > 0) && (tint < 255)) { tint ++; }
-            else
-            if ((tint_ramp_direction < 0) && (tint >   0)) { tint --; }
-        #endif  // ifdef USE_STEPPED_TINT_RAMPING
-
-        // if tint change stalled, let user know we hit the edge
-        else if (prev_tint == tint) {
-            if (past_edge_counter == 0) blip();
-            past_edge_counter = 1;
-        }
-        prev_tint = tint;
-        cfg.channel_mode_args[channel_mode] = tint;
-        set_level(actual_level);
-        return EVENT_HANDLED;
+        return default_channel_ramp(
+            arg, &ramp_state, cfg.channel_mode_args);
     }
 
     // click, click, hold, release: reverse direction for next ramp
     else if (event == EV_click3_hold_release) {
         active = 0;  // ignore next hold if it wasn't meant for us
-        // reverse
-        tint_ramp_direction = -tint_ramp_direction;
-        if (0 == tint) tint_ramp_direction = 1;
-        else if (255 == tint) tint_ramp_direction = -1;
-        // remember tint after battery change
-        cfg.channel_mode_args[channel_mode] = tint;
-        save_config();
-        // bug?: for some reason, brightness can seemingly change
-        // from 1/150 to 2/150 without this next line... not sure why
-        set_level(actual_level);
-        return EVENT_HANDLED;
+        return default_channel_ramp_reverse(
+            &ramp_state, cfg.channel_mode_args);
     }
     #endif  // if defined(USE_CHANNEL_MODE_ARGS) && !defined(DONT_USE_DEFAULT_CHANNEL_ARG_MODE)
+
+    #if defined(USE_SECONDARY_CHANNEL_MODE_ARGS)
+    // click, click, click, hold: change the current channel's secondary arg
+    // (like saturation)
+    else if (event == EV_click4_hold) {
+        return default_channel_ramp(
+            arg, &secondary_ramp_state,
+            cfg.secondary_channel_mode_args);
+    }
+
+    // click, click, click, hold, release: reverse direction for next ramp
+    else if (event == EV_click4_hold_release) {
+        return default_channel_ramp_reverse(
+            &secondary_ramp_state,
+            cfg.secondary_channel_mode_args);
+    }
+    #endif  // if defined(USE_SECONDARY_CHANNEL_MODE_ARGS)
 
     #if defined(USE_SIMPLE_UI)
     // remaining mappings aren't "simple", so stop here
@@ -140,6 +134,72 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
     return EVENT_NOT_HANDLED;
 }
 
+#if defined(USE_CHANNEL_MODE_ARGS) && !defined(DONT_USE_DEFAULT_CHANNEL_ARG_MODE) || defined(USE_SECONDARY_CHANNEL_MODE_ARGS)
+uint8_t default_channel_ramp(uint16_t arg, RampState *state, uint8_t channel_args[]) {
+    uint8_t tint = channel_args[channel_mode];
+
+    #ifdef USE_TINT_RAMP_DIRECTION_FIX // doesn't fit on the original LT1
+    ///// adjust value from 0 to 255
+    // reset at beginning of movement
+    if (! arg) {
+        // Issue 69: if manual memory was set to an arg of 0 or 255, this could result in an incorrect
+        // ramp direction with the arg resetting, so make sure tint_ramp_direction is set correctly
+        if (tint == 0){
+            state->tint_ramp_direction = 1;
+        }
+        else if (tint == 255){
+            state->tint_ramp_direction = -1;
+        }
+    }
+    #endif  // ifdef USE_TINT_RAMP_DIRECTION_FIX
+
+    #if defined(USE_CHANNEL_MODE_ARGS) && defined(USE_STEPPED_TINT_RAMPING)
+        if ((state->tint_ramp_direction > 0 && tint < 255) ||
+            (state->tint_ramp_direction < 0 && tint > 0)) {
+            // ramp slower in stepped mode
+            if (cfg.tint_ramp_style && (arg % HOLD_TIMEOUT != 0))
+                return EVENT_HANDLED;
+
+            const uint8_t step_size = (cfg.tint_ramp_style < 2)
+                                    ? 1 : 254 / (cfg.tint_ramp_style-1);
+            tint = nearest_tint_value(
+                      tint + ((int16_t)step_size * state->tint_ramp_direction)
+                      );
+        }
+    #else  // smooth tint ramping only
+        if ((state->tint_ramp_direction > 0) && (tint < 255)) { tint ++; }
+        else
+        if ((state->tint_ramp_direction < 0) && (tint >   0)) { tint --; }
+    #endif  // ifdef USE_STEPPED_TINT_RAMPING
+
+    // if tint change stalled, let user know we hit the edge
+    else if (state->prev_tint == tint) {
+        if (state->past_edge_counter == 0) blip();
+        state->past_edge_counter = 1;
+    }
+    state->prev_tint = tint;
+    channel_args[channel_mode] = tint;
+    set_level(actual_level);
+    return EVENT_HANDLED;
+}
+
+uint8_t default_channel_ramp_reverse(RampState *state, uint8_t channel_args[]) {
+    uint8_t tint = channel_args[channel_mode];
+
+    // reverse
+    state->tint_ramp_direction = -state->tint_ramp_direction;
+    state->past_edge_counter = 0;  // doesn't start until user hits the edge
+    if (0 == tint) state->tint_ramp_direction = 1;
+    else if (255 == tint) state->tint_ramp_direction = -1;
+    // remember tint after battery change
+    channel_args[channel_mode] = tint;
+    save_config();
+    // bug?: for some reason, brightness can seemingly change
+    // from 1/150 to 2/150 without this next line... not sure why
+    set_level(actual_level);
+    return EVENT_HANDLED;
+}
+#endif  // if defined(USE_CHANNEL_MODE_ARGS) && !defined(DONT_USE_DEFAULT_CHANNEL_ARG_MODE) || defined(USE_SECONDARY_CHANNEL_MODE_ARGS)
 
 #if NUM_CHANNEL_MODES > 1
 void channel_mode_config_save(uint8_t step, uint8_t value) {

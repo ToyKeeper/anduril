@@ -440,6 +440,12 @@ uint8_t steady_state(Event event, uint16_t arg) {
                 && (channel_has_args(channel_mode)))
                 return EVENT_NOT_HANDLED;
         #endif
+        #ifdef USE_SECONDARY_CHANNEL_MODE_ARGS
+            // ramp secondary tint if tint exists in this mode
+            if ((event == EV_click4_hold)
+                && (channel_has_secondary_args(channel_mode)))
+                return EVENT_NOT_HANDLED;
+        #endif
         if (! arg) {  // first frame only, to allow thermal regulation to work
             #ifdef USE_2C_STYLE_CONFIG
             uint8_t tl = style_2c ? MAX_LEVEL : turbo_level;
@@ -459,6 +465,12 @@ uint8_t steady_state(Event event, uint16_t arg) {
             // ramp tint if tint exists in this mode
             if ((event == EV_click3_hold_release)
                 && (channel_has_args(channel_mode)))
+                return EVENT_NOT_HANDLED;
+        #endif
+        #ifdef USE_SECONDARY_CHANNEL_MODE_ARGS
+            // ramp secondary tint if tint exists in this mode
+            if ((event == EV_click4_hold_release)
+                && (channel_has_secondary_args(channel_mode)))
                 return EVENT_NOT_HANDLED;
         #endif
         set_level_and_therm_target(memorized_level);
@@ -722,6 +734,11 @@ void manual_memory_restore() {
         for (uint8_t i=0; i<NUM_CHANNEL_MODES; i++)
           cfg.channel_mode_args[i] = cfg.manual_memory_channel_args[i];
     #endif
+    #ifdef USE_SECONDARY_CHANNEL_MODE_ARGS
+        for (uint8_t i=0; i<NUM_CHANNEL_MODES; i++)
+          cfg.secondary_channel_mode_args[i] =
+              cfg.manual_memory_secondary_channel_args[i];
+    #endif
 }
 
 void manual_memory_save() {
@@ -732,6 +749,11 @@ void manual_memory_save() {
     #ifdef USE_CHANNEL_MODE_ARGS
         for (uint8_t i=0; i<NUM_CHANNEL_MODES; i++)
           cfg.manual_memory_channel_args[i] = cfg.channel_mode_args[i];
+    #endif
+    #ifdef USE_SECONDARY_CHANNEL_MODE_ARGS
+        for (uint8_t i=0; i<NUM_CHANNEL_MODES; i++)
+          cfg.manual_memory_secondary_channel_args[i] =
+              cfg.secondary_channel_mode_args[i];
     #endif
 }
 #endif  // ifdef USE_MANUAL_MEMORY

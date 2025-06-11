@@ -93,6 +93,7 @@ RGB_t hsv2rgb(uint8_t h, uint8_t s, uint16_t v) {
 
     if (s == 0) {  // grey
         color.r = color.g = color.b = v;
+        color.r_on = color.b_on = color.g_on = 1;
         return color;
     }
 
@@ -118,38 +119,47 @@ RGB_t hsv2rgb(uint8_t h, uint8_t s, uint16_t v) {
     color.r = low;
     color.g = low;
     color.b = low;
+    color.r_on = 0;
+    color.g_on = 0;
+    color.b_on = 0;
 
     // assign graph shapes based on color cone region
     switch (region) {
         case 0:
             color.r = high;
             color.g = rising;
-            //color.b = low;
+            color.r_on = 1;
+            color.g_on = (color.g == color.r);
             break;
         case 1:
             color.r = falling;
             color.g = high;
-            //color.b = low;
+            color.g_on = 1;
+            color.r_on = (color.r == color.g);
             break;
         case 2:
-            //color.r = low;
             color.g = high;
             color.b = rising;
+            color.g_on = 1;
+            color.b_on = (color.b == color.g);
             break;
         case 3:
-            //color.r = low;
             color.g = falling;
             color.b = high;
+            color.b_on = 1;
+            color.g_on = (color.g == color.b);
             break;
         case 4:
             color.r = rising;
-            //color.g = low;
             color.b = high;
+            color.b_on = 1;
+            color.r_on = (color.r == color.b);
             break;
         default:
             color.r = high;
-            //color.g = low;
             color.b = falling;
+            color.r_on = 1;
+            color.b_on = (color.b == color.r);
             break;
     }
 

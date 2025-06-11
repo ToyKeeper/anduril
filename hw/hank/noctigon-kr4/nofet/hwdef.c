@@ -11,15 +11,14 @@ void set_level_zero();
 void set_level_main(uint8_t level);
 bool gradual_tick_main(uint8_t gt);
 
-
 Channel channels[] = {
     { // channel 1 only
         .set_level    = set_level_main,
-        .gradual_tick = gradual_tick_main
+        .gradual_tick = gradual_tick_main,
+        .uses_aux     = 0
     },
     RGB_AUX_CHANNELS
 };
-
 
 void set_level_zero() {
     CH1_PWM = 0;

@@ -95,6 +95,15 @@ Config cfg = {
             .tint_ramp_style = DEFAULT_TINT_RAMP_STYLE,
         #endif
     #endif
+    #ifdef USE_SECONDARY_CHANNEL_MODE_ARGS
+        // one more byte of extra data per channel mode, like for saturation
+        .secondary_channel_mode_args = { SECONDARY_CHANNEL_MODE_ARGS },
+        #ifdef USE_MANUAL_MEMORY
+            // remember and reset another extra parameter per channel mode
+            // (like saturation).
+            .manual_memory_secondary_channel_args = { SECONDARY_CHANNEL_MODE_ARGS },
+        #endif
+    #endif
 
     ///// Smooth animation between steps, and for on/off
     #ifdef USE_SMOOTH_STEPS
@@ -119,6 +128,16 @@ Config cfg = {
     #endif
     #ifdef USE_BIKE_FLASHER_MODE
         .bike_flasher_brightness = DEFAULT_BIKING_LEVEL,
+    #endif
+    #ifdef USE_RAINBOW_MODE
+        .rainbow_mode_brightness = DEFAULT_RAINBOW_LEVEL,
+        #ifndef DEFAULT_RAINBOW_MODE_SPEED
+        #define DEFAULT_RAINBOW_MODE_SPEED 80
+        #endif
+        .rainbow_mode_speed = DEFAULT_RAINBOW_MODE_SPEED,
+    #endif
+    #ifdef USE_RAINBOW_PARTY
+        .rainbow_party_brightness = DEFAULT_RAINBOW_LEVEL,
     #endif
     #ifdef USE_BEACON_MODE
         // beacon timing

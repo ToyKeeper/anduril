@@ -23,27 +23,32 @@ Channel channels[] = {
     { // manual blend of warm and cool white
         .set_level    = set_level_white_blend,
         .gradual_tick = gradual_tick_white_blend,
-        .has_args     = 1
+        .has_args     = 1,
+        .uses_aux     = 0
     },
     { // auto blend from warm white to cool white
         .set_level    = set_level_auto_2ch_blend,
         .gradual_tick = gradual_tick_auto_2ch_blend,
-        .has_args     = 0
+        .has_args     = 0,
+        .uses_aux     = 0
     },
     { // auto blend from red to warm white to cool white
         .set_level    = set_level_auto_3ch_blend,
         .gradual_tick = gradual_tick_auto_3ch_blend,
-        .has_args     = 0
+        .has_args     = 0,
+        .uses_aux     = 0
     },
     { // red only
         .set_level    = set_level_red,
         .gradual_tick = gradual_tick_red,
-        .has_args     = 0
+        .has_args     = 0,
+        .uses_aux     = 0
     },
     { // manual white blend + adjustable red
         .set_level    = set_level_red_white_blend,
         .gradual_tick = gradual_tick_red_white_blend,
-        .has_args     = 1
+        .has_args     = 1,
+        .uses_aux     = 0
     }
 };
 

@@ -66,6 +66,13 @@ typedef struct Config {
             uint8_t tint_ramp_style;
         #endif
     #endif
+    #ifdef USE_SECONDARY_CHANNEL_MODE_ARGS
+        // this is an array, needs a few bytes
+        uint8_t secondary_channel_mode_args[NUM_CHANNEL_MODES];
+        #ifdef USE_MANUAL_MEMORY
+            uint8_t manual_memory_secondary_channel_args[NUM_CHANNEL_MODES];
+        #endif
+    #endif
 
     ///// Smooth animation between steps, and for on/off
     #ifdef USE_SMOOTH_STEPS
@@ -84,6 +91,13 @@ typedef struct Config {
     #endif
     #ifdef USE_BIKE_FLASHER_MODE
         uint8_t bike_flasher_brightness;
+    #endif
+    #ifdef USE_RAINBOW_MODE
+        uint8_t rainbow_mode_brightness;
+        int8_t rainbow_mode_speed;
+    #endif
+    #ifdef USE_RAINBOW_PARTY
+        uint8_t rainbow_party_brightness;
     #endif
     #ifdef USE_BEACON_MODE
         uint8_t beacon_seconds;

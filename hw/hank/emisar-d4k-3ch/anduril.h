@@ -15,8 +15,8 @@
 #define USE_INDICATOR_LED_WHILE_RAMPING
 
 // channel modes...
-// CM_MAIN2, CM_LED3, CM_LED4, CM_ALL,
-// CM_BLEND34A, CM_BLEND34B, CM_HSV, CM_AUTO3
+// CM_MAIN2, CM_MAIN2_LED3, CM_LED3, CM_LED3_LED4, CM_LED4, CM_LED4_MAIN2,
+// CM_ALL, CM_HSV, CM_AUTO3
 #define DEFAULT_CHANNEL_MODE           CM_ALL
 
 #define FACTORY_RESET_WARN_CHANNEL     CM_LED4
@@ -102,3 +102,12 @@
 // for consistency with KR4 (not otherwise necessary though)
 #define USE_SOFT_FACTORY_RESET
 
+// Use HSV channel for a rainbow-cycling strobe mode.
+#define USE_RAINBOW_MODE
+#define RAINBOW_MODE_CH CM_HSV
+
+// Use three channels for a rainbow-cycling strobe mode.
+#define USE_RAINBOW_PARTY
+#define RAINBOW_PARTY_CH1 CM_MAIN2
+#define RAINBOW_PARTY_CH2 CM_LED3
+#define RAINBOW_PARTY_CH3 CM_LED4
