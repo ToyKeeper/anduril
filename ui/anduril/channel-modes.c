@@ -131,7 +131,7 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
 
     #if NUM_CHANNEL_MODES > 1
     // channel toggle menu on ... 9H?
-    else if (event == EV_click9_hold) {
+    else if ((event == EV_click9_hold) && (current_state == steady_state)) {
         push_state(channel_mode_config_state, 0);
         return EVENT_HANDLED;
     }

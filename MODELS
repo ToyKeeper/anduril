@@ -24,6 +24,7 @@ Model     MCU         Name
 0143      attiny1634  hank-noctigon-m44
 0151      attiny1634  hank-emisar-d4k-3ch
 0161      avr32dd20   hank-emisar-d3aa
+0162      avr32dd20   hank-emisar-d3aa-jumpstart
 0211      attiny1634  hank-noctigon-kr4
 0212      attiny1634  hank-noctigon-kr4-nofet
 0213      attiny1634  hank-noctigon-kr4-219
