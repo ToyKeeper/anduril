@@ -11,4 +11,4 @@ avrdude "$AVRDUDE_CONF" \
   -c jtag2updi \
   -P "$AVRDUDE_TTYUSB" \
   -p t1616 \
-  -u -Uflash:w:"$FIRMWARE"
+  -Uflash:w:"$FIRMWARE"
