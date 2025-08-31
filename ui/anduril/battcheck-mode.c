@@ -51,7 +51,7 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
     return EVENT_NOT_HANDLED;
 }
 
-#ifdef USE_VOLTAGE_CORRECTION
+#if defined(USE_VOLTAGE_CORRECTION) || defined(USE_POST_OFF_VOLTAGE) || defined(USE_AUX_THRESHOLD_CONFIG)
 // the user can adjust the battery measurements... on a scale of 1 to 13
 // 1 = subtract 0.30V
 // 2 = subtract 0.25V
@@ -61,21 +61,35 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
 // ...
 // 13 = add 0.30V
 void voltage_config_save(uint8_t step, uint8_t value) {
-    #ifdef USE_POST_OFF_VOLTAGE
-        if (2 == step) cfg.post_off_voltage = value;
-        else
-    #endif
-    if (value) cfg.voltage_correction = value;
+    switch (step) {
+        #if defined(USE_AUX_THRESHOLD_CONFIG)
+        case button_led_low_ramp_level_step:
+            // 0 clicks = 255 = never turn on
+            cfg.button_led_low_ramp_level = value - 1;
+            break;
+        case button_led_high_ramp_level_step:
+            // 0 clicks = 255 = never turn on
+            cfg.button_led_high_ramp_level = value - 1;
+            break;
+        #endif
+
+        #ifdef USE_POST_OFF_VOLTAGE
+        case post_off_voltage_config_step:
+            cfg.post_off_voltage = value;
+            break;
+        #endif
+
+        #ifdef USE_VOLTAGE_CORRECTION
+        default:
+            if (value) cfg.voltage_correction = value;
+            break;
+        #endif
+    }
 }
 
 uint8_t voltage_config_state(Event event, uint16_t arg) {
-    #ifdef USE_POST_OFF_VOLTAGE
-        #define VOLTAGE_CONFIG_STEPS  2
-    #else
-        #define VOLTAGE_CONFIG_STEPS  1
-    #endif
     return config_state_base(event, arg,
-                             VOLTAGE_CONFIG_STEPS,
+                             voltage_config_num_steps - 1,
                              voltage_config_save);
 }
 #endif  // #ifdef USE_VOLTAGE_CORRECTION

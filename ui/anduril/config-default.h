@@ -199,6 +199,14 @@
 #define USE_LOWPASS_WHILE_ASLEEP
 #endif
 
+// if the light has aux LEDs and enough ROM, let the user choose whether
+// the aux LEDs should be on while the main LEDs are on
+#if (ROM_SIZE > 10000)
+// can be enabled even if no aux LEDs exist,
+// will simply do nothing in that case
+#define USE_AUX_THRESHOLD_CONFIG
+#endif
+
 // if there's tint ramping, allow user to set it smooth or stepped
 #define USE_STEPPED_TINT_RAMPING
 #define DEFAULT_TINT_RAMP_STYLE 0  // smooth

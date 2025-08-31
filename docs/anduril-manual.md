@@ -30,6 +30,8 @@ more modes and features available for people who want more.
 For a full list of button mappings, scroll down to the
 [UI Reference Table](#ui-reference-table) at the end of this file.
 
+If you have a specific question, it may be covered in the [FAQ](#faq).
+
 
 Button presses
 --------------
@@ -105,15 +107,15 @@ Functions available in Simple UI include:
   - `2H`: If light is on : ramp down  
           If light is off: momentary high mode
   - `2C`: Double click to go to / from highest safe level
-  - `4C`: Lockout mode.
+  - `4C`: [Lockout mode](#lockout-mode).
 
 Some other modes and functions are available too.  When the light is
 off, these are the options:
 
-  - `3C`: Battery check mode.  (displays voltage once, then turns off)
-  - `4C`: Lockout mode.
-  - `10H`: Switch to Advanced UI.
-  - `15C` or more: Version check.
+  - `3C`: [Battery check mode](#battery-check).  (displays voltage once, then turns off)
+  - `4C`: [Lockout mode](#lockout-mode).
+  - `10H`: Switch to [Advanced UI](#advanced-ui).
+  - `15C` or more: [Version check](#version-check-mode).
 
 In Lockout mode with Simple UI, there are a few functions:
 
@@ -129,7 +131,7 @@ do one of these:
 
   In Simple UI:
 
-  - `10H`: Go to Advanced UI.
+  - `10H`: Go to [Advanced UI](#advanced-ui).
 
   In Advanced UI:
 
@@ -140,10 +142,10 @@ do one of these:
 Some lights have additional features enabled in Simple UI, at the
 manufacturer's request.  This typically includes:
 
-  - `Ramp -> 3C`: Toggle smooth or stepped ramp shape.
-  - `Ramp -> 5H`: Sunset timer.
-  - `Off -> 7C/7H`: Change the aux LED pattern.
-  - `Lockout -> 7C/7H`: Change the aux LED pattern.
+  - `Ramp -> 3C`: Toggle smooth or stepped [ramp shape](#ramping--stepped-ramping-modes).
+  - `Ramp -> 5H`: [Sunset timer](#sunset-timer).
+  - `Off -> 7C/7H`: Change the [aux LED pattern](#aux-leds--button-leds).
+  - `Lockout -> 7C/7H`: Change the [aux LED pattern](#aux-leds--button-leds).
 
 Old versions (before 2024-08) also allowed access to strobe/mood modes, which
 can be dangerous, so if you have one of those, *think twice about letting kids
@@ -156,7 +158,7 @@ Simple UI can be configured in several ways, but not while Simple UI is
 active.  So go to the Advanced UI, configure things, then go back to
 Simple UI.
 
-In Advanced UI's "Off" mode:
+In [Advanced UI](#advanced-ui)'s "Off" mode:
 
   - `10H`: Configure Simple UI.
 
@@ -173,12 +175,17 @@ and they will carry over to Simple UI:
   - ramp style (smooth / stepped)
   - smooth ramp speed
   - ramp-after-moon style
+  - smooth steps
   - memory settings
   - auto-lock settings
   - aux LED settings
   - voltage calibration
+  - post-off voltage display
+  - aux led low and high ramp levels
   - thermal regulation settings
   - hardware-specific "misc menu" settings
+  - channel modes
+  - channel mode for number blinks
 
 
 Advanced UI
@@ -186,6 +193,13 @@ Advanced UI
 
 Most of the information below this is for the Advanced UI.  Anything not
 already noted above is blocked in the Simple UI.
+
+To check which UI the user is in, Simple UI or Advanced UI, enter battery check
+mode with `3C` from Off.  In Simple UI, the battery voltage is displayed only
+once, but in Advanced UI, the battery voltage is checked and displayed
+repeatedly.
+
+To return to Simple UI from advanced UI, enter 10C while the light is off.
 
 
 Ramping / Stepped Ramping Modes
@@ -205,15 +219,15 @@ Advanced UI's ramp.
 There are four ways to access ramping mode when the light is off:
 
   - `1C`: Turn on at the memorized brightness.
-    (see below for details about what "memorized" means)
+          (see below for details about what "memorized" means)
 
   - `1H`: Turn on at the floor level.  Let go after the light turns on to
-    stay at the floor level, or keep holding to ramp up.
+          stay at the floor level, or keep holding to ramp up.
 
   - `2C`: Turn on at the ceiling level.
 
-  - `2H`: Turn on at full power, turn off when released.  (momentary turbo)
-        (in Simple UI, this uses the ceiling level instead of turbo)
+  - `2H`: Turn on at full power, turn off when released.  (momentary turbo)  
+          (in Simple UI, this uses the ceiling level instead of turbo)
 
 While the light is on, a few actions are available:
 
@@ -222,25 +236,28 @@ While the light is on, a few actions are available:
           (or if it has regulated down, "bump" back up to turbo)  
           (turbo level / behavior is configurable)
   - `1H`: Change brightness (up).  
-          If the button was released less than a second ago, or if it's already
-          at the ceiling, it goes down instead.
+          If the button was released less than a second ago,  
+          or if it's already at the ceiling, it goes down instead.
   - `2H`: Change brightness (down).
 
-  - `3C`: Switch to the other ramp style.  (smooth / stepped)  
-          (or activate the next channel mode, when more than one is enabled)  
+  - `3C`: Switch to the other [ramp style](#ramping--stepped-ramping-modes).
+          (smooth / stepped)  
+          (or activate the next [channel mode](#channel-modes),
+          when more than one is enabled)  
           (then use 6C instead, for smooth / stepped toggle)
   - `6C`: Switch to the other ramp style.  (when `3C` is mapped to next channel)
 
   - `3H`: Momentary turbo (when current channel has no tint to ramp).
-  - `3H`: Tint ramping (only when current channel has adjustable tint).
+  - `3H`: [Tint ramping](#channel-modes)
+          (only when current channel has adjustable tint).
   - `4H`: Momentary turbo, when `3H` is mapped to tint.
 
-  - `4C`: Go to lockout mode.
+  - `4C`: Go to [lockout mode](#lockout-mode).
 
-  - `5C`: Go to momentary mode.
-  - `5H`: Start a sunset timer.  Details are below in the Sunset Timer section.
+  - `5C`: Go to [momentary mode](#momentary-mode).
+  - `5H`: Start a [sunset timer](#sunset-timer).
 
-  - `7H`: Ramp config menu.
+  - `7H`: [Ramp config menu](#ramp-config-menu).
     - Item 1: Floor level.
     - Item 2: Ceiling level.
     - Item 3:  
@@ -252,6 +269,7 @@ While the light is on, a few actions are available:
         4 = Quarter speed, ~10s.
 
   - `10C`: Activate manual memory and save the current brightness.
+           Also saves current channel mode, on multi-channel lights.
   - `10H`: Ramp extras config menu.
     - Item 1: Disable manual memory and go back to automatic memory.  
               (doesn't matter what value the user enters at the prompt)
@@ -333,16 +351,16 @@ Other Modes
 Anduril has several other modes too.  To access these, press the button
 more than 2 times when the light is off:
 
-  - `3C`: Blinky / utility modes, starting with battery check.
-  - `3H`: Strobe modes, starting with the most recently used strobe.
-  - `4C`: Lockout mode.
-  - `5C`: Momentary mode.
-  - `6C`: Tactical mode.
-  - `7C` / `7H`: Aux LED configuration.
-  - `9H`: Misc Config menu. (only on some lights)
-  - `10H`: Simple UI configuration menu.
-  - `13H`: Factory reset (on some lights).
-  - `15C` or more: Version check.
+  - `3C`: [Blinky / utility modes](#blinky--utility-modes), starting with battery check.
+  - `3H`: [Strobe modes](#strobe--mood-modes), starting with the most recently used strobe.
+  - `4C`: [Lockout mode](#lockout-mode).
+  - `5C`: [Momentary mode](#momentary-mode).
+  - `6C`: [Tactical mode](#tactical-mode).
+  - `7C` / `7H`: [Aux LED configuration](#aux-leds--button-leds).
+  - `9H`: [Misc Config menu](#misc-config-menu). (only on some lights)
+  - `10H`: [Simple UI](#simple-ui) configuration menu.
+  - `13H`: [Factory reset](#factory-reset) (on some lights).
+  - `15C` or more: [Version check](#version-check-mode).
 
 
 Lockout Mode
@@ -376,6 +394,7 @@ lockout mode has two levels:
 
   - `3H`: Next channel mode (if more than one is enabled).
 
+<a id="autolock-config"></a>
 It is also possible to make the light lock itself automatically after
 being turned off.  To enable this, go to lockout mode and use a `10H`
 action to activate the auto-lock config menu.  Release the button after
@@ -386,10 +405,9 @@ timeout to N minutes.
            A value of zero disables the auto-lock feature.
            So, to turn off auto-lock, don't click at all.
 
-And on lights which have aux LEDs, there may be additional functions:
+On lights which have aux LEDs, there may be additional functions:
 
-  - `7C` / `7H`: Change Lockout Mode's aux LED pattern.  More details on
-    this below, in a separate section.
+  - `7C` / `7H`: Change Lockout Mode's [aux LED pattern](#aux-leds--button-leds).
 
 
 Blinky / Utility Modes
@@ -399,10 +417,10 @@ Click 3 times from Off to access Anduril's blinky / utility modes.  This
 always starts at battery check and the user can proceed to other blinky
 modes if Advanced UI is enabled.  The sequence is:
 
-  - Battery check.
-  - Temperature check (if light has a temperature sensor).
-  - Beacon mode.
-  - SOS mode (if enabled).
+  - [Battery check](#battery-check).
+  - [Temperature check](#temperature-check) (if light has a temperature sensor).
+  - [Beacon mode](#beacon-mode).
+  - [SOS mode](#sos-mode) (if enabled).
 
 In all of these modes, some basic actions are available:
 
@@ -417,13 +435,29 @@ In more detail, this is what each blinky / utility mode does:
 
 ### Battery check:
 
-Blinks out the battery voltage per cell.  Full is 4.2V, empty is
-about 3.0V.  The light blinks the whole-number digit first, pauses,
-then blinks out the "tenths" digit.  Then a longer pause, and it
-repeats.
-So for 4.2V, it would be "blink-blink-blink-blink .. blink-blink".
+Blinks out the battery voltage per cell.  Full is 4.20V, empty is
+about 3.00V.  The light blinks the whole-number digit first, pauses,
+then blinks out the "tenths" digit, pauses, then blinks out the "hundredths"
+digit, in 0.02V steps.  So for 4.16V, it would be "4 blinks, 1 blink,
+6 blinks".  Then if it is in Advanced UI, it pauses for a bit longer and
+repeats.  In Simple UI, it turns off after one readout.
 
 A "zero" digit is represented by a very quick blink.
+
+The battery check format has changed a few times:
+
+  - For Anduril 2 from 2024-04 or later, the battery voltage resolution is
+    0.02V steps (the last digit can be 0, 2, 4, 6, or 8).
+
+  - For Anduril 2 from 2023-12 or later, the battery voltage resolution is
+    0.025V steps (the last digit can be 0, 2, 5, or 7).
+
+  - For Anduril 2 from 2023-12 or earlier, the battery voltage resolution is
+    0.1V, so the light blinks the whole-number digit first, pauses, then blinks
+    out the "tenths" digit.  Then a longer pause, and it repeats.
+
+  - On old attiny85 lights with only 8 KiB of ROM, battery voltage resolution
+    is 0.1V, even on newer versions of Anduril.
 
 On lights with more than one set of LEDs, pressing `3C` during batt
 check mode can select which set of LEDs (which channel mode) it uses
@@ -449,11 +483,23 @@ The voltage config menu has these settings:
      `12C`: +0.25V  
      `13C`: +0.30V
 
-  2. Post-off voltage display timeout.  (only on lights with RGB aux)  
+  2. Post-off voltage display timeout.  (only on lights with RGB aux)
      This setting determines how many seconds the RGB aux LEDs
      display the voltage color after the torch goes to sleep.  Click
      once per desired second, or zero times to turn this function
-     off.
+     off.  The default is 4 seconds.
+
+  3. Aux low ramp level.  Controls behavior of aux button LEDs while the main
+     LEDs are on.  Below this ramp level, button LEDs will not be lit up while
+     the main LEDs are on.  At or above this level, button LEDs light up at the
+     "low" brightness level.  Setting it to 0 keeps the button LEDs off
+     completely while the main LEDs are on.  
+     Also controls brightness of post-off voltage display.
+
+  4. Aux high ramp level.  At or above this ramp level, button LEDs light up at
+     the "high" brightness level.  Setting it to 0 disables button's high aux
+     mode while the main LEDs are on.  
+     Also controls brightness of post-off voltage display.
 
 ### Temperature check:
 
@@ -522,12 +568,12 @@ In all of these modes, a few actions are available:
   - `1H`: Increase brightness, or strobe faster.  (except lightning)
   - `2H`: Decrease brightness, or strobe slower.  (except lightning)
   - `4C`: Previous strobe / mood mode.
-  - `5C`: Go to momentary mode, for a momentary strobe.
+  - `5C`: Go to [momentary mode](#momentary-mode), for a momentary strobe.
           (this is useful for light painting)
 
 Additionally, candle mode has one more action:
 
-  - `5H`: Activate Sunset Timer, and/or add 5 minutes to the timer.
+  - `5H`: Activate [Sunset Timer](#sunset-timer), and/or add 5 minutes to the timer.
 
 In more detail, here is what each mode does:
 
@@ -634,6 +680,8 @@ after the 1st, 2nd, or 3rd blink.  Then enter a number.  Each click adds
 This assumes the light has a ramp 150 levels long.  Strobe modes start
 at the ramp size plus 1, so it may be different if a light has a
 different ramp size.
+
+In Tactical Mode, the aux LED settings are inherited from Lockout Mode.
 
 
 Configuration Menus
@@ -780,7 +828,7 @@ several formats:
 If the version doesn't include a model number, you may be able to find
 the model in the PRODUCTS file to see which firmware model it probably uses:
 
-  https://bazaar.launchpad.net/~toykeeper/flashlight-firmware/anduril2/view/head:/PRODUCTS
+  https://toykeeper.net/torches/PRODUCTS
 
 
 Protection Features
@@ -890,6 +938,7 @@ lights.  The number of settings in the Misc Config Menu depends on the
 hardware model and the firmware version.
 
 
+<a id="channel-modes"></a>
 Channel Modes (a.k.a. Tint Ramping or Multi Channel controls)
 -------------------------------------------------------------
 
@@ -938,9 +987,9 @@ smooth or stepped brightness ramp.  Additionally, when a channel mode
 has nothing to adjust with `3H`, the `3H` action also reverts to its
 single-channel behavior -- momentary turbo.
 
-The Misc Config Menu (`Off -> 9H`) may also have a setting to choose a
-tint ramp style.  There are a few styles available, by entering
-different numbers into that config menu:
+The [Misc Config Menu](#misc-config-menu) (`Off -> 9H`) may also have
+a setting to choose a tint ramp style.  There are a few styles
+available, by entering different numbers into that config menu:
 
   0: smooth ramp  
   1: middle tint only  
@@ -951,6 +1000,20 @@ This setting only applies to modes with channel ramping (i.e. tint
 ramping), and only when that mode uses the default `3H` event handler.
 Custom channel modes may work differently.
 
+On lights with channel modes, manual memory (`Ramp -> 10C`) saves the
+current brightness *and* channel mode.
+
+
+FAQ
+---
+
+* Q: Why do the aux LEDs come on whenever I switch the light off, regardless
+  of aux settings?
+* A: This is the post-off voltage display feature. It can be configured or
+  disabled under [battery check](#battery-check) mode.
+
+* Q: What can I do to contribute to Anduril development?
+* A: See [Contributing](https://github.com/ToyKeeper/anduril#contributing).
 
 
 UI Reference Table
@@ -1007,6 +1070,7 @@ This is a table of all button mappings in Anduril, in one place:
 |                |        |         | 2: ceiling
 |                |        |         | 3: speed / steps
 | Ramp           | Full   | `10C`   | Turn on manual memory and save current brightness
+|                |        |         | (and current channel mode)
 | Ramp           | Full   | `10H`   | Ramp Extras config menu:
 |                |        |         | 1: switch to automatic mem, not manual mem
 |                |        |         | 2: set manual mem timeout
@@ -1065,14 +1129,18 @@ This is a table of all button mappings in Anduril, in one place:
 | Batt check     | Full   | `3C`    | Next channel mode (for number blinks only)
 | Batt check     | Full   | `7H`    | Voltage config menu
 |                |        |         | 1: voltage correction factor
-|                |        |         |    ...
-|                |        |         |    5: -0.10V
-|                |        |         |    6: -0.05V
-|                |        |         |    7: no correction
-|                |        |         |    8: +0.05V
-|                |        |         |    9: +0.10V
-|                |        |         |    ...
+|                |        |         | ... 5: -0.10V
+|                |        |         | ... 6: -0.05V
+|                |        |         | ... 7: no correction
+|                |        |         | ... 8: +0.05V
+|                |        |         | ... 9: +0.10V
 |                |        |         | 2: post-off voltage display seconds
+|                |        |         | 3: aux low ramp level
+|                |        |         | ... 0: disabled
+|                |        |         | ... 1+: light up at this ramp level
+|                |        |         | 4: aux high ramp level
+|                |        |         | ... 0: disabled
+|                |        |         | ... 1+: brighter at this ramp level
 
 | Mode           | UI     | Button  | Action
 | :---           | :--    | ------: | :-----
