@@ -35,7 +35,7 @@
 #define HALFSPEED_LEVEL      1
 #define QUARTERSPEED_LEVEL   1
 
-#define RAMP_SMOOTH_FLOOR    1
+#define RAMP_SMOOTH_FLOOR    5
 #define RAMP_SMOOTH_CEIL     150
 // 10, 30, 50, [70], 90, 110, 130
 #define RAMP_DISCRETE_FLOOR  10
