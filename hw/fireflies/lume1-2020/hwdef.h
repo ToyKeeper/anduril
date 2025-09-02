@@ -36,7 +36,7 @@
  * Another pin is used for FET control.
 */
 
-#define HWDEF_C  loneoceans/lume1-2020/hwdef.c
+#define HWDEF_C  fireflies/lume1-2020/hwdef.c
 
 // allow using aux LEDs as extra channel modes
 #include "fsm/chan-rgbaux.h"
