@@ -81,7 +81,15 @@
 #define USE_BUTTON_LED
 
 // this light has three aux LED channels: R, G, B
+// (and some builds tie these also to a RGB side button)
 #define USE_AUX_RGB_LEDS
+#define USE_AUX_RGB_LEDS_WHILE_ON  25
+#define USE_INDICATOR_LED_WHILE_RAMPING
+// the aux LEDs are front-facing, so turn them off while main LEDs are on
+//#ifdef USE_INDICATOR_LED_WHILE_RAMPING
+//#undef USE_INDICATOR_LED_WHILE_RAMPING
+//#endif
+
 
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
@@ -94,11 +102,6 @@
 #define POLICE_STROBE_USES_AUX
 #define POLICE_COLOR_STROBE_CH1        CM_AUXRED
 #define POLICE_COLOR_STROBE_CH2        CM_AUXBLU
-
-// the aux LEDs are front-facing, so turn them off while main LEDs are on
-#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-#undef USE_INDICATOR_LED_WHILE_RAMPING
-#endif
 
 #define PARTY_STROBE_ONTIME 1  // slow down party strobe
 #define STROBE_OFF_LEVEL 1  // keep the regulator chips on between pulses
