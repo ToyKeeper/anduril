@@ -86,6 +86,188 @@ A_XY = (0.44757, 0.40745)    # CIE Standard Illuminant A (2856K incandescent)
 
 
 # =============================================================================
+# Planckian Locus (Blackbody Radiation)
+# =============================================================================
+
+def planckian_xy(T: float) -> Tuple[float, float]:
+    """
+    Calculate CIE xy chromaticity for a blackbody radiator at temperature T.
+
+    Uses CIE approximation formulas (accurate to ~0.0001 for 1667K-25000K).
+
+    Args:
+        T: Color temperature in Kelvin
+
+    Returns:
+        Tuple of (x, y) chromaticity coordinates
+    """
+    # CIE 1960 UCS coordinates (more accurate approximation)
+    if T < 1667:
+        T = 1667  # Clamp to valid range
+    if T > 25000:
+        T = 25000
+
+    # Approximation for x chromaticity (valid for 1667K to 25000K)
+    if T <= 4000:
+        x = (-0.2661239e9 / T**3 - 0.2343589e6 / T**2
+             + 0.8776956e3 / T + 0.179910)
+    else:
+        x = (-3.0258469e9 / T**3 + 2.1070379e6 / T**2
+             + 0.2226347e3 / T + 0.240390)
+
+    # Approximation for y chromaticity
+    if T <= 2222:
+        y = (-1.1063814 * x**3 - 1.34811020 * x**2 + 2.18555832 * x - 0.20219683)
+    elif T <= 4000:
+        y = (-0.9549476 * x**3 - 1.37418593 * x**2 + 2.09137015 * x - 0.16748867)
+    else:
+        y = (3.0817580 * x**3 - 5.87338670 * x**2 + 3.75112997 * x - 0.37001483)
+
+    return (x, y)
+
+
+def generate_cct_lut(config: 'LightConfig',
+                     temp_min: int = 2700,
+                     temp_max: int = 6500,
+                     steps: int = 32) -> List[Dict]:
+    """
+    Generate a lookup table of RGB values along the Planckian locus.
+
+    For each CCT point, finds the optimal RGB mix to achieve that chromaticity
+    within the gamut of the available LEDs.
+
+    Args:
+        config: Light configuration (needs R, G, B channels)
+        temp_min: Minimum color temperature (K)
+        temp_max: Maximum color temperature (K)
+        steps: Number of steps in the LUT
+
+    Returns:
+        List of dicts with 'cct', 'x', 'y', 'r', 'g', 'b' values
+    """
+    # Get channel XYZ values
+    channel_xyz = {}
+    for ch in config.channels:
+        channel_xyz[ch.name] = ch.effective_xyz()
+
+    # We need at least R, G, B channels (or equivalent)
+    # Try to identify them by chromaticity
+    red_ch = None
+    green_ch = None
+    blue_ch = None
+
+    for ch in config.channels:
+        X, Y, Z = channel_xyz[ch.name]
+        x, y = xyz_to_chromaticity(X, Y, Z)
+
+        # Classify by chromaticity region
+        if x > 0.5 and y < 0.4:  # Red region
+            red_ch = ch
+        elif y > 0.5:  # Green region
+            green_ch = ch
+        elif x < 0.2 and y < 0.2:  # Blue region
+            blue_ch = ch
+
+    if not (red_ch and green_ch and blue_ch):
+        raise ValueError("Need R, G, B channels for CCT ramp generation")
+
+    # Get XYZ for the three primaries
+    Xr, Yr, Zr = channel_xyz[red_ch.name]
+    Xg, Yg, Zg = channel_xyz[green_ch.name]
+    Xb, Yb, Zb = channel_xyz[blue_ch.name]
+
+    # Account for LED counts (e.g., 2 green LEDs)
+    green_scale = 1.0 / green_ch.led_count  # Will need to scale down green
+
+    lut = []
+    temperatures = np.linspace(temp_min, temp_max, steps)
+
+    for T in temperatures:
+        target_x, target_y = planckian_xy(T)
+
+        # Convert target xy to XYZ (assuming Y=1 for normalization)
+        target_Y = 1.0
+        target_X = (target_x / target_y) * target_Y
+        target_Z = ((1 - target_x - target_y) / target_y) * target_Y
+
+        # Solve for RGB using matrix inversion
+        # [X]   [Xr Xg Xb] [r]
+        # [Y] = [Yr Yg Yb] [g]
+        # [Z]   [Zr Zg Zb] [b]
+        M = np.array([
+            [Xr, Xg * green_scale, Xb],
+            [Yr, Yg * green_scale, Yb],
+            [Zr, Zg * green_scale, Zb]
+        ])
+
+        try:
+            M_inv = np.linalg.inv(M)
+            rgb = M_inv @ np.array([target_X, target_Y, target_Z])
+
+            # Normalize so max = 255, all values >= 0
+            rgb = np.clip(rgb, 0, None)
+            if rgb.max() > 0:
+                rgb = rgb / rgb.max() * 255
+
+            r, g, b = int(rgb[0]), int(rgb[1]), int(rgb[2])
+
+            # The green value is already accounting for LED count
+            # Apply additional scaling for RGBG
+            g = int(g * green_scale)
+
+            lut.append({
+                'cct': int(T),
+                'x': round(target_x, 4),
+                'y': round(target_y, 4),
+                'r': r,
+                'g': g,
+                'b': b
+            })
+        except np.linalg.LinAlgError:
+            # Singular matrix, skip this point
+            pass
+
+    return lut
+
+
+def generate_cct_c_code(lut: List[Dict], var_name: str = "cct_lut") -> str:
+    """
+    Generate C code for the CCT lookup table.
+
+    Args:
+        lut: Lookup table from generate_cct_lut()
+        var_name: Variable name for the array
+
+    Returns:
+        C code string
+    """
+    lines = [
+        "// CCT Ramp Lookup Table - RGB values along Planckian locus",
+        "// Generated by tools/led_colorimetry.py",
+        "//",
+        "// Index 0 = warm (lowest CCT), Index N-1 = cool (highest CCT)",
+        "// Values are {R, G_scaled, B} where G is pre-scaled for RGBG config",
+        "",
+        f"#define CCT_LUT_SIZE {len(lut)}",
+        f"#define CCT_MIN {lut[0]['cct']}",
+        f"#define CCT_MAX {lut[-1]['cct']}",
+        "",
+        "// CCT lookup table: {R, G, B}",
+        f"PROGMEM const uint8_t {var_name}[CCT_LUT_SIZE][3] = {{",
+    ]
+
+    for i, entry in enumerate(lut):
+        cct = entry['cct']
+        r, g, b = entry['r'], entry['g'], entry['b']
+        lines.append(f"    {{{r:3d}, {g:3d}, {b:3d}}},  // [{i:2d}] {cct}K")
+
+    lines.append("};")
+    lines.append("")
+
+    return "\n".join(lines)
+
+
+# =============================================================================
 # Data Classes
 # =============================================================================
 
@@ -699,6 +881,9 @@ See docs/color-science.md for theory and mathematical background.
                         help='Output results as JSON')
     parser.add_argument('--quiet', '-q', action='store_true',
                         help='Minimal output')
+    parser.add_argument('--cct-lut', nargs=3, metavar=('MIN', 'MAX', 'STEPS'),
+                        type=int,
+                        help='Generate CCT lookup table: MIN_K MAX_K STEPS')
 
     args = parser.parse_args()
 
@@ -746,6 +931,17 @@ See docs/color-science.md for theory and mathematical background.
 
     # Calculate scales
     scales = calculate_white_balance(config)
+
+    # CCT LUT generation mode
+    if args.cct_lut:
+        temp_min, temp_max, steps = args.cct_lut
+        try:
+            lut = generate_cct_lut(config, temp_min, temp_max, steps)
+            print(generate_cct_c_code(lut))
+        except ValueError as e:
+            print(f"Error: {e}", file=sys.stderr)
+            sys.exit(1)
+        return
 
     # Output
     if args.json:
