@@ -71,6 +71,7 @@ Model     MCU         Name
 0623      attiny1616  sofirn-lt1s-pro
 0631      attiny1616  sofirn-sp10-pro
 0632      attiny1616  sofirn-sc21-pro
+0633      attiny1616  sofirn-sc13
 0712      attiny1616  wurkkos-ts10-rgbaux-lowfet
 0713      attiny1616  wurkkos-ts10-rgbaux
 0714      attiny1616  wurkkos-ts10
