@@ -373,9 +373,9 @@ bool gradual_tick_auto3(uint8_t gt) {
 
 // State variables for coupled oscillator chaos
 static int16_t chaos_theta1 = 0;      // hue position (scaled, wraps at 65536)
-static int16_t chaos_omega1 = 1000;   // hue angular velocity (higher for full phase space exploration)
+static int16_t chaos_omega1 = 1500;   // hue angular velocity (tuned for full color wheel coverage)
 static int16_t chaos_theta2 = 0;      // saturation oscillator
-static int16_t chaos_omega2 = 800;    // saturation velocity (higher for more dynamic behavior)
+static int16_t chaos_omega2 = 800;    // saturation velocity
 
 // Convert triangle_wave output (0-255) to signed (-128..127)
 static inline int8_t signed_wave(uint8_t phase) {
