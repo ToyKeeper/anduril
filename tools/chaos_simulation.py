@@ -114,9 +114,9 @@ def simulate_chaos(n_steps, energy=128, initial_state=None):
     if initial_state is None:
         state = {
             'theta1': 0,
-            'omega1': 200,
+            'omega1': 1000,   # higher for full phase space exploration
             'theta2': 0,
-            'omega2': 150
+            'omega2': 800     # higher for more dynamic behavior
         }
     else:
         state = initial_state.copy()
