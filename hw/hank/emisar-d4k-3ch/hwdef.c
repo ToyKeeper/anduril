@@ -457,6 +457,9 @@ bool gradual_tick_chaos(uint8_t gt) {
     RGB_t color = hsv2rgb(hue, (uint8_t)sat, val);
 
     // Smooth transition toward target
-    return gradual_adjust(color.r, color.g, color.b);
+    gradual_adjust(color.r, color.g, color.b);
+
+    // Always return false to keep animation running continuously
+    return false;
 }
 

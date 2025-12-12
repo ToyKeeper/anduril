@@ -75,6 +75,7 @@ enum channel_modes_e {
 // can use some of the common handlers
 #define USE_CALC_2CH_BLEND
 #define USE_HSV2RGB
+#define USE_CHAOS_MODE
 
 
 #define PWM_CHANNELS 1  // old, remove this

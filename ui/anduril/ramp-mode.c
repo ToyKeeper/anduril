@@ -317,6 +317,16 @@ uint8_t steady_state(Event event, uint16_t arg) {
             }
         }
         #endif  // ifdef USE_SET_LEVEL_GRADUALLY
+
+        // chaos mode needs continuous animation even when brightness is static
+        #ifdef USE_CHANNEL_MODES
+        #ifdef USE_CHAOS_MODE
+        if (channel_mode == CM_CHAOS && actual_level > 0) {
+            set_level(actual_level);
+        }
+        #endif
+        #endif
+
         return EVENT_HANDLED;
     }
 
