@@ -329,53 +329,53 @@ def plot_energy_comparison(filename):
 
 def plot_coupling_diagram(filename):
     """Diagram showing the coupled oscillator structure."""
-    fig, ax = plt.subplots(1, 1, figsize=(10, 8))
+    fig, ax = plt.subplots(1, 1, figsize=(12, 10))
 
-    # Draw oscillator circles
-    circle1 = plt.Circle((0.3, 0.55), 0.15, fill=False, linewidth=3, color='blue')
-    circle2 = plt.Circle((0.7, 0.55), 0.15, fill=False, linewidth=3, color='red')
+    # Draw oscillator circles (moved up to make room for equations)
+    circle1 = plt.Circle((0.3, 0.62), 0.12, fill=False, linewidth=3, color='blue')
+    circle2 = plt.Circle((0.7, 0.62), 0.12, fill=False, linewidth=3, color='red')
     ax.add_patch(circle1)
     ax.add_patch(circle2)
 
     # Labels
-    ax.text(0.3, 0.55, 'θ₁, ω₁\n(Hue)', ha='center', va='center', fontsize=14, fontweight='bold')
-    ax.text(0.7, 0.55, 'θ₂, ω₂\n(Sat)', ha='center', va='center', fontsize=14, fontweight='bold')
+    ax.text(0.3, 0.62, 'θ₁, ω₁\n(Hue)', ha='center', va='center', fontsize=14, fontweight='bold')
+    ax.text(0.7, 0.62, 'θ₂, ω₂\n(Sat)', ha='center', va='center', fontsize=14, fontweight='bold')
 
     # Coupling arrows
-    ax.annotate('', xy=(0.55, 0.60), xytext=(0.45, 0.60),
+    ax.annotate('', xy=(0.58, 0.66), xytext=(0.42, 0.66),
                 arrowprops=dict(arrowstyle='->', color='green', lw=2))
-    ax.annotate('', xy=(0.45, 0.50), xytext=(0.55, 0.50),
+    ax.annotate('', xy=(0.42, 0.58), xytext=(0.58, 0.58),
                 arrowprops=dict(arrowstyle='->', color='green', lw=2))
-    ax.text(0.5, 0.67, 'Coupling', ha='center', fontsize=11, color='green')
+    ax.text(0.5, 0.72, 'Coupling', ha='center', fontsize=11, color='green')
 
-    # Driving force (new)
-    ax.annotate('', xy=(0.3, 0.75), xytext=(0.3, 0.85),
+    # Driving force
+    ax.annotate('', xy=(0.3, 0.78), xytext=(0.3, 0.88),
                 arrowprops=dict(arrowstyle='->', color='orange', lw=3))
-    ax.text(0.3, 0.90, 'Driving Force\nwave(frame×3)', ha='center', fontsize=11, color='orange', fontweight='bold')
+    ax.text(0.3, 0.92, 'Driving Force\nwave(frame×3)', ha='center', fontsize=11, color='orange', fontweight='bold')
 
     # Self-restoring force arrows
-    ax.annotate('', xy=(0.15, 0.55), xytext=(0.05, 0.55),
+    ax.annotate('', xy=(0.18, 0.62), xytext=(0.08, 0.62),
                 arrowprops=dict(arrowstyle='->', color='purple', lw=2))
-    ax.text(0.05, 0.45, 'Restoring\nForce', ha='center', fontsize=10, color='purple')
+    ax.text(0.08, 0.54, 'Restoring\nForce', ha='center', fontsize=10, color='purple')
 
-    ax.annotate('', xy=(0.85, 0.55), xytext=(0.95, 0.55),
+    ax.annotate('', xy=(0.82, 0.62), xytext=(0.92, 0.62),
                 arrowprops=dict(arrowstyle='->', color='purple', lw=2))
-    ax.text(0.95, 0.45, 'Restoring\nForce', ha='center', fontsize=10, color='purple')
+    ax.text(0.92, 0.54, 'Restoring\nForce', ha='center', fontsize=10, color='purple')
 
-    # Output arrows
-    ax.annotate('', xy=(0.3, 0.25), xytext=(0.3, 0.40),
+    # Output arrows (positioned to avoid equation box)
+    ax.annotate('', xy=(0.15, 0.45), xytext=(0.22, 0.50),
                 arrowprops=dict(arrowstyle='->', color='blue', lw=2))
-    ax.text(0.3, 0.17, 'Hue\n(0-255)', ha='center', fontsize=12, color='blue')
+    ax.text(0.10, 0.42, 'Hue\n(0-255)', ha='center', fontsize=12, color='blue')
 
-    ax.annotate('', xy=(0.7, 0.25), xytext=(0.7, 0.40),
+    ax.annotate('', xy=(0.85, 0.45), xytext=(0.78, 0.50),
                 arrowprops=dict(arrowstyle='->', color='red', lw=2))
-    ax.text(0.7, 0.17, 'Saturation\n(60-220)', ha='center', fontsize=12, color='red')
+    ax.text(0.90, 0.42, 'Saturation\n(60-220)', ha='center', fontsize=12, color='red')
 
     # Damping annotation
-    ax.text(0.5, 0.78, 'Light Damping: ω ← ω - ω/512', ha='center', fontsize=10,
+    ax.text(0.5, 0.82, 'Light Damping: ω ← ω - ω/512', ha='center', fontsize=10,
             style='italic', color='gray')
 
-    # Equations
+    # Equations (positioned lower with more space)
     eq_text = """Driven Coupled Pendulum Equations:
 
 drive_force = wave(frame×3) · (32 + energy/8) / 128
@@ -390,7 +390,7 @@ acc₂ = -16·wave(θ₂)/16 - 16·wave(θ₂-θ₁)/16
 θ₂ ← θ₂ + ω₂·scale/16"""
 
     ax.text(0.5, 0.02, eq_text, ha='center', va='bottom', fontsize=9,
-            family='monospace', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+            family='monospace', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.9))
 
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
