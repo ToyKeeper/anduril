@@ -48,8 +48,8 @@ def chaos_update(state, energy=128):
     theta2 = state['theta2']
     omega2 = state['omega2']
 
-    # Speed scale: 4-19 based on energy
-    scale = 4 + (energy >> 4)
+    # Speed scale: 6-11 based on energy (narrower range for perceptually useful speeds)
+    scale = 6 + ((energy * 6) >> 8)  # 6 + 0..5 = 6..11
 
     # Use triangle wave as sinusoidal approximation
     wave1 = signed_wave((theta1 >> 8) & 0xFF)
@@ -60,7 +60,8 @@ def chaos_update(state, energy=128):
     # This creates a driven double pendulum which exhibits true chaos
     _chaos_frame = (_chaos_frame + 1) & 0xFF
     drive = signed_wave((_chaos_frame * 3) & 0xFF)
-    drive_force = (drive * (32 + (energy >> 3))) >> 7
+    # Drive amplitude: 40-56 (narrower range for better behavior)
+    drive_force = (drive * (40 + (energy >> 4))) >> 7
 
     # Coupled pendulum acceleration with driving
     acc1 = ((-20 * wave1) >> 4) + ((16 * wave_diff) >> 4) + drive_force
@@ -94,10 +95,14 @@ def state_to_color(state):
     # Hue from theta1 (full 0-255 range)
     hue = (state['theta1'] >> 8) & 0xFF
 
-    # Saturation from theta2 (centered at 140, range 60-220)
-    sat_offset = ((state['theta2'] >> 9) + 128) % 256 - 128  # signed byte
-    sat = 140 + sat_offset
-    sat = max(60, min(220, sat))
+    # Saturation from theta2 with sqrt-like expansion
+    # This spends less time near white (center) and more at saturated colors
+    sat_raw = ((state['theta2'] >> 9) + 128) % 256 - 128  # signed byte, -128 to +127
+    sat_abs = abs(sat_raw)
+    inv = 128 - sat_abs
+    sat_expanded = 128 - ((inv * inv) >> 7)  # sqrt-ish curve
+    sat = 140 + (sat_expanded if sat_raw >= 0 else -sat_expanded)
+    sat = max(40, min(240, sat))
 
     return hue, sat
 
@@ -208,11 +213,11 @@ def plot_color_trajectory(history, filename):
 
     # Create 2D histogram for density
     h_bins = np.linspace(0, 255, 64)
-    s_bins = np.linspace(60, 220, 40)
+    s_bins = np.linspace(40, 240, 50)
     H, xedges, yedges = np.histogram2d(history['hue'], history['sat'], bins=[h_bins, s_bins])
 
     # Plot as heatmap
-    extent = [0, 255, 60, 220]
+    extent = [0, 255, 40, 240]
     im = ax2.imshow(H.T, origin='lower', extent=extent, aspect='auto', cmap='hot')
     plt.colorbar(im, ax=ax2, label='Visit Frequency')
 
@@ -220,7 +225,7 @@ def plot_color_trajectory(history, filename):
     ax2.axhline(y=140, color='white', linestyle='--', linewidth=1, alpha=0.7, label='White center (sat=140)')
 
     ax2.set_xlabel('Hue (0-255)', fontsize=12)
-    ax2.set_ylabel('Saturation (60-220)', fontsize=12)
+    ax2.set_ylabel('Saturation (40-240)', fontsize=12)
     ax2.set_title('Color Space Density\n(brighter = more time spent)', fontsize=12)
     ax2.legend(loc='upper right')
 
@@ -261,9 +266,9 @@ def plot_time_series(history, filename, n_points=2000):
     ax3 = axes[2]
     ax3.plot(t, history['sat'][:n_points], 'purple', linewidth=0.5)
     ax3.axhline(y=140, color='gray', linestyle='--', linewidth=1, alpha=0.7, label='White center')
-    ax3.fill_between(t, 60, 220, alpha=0.1, color='gray')
+    ax3.fill_between(t, 40, 240, alpha=0.1, color='gray')
     ax3.set_ylabel('Saturation', fontsize=12)
-    ax3.set_ylim(40, 240)
+    ax3.set_ylim(20, 260)
     ax3.grid(True, alpha=0.3)
     ax3.legend(loc='upper right')
 
@@ -378,7 +383,8 @@ def plot_coupling_diagram(filename):
     # Equations (positioned lower with more space)
     eq_text = """Driven Coupled Pendulum Equations:
 
-drive_force = wave(frame×3) · (32 + energy/8) / 128
+drive_force = wave(frame×3) · (40 + energy/16) / 128
+scale = 6 + energy×6/256    (range: 6-11)
 
 acc₁ = -20·wave(θ₁)/16 + 16·wave(θ₂-θ₁)/16 + drive_force
 acc₂ = -16·wave(θ₂)/16 - 16·wave(θ₂-θ₁)/16

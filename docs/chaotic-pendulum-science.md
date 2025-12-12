@@ -41,7 +41,7 @@ The driven coupled pendulum equations, adapted for integer arithmetic:
 
 ```
 drive = wave(frame * 3)
-drive_force = drive · (32 + energy/8) / 128
+drive_force = drive · (40 + energy/16) / 128
 
 acc₁ = -20·wave(θ₁)/16 + 16·wave(θ₂-θ₁)/16 + drive_force
 acc₂ = -16·wave(θ₂)/16 - 16·wave(θ₂-θ₁)/16
@@ -55,8 +55,8 @@ acc₂ = -16·wave(θ₂)/16 - 16·wave(θ₂-θ₁)/16
 
 Where:
 - `wave()` is a triangle wave approximating sine (using existing firmware function)
-- `scale = 4 + energy/16` provides user-adjustable speed (4-19)
-- `drive_force` is a periodic driving term that sustains oscillations
+- `scale = 6 + energy×6/256` provides user-adjustable speed (6-11, tuned for perceptual range)
+- `drive_force` is a periodic driving term that sustains oscillations (amplitude 40-56)
 - The `-ω/512` term provides very light damping to prevent runaway
 - The coupling term `wave(θ₂-θ₁)` creates energy transfer between oscillators
 
@@ -103,15 +103,29 @@ The chaos maps to colors via HSV:
 ![Color Trajectory](images/chaos-color-trajectory.png)
 
 **Left (polar plot)**: Angle = hue, radius = saturation. The trajectory
-shows how colors roam through the space, with higher density near the
-center (white-ish colors).
+shows how colors roam through the space.
 
 **Right (heatmap)**: Density of visits to different hue/saturation
 combinations. Brighter areas indicate more time spent at those colors.
 
-The white dashed line at saturation=140 marks the center point. The
-algorithm is tuned to spend most time near this line while making
-occasional excursions to more saturated colors.
+The white dashed line at saturation=140 marks the nominal center point.
+
+### Saturation Mapping: Square Root Expansion
+
+To spend more time at vivid, saturated colors rather than near white,
+the raw θ₂ oscillator value undergoes a **square root-like expansion**:
+
+```
+sat_raw = θ₂ >> 9                    // -128 to +127
+sat_abs = |sat_raw|
+inv = 128 - sat_abs
+sat_expanded = 128 - (inv²) / 128    // sqrt-ish curve
+sat = 140 + sign(sat_raw) × sat_expanded
+```
+
+This transformation pushes small values (near white) outward toward
+the saturated extremes. The result: the animation dwells longer on
+vivid colors and passes quickly through the white region.
 
 ## Time Evolution
 
@@ -147,6 +161,26 @@ fills more rapidly and transitions happen quickly.
 The energy parameter scales the position update rate without changing
 the fundamental dynamics - like adjusting the playback speed of a
 chaotic system.
+
+### Perceptual Tuning
+
+The energy-to-speed mapping was carefully tuned for the perceptually
+useful range:
+
+- **Scale range 6-11** (not 4-19): Very low speeds looked static and
+  boring, while very high speeds blurred into white
+- **Drive amplitude 40-56** (not 32-63): Narrower range maintains
+  interesting dynamics across all energy settings
+
+### Visual Feedback During Adjustment
+
+When adjusting energy via 3H:
+- **Brightness shows energy level**: Dim = slow, bright = fast
+- **Blink on wrap-around**: Brief off when value wraps 255→0 or 0→255
+- **Restore on release**: Original brightness returns when released
+
+This lets users see exactly where they are in the energy range without
+needing to guess based on animation speed alone.
 
 ## RGB Channel Output
 
@@ -184,12 +218,17 @@ at 8MHz.
 
 ### Continuous Animation
 
-The animation runs via `gradual_tick_chaos()`, which is called
-continuously during thermal regulation. This ensures:
+The animation runs via a hook in the main `EV_tick` handler that calls
+`set_level(actual_level)` on every frame when chaos mode is active.
+This ensures:
 
 1. Animation continues even when brightness is static
 2. Smooth transitions during thermal stepdown
 3. No visible stuttering or frame drops
+
+The implementation required adding `USE_CHAOS_MODE` to enable this
+tick-driven animation, as standard channel modes only update when
+brightness changes.
 
 ## Comparison to True Double Pendulum
 
