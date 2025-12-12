@@ -17,6 +17,7 @@ void set_level_led34a_blend(uint8_t level);
 void set_level_led34b_blend(uint8_t level);
 void set_level_hsv(uint8_t level);
 void set_level_auto3(uint8_t level);
+void set_level_chaos(uint8_t level);
 
 bool gradual_tick_main2(uint8_t gt);
 bool gradual_tick_led3(uint8_t gt);
@@ -26,6 +27,7 @@ bool gradual_tick_led34a_blend(uint8_t gt);
 bool gradual_tick_led34b_blend(uint8_t gt);
 bool gradual_tick_hsv(uint8_t gt);
 bool gradual_tick_auto3(uint8_t gt);
+bool gradual_tick_chaos(uint8_t gt);
 
 
 Channel channels[] = {
@@ -69,13 +71,18 @@ Channel channels[] = {
         .gradual_tick = gradual_tick_auto3,
         .flags        = 0
     },
+    { // chaotic pendulum color animation
+        .set_level    = set_level_chaos,
+        .gradual_tick = gradual_tick_chaos,
+        .flags        = CHANNEL_FLAG_HAS_ARGS
+    },
     AUXRGB_CHANNELS
 };
 
-// HSV mode needs a different 3H handler
+// HSV and chaos modes need different 3H handlers
 StatePtr channel_3H_modes[NUM_CHANNEL_MODES] = {
     NULL, NULL, NULL, NULL,
-    NULL, NULL, circular_tint_3h, NULL,
+    NULL, NULL, circular_tint_3h, NULL, circular_tint_3h,  // chaos uses same 3H handler as HSV
 };
 
 void set_level_zero() {
@@ -359,5 +366,97 @@ bool gradual_tick_auto3(uint8_t gt) {
     PWM_DATATYPE red, warm, cool;
     calc_auto_3ch_blend(&red, &warm, &cool, gt);
     return gradual_adjust(cool, warm, red);
+}
+
+///// Chaotic pendulum color animation mode /////
+
+// State variables for coupled oscillator chaos
+static int16_t chaos_theta1 = 0;      // hue position (scaled, wraps at 65536)
+static int16_t chaos_omega1 = 200;    // hue angular velocity
+static int16_t chaos_theta2 = 0;      // saturation oscillator
+static int16_t chaos_omega2 = 150;    // saturation velocity
+
+// Convert triangle_wave output (0-255) to signed (-128..127)
+static inline int8_t signed_wave(uint8_t phase) {
+    return (int8_t)(triangle_wave(phase) - 128);
+}
+
+// Frame counter for driving oscillation
+static uint8_t chaos_frame = 0;
+
+// Physics update for coupled chaotic pendulum
+static void chaos_update(void) {
+    // Get energy from user config (0-255)
+    uint8_t energy = cfg.channel_mode_args[channel_mode];
+    int16_t scale = 4 + (energy >> 4);  // speed scale: 4-19
+
+    // Use triangle wave as sinusoidal approximation
+    int8_t wave1 = signed_wave((uint8_t)(chaos_theta1 >> 8));
+    int8_t wave2 = signed_wave((uint8_t)(chaos_theta2 >> 8));
+    int8_t wave_diff = signed_wave((uint8_t)((chaos_theta2 - chaos_theta1) >> 8));
+
+    // Driving force: periodic kick to sustain oscillations
+    // This creates a driven double pendulum which exhibits true chaos
+    chaos_frame++;
+    int8_t drive = signed_wave(chaos_frame * 3);  // slow driving frequency
+    int16_t drive_force = (drive * (int16_t)(32 + (energy >> 3))) >> 7;
+
+    // Coupled pendulum acceleration with driving
+    int16_t acc1 = ((-20 * wave1) >> 4) + ((16 * wave_diff) >> 4) + drive_force;
+    int16_t acc2 = ((-16 * wave2) >> 4) - ((16 * wave_diff) >> 4);
+
+    // Very light damping (prevents runaway but allows sustained motion)
+    chaos_omega1 = chaos_omega1 - (chaos_omega1 >> 9) + acc1;
+    chaos_omega2 = chaos_omega2 - (chaos_omega2 >> 9) + acc2;
+
+    // Velocity limits
+    if (chaos_omega1 > 3000) chaos_omega1 = 3000;
+    if (chaos_omega1 < -3000) chaos_omega1 = -3000;
+    if (chaos_omega2 > 2500) chaos_omega2 = 2500;
+    if (chaos_omega2 < -2500) chaos_omega2 = -2500;
+
+    // Position update (scaled by energy)
+    chaos_theta1 += (chaos_omega1 * scale) >> 4;
+    chaos_theta2 += (chaos_omega2 * scale) >> 4;
+}
+
+void set_level_chaos(uint8_t level) {
+    if (0 == level) { set_level_zero(); return; }
+
+    // Advance chaos physics
+    chaos_update();
+
+    // Map theta1 to hue (full 0-255 range)
+    uint8_t hue = (uint8_t)(chaos_theta1 >> 8);
+
+    // Map theta2 to saturation (centered at 140, range 60-220)
+    // This keeps colors "white-ish" but with colored tints
+    int16_t sat = 140 + (int8_t)(chaos_theta2 >> 9);
+    if (sat < 60) sat = 60;
+    if (sat > 220) sat = 220;
+
+    // Brightness from ramp level
+    PWM_DATATYPE val = PWM_GET(pwm1_levels, level);
+
+    // Convert to RGB and output
+    RGB_t color = hsv2rgb(hue, (uint8_t)sat, val);
+    set_hw_levels(color.r, color.g, color.b, 0, 0, 0);
+}
+
+bool gradual_tick_chaos(uint8_t gt) {
+    // Always advance chaos animation (this is how we get continuous animation)
+    chaos_update();
+
+    // Compute target color
+    uint8_t hue = (uint8_t)(chaos_theta1 >> 8);
+    int16_t sat = 140 + (int8_t)(chaos_theta2 >> 9);
+    if (sat < 60) sat = 60;
+    if (sat > 220) sat = 220;
+
+    PWM_DATATYPE val = PWM_GET(pwm1_levels, gt);
+    RGB_t color = hsv2rgb(hue, (uint8_t)sat, val);
+
+    // Smooth transition toward target
+    return gradual_adjust(color.r, color.g, color.b);
 }
 
