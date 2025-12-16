@@ -38,7 +38,8 @@ def main():
 
     print("\nDuplicates:")
     for index, model in enumerate(models):
-        for other in models[index + 1:]:
+        for j in range(index + 1, len(models)):
+            other = models[j]
             if model.model == other.model:
                 print(f"{model.model}\t{model.name}, {other.name}")
 
