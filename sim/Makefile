@@ -38,6 +38,9 @@ TEST_RAMPING = test_ramping
 TEST_CHANNEL_MODES = test_channel_modes
 ALL_TESTS = $(TEST_BASIC_UI) $(TEST_RAMPING) $(TEST_CHANNEL_MODES)
 
+# Interactive simulator interface
+SIM_INTERFACE = sim-interface
+
 # Default target - build the test harness
 all: $(TEST_TARGET)
 
@@ -117,13 +120,17 @@ $(TEST_RAMPING): $(TEST_DIR)/test_ramping.c $(TEST_DIR)/anduril-test.c $(TEST_DI
 $(TEST_CHANNEL_MODES): $(TEST_DIR)/test_channel_modes.c $(TEST_DIR)/anduril-test.c $(TEST_DIR)/anduril-test.h
 	$(CC) $(AVR_CFLAGS) -o $@ $(TEST_DIR)/test_channel_modes.c $(TEST_DIR)/anduril-test.c $(AVR_LDFLAGS)
 
+# Build interactive simulator interface for external UIs
+$(SIM_INTERFACE): sim-interface.c $(TEST_DIR)/anduril-test.c $(TEST_DIR)/anduril-test.h
+	$(CC) $(AVR_CFLAGS) -o $@ sim-interface.c $(TEST_DIR)/anduril-test.c $(AVR_LDFLAGS)
+
 # Build and run tests with verbose debug output
 test-verbose: clean
 	$(MAKE) AVR_CFLAGS="$(AVR_CFLAGS) -DTEST_VERBOSE=1" test
 
 # Clean build artifacts
 clean:
-	rm -f *.o $(TEST_TARGET) $(AVR_TARGET) $(ALL_TESTS)
+	rm -f *.o $(TEST_TARGET) $(AVR_TARGET) $(ALL_TESTS) $(SIM_INTERFACE)
 
 # Build local simavr first if needed
 $(SIMAVR_OBJ)/libsimavr.a:
@@ -148,10 +155,13 @@ help:
 	@echo "  test-channel   Run channel mode tests (4 tests)"
 	@echo "  test-verbose   Run tests with debug output"
 	@echo ""
+	@echo "Simulator Interface:"
+	@echo "  sim-interface  Build interactive simulator for external UIs"
+	@echo ""
 	@echo "Other Targets:"
 	@echo "  avr            Build AVR emulator binary"
 	@echo "  clean          Remove build artifacts"
 	@echo ""
 	@echo "See README.md for full documentation."
 
-.PHONY: all avr run run-avr clean debug help test test-basic test-ramping test-channel test-verbose
+.PHONY: all avr run run-avr clean debug help test test-basic test-ramping test-channel test-verbose sim-interface

@@ -12,6 +12,7 @@
 #include "sim_hex.h"
 #include "sim_irq.h"
 #include "avr_ioport.h"
+#include "avr_adc.h"
 
 // =============================================================================
 // ATtiny1634 Register Addresses
@@ -47,6 +48,9 @@
 
 test_context_t test_ctx = {0, 0, NULL};
 
+// Keep track of the avr instance globally for ADC updates
+static avr_t* global_avr = NULL;
+
 // =============================================================================
 // Initialization
 // =============================================================================
@@ -81,6 +85,13 @@ avr_t* anduril_test_init(const char* hex_path) {
     // Initialize button as released (PA7 high, active low)
     anduril_button_set(avr, 0);
 
+    // Store global AVR reference for ADC updates
+    global_avr = avr;
+
+    // Initialize ADC values to safe defaults
+    anduril_set_voltage(avr, 3700);
+    anduril_set_temperature(avr, 25);
+
     return avr;
 }
 
@@ -95,6 +106,10 @@ void anduril_test_reset(avr_t* avr) {
     if (avr) {
         avr_reset(avr);
         anduril_button_set(avr, 0);
+
+        // Initialize ADC values (default to safe operating conditions)
+        anduril_set_voltage(avr, 3700);  // 3.7V nominal
+        anduril_set_temperature(avr, 25);  // 25°C room temp
     }
 }
 
@@ -106,6 +121,8 @@ void anduril_run_cycles(avr_t* avr, uint64_t cycles) {
     uint64_t target = avr->cycle + cycles;
     static int pcint_count = 0;
     static int wdt_count = 0;
+    static uint8_t last_admux = 0xFF;
+    static uint16_t last_adc_result = 0xFFFF;
 
     while (avr->cycle < target) {
         int state = avr_run(avr);
@@ -115,20 +132,52 @@ void anduril_run_cycles(avr_t* avr, uint64_t cycles) {
             break;
         }
 
-        // Trace key interrupt vectors (limited output, verbose mode only)
+        // Monitor ADC channel switches and results in debug mode
         #if TEST_VERBOSE
-        if (avr->pc == 0x0008 && pcint_count < 5) {  // PCINT0
-            printf("  ** PCINT fired! PINA=0x%02x cycle=%llu\n",
-                   avr->data[PINA_ADDR], (unsigned long long)avr->cycle);
-            pcint_count++;
+        uint8_t admux = avr->data[0x7C];  // ADMUX register
+        uint16_t adc_result = avr->data[0x78] | ((avr->data[0x79] & 0x03) << 8);  // ADCL/ADCH
+
+        // Log when ADC channel changes
+        if (admux != last_admux) {
+            uint8_t channel = admux & 0x0F;
+            fprintf(stderr, "[ADC] Channel switch: ADMUX=0x%02x → channel %u\n", admux, channel);
+            last_admux = admux;
         }
-        if (avr->pc == 0x0014 && wdt_count < 5) {  // WDT
-            printf("  ** WDT fired! cycle=%llu\n", (unsigned long long)avr->cycle);
-            wdt_count++;
+
+        // Log ADC conversions (when ADSC bit is set)
+        uint8_t adcsra = avr->data[0x7A];  // ADCSRA register
+        static uint8_t last_adcsra = 0;
+
+        // Detect ADC conversion start (ADSC bit goes high)
+        if ((adcsra & (1<<6)) && !(last_adcsra & (1<<6))) {
+            uint8_t channel = admux & 0x0F;
+            fprintf(stderr, "[ADC] Starting conversion on channel %u (ADMUX=0x%02x)\n", channel, admux);
         }
+
+        // Detect ADC conversion complete (ADSC bit goes low, ADIF set)
+        if (!(adcsra & (1<<6)) && (last_adcsra & (1<<6))) {
+            uint8_t channel = admux & 0x0F;
+            if (channel == 6) {
+                // Voltage channel - convert back to battery voltage
+                uint16_t batt_mv = (uint32_t)adc_result * 1000 / 184;
+                fprintf(stderr, "[ADC] Ch6 complete: ADC=%u → %umV battery\n", adc_result, batt_mv);
+            } else if (channel == 12 || channel == 14) {
+                // Temperature channel
+                int16_t temp_c = (adc_result - 300) / 10 + 25;
+                fprintf(stderr, "[ADC] Ch%u (temp) complete: ADC=%u → ~%d°C\n", channel, adc_result, temp_c);
+            } else {
+                fprintf(stderr, "[ADC] Ch%u complete: ADC=%u\n", channel, adc_result);
+            }
+            last_adc_result = adc_result;
+        }
+
+        last_adcsra = adcsra;
         #else
         (void)pcint_count;  // Suppress unused variable warning
         (void)wdt_count;
+        (void)last_admux;
+        (void)last_adc_result;
+        (void)last_adcsra;
         #endif
     }
 }
@@ -201,7 +250,7 @@ void anduril_button_set(avr_t* avr, int pressed) {
         uint8_t ddra = avr->data[DDRA_ADDR];
         uint8_t gimsk = avr->data[GIMSK_ADDR];
         uint8_t pcmsk0 = avr->data[PCMSK0_ADDR];
-        printf("  button(%d): PINA 0x%02x->0x%02x DDRA=0x%02x GIMSK=0x%02x PCMSK0=0x%02x changed=%d cycle=%llu\n",
+        fprintf(stderr, "  button(%d): PINA 0x%02x->0x%02x DDRA=0x%02x GIMSK=0x%02x PCMSK0=0x%02x changed=%d cycle=%llu\n",
                pressed, old_pina, new_pina, ddra, gimsk, pcmsk0, state_changed, (unsigned long long)avr->cycle);
     }
     #endif
@@ -344,6 +393,94 @@ void assert_led4_range(avr_t* avr, uint16_t min, uint16_t max) {
         snprintf(msg, sizeof(msg), "led4=%u outside range [%u, %u]",
                  pwm.led4, min, max);
         TEST_FAIL(msg);
+    }
+}
+
+// =============================================================================
+// ADC Control
+// =============================================================================
+
+void anduril_set_voltage(avr_t* avr, uint16_t millivolts) {
+    if (!avr) avr = global_avr;
+    if (!avr) return;
+
+    // Voltage divider: Vpin = Vbat * 47 / 238
+    uint16_t pin_millivolts = (uint32_t)millivolts * 47 / 238;
+
+    // EXPERIMENTAL: simavr seems to expect 3x the value for some reason
+    // TODO: investigate why and fix properly
+    uint16_t simavr_value = pin_millivolts * 3;
+
+    // Immediately update simavr's ADC input for channel 6
+    avr_irq_t* irq = avr_io_getirq(avr, AVR_IOCTL_ADC_GETIRQ, ADC_IRQ_ADC6);
+    if (irq) {
+        avr_raise_irq(irq, simavr_value);
+        #if TEST_VERBOSE
+        fprintf(stderr, "[ADC] Set voltage: %umV battery → %umV pin → %umV simavr (ADC6)\n",
+                millivolts, pin_millivolts, simavr_value);
+        #endif
+    }
+}
+
+uint16_t anduril_get_voltage(avr_t* avr) {
+    // Read ADC registers and convert back to millivolts
+    uint16_t adc_value = avr->data[0x78] | ((avr->data[0x79] & 0x03) << 8);
+
+    // Reverse the formula: V_bat = ADC * 1000 / 184
+    return (uint32_t)adc_value * 1000 / 184;
+}
+
+void anduril_set_temperature(avr_t* avr, int8_t celsius) {
+    if (!avr) avr = global_avr;
+    if (!avr) return;
+
+    // Temperature sensor typically outputs voltage proportional to temp
+    // Simple mapping: 25°C ≈ 300mV, each degree ≈ 10mV
+    uint16_t temp_millivolts = 300 + (celsius - 25) * 10;
+    if (temp_millivolts > 1100) temp_millivolts = 1100;  // Don't exceed Vref
+
+    // Immediately update simavr's temperature ADC input
+    avr_irq_t* irq = avr_io_getirq(avr, AVR_IOCTL_ADC_GETIRQ, ADC_IRQ_TEMP);
+    if (irq) {
+        avr_raise_irq(irq, temp_millivolts);
+        #if TEST_VERBOSE
+        fprintf(stderr, "[ADC] Set temperature: %d°C → %umV (TEMP)\n",
+                celsius, temp_millivolts);
+        #endif
+    }
+}
+
+// =============================================================================
+// EEPROM Access
+// =============================================================================
+
+#define EEPROM_START 0x4000  // EEPROM in data space (simavr convention)
+#define EEPROM_SIZE  256     // ATtiny1634 has 256 bytes
+
+uint8_t anduril_eeprom_read(avr_t* avr, uint16_t offset) {
+    if (offset >= EEPROM_SIZE) {
+        return 0xFF;
+    }
+
+    // In simavr, EEPROM is mapped to data space starting at 0x4000
+    return avr->data[EEPROM_START + offset];
+}
+
+void anduril_eeprom_write(avr_t* avr, uint16_t offset, uint8_t value) {
+    if (offset >= EEPROM_SIZE) {
+        return;
+    }
+
+    avr->data[EEPROM_START + offset] = value;
+}
+
+void anduril_eeprom_dump(avr_t* avr, uint8_t* buffer, uint16_t offset, uint16_t length) {
+    if (offset + length > EEPROM_SIZE) {
+        length = EEPROM_SIZE - offset;
+    }
+
+    for (uint16_t i = 0; i < length; i++) {
+        buffer[i] = anduril_eeprom_read(avr, offset + i);
     }
 }
 

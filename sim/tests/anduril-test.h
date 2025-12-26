@@ -162,6 +162,32 @@ void assert_led3_range(avr_t* avr, uint16_t min, uint16_t max);
 void assert_led4_range(avr_t* avr, uint16_t min, uint16_t max);
 
 // =============================================================================
+// ADC Control
+// =============================================================================
+
+// Set battery voltage (in millivolts)
+void anduril_set_voltage(avr_t* avr, uint16_t millivolts);
+
+// Get current battery voltage reading (in millivolts)
+uint16_t anduril_get_voltage(avr_t* avr);
+
+// Set temperature (in Celsius)
+void anduril_set_temperature(avr_t* avr, int8_t celsius);
+
+// =============================================================================
+// EEPROM Access
+// =============================================================================
+
+// Read single byte from EEPROM
+uint8_t anduril_eeprom_read(avr_t* avr, uint16_t offset);
+
+// Write single byte to EEPROM
+void anduril_eeprom_write(avr_t* avr, uint16_t offset, uint8_t value);
+
+// Dump EEPROM region to buffer
+void anduril_eeprom_dump(avr_t* avr, uint8_t* buffer, uint16_t offset, uint16_t length);
+
+// =============================================================================
 // Test Suite Helpers
 // =============================================================================
 
