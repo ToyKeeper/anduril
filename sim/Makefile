@@ -16,7 +16,7 @@ TEST_TARGET = sim-d4k-3ch
 
 # Local simavr build (with ATtiny1634 support)
 SIMAVR_DIR = ../simavr
-SIMAVR_OBJ = $(SIMAVR_DIR)/simavr/obj-x86_64-linux-gnu
+SIMAVR_OBJ = $(SIMAVR_DIR)/simavr/obj-$(shell $(CC) -dumpmachine)
 SIMAVR_INC = -I$(SIMAVR_DIR)/simavr/sim -I$(SIMAVR_DIR)/simavr/cores
 
 # AVR emulator using local simavr

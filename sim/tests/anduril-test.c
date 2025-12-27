@@ -123,6 +123,7 @@ void anduril_run_cycles(avr_t* avr, uint64_t cycles) {
     static int wdt_count = 0;
     static uint8_t last_admux = 0xFF;
     static uint16_t last_adc_result = 0xFFFF;
+    static uint8_t last_adcsra = 0;
 
     while (avr->cycle < target) {
         int state = avr_run(avr);
@@ -146,7 +147,6 @@ void anduril_run_cycles(avr_t* avr, uint64_t cycles) {
 
         // Log ADC conversions (when ADSC bit is set)
         uint8_t adcsra = avr->data[0x7A];  // ADCSRA register
-        static uint8_t last_adcsra = 0;
 
         // Detect ADC conversion start (ADSC bit goes high)
         if ((adcsra & (1<<6)) && !(last_adcsra & (1<<6))) {
