@@ -65,6 +65,9 @@ typedef struct {
     uint16_t main2;   // Main LEDs (OCR0A, 8-bit scaled to ~15-bit)
     uint16_t led3;    // LED3 (OCR1A, 16-bit)
     uint16_t led4;    // LED4 (OCR1B, 16-bit)
+    uint8_t  aux_r;   // Aux red LED: 0=off, 1=low(pullup), 2=high
+    uint8_t  aux_g;   // Aux green LED: 0=off, 1=low(pullup), 2=high
+    uint8_t  aux_b;   // Aux blue LED: 0=off, 1=low(pullup), 2=high
 } pwm_state_t;
 
 // =============================================================================

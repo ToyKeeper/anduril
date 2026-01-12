@@ -28,10 +28,11 @@
 #define OCR1BH_ADDR 0x6B  // Timer1 Compare B High
 
 // I/O Port registers (I/O address + 0x20 for data memory access)
-// From iotn1634.h: PINA=0x0F, DDRA=0x10, PORTA=0x11
+// From iotn1634.h: PINA=0x0F, DDRA=0x10, PORTA=0x11, PUEA=0x12
 #define PINA_ADDR   0x2F  // Port A Input Pins (0x0F + 0x20)
 #define DDRA_ADDR   0x30  // Port A Data Direction (0x10 + 0x20)
 #define PORTA_ADDR  0x31  // Port A Data Register (0x11 + 0x20)
+#define PUEA_ADDR   0x32  // Port A Pullup Enable (0x12 + 0x20)
 
 // PCINT registers (I/O address + 0x20 for data memory access)
 // From iotn1634.h: GIMSK=0x3C, GIFR=0x3B, PCMSK0=0x27
@@ -313,6 +314,38 @@ pwm_state_t anduril_get_pwm(avr_t* avr) {
 
     // Read 16-bit OCR1B (led4)
     pwm.led4 = avr->data[OCR1BL_ADDR] | (avr->data[OCR1BH_ADDR] << 8);
+
+    // Read aux LED state (PA5=red, PA4=green, PA3=blue)
+    uint8_t ddra = avr->data[DDRA_ADDR];
+    uint8_t puea = avr->data[PUEA_ADDR];
+
+    // Decode each aux LED: off=0, low(pullup)=1, high=2
+    // Red (PA5, bit 5)
+    if (ddra & (1 << 5)) {
+        pwm.aux_r = 2;  // Output high
+    } else if (puea & (1 << 5)) {
+        pwm.aux_r = 1;  // Input with pullup (low mode)
+    } else {
+        pwm.aux_r = 0;  // Input without pullup (off)
+    }
+
+    // Green (PA4, bit 4)
+    if (ddra & (1 << 4)) {
+        pwm.aux_g = 2;  // Output high
+    } else if (puea & (1 << 4)) {
+        pwm.aux_g = 1;  // Input with pullup (low mode)
+    } else {
+        pwm.aux_g = 0;  // Input without pullup (off)
+    }
+
+    // Blue (PA3, bit 3)
+    if (ddra & (1 << 3)) {
+        pwm.aux_b = 2;  // Output high
+    } else if (puea & (1 << 3)) {
+        pwm.aux_b = 1;  // Input with pullup (low mode)
+    } else {
+        pwm.aux_b = 0;  // Input without pullup (off)
+    }
 
     return pwm;
 }

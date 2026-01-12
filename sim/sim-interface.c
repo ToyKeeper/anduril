@@ -165,7 +165,7 @@ void handle_getpwm(void) {
     }
 
     pwm_state_t pwm = anduril_get_pwm(avr);
-    printf("PWM:%u,%u,%u\n", pwm.main2, pwm.led3, pwm.led4);
+    printf("PWM:%u,%u,%u,%u,%u,%u\n", pwm.main2, pwm.led3, pwm.led4, pwm.aux_r, pwm.aux_g, pwm.aux_b);
 
     // Log PWM changes in debug mode
     static uint16_t last_main2 = 0;
