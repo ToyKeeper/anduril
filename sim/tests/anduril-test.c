@@ -260,7 +260,7 @@ void anduril_click(avr_t* avr) {
     anduril_button_set(avr, 1);
     anduril_run_ticks(avr, CLICK_TICKS);
     anduril_button_set(avr, 0);
-    anduril_run_ticks(avr, CLICK_GAP_TICKS);
+    // No gap - let UI/user control click timing for natural multi-click detection
 }
 
 void anduril_multi_click(avr_t* avr, int count) {
