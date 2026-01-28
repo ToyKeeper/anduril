@@ -223,3 +223,5 @@
 // (but allow disabling this feature per build)
 #define USE_CHANNEL_PER_STROBE
 
+// by default, allow manual memory to save channel info too
+#define MANUAL_MEMORY_SAVE_CHANNEL
