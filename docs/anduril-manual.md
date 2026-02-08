@@ -909,6 +909,40 @@ When a light has a single-color aux LED and no RGB, it fast-blinks the
 aux LED in "off" modes when voltage is low.
 
 
+Post-Off Voltage Display (POVD)
+-------------------------------
+
+Many lights with RGB aux LEDs will display the battery voltage by color for
+a few seconds after going to "Off" mode.  This provides a quick, easy way to
+keep track of the battery status without any extra button clicks.
+
+The typical and intended use pattern is:  Turn the light off, then the color
+indicates battery status for a few seconds, and then the aux LEDs go to their
+configured standby pattern (usually low brightness, in voltage mode, by
+default).  This makes it easier to see the color, since the colors are
+balanced in hardware according to how they look in high mode, and may be
+harder to discern in low mode.  It lasts only a few seconds though, because
+leaving them bright all the time would drain the battery much, much faster.
+
+POVD brightness is determined by your config settings and previous main LED
+ramp level.  It uses the *first* matching condition:
+
+- If the standby aux brightness is high, POVD uses high aux too.
+- If the main LEDs were above the "aux high ramp level", POVD uses high aux.
+- If the main LEDs were above the "aux low ramp level", POVD uses low aux.
+- If the main LEDs were below the "aux low ramp level", POVD is black.
+
+The aux high/low ramp levels are configurable on most lights with RGB, using
+the Voltage Config Menu in Batt Check mode.
+
+Note: Voltage is monitored and updated continuously during POVD, so the color
+may change.  This happens particularly when turning off from a high or turbo
+mode, because the high load causes a lot of battery sag... and the battery
+recovers quickly during the first few seconds after load is removed.  It is
+normal for battery voltage to measure low during and immediately after turbo,
+but it should recover soon afterward.
+
+
 Misc Config Menu
 ----------------
 
