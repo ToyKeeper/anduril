@@ -1043,8 +1043,9 @@ FAQ
 
 * Q: Why do the aux LEDs come on whenever I switch the light off, regardless
   of aux settings?
-* A: This is the post-off voltage display feature. It can be configured or
-  disabled under [battery check](#battery-check) mode.
+* A: This is the [post-off voltage display](#post-off-voltage-display-povd)
+  feature. It can be configured or disabled under
+  [battery check](#battery-check) mode.
 
 * Q: What can I do to contribute to Anduril development?
 * A: See [Contributing](https://github.com/ToyKeeper/anduril#contributing).
