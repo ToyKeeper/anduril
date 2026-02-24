@@ -64,16 +64,16 @@ void set_level_main(uint8_t level) {
     PWM1_DATATYPE dac_lvl  = PWM1_GET(level) << 6;
     PWM2_DATATYPE dac_vref = PWM2_GET(level);
 
+    // set these in successive clock cycles to avoid getting out of sync
+    // (minimizes ramp bumps when changing gears)
+    DAC_LVL  = dac_lvl;
+    DAC_VREF = dac_vref;
+
     // enable HDR on top half of ramp
     if (level >= (HDR_ENABLE_LEVEL_MIN-1))
         HDR_ENABLE_PORT |= (1 << HDR_ENABLE_PIN);
     else
         HDR_ENABLE_PORT &= ~(1 << HDR_ENABLE_PIN);
-
-    // set these in successive clock cycles to avoid getting out of sync
-    // (minimizes ramp bumps when changing gears)
-    DAC_LVL  = dac_lvl;
-    DAC_VREF = dac_vref;
 
     // if turning on from off, let things stabilize before enabling power
     if (noflash) { nfet_delay(); }
@@ -146,9 +146,17 @@ void detect_weak_battery() {
 
     uint16_t resting, loaded;
 
-    // baseline unloaded measurement
     set_level(0);
-    for (uint8_t i=0; i<32; i++) { delay_zero(); }  // wait about 10ms
+
+    // wait a moment so user can tighten the tailcap
+    #ifdef WEAK_BATTERY_TEST_DELAY
+        for (uint16_t i=0; i<(WEAK_BATTERY_TEST_DELAY * 2 / 3); i++)
+            delay_zero();
+    #else
+        for (uint8_t i=0; i<32; i++) delay_zero();  // wait about 10ms
+    #endif
+
+    // baseline unloaded measurement
     //resting = voltage_raw2cooked(adc_smooth[0]);  // probably not settled yet
     resting = quick_volt_measurement();
 
