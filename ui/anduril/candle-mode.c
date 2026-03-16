@@ -88,7 +88,16 @@ uint8_t candle_mode_state(Event event, uint16_t arg) {
         add = ((triangle_wave(candle_wave1) * candle_wave1_depth) >> 8)
             + ((triangle_wave(candle_wave2) * candle_wave2_depth) >> 8)
             + ((triangle_wave(candle_wave3) * candle_wave3_depth) >> 8);
-        uint16_t brightness = candle_mode_brightness + add;
+        uint16_t brightness = add;
+
+        #if !defined(DONT_USE_DEFAULT_STATE) && defined(USE_THERMAL_REGULATION) \
+            && defined(USE_DEFAULT_THERMAL_REGULATION)
+        // Adjust brightness to allow full amplitude to stay below ceiling
+        if (candle_mode_brightness + CANDLE_AMPLITUDE > ceiling_level)
+            brightness += ceiling_level > CANDLE_AMPLITUDE ? ceiling_level - CANDLE_AMPLITUDE : ceiling_level;
+        else
+        #endif
+        brightness += candle_mode_brightness;
 
         // self-timer dims the light during the final minute
         #ifdef USE_SUNSET_TIMER

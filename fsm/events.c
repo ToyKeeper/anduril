@@ -43,7 +43,14 @@ void process_emissions() {
 uint8_t emit_now(Event event, uint16_t arg) {
     for(int8_t i=state_stack_len-1; i>=0; i--) {
         uint8_t err = state_stack[i](event, arg);
-        if (! err) return 0;
+        if (! err) {
+            #ifndef DONT_USE_DEFAULT_STATE
+            // Always allow default state to handle EV_tick events
+            if (event == EV_tick && state_stack[i] != default_state)
+                default_state(event, arg);
+            #endif
+            return 0;
+        }
     }
     return 1;  // event not handled
 }

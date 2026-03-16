@@ -18,6 +18,19 @@ void set_level(uint8_t level);
 //void set_level_smooth(uint8_t level);
 void set_level_zero();  // implement this in a hwdef
 
+#if !defined(DONT_USE_DEFAULT_STATE) && defined(USE_THERMAL_REGULATION) \
+	&& defined(USE_DEFAULT_THERMAL_REGULATION)
+uint8_t ceiling_level = UINT8_MAX;
+uint8_t ceiling_target_level = 0;
+inline void set_ceiling_level(uint8_t level);
+inline void reset_ceiling_level();
+#ifdef USE_SET_LEVEL_GRADUALLY
+uint8_t ceiling_gradual_level = UINT8_MAX;
+inline void set_ceiling_level_gradually(uint8_t level);
+inline void ceiling_gradual_tick();
+#endif
+#endif
+
 #ifdef USE_SET_LEVEL_GRADUALLY
 // adjust brightness very smoothly
 uint8_t gradual_target;

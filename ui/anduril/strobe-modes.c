@@ -41,6 +41,11 @@ uint8_t strobe_state(Event event, uint16_t arg) {
     else if (event == EV_2clicks) {
         current_strobe_type = cfg.strobe_type = (st + 1) % NUM_STROBES;
         save_config();
+        #if !defined(DONT_USE_DEFAULT_STATE) && defined(USE_THERMAL_REGULATION) \
+            && defined(USE_DEFAULT_THERMAL_REGULATION)
+        // Reset ceiling when switching mode
+        reset_ceiling_level();
+        #endif
         return EVENT_HANDLED;
     }
     #if (NUM_CHANNEL_MODES > 1) && defined(USE_CHANNEL_PER_STROBE)
@@ -50,6 +55,11 @@ uint8_t strobe_state(Event event, uint16_t arg) {
         set_channel_mode((channel_mode + 1) % NUM_CHANNEL_MODES);
         cfg.strobe_channels[st] = channel_mode;
         save_config();
+        #if !defined(DONT_USE_DEFAULT_STATE) && defined(USE_THERMAL_REGULATION) \
+            && defined(USE_DEFAULT_THERMAL_REGULATION)
+        // Reset ceiling when switching mode
+        reset_ceiling_level();
+        #endif
         return EVENT_HANDLED;
     }
     #endif
@@ -57,6 +67,11 @@ uint8_t strobe_state(Event event, uint16_t arg) {
     else if (event == EV_4clicks) {
         current_strobe_type = cfg.strobe_type = (st - 1 + NUM_STROBES) % NUM_STROBES;
         save_config();
+        #if !defined(DONT_USE_DEFAULT_STATE) && defined(USE_THERMAL_REGULATION) \
+            && defined(USE_DEFAULT_THERMAL_REGULATION)
+        // Reset ceiling when switching mode
+        reset_ceiling_level();
+        #endif
         return EVENT_HANDLED;
     }
     // hold: change speed (go faster)
@@ -308,12 +323,21 @@ inline void lightning_storm_iter() {
 #endif
 inline void bike_flasher_iter() {
     // one iteration of main loop()
-    uint8_t burst = cfg.bike_flasher_brightness << 1;
+    uint8_t brightness = cfg.bike_flasher_brightness;
+    #if !defined(DONT_USE_DEFAULT_STATE) && defined(USE_THERMAL_REGULATION) \
+        && defined(USE_DEFAULT_THERMAL_REGULATION)
+    #define MAX_BIKING_DIFF (MAX_LEVEL - MAX_BIKING_LEVEL)
+    if (ceiling_level > MAX_BIKING_DIFF && brightness > ceiling_level - MAX_BIKING_DIFF)
+        brightness = ceiling_level - MAX_BIKING_DIFF;
+    else if (brightness > ceiling_level)
+        brightness = ceiling_level >> 1;
+    #endif
+    uint8_t burst = brightness << 1;
     if (burst > MAX_LEVEL) burst = MAX_LEVEL;
     for(uint8_t i=0; i<4; i++) {
         set_level(burst);
         nice_delay_ms(5 + BIKE_STROBE_ONTIME);
-        set_level(cfg.bike_flasher_brightness);
+        set_level(brightness);
         nice_delay_ms(65);
     }
     nice_delay_ms(720);  // no return check necessary on final delay

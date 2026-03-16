@@ -33,5 +33,14 @@ void set_state_deferred(StatePtr new_state, uint16_t arg);
 
 #ifndef DONT_USE_DEFAULT_STATE
 uint8_t default_state(Event event, uint16_t arg);
+
+#if defined(USE_THERMAL_REGULATION) && defined(USE_DEFAULT_THERMAL_REGULATION)
+void high_temperature(uint16_t howmuch);
+void low_temperature(uint16_t howmuch);
+#ifdef USE_SET_LEVEL_GRADUALLY
+void okay_temperature();
+void default_tick();
+#endif
+#endif
 #endif
 
