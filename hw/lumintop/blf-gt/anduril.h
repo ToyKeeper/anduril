@@ -57,7 +57,7 @@
 #define USE_SMOOTH_STEPS
 
 // too big, turn off extra features
-//#undef USE_TACTICAL_MODE
+#undef USE_TACTICAL_MODE
 #undef USE_SOS_MODE
 #undef USE_BEACON_MODE
 #undef USE_RAMP_AFTER_MOON_CONFIG
