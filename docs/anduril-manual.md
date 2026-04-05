@@ -862,6 +862,8 @@ Aux LED modes typically include:
   - Low
   - High
   - Blinking
+  - Heartbeat (two quick pulses then a long pause)
+  - Breathing (slow fade in and out)
 
 To configure the aux LEDs, go to the mode you want to configure and then
 click the button 7 times.  This should change the aux LEDs to the next

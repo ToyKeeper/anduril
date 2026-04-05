@@ -31,22 +31,48 @@ const PROGMEM uint8_t rgb_led_colors[] = {
     0b00010001,  // 6: purple
     0b00010101,  // 7: white
 };
+// RGB aux LED pattern numbers (upper nibble of mode byte)
+#define RGB_PATTERN_OFF       0
+#define RGB_PATTERN_LOW       1
+#define RGB_PATTERN_HIGH      2
+#define RGB_PATTERN_BLINKING  3
+#define RGB_PATTERN_HEARTBEAT 4
+#define RGB_PATTERN_BREATHING 5
+
+// RGB aux LED color numbers (lower nibble of mode byte)
+#define RGB_COLOR_RED      0
+#define RGB_COLOR_YELLOW   1
+#define RGB_COLOR_GREEN    2
+#define RGB_COLOR_CYAN     3
+#define RGB_COLOR_BLUE     4
+#define RGB_COLOR_PURPLE   5
+#define RGB_COLOR_WHITE    6
+#define RGB_COLOR_DISCO    7
+#define RGB_COLOR_RAINBOW  8
+#define RGB_COLOR_VOLTAGE  9
+
 // intentionally 1 higher than total modes, to make "voltage" easier to reach
 // (at Hank's request)
 #define RGB_LED_NUM_COLORS 11
-#define RGB_LED_NUM_PATTERNS 4
+#define RGB_LED_NUM_PATTERNS 6
 #ifndef RGB_LED_OFF_DEFAULT
-#define RGB_LED_OFF_DEFAULT 0x19  // low, voltage
-//#define RGB_LED_OFF_DEFAULT 0x18  // low, rainbow
+#define RGB_LED_OFF_DEFAULT  ((RGB_PATTERN_LOW      << 4) | RGB_COLOR_VOLTAGE)  // 0x19
+//#define RGB_LED_OFF_DEFAULT  ((RGB_PATTERN_LOW      << 4) | RGB_COLOR_RAINBOW)  // 0x18
 #endif
 #ifndef RGB_LED_LOCKOUT_DEFAULT
-#define RGB_LED_LOCKOUT_DEFAULT 0x39  // blinking, voltage
-//#define RGB_LED_LOCKOUT_DEFAULT 0x37  // blinking, disco
+#define RGB_LED_LOCKOUT_DEFAULT  ((RGB_PATTERN_BLINKING << 4) | RGB_COLOR_VOLTAGE)  // 0x39
+//#define RGB_LED_LOCKOUT_DEFAULT  ((RGB_PATTERN_BLINKING << 4) | RGB_COLOR_DISCO)    // 0x37
 #endif
 #ifndef RGB_RAINBOW_SPEED
 #define RGB_RAINBOW_SPEED 0x0f  // change color every 16 frames
 #endif
 #endif
+
+// Indicator LED pattern numbers (2-bit, packed into cfg.indicator_led_mode)
+#define INDICATOR_PATTERN_OFF      0
+#define INDICATOR_PATTERN_LOW      1
+#define INDICATOR_PATTERN_HIGH     2
+#define INDICATOR_PATTERN_BLINKING 3  // requires TICK_DURING_STANDBY
 
 //#define USE_OLD_BLINKING_INDICATOR
 //#define USE_FANCIER_BLINKING_INDICATOR
@@ -56,9 +82,9 @@ const PROGMEM uint8_t rgb_led_colors[] = {
     // modes are: 0=off, 1=low, 2=high, 3=blinking (if TICK_DURING_STANDBY enabled)
     #ifndef INDICATOR_LED_DEFAULT_MODE
         #ifdef USE_INDICATOR_LED_WHILE_RAMPING
-            #define INDICATOR_LED_DEFAULT_MODE ((2<<2) + 1)
+            #define INDICATOR_LED_DEFAULT_MODE ((INDICATOR_PATTERN_HIGH     << 2) | INDICATOR_PATTERN_LOW)
         #else
-            #define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
+            #define INDICATOR_LED_DEFAULT_MODE ((INDICATOR_PATTERN_BLINKING << 2) | INDICATOR_PATTERN_LOW)
         #endif
     #endif
 #endif

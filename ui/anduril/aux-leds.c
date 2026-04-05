@@ -144,14 +144,14 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
 
     const uint8_t *colors = rgb_led_colors + 1;
     uint8_t actual_color = 0;
-    if (color < 7) {  // normal color
+    if (color < RGB_COLOR_DISCO) {  // normal color
         actual_color = pgm_read_byte(colors + color);
     }
-    else if (color == 7) {  // disco
+    else if (color == RGB_COLOR_DISCO) {
         rainbow = (rainbow + 1 + pseudo_rand() % 5) % 6;
         actual_color = pgm_read_byte(colors + rainbow);
     }
-    else if (color == 8) {  // rainbow
+    else if (color == RGB_COLOR_RAINBOW) {
         uint8_t speed = 0x03;  // awake speed
         if (go_to_standby) speed = RGB_RAINBOW_SPEED;  // asleep speed
         if (0 == (arg & speed)) {
@@ -159,7 +159,7 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
         }
         actual_color = pgm_read_byte(colors + rainbow);
     }
-    else {  // voltage
+    else {  // RGB_COLOR_VOLTAGE
         // show actual voltage while asleep...
         if (go_to_standby) {
             // choose a color based on battery voltage
@@ -172,10 +172,22 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
     }
 
     // pick a brightness from the animation sequence
-    if (pattern == 3) {
+    if (pattern == RGB_PATTERN_BLINKING) {
         // uses an odd length to avoid lining up with rainbow loop
         static const uint8_t animation[] = {2, 1, 0, 0,  0, 0, 0, 0,  0,
                                             1, 0, 0, 0,  0, 0, 0, 0,  0, 1};
+        frame = (frame + 1) % sizeof(animation);
+        pattern = animation[frame];
+    }
+    else if (pattern == RGB_PATTERN_HEARTBEAT) {  // two quick pulses then long pause
+        static const uint8_t animation[] = {2, 0, 2, 0,  0, 0, 0, 0,
+                                            0, 0, 0, 0,  0, 0, 0, 0};
+        frame = (frame + 1) % sizeof(animation);
+        pattern = animation[frame];
+    }
+    else if (pattern == RGB_PATTERN_BREATHING) {  // slow fade in and out
+        static const uint8_t animation[] = {0, 0, 0, 0,  1, 1, 2, 2,
+                                            2, 2, 1, 1,  0, 0, 0, 0};
         frame = (frame + 1) % sizeof(animation);
         pattern = animation[frame];
     }
@@ -184,19 +196,19 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
     uint8_t button_led_result;
     #endif
     switch (pattern) {
-        case 0:  // off
+        case RGB_PATTERN_OFF:
             result = 0;
             #ifdef USE_BUTTON_LED
             button_led_result = 0;
             #endif
             break;
-        case 1:  // low
+        case RGB_PATTERN_LOW:
             result = actual_color;
             #ifdef USE_BUTTON_LED
             button_led_result = 1;
             #endif
             break;
-        default:  // high
+        default:  // RGB_PATTERN_HIGH
             result = (actual_color << 1);
             #ifdef USE_BUTTON_LED
             button_led_result = 2;
