@@ -76,7 +76,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         }
         #endif  // ifdef USE_MANUAL_MEMORY_TIMER
         #ifdef USE_INDICATOR_LED
-        indicator_led_update(cfg.indicator_led_mode & 0x03, arg);
+        indicator_led_update(cfg.indicator_led_mode & 0x0f, arg);
         #elif defined(USE_AUX_RGB_LEDS)
         rgb_led_update(cfg.rgb_led_off_mode, arg);
         #endif
@@ -267,18 +267,18 @@ uint8_t off_state(Event event, uint16_t arg) {
     #ifdef USE_INDICATOR_LED
     // 7 clicks: change indicator LED mode
     else if (event == EV_7clicks) {
-        uint8_t mode = (cfg.indicator_led_mode & 3) + 1;
+        uint8_t mode = (cfg.indicator_led_mode & 0x0f) + 1;
         #ifdef TICK_DURING_STANDBY
-        mode = mode & 3;
+        mode = mode % (INDICATOR_PATTERN_LAST - INDICATOR_PATTERN_FIRST + 1);
         #else
-        mode = mode % 3;
+        mode = mode % INDICATOR_PATTERN_BLINKING;  // exclude animated modes when no standby tick
         #endif
         #ifdef INDICATOR_LED_SKIP_LOW
         if (mode == 1) { mode ++; }
         #endif
-        cfg.indicator_led_mode = (cfg.indicator_led_mode & 0b11111100) | mode;
+        cfg.indicator_led_mode = (cfg.indicator_led_mode & 0xf0) | mode;
         // redundant, sleep tick does the same thing
-        //indicator_led_update(cfg.indicator_led_mode & 0x03, arg);
+        //indicator_led_update(cfg.indicator_led_mode & 0x0f, arg);
         save_config();
         return EVENT_HANDLED;
     }
@@ -288,7 +288,11 @@ uint8_t off_state(Event event, uint16_t arg) {
         uint8_t mode = (cfg.rgb_led_off_mode >> 4) + 1;
         mode = mode % RGB_LED_NUM_PATTERNS;
         cfg.rgb_led_off_mode = (mode << 4) | (cfg.rgb_led_off_mode & 0x0f);
-        rgb_led_update(cfg.rgb_led_off_mode, 0);
+        // animated modes preview at LOW so they're visually distinct from static OFF/HIGH
+        uint8_t preview = (mode >= RGB_PATTERN_HEARTBEAT)
+            ? ((RGB_PATTERN_LOW << 4) | (cfg.rgb_led_off_mode & 0x0f))
+            : cfg.rgb_led_off_mode;
+        rgb_led_update(preview, 0);
         save_config();
         blink_once();
         return EVENT_HANDLED;

@@ -27,11 +27,11 @@ void indicator_led_update(uint8_t mode, uint8_t tick) {
     #endif
     //#endif
     // normal steady output, 0/1/2 = off / low / high
-    else if ((mode & 0b00001111) < 3) {
+    else if (mode < INDICATOR_PATTERN_BLINKING) {
         indicator_led(mode);
     }
     // beacon-like blinky mode
-    else {
+    else if (mode == INDICATOR_PATTERN_BLINKING) {
         #ifdef USE_OLD_BLINKING_INDICATOR
 
         // basic blink, 1/8th duty cycle
@@ -50,6 +50,18 @@ void indicator_led_update(uint8_t mode, uint8_t tick) {
         indicator_led(seq[tick & 15]);
 
         #endif  // ifdef USE_OLD_BLINKING_INDICATOR
+    }
+    // two quick pulses then long pause
+    else if (mode == INDICATOR_PATTERN_HEARTBEAT) {
+        static const uint8_t seq[] = {2, 0, 2, 0,  0, 0, 0, 0,
+                                      0, 0, 0, 0,  0, 0, 0, 0};
+        indicator_led(seq[tick & 15]);
+    }
+    // slow fade in and out
+    else if (mode == INDICATOR_PATTERN_BREATHING) {
+        static const uint8_t seq[] = {0, 0, 0, 0,  1, 1, 2, 2,
+                                      2, 2, 1, 1,  0, 0, 0, 0};
+        indicator_led(seq[tick & 15]);
     }
 }
 #endif
@@ -94,7 +106,9 @@ uint8_t voltage_to_rgb() {
 // arg: time slice number
 void rgb_led_update(uint8_t mode, uint16_t arg) {
     static uint8_t rainbow = 0;  // track state of rainbow mode
-    static uint8_t frame = 0;  // track state of animation mode
+    static uint8_t blink_frame = 0;      // frame counter for blinking
+    static uint8_t heartbeat_frame = 0;  // frame counter for heartbeat
+    static uint8_t breathing_frame = 0;  // frame counter for breathing
 
     // turn off aux LEDs when battery is empty
     // (but if voltage==0, that means we just booted and don't know yet)
@@ -176,20 +190,20 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
         // uses an odd length to avoid lining up with rainbow loop
         static const uint8_t animation[] = {2, 1, 0, 0,  0, 0, 0, 0,  0,
                                             1, 0, 0, 0,  0, 0, 0, 0,  0, 1};
-        frame = (frame + 1) % sizeof(animation);
-        pattern = animation[frame];
+        pattern = animation[blink_frame];
+        blink_frame = (blink_frame + 1) % sizeof(animation);
     }
     else if (pattern == RGB_PATTERN_HEARTBEAT) {  // two quick pulses then long pause
         static const uint8_t animation[] = {2, 0, 2, 0,  0, 0, 0, 0,
                                             0, 0, 0, 0,  0, 0, 0, 0};
-        frame = (frame + 1) % sizeof(animation);
-        pattern = animation[frame];
+        pattern = animation[heartbeat_frame];
+        heartbeat_frame = (heartbeat_frame + 1) % sizeof(animation);
     }
     else if (pattern == RGB_PATTERN_BREATHING) {  // slow fade in and out
         static const uint8_t animation[] = {0, 0, 0, 0,  1, 1, 2, 2,
                                             2, 2, 1, 1,  0, 0, 0, 0};
-        frame = (frame + 1) % sizeof(animation);
-        pattern = animation[frame];
+        pattern = animation[breathing_frame];
+        breathing_frame = (breathing_frame + 1) % sizeof(animation);
     }
     uint8_t result;
     #ifdef USE_BUTTON_LED

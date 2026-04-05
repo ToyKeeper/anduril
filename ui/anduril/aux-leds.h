@@ -38,6 +38,8 @@ const PROGMEM uint8_t rgb_led_colors[] = {
 #define RGB_PATTERN_BLINKING  3
 #define RGB_PATTERN_HEARTBEAT 4
 #define RGB_PATTERN_BREATHING 5
+#define RGB_PATTERN_FIRST     RGB_PATTERN_OFF
+#define RGB_PATTERN_LAST      RGB_PATTERN_BREATHING
 
 // RGB aux LED color numbers (lower nibble of mode byte)
 #define RGB_COLOR_RED      0
@@ -54,7 +56,7 @@ const PROGMEM uint8_t rgb_led_colors[] = {
 // intentionally 1 higher than total modes, to make "voltage" easier to reach
 // (at Hank's request)
 #define RGB_LED_NUM_COLORS 11
-#define RGB_LED_NUM_PATTERNS 6
+#define RGB_LED_NUM_PATTERNS (RGB_PATTERN_LAST - RGB_PATTERN_FIRST + 1)
 #ifndef RGB_LED_OFF_DEFAULT
 #define RGB_LED_OFF_DEFAULT  ((RGB_PATTERN_LOW      << 4) | RGB_COLOR_VOLTAGE)  // 0x19
 //#define RGB_LED_OFF_DEFAULT  ((RGB_PATTERN_LOW      << 4) | RGB_COLOR_RAINBOW)  // 0x18
@@ -68,23 +70,29 @@ const PROGMEM uint8_t rgb_led_colors[] = {
 #endif
 #endif
 
-// Indicator LED pattern numbers (2-bit, packed into cfg.indicator_led_mode)
-#define INDICATOR_PATTERN_OFF      0
-#define INDICATOR_PATTERN_LOW      1
-#define INDICATOR_PATTERN_HIGH     2
-#define INDICATOR_PATTERN_BLINKING 3  // requires TICK_DURING_STANDBY
+// Indicator LED pattern numbers (4-bit nibble, packed into cfg.indicator_led_mode)
+// upper nibble = lockout mode, lower nibble = off mode
+#define INDICATOR_PATTERN_OFF       0
+#define INDICATOR_PATTERN_LOW       1
+#define INDICATOR_PATTERN_HIGH      2
+#define INDICATOR_PATTERN_BLINKING  3  // requires TICK_DURING_STANDBY
+#define INDICATOR_PATTERN_HEARTBEAT 4  // requires TICK_DURING_STANDBY
+#define INDICATOR_PATTERN_BREATHING 5  // requires TICK_DURING_STANDBY
+#define INDICATOR_PATTERN_FIRST     INDICATOR_PATTERN_OFF
+#define INDICATOR_PATTERN_LAST      INDICATOR_PATTERN_BREATHING
 
 //#define USE_OLD_BLINKING_INDICATOR
 //#define USE_FANCIER_BLINKING_INDICATOR
 #ifdef USE_INDICATOR_LED
-    // bits 2-3 control lockout mode
-    // bits 0-1 control "off" mode
-    // modes are: 0=off, 1=low, 2=high, 3=blinking (if TICK_DURING_STANDBY enabled)
+    // upper nibble (bits 4-7) controls lockout mode
+    // lower nibble (bits 0-3) controls "off" mode
+    // modes are: 0=off, 1=low, 2=high, 3=blinking, 4=heartbeat, 5=breathing
+    // (modes 3-5 require TICK_DURING_STANDBY)
     #ifndef INDICATOR_LED_DEFAULT_MODE
         #ifdef USE_INDICATOR_LED_WHILE_RAMPING
-            #define INDICATOR_LED_DEFAULT_MODE ((INDICATOR_PATTERN_HIGH     << 2) | INDICATOR_PATTERN_LOW)
+            #define INDICATOR_LED_DEFAULT_MODE ((INDICATOR_PATTERN_HIGH     << 4) | INDICATOR_PATTERN_LOW)
         #else
-            #define INDICATOR_LED_DEFAULT_MODE ((INDICATOR_PATTERN_BLINKING << 2) | INDICATOR_PATTERN_LOW)
+            #define INDICATOR_LED_DEFAULT_MODE ((INDICATOR_PATTERN_BLINKING << 4) | INDICATOR_PATTERN_LOW)
         #endif
     #endif
 #endif
