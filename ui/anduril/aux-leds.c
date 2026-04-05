@@ -52,16 +52,22 @@ void indicator_led_update(uint8_t mode, uint8_t tick) {
         #endif  // ifdef USE_OLD_BLINKING_INDICATOR
     }
     #ifdef USE_INDICATOR_ANIMATION_MODES
-    // two quick pulses then long pause
+    // lub-dub then long pause
     else if (mode == INDICATOR_PATTERN_HEARTBEAT) {
-        static const uint8_t seq[] = {2, 0, 2, 0,  0, 0, 0, 0,
+        static const uint8_t seq[] = {1, 2, 1, 0,  1, 0, 0, 0,
                                       0, 0, 0, 0,  0, 0, 0, 0};
         indicator_led(seq[tick & 15]);
     }
-    // slow fade in and out
+    // quick inhale, slow exhale, pause
     else if (mode == INDICATOR_PATTERN_BREATHING) {
-        static const uint8_t seq[] = {0, 0, 0, 0,  1, 1, 2, 2,
-                                      2, 2, 1, 1,  0, 0, 0, 0};
+        static const uint8_t seq[] = {0, 1, 2, 2,  2, 1, 1, 0,
+                                      0, 0, 0, 0,  0, 0, 0, 0};
+        indicator_led(seq[tick & 15]);
+    }
+    // single low flash then long pause
+    else if (mode == INDICATOR_PATTERN_PULSE) {
+        static const uint8_t seq[] = {1, 0, 0, 0,  0, 0, 0, 0,
+                                      0, 0, 0, 0,  0, 0, 0, 0};
         indicator_led(seq[tick & 15]);
     }
     #endif  // USE_INDICATOR_ANIMATION_MODES
@@ -112,6 +118,7 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
     #ifdef USE_RGB_ANIMATION_MODES
     static uint8_t heartbeat_frame = 0;  // frame counter for heartbeat
     static uint8_t breathing_frame = 0;  // frame counter for breathing
+    static uint8_t pulse_frame = 0;      // frame counter for pulse
     #endif
 
     // turn off aux LEDs when battery is empty
@@ -198,17 +205,23 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
         blink_frame = (blink_frame + 1) % sizeof(animation);
     }
     #ifdef USE_RGB_ANIMATION_MODES
-    else if (pattern == RGB_PATTERN_HEARTBEAT) {  // two quick pulses then long pause
-        static const uint8_t animation[] = {2, 0, 2, 0,  0, 0, 0, 0,
+    else if (pattern == RGB_PATTERN_HEARTBEAT) {  // lub-dub then long pause
+        static const uint8_t animation[] = {1, 2, 1, 0,  1, 0, 0, 0,
                                             0, 0, 0, 0,  0, 0, 0, 0};
         pattern = animation[heartbeat_frame];
         heartbeat_frame = (heartbeat_frame + 1) % sizeof(animation);
     }
-    else if (pattern == RGB_PATTERN_BREATHING) {  // slow fade in and out
-        static const uint8_t animation[] = {0, 0, 0, 0,  1, 1, 2, 2,
-                                            2, 2, 1, 1,  0, 0, 0, 0};
+    else if (pattern == RGB_PATTERN_BREATHING) {  // quick inhale, slow exhale, pause
+        static const uint8_t animation[] = {0, 1, 2, 2,  2, 1, 1, 0,
+                                            0, 0, 0, 0,  0, 0, 0, 0};
         pattern = animation[breathing_frame];
         breathing_frame = (breathing_frame + 1) % sizeof(animation);
+    }
+    else if (pattern == RGB_PATTERN_PULSE) {  // single low flash then long pause
+        static const uint8_t animation[] = {1, 0, 0, 0,  0, 0, 0, 0,
+                                            0, 0, 0, 0,  0, 0, 0, 0};
+        pattern = animation[pulse_frame];
+        pulse_frame = (pulse_frame + 1) % sizeof(animation);
     }
     #endif  // USE_RGB_ANIMATION_MODES
     uint8_t result;
