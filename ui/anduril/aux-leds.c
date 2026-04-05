@@ -51,6 +51,7 @@ void indicator_led_update(uint8_t mode, uint8_t tick) {
 
         #endif  // ifdef USE_OLD_BLINKING_INDICATOR
     }
+    #ifdef USE_INDICATOR_ANIMATION_MODES
     // two quick pulses then long pause
     else if (mode == INDICATOR_PATTERN_HEARTBEAT) {
         static const uint8_t seq[] = {2, 0, 2, 0,  0, 0, 0, 0,
@@ -63,6 +64,7 @@ void indicator_led_update(uint8_t mode, uint8_t tick) {
                                       2, 2, 1, 1,  0, 0, 0, 0};
         indicator_led(seq[tick & 15]);
     }
+    #endif  // USE_INDICATOR_ANIMATION_MODES
 }
 #endif
 
@@ -106,9 +108,11 @@ uint8_t voltage_to_rgb() {
 // arg: time slice number
 void rgb_led_update(uint8_t mode, uint16_t arg) {
     static uint8_t rainbow = 0;  // track state of rainbow mode
-    static uint8_t blink_frame = 0;      // frame counter for blinking
+    static uint8_t blink_frame = 0;  // frame counter for blinking
+    #ifdef USE_RGB_ANIMATION_MODES
     static uint8_t heartbeat_frame = 0;  // frame counter for heartbeat
     static uint8_t breathing_frame = 0;  // frame counter for breathing
+    #endif
 
     // turn off aux LEDs when battery is empty
     // (but if voltage==0, that means we just booted and don't know yet)
@@ -193,6 +197,7 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
         pattern = animation[blink_frame];
         blink_frame = (blink_frame + 1) % sizeof(animation);
     }
+    #ifdef USE_RGB_ANIMATION_MODES
     else if (pattern == RGB_PATTERN_HEARTBEAT) {  // two quick pulses then long pause
         static const uint8_t animation[] = {2, 0, 2, 0,  0, 0, 0, 0,
                                             0, 0, 0, 0,  0, 0, 0, 0};
@@ -205,6 +210,7 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
         pattern = animation[breathing_frame];
         breathing_frame = (breathing_frame + 1) % sizeof(animation);
     }
+    #endif  // USE_RGB_ANIMATION_MODES
     uint8_t result;
     #ifdef USE_BUTTON_LED
     uint8_t button_led_result;

@@ -137,6 +137,7 @@ enum CHANNEL_MODES {
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
+#define USE_RGB_ANIMATION_MODES
 
 // A: button LED
 #ifndef BUTTON_LED_PIN

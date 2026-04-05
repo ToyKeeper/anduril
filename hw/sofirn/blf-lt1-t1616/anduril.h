@@ -7,6 +7,7 @@
 
 // the button lights up
 #define USE_INDICATOR_LED
+#define USE_INDICATOR_ANIMATION_MODES
 // the button is visible while main LEDs are on
 #define USE_INDICATOR_LED_WHILE_RAMPING
 // off mode: low (1)

@@ -7,6 +7,7 @@
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
+#define USE_RGB_ANIMATION_MODES
 
 // turn on the aux LEDs while main LEDs are on
 // (but not until the main LEDs are bright enough to overpower the aux)

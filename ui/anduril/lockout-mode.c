@@ -170,10 +170,14 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         mode = mode % RGB_LED_NUM_PATTERNS;
         cfg.rgb_led_lockout_mode = (mode << 4) | (cfg.rgb_led_lockout_mode & 0x0f);
         // animated modes preview at LOW so they're visually distinct from static OFF/HIGH
+        #ifdef USE_RGB_ANIMATION_MODES
         uint8_t preview = (mode >= RGB_PATTERN_HEARTBEAT)
             ? ((RGB_PATTERN_LOW << 4) | (cfg.rgb_led_lockout_mode & 0x0f))
             : cfg.rgb_led_lockout_mode;
         rgb_led_update(preview, 0);
+        #else
+        rgb_led_update(cfg.rgb_led_lockout_mode, 0);
+        #endif
         save_config();
         blink_once();
         return EVENT_HANDLED;

@@ -12,6 +12,7 @@
 #define USE_BUTTON_LED
 // the aux LEDs are in the button, so use them while main LEDs are on
 #define USE_AUX_RGB_LEDS
+#define USE_RGB_ANIMATION_MODES
 #define USE_AUX_RGB_LEDS_WHILE_ON  25
 #define USE_INDICATOR_LED_WHILE_RAMPING
 

@@ -18,6 +18,7 @@
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
+#define USE_RGB_ANIMATION_MODES
 
 // the aux LEDs are front-facing, so turn them off while main LEDs are on
 #ifdef USE_INDICATOR_LED_WHILE_RAMPING

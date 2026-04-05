@@ -130,6 +130,7 @@ uint8_t voltage_raw2cooked(uint16_t measurement);
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
+#define USE_RGB_ANIMATION_MODES
 
 
 inline void hwdef_setup() {

@@ -8,6 +8,7 @@
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
+#define USE_RGB_ANIMATION_MODES
 // ... and a single LED in the button
 #define USE_BUTTON_LED
 // don't use aux LEDs while main LED is on
