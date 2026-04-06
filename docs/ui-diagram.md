@@ -9,61 +9,55 @@
 ## Main State Flow
 
 ```mermaid
-flowchart TD
+flowchart LR
     OFF(["OFF"])
     RAMP(["RAMP\n(ON)"])
     LOCK(["LOCKOUT"])
-    BATT(["BATT CHECK"])
-    TEMP(["TEMP CHECK"])
-    BEACON(["BEACON"])
-    SOS(["SOS"])
-    STROBE(["STROBE GROUP\nCandle · Bike · Party\nTactical · Lightning"])
+    UTILITY(["UTILITY\nBatt · Temp · Beacon · SOS"])
+    STROBE(["STROBE\nCandle · Bike · Party\nTactical · Lightning"])
     MOM(["MOMENTARY"])
     TAC(["TACTICAL"])
 
-    %% OFF → other modes
-    OFF -->|"1C (memorized)"| RAMP
-    OFF -->|"1H (floor)"| RAMP
-    OFF -->|"2C (ceiling)"| RAMP
-    OFF -->|"2H (turbo/ceil)"| RAMP
-    OFF -->|"3C"| BATT
+    OFF -->|"1C / 1H / 2C / 2H"| RAMP
+    OFF -->|"3C"| UTILITY
     OFF -->|"3H [Adv]"| STROBE
     OFF -->|"4C"| LOCK
     OFF -->|"5C [Adv]"| MOM
     OFF -->|"6C [Adv]"| TAC
 
-    %% RAMP ↔
     RAMP -->|"1C"| OFF
     RAMP -->|"4C"| LOCK
     RAMP -->|"5C [Adv]"| MOM
 
-    %% LOCKOUT ↔
-    LOCK -->|"3C (unlock)"| OFF
-    LOCK -->|"4C (memorized)"| RAMP
-    LOCK -->|"4H (floor)"| RAMP
-    LOCK -->|"5C (ceiling)"| RAMP
+    LOCK -->|"3C"| OFF
+    LOCK -->|"4C / 4H / 5C"| RAMP
 
-    %% BLINKY group — cyclic with 2C
-    BATT -->|"1C"| OFF
+    UTILITY -->|"1C"| OFF
+    STROBE -->|"1C"| OFF
+    STROBE -->|"5C"| MOM
+    MOM -. "disconnect power" .-> OFF
+    TAC -->|"6C"| OFF
+```
+
+## Utility Group Detail
+
+```mermaid
+flowchart LR
+    BATT(["Batt Check"])
+    TEMP(["Temp Check"])
+    BEACON(["Beacon"])
+    SOS(["SOS"])
+    OFF(["OFF"])
+
     BATT -->|"2C [Adv]"| TEMP
-    TEMP -->|"1C"| OFF
     TEMP -->|"2C"| BEACON
-    BEACON -->|"1C"| OFF
     BEACON -->|"2C"| SOS
-    SOS -->|"1C"| OFF
     SOS -->|"2C"| BATT
 
-    %% STROBE group
-    STROBE -->|"1C"| OFF
-    STROBE -->|"2C (next)"| STROBE
-    STROBE -->|"4C (prev)"| STROBE
-    STROBE -->|"5C"| MOM
-
-    %% MOMENTARY — exit only by disconnecting power
-    MOM -->|"disconnect power"| OFF
-
-    %% TACTICAL
-    TAC -->|"6C"| OFF
+    BATT -->|"1C"| OFF
+    TEMP -->|"1C"| OFF
+    BEACON -->|"1C"| OFF
+    SOS -->|"1C"| OFF
 ```
 
 ---
@@ -81,113 +75,146 @@ See [Simple UI](anduril-manual.md#simple-ui) and [Advanced UI](anduril-manual.md
 
 ## Navigation Tree (text summary)
 
-**OFF**
-├── `1C` ──────────────────► [RAMP (ON)](#ramp-on) — memorized level
-├── `1H` ──────────────────► [RAMP (ON)](#ramp-on) — floor level
-├── `2C` ──────────────────► [RAMP (ON)](#ramp-on) — ceiling level
-├── `2H` [Simp] ───────────► [RAMP (ON)](#ramp-on) — momentary ceiling
-├── `2H` [Adv] ────────────► [RAMP (ON)](#ramp-on) — momentary turbo
-├── `3C` ──────────────────► [BATT CHECK](anduril-manual.md#battery-check)
-│   ├── `1C` ──────────────► OFF
-│   ├── `2C` [Adv] ────────► [TEMP CHECK](anduril-manual.md#temperature-check)
-│   │   ├── `1C` ──────────► OFF
-│   │   ├── `2C` ──────────► [BEACON](anduril-manual.md#beacon-mode)
-│   │   │   ├── `1C` ──────► OFF
-│   │   │   ├── `1H` ──────► Configure timing
-│   │   │   └── `2C` ──────► [SOS](anduril-manual.md#sos-mode)
-│   │   │       ├── `1C` ──► OFF
-│   │   │       └── `2C` ──► BATT CHECK (cycles back)
-│   │   └── `7H` ──────────► Thermal config menu
+```
+Config menu navigation:
+  Enter (hold button that opens menu):
+    blink = current item  →  release = set value  |  hold = skip to next item
+  Set value:
+    click = +1  |  hold = +10  |  wait = confirm and move to next item
+
+OFF
+├── 1C ──► RAMP (ON) — memorized level
+├── 1H ──► RAMP (ON) — floor level
+├── 2C ──► RAMP (ON) — ceiling level
+├── 2H [Simp] ──► RAMP (ON) — momentary ceiling
+├── 2H [Adv]  ──► RAMP (ON) — momentary turbo
+├── 3C ──► BATT CHECK
+│   ├── 1C ──► OFF
+│   ├── 2C [Adv] ──► TEMP CHECK
+│   │   ├── 1C ──► OFF
+│   │   ├── 2C ──► BEACON
+│   │   │   ├── 1C ──► OFF
+│   │   │   ├── 1H ──► Configure timing
+│   │   │   └── 2C ──► SOS
+│   │   │       ├── 1C ──► OFF
+│   │   │       └── 2C ──► BATT CHECK (cycles back)
+│   │   └── 7H ──► Thermal config menu
 │   │       ├── Item 1: Current temperature calibration
 │   │       └── Item 2: Temperature limit
-│   └── `7H` ──────────────► Voltage config menu
+│   └── 7H ──► Voltage config menu
 │       ├── Item 1: Voltage correction factor
 │       ├── Item 2: Post-off voltage display timeout
 │       ├── Item 3: Aux low ramp level
 │       └── Item 4: Aux high ramp level
 │
-├── `3H` [Adv] ────────────► [STROBE GROUP](anduril-manual.md#strobe--mood-modes) (last used)
+├── 3H [Adv] ──► STROBE GROUP (last used)
 │   ├── Candle
 │   ├── Bike Flasher
 │   ├── Party Strobe
 │   ├── Tactical Strobe
 │   └── Lightning Storm
-│   *(in any strobe mode:)*
-│   ├── `1C` ──────────────► OFF
-│   ├── `2C` ──────────────► Next strobe mode
-│   ├── `4C` ──────────────► Prev strobe mode
-│   ├── `5C` ──────────────► [MOMENTARY](anduril-manual.md#momentary-mode) (using current strobe)
-│   └── `1H` / `2H` ───────► Brighter/faster · Dimmer/slower
+│   (in any strobe mode:)
+│   ├── 1C ──► OFF
+│   ├── 2C ──► Next strobe mode
+│   ├── 4C ──► Prev strobe mode
+│   ├── 5C ──► MOMENTARY (using current strobe)
+│   └── 1H / 2H ──► Brighter/faster · Dimmer/slower
 │
-├── `4C` ──────────────────► [LOCKOUT](anduril-manual.md#lockout-mode)
-│   ├── `1H` / `2H` ───────► Momentary moon (floor / mem level)
-│   ├── `3C` ──────────────► Unlock → OFF
-│   ├── `3H` ──────────────► Next [channel mode](anduril-manual.md#channel-modes)
-│   ├── `4C` ──────────────► Unlock → RAMP (memorized)
-│   ├── `4H` ──────────────► Unlock → RAMP (floor)
-│   ├── `5C` ──────────────► Unlock → RAMP (ceiling)
-│   ├── `7C` [Adv] ────────► Aux LEDs: next pattern
-│   ├── `7H` [Adv] ────────► Aux LEDs: next color
-│   └── `10H` [Adv] ───────► Auto-lock config menu
+├── 4C ──► LOCKOUT
+│   ├── 1H / 2H ──► Momentary moon (floor / mem level)
+│   ├── 3C ──► Unlock → OFF
+│   ├── 3H ──► Next channel mode
+│   ├── 4C ──► Unlock → RAMP (memorized)
+│   ├── 4H ──► Unlock → RAMP (floor)
+│   ├── 5C ──► Unlock → RAMP (ceiling)
+│   ├── 7C [Adv] ──► Aux LEDs: next pattern
+│   ├── 7H [Adv] ──► Aux LEDs: next color
+│   └── 10H [Adv] ──► Auto-lock config menu
 │       └── Item 1: Timeout in minutes (0 = disabled)
 │
-├── `5C` [Adv] ────────────► [MOMENTARY](anduril-manual.md#momentary-mode)
+├── 5C [Adv] ──► MOMENTARY
 │   └── Disconnect power ──► OFF (exit only)
 │
-├── `6C` [Adv] ────────────► [TACTICAL](anduril-manual.md#tactical-mode)
-│   ├── `1H` ──────────────► High (slot 1)
-│   ├── `2H` ──────────────► Low (slot 2)
-│   ├── `3H` ──────────────► Strobe (slot 3)
-│   ├── `6C` ──────────────► OFF
-│   └── `7H` ──────────────► [Tactical config menu](anduril-manual.md#tactical-mode)
+├── 6C [Adv] ──► TACTICAL
+│   ├── 1H ──► High (slot 1)
+│   ├── 2H ──► Low (slot 2)
+│   ├── 3H ──► Strobe (slot 3)
+│   ├── 6C ──► OFF
+│   └── 7H ──► Tactical config menu
 │       ├── Item 1: Slot 1 brightness/mode
 │       ├── Item 2: Slot 2 brightness/mode
 │       └── Item 3: Slot 3 brightness/mode
 │
-├── `7C` [Adv] ────────────► [Aux LEDs](#aux-led-behaviour): next pattern
-├── `7H` [Adv] ────────────► [Aux LEDs](#aux-led-behaviour): next color
+├── 7C [Adv] ──► Aux LEDs: next pattern
+├── 7H [Adv] ──► Aux LEDs: next color
 │
-├── `9H` [Adv] ────────────► [Misc config menu](anduril-manual.md#misc-config-menu)
+├── 9H [Adv] ──► Misc config menu
 │   ├── Item 1: Tint ramp style (on some lights)
 │   └── Item 2: Jump start level (on some lights)
 │
-├── `10C` [Adv] ───────────► Switch to [Simple UI](anduril-manual.md#simple-ui)
-├── `10H` [Simp] ──────────► Switch to [Advanced UI](anduril-manual.md#advanced-ui)
-├── `10H` [Adv] ───────────► [Simple UI ramp config menu](anduril-manual.md#configuring-simple-ui)
+├── 10C [Adv]  ──► Switch to Simple UI
+├── 10H [Simp] ──► Switch to Advanced UI
+├── 10H [Adv]  ──► Simple UI ramp config menu
 │   ├── Item 1: Floor
 │   ├── Item 2: Ceiling
 │   ├── Item 3: Steps
 │   └── Item 4: Turbo style
 │
-├── `13H` ─────────────────► [Factory Reset](anduril-manual.md#factory-reset) (some lights)
-└── `15C+` ────────────────► [Version Check](anduril-manual.md#version-check-mode)
+├── 13H ──► Factory Reset (some lights)
+└── 15C+ ──► Version Check
 
-**[RAMP (ON)](anduril-manual.md#ramping--stepped-ramping-modes)**
-├── `1C` ──────────────────► OFF
-├── `1H` ──────────────────► Ramp up (reverses if released < 1s ago)
-├── `2H` ──────────────────► Ramp down
-├── `2C` ──────────────────► Go to / from turbo or ceiling (configurable)
-├── `3C` [Adv] ────────────► Toggle ramp style (smooth / stepped)
-│                             (or next [channel mode](anduril-manual.md#channel-modes) on multi-channel lights)
-├── `6C` [Adv] ────────────► Toggle ramp style (on multi-channel lights)
-├── `3H` [Adv] ────────────► Momentary turbo (or tint ramp if channel supports it)
-├── `4H` [Adv] ────────────► Momentary turbo (on multi-channel lights)
-├── `4C` ──────────────────► [LOCKOUT](anduril-manual.md#lockout-mode)
-├── `5C` [Adv] ────────────► [MOMENTARY](anduril-manual.md#momentary-mode)
-├── `5H` [Adv] ────────────► [Sunset timer](anduril-manual.md#sunset-timer) (+5 min per hold)
-├── `7H` [Adv] ────────────► [Ramp config menu](anduril-manual.md#ramp-config-menu)
+RAMP (ON)
+├── 1C ──► OFF
+├── 1H ──► Ramp up (reverses if released < 1s ago)
+├── 2H ──► Ramp down
+├── 2C ──► Go to / from turbo or ceiling (configurable)
+├── 3C [Adv] ──► Toggle ramp style (smooth / stepped)
+│               (or next channel mode on multi-channel lights)
+├── 6C [Adv] ──► Toggle ramp style (on multi-channel lights)
+├── 3H [Adv] ──► Momentary turbo (or tint ramp if channel supports it)
+├── 4H [Adv] ──► Momentary turbo (on multi-channel lights)
+├── 4C ──► LOCKOUT
+├── 5C [Adv] ──► MOMENTARY
+├── 5H [Adv] ──► Sunset timer (+5 min per hold)
+├── 7H [Adv] ──► Ramp config menu
 │   ├── Item 1: Floor level
 │   ├── Item 2: Ceiling level
 │   └── Item 3: Steps / speed
-├── `9H` [Adv] ────────────► [Channel mode](anduril-manual.md#channel-modes) enable/disable menu
-│                             (multi-channel lights only)
-├── `10C` [Adv] ───────────► Enable manual memory, save current brightness
-└── `10H` [Adv] ───────────► [Ramp extras config menu](anduril-manual.md#ramping--stepped-ramping-modes)
+├── 9H [Adv] ──► Channel mode enable/disable menu
+│               (multi-channel lights only)
+├── 10C [Adv] ──► Enable manual memory, save current brightness
+└── 10H [Adv] ──► Ramp extras config menu
     ├── Item 1: Auto vs manual memory
     ├── Item 2: Manual mem timer
     ├── Item 3: Ramp-after-moon
     ├── Item 4: Turbo style
     └── Item 5: Smooth steps
+```
+
+### Manual links
+
+| Section | Manual |
+|---------|--------|
+| Ramp (On) | [Ramping / Stepped Ramping](anduril-manual.md#ramping--stepped-ramping-modes) |
+| Lockout | [Lockout Mode](anduril-manual.md#lockout-mode) |
+| Batt Check | [Battery Check](anduril-manual.md#battery-check) |
+| Temp Check | [Temperature Check](anduril-manual.md#temperature-check) |
+| Beacon | [Beacon Mode](anduril-manual.md#beacon-mode) |
+| SOS | [SOS Mode](anduril-manual.md#sos-mode) |
+| Strobe Group | [Strobe / Mood Modes](anduril-manual.md#strobe--mood-modes) |
+| Momentary | [Momentary Mode](anduril-manual.md#momentary-mode) |
+| Tactical | [Tactical Mode](anduril-manual.md#tactical-mode) |
+| Sunset timer | [Sunset Timer](anduril-manual.md#sunset-timer) |
+| Ramp config menu | [Ramp Config Menu](anduril-manual.md#ramp-config-menu) |
+| Ramp extras menu | [Ramping extras](anduril-manual.md#ramping--stepped-ramping-modes) |
+| Channel modes | [Channel Modes](anduril-manual.md#channel-modes) |
+| Misc config menu | [Misc Config Menu](anduril-manual.md#misc-config-menu) |
+| Simple UI | [Simple UI](anduril-manual.md#simple-ui) |
+| Advanced UI | [Advanced UI](anduril-manual.md#advanced-ui) |
+| Simple UI ramp config | [Configuring Simple UI](anduril-manual.md#configuring-simple-ui) |
+| Factory Reset | [Factory Reset](anduril-manual.md#factory-reset) |
+| Version Check | [Version Check Mode](anduril-manual.md#version-check-mode) |
+| Aux LEDs | [Aux LEDs / Button LEDs](anduril-manual.md#aux-leds--button-leds) |
 
 ---
 
