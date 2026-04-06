@@ -60,6 +60,23 @@ flowchart LR
     SOS -->|"1C"| OFF
 ```
 
+## Ramp (ON) State
+
+```mermaid
+flowchart LR
+    RAMP(["RAMP\n(ON)"])
+    OFF(["OFF"])
+    LOCK(["LOCKOUT"])
+    MOM(["MOMENTARY"])
+
+    RAMP -->|"1C"| OFF
+    RAMP -->|"4C"| LOCK
+    RAMP -->|"5C [Adv]"| MOM
+    RAMP -->|"1H / 2H"| RAMP
+    RAMP -->|"2C"| RAMP
+    LOCK -->|"4C / 4H / 5C"| RAMP
+```
+
 ---
 
 ## Simple UI vs Advanced UI Toggle
