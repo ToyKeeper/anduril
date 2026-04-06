@@ -867,7 +867,9 @@ On lights with enough flash memory, additional animated modes are available:
 
   - Heartbeat (lub-dub pattern: strong pulse, weaker pulse, long pause)
   - Breathing (quick fade in, slow fade out, pause)
-  - Pulse (battery-level indicator: 1 low flash = good, 2 low flashes = medium, 1 low + 1 high flash = low, then long pause)
+  - Pulse (battery-level indicator: 1 low flash = good (>=50%), 2 low flashes = medium (10-50%), 1 low + 1 high flash = low (<10%), then long pause)
+
+Note: Heartbeat, Breathing, and Pulse turn off automatically when the battery is critically low (below ~2.90V) to conserve power.
 
 To configure the aux LEDs, go to the mode you want to configure and then
 click the button 7 times.  This should change the aux LEDs to the next

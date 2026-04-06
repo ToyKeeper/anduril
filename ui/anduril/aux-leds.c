@@ -54,25 +54,34 @@ void indicator_led_update(uint8_t mode, uint8_t tick) {
     #ifdef USE_INDICATOR_ANIMATION_MODES
     // lub-dub then long pause
     else if (mode == INDICATOR_PATTERN_HEARTBEAT) {
-        static const uint8_t seq[] = {1, 2, 1, 0,  1, 0, 0, 0,
-                                      0, 0, 0, 0,  0, 0, 0, 0};
-        indicator_led(seq[tick & 15]);
+        if (voltage < VOLTAGE_LOW) { indicator_led(0); }
+        else {
+            static const uint8_t seq[] = {1, 2, 1, 0,  1, 0, 0, 0,
+                                          0, 0, 0, 0,  0, 0, 0, 0};
+            indicator_led(seq[tick & 15]);
+        }
     }
     // quick inhale, slow exhale, pause
     else if (mode == INDICATOR_PATTERN_BREATHING) {
-        static const uint8_t seq[] = {0, 1, 2, 2,  2, 1, 1, 0,
-                                      0, 0, 0, 0,  0, 0, 0, 0};
-        indicator_led(seq[tick & 15]);
+        if (voltage < VOLTAGE_LOW) { indicator_led(0); }
+        else {
+            static const uint8_t seq[] = {0, 1, 2, 2,  2, 1, 1, 0,
+                                          0, 0, 0, 0,  0, 0, 0, 0};
+            indicator_led(seq[tick & 15]);
+        }
     }
     // 1/2 flashes for good/medium/bad battery, then long pause
     // good: 1 low flash; medium: 2 low flashes; low: 1st low + 2nd high flash
     else if (mode == INDICATOR_PATTERN_PULSE) {
-        uint8_t i = tick & 15;
-        if (i == 0) indicator_led(1);  // first flash: always low
-        else if (i == 2 && voltage < 35*dV) {
-            indicator_led((voltage >= VOLTAGE_RED) ? 1 : 2);  // 2nd flash: low or high
+        if (voltage < VOLTAGE_LOW) { indicator_led(0); }
+        else {
+            uint8_t i = tick & 15;
+            if (i == 0) indicator_led(1);  // first flash: always low
+            else if (i == 2 && voltage < VOLTAGE_MEDIUM) {
+                indicator_led((voltage >= VOLTAGE_RED) ? 1 : 2);  // 2nd flash: low or high
+            }
+            else indicator_led(0);
         }
-        else indicator_led(0);
     }
     #endif  // USE_INDICATOR_ANIMATION_MODES
 }
