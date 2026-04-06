@@ -64,11 +64,15 @@ void indicator_led_update(uint8_t mode, uint8_t tick) {
                                       0, 0, 0, 0,  0, 0, 0, 0};
         indicator_led(seq[tick & 15]);
     }
-    // 1/2/3 flashes for good/medium/bad battery, then long pause
+    // 1/2 flashes for good/medium/bad battery, then long pause
+    // good: 1 low flash; medium: 2 low flashes; low: 1st low + 2nd high flash
     else if (mode == INDICATOR_PATTERN_PULSE) {
         uint8_t i = tick & 15;
-        uint8_t flashes = (voltage >= 35*dV) ? 1 : (voltage >= VOLTAGE_RED) ? 2 : 3;
-        indicator_led((i < (flashes * 2)) & !(i & 1));
+        if (i == 0) indicator_led(1);  // first flash: always low
+        else if (i == 2 && voltage < 35*dV) {
+            indicator_led((voltage >= VOLTAGE_RED) ? 1 : 2);  // 2nd flash: low or high
+        }
+        else indicator_led(0);
     }
     #endif  // USE_INDICATOR_ANIMATION_MODES
 }
@@ -217,10 +221,15 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
         pattern = animation[breathing_frame];
         breathing_frame = (breathing_frame + 1) % sizeof(animation);
     }
-    else if (pattern == RGB_PATTERN_PULSE) {  // 1/2/3 flashes for good/medium/bad battery
-        uint8_t flashes = (volts >= 35*dV) ? 1 : (volts >= VOLTAGE_RED) ? 2 : 3;
-        pattern = (pulse_frame < (flashes * 2)) & !(pulse_frame & 1);
+    else if (pattern == RGB_PATTERN_PULSE) {  // 1/2 flashes for good/medium/bad battery
+        // good: 1 low flash; medium: 2 low flashes; low: 1st low + 2nd high flash
+        uint8_t frame = pulse_frame;
         pulse_frame = (pulse_frame + 1) % 16;
+        if (frame == 0) pattern = 1;  // first flash: always low
+        else if (frame == 2 && volts < 35*dV) {
+            pattern = (volts >= VOLTAGE_RED) ? 1 : 2;  // 2nd flash: low or high
+        }
+        else pattern = 0;
     }
     #endif  // USE_RGB_ANIMATION_MODES
     uint8_t result;
