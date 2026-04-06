@@ -39,6 +39,95 @@ flowchart LR
     TAC -->|"6C"| OFF
 ```
 
+## OFF State Detail
+
+```mermaid
+flowchart LR
+    OFF(["OFF"])
+    RAMP(["RAMP\n(ON)"])
+    UTILITY(["UTILITY"])
+    STROBE(["STROBE"])
+    LOCK(["LOCKOUT"])
+    MOM(["MOMENTARY"])
+    TAC(["TACTICAL"])
+    MISCCFG(["Misc config\nmenu"])
+    SIMPLECFG(["Simple UI\nramp config"])
+    VER(["Version\nCheck"])
+
+    OFF -->|"1C"| RAMP
+    OFF -->|"1H"| RAMP
+    OFF -->|"2C"| RAMP
+    OFF -->|"2H [Simp]"| RAMP
+    OFF -->|"2H [Adv]"| RAMP
+    OFF -->|"3C"| UTILITY
+    OFF -->|"3H [Adv]"| STROBE
+    OFF -->|"4C"| LOCK
+    OFF -->|"5C [Adv]"| MOM
+    OFF -->|"6C [Adv]"| TAC
+    OFF -->|"7C [Adv]"| OFF
+    OFF -->|"7H [Adv]"| OFF
+    OFF -->|"9H [Adv]"| MISCCFG
+    OFF -->|"10C [Adv] / 10H [Simp]"| OFF
+    OFF -->|"10H [Adv]"| SIMPLECFG
+    OFF -->|"13H"| OFF
+    OFF -->|"15C+"| VER
+    VER -. "auto" .-> OFF
+```
+
+> Self-loops: `7C`/`7H` cycle aux LED pattern/color; `10C [Adv]`/`10H [Simp]` toggle UI mode; `13H` triggers factory reset — all stay in OFF.
+
+## Ramp (ON) State
+
+```mermaid
+flowchart LR
+    RAMP(["RAMP\n(ON)"])
+    OFF(["OFF"])
+    LOCK(["LOCKOUT"])
+    MOM(["MOMENTARY"])
+    RCFG(["Ramp config\nmenu"])
+    REXT(["Ramp extras\nmenu"])
+    SUNSET(["Sunset\ntimer"])
+    CHANCFG(["Channel mode\nmenu"])
+
+    RAMP -->|"1C"| OFF
+    RAMP -->|"1H / 2H"| RAMP
+    RAMP -->|"2C"| RAMP
+    RAMP -->|"3C [Adv]"| RAMP
+    RAMP -->|"3H [Adv] / 4H [Adv]"| RAMP
+    RAMP -->|"4C"| LOCK
+    RAMP -->|"5C [Adv]"| MOM
+    RAMP -->|"5H [Adv]"| SUNSET
+    RAMP -->|"6C [Adv]"| RAMP
+    RAMP -->|"7H [Adv]"| RCFG
+    RAMP -->|"9H [Adv]"| CHANCFG
+    RAMP -->|"10C [Adv]"| RAMP
+    RAMP -->|"10H [Adv]"| REXT
+    LOCK -->|"4C / 4H / 5C"| RAMP
+    SUNSET -->|"1C"| OFF
+```
+
+## Lockout State
+
+```mermaid
+flowchart LR
+    LOCK(["LOCKOUT"])
+    OFF(["OFF"])
+    RAMP(["RAMP\n(ON)"])
+    ALCFG(["Auto-lock\nconfig menu"])
+
+    LOCK -->|"1H / 2H"| LOCK
+    LOCK -->|"3C"| OFF
+    LOCK -->|"3H"| LOCK
+    LOCK -->|"4C"| RAMP
+    LOCK -->|"4H"| RAMP
+    LOCK -->|"5C"| RAMP
+    LOCK -->|"7C [Adv]"| LOCK
+    LOCK -->|"7H [Adv]"| LOCK
+    LOCK -->|"10H [Adv]"| ALCFG
+```
+
+> `1H`/`2H` = momentary moon (floor / memorized level); `3H` = next channel mode; `4C` = unlock → memorized level; `4H` = unlock → floor; `5C` = unlock → ceiling; `7C`/`7H` = aux LED pattern/color.
+
 ## Utility Group Detail
 
 ```mermaid
@@ -48,6 +137,9 @@ flowchart LR
     BEACON(["Beacon"])
     SOS(["SOS"])
     OFF(["OFF"])
+    VCFG(["Voltage config\nmenu"])
+    TCFG(["Thermal config\nmenu"])
+    BCFG(["Beacon timing\nconfig"])
 
     BATT -->|"2C [Adv]"| TEMP
     TEMP -->|"2C"| BEACON
@@ -58,24 +150,71 @@ flowchart LR
     TEMP -->|"1C"| OFF
     BEACON -->|"1C"| OFF
     SOS -->|"1C"| OFF
+
+    BATT -->|"7H"| VCFG
+    TEMP -->|"7H"| TCFG
+    BEACON -->|"1H"| BCFG
 ```
 
-## Ramp (ON) State
+## Strobe Group Detail
 
 ```mermaid
 flowchart LR
-    RAMP(["RAMP\n(ON)"])
+    CANDLE(["Candle"])
+    BIKE(["Bike\nFlasher"])
+    PARTY(["Party\nStrobe"])
+    TSTR(["Tactical\nStrobe"])
+    LIGHT(["Lightning\nStorm"])
     OFF(["OFF"])
-    LOCK(["LOCKOUT"])
     MOM(["MOMENTARY"])
 
-    RAMP -->|"1C"| OFF
-    RAMP -->|"4C"| LOCK
-    RAMP -->|"5C [Adv]"| MOM
-    RAMP -->|"1H / 2H"| RAMP
-    RAMP -->|"2C"| RAMP
-    LOCK -->|"4C / 4H / 5C"| RAMP
+    CANDLE -->|"2C"| BIKE
+    BIKE -->|"2C"| PARTY
+    PARTY -->|"2C"| TSTR
+    TSTR -->|"2C"| LIGHT
+    LIGHT -->|"2C"| CANDLE
+
+    CANDLE -->|"4C"| LIGHT
+    BIKE -->|"4C"| CANDLE
+    PARTY -->|"4C"| BIKE
+    TSTR -->|"4C"| PARTY
+    LIGHT -->|"4C"| TSTR
+
+    CANDLE & BIKE & PARTY & TSTR & LIGHT -->|"1C"| OFF
+    CANDLE & BIKE & PARTY & TSTR & LIGHT -->|"5C"| MOM
 ```
+
+> `1H` / `2H` adjusts brightness / speed within the current mode.
+
+## Momentary State
+
+```mermaid
+flowchart LR
+    MOM(["MOMENTARY"])
+    OFF(["OFF"])
+
+    MOM -->|"hold button"| MOM
+    MOM -. "disconnect power" .-> OFF
+```
+
+> The light is on only while the button is held. The only way to exit is to disconnect power (remove battery / unscrew tail cap).
+
+## Tactical State
+
+```mermaid
+flowchart LR
+    TAC(["TACTICAL"])
+    OFF(["OFF"])
+    TACCFG(["Tactical config\nmenu"])
+
+    TAC -->|"1H"| TAC
+    TAC -->|"2H"| TAC
+    TAC -->|"3H"| TAC
+    TAC -->|"6C"| OFF
+    TAC -->|"7H"| TACCFG
+```
+
+> `1H` = slot 1 (High), `2H` = slot 2 (Low), `3H` = slot 3 (Strobe) — each activates while held, releases when button released.
 
 ---
 
@@ -98,6 +237,33 @@ Config menu navigation:
     blink = current item  →  release = set value  |  hold = skip to next item
   Set value:
     click = +1  |  hold = +10  |  wait = confirm and move to next item
+
+RAMP (ON)
+├── 1C ──► OFF
+├── 1H ──► Ramp up (reverses if released < 1s ago)
+├── 2H ──► Ramp down
+├── 2C ──► Go to / from turbo or ceiling (configurable)
+├── 3C [Adv] ──► Toggle ramp style (smooth / stepped)
+│               (or next channel mode on multi-channel lights)
+├── 6C [Adv] ──► Toggle ramp style (on multi-channel lights)
+├── 3H [Adv] ──► Momentary turbo (or tint ramp if channel supports it)
+├── 4H [Adv] ──► Momentary turbo (on multi-channel lights)
+├── 4C ──► LOCKOUT
+├── 5C [Adv] ──► MOMENTARY
+├── 5H [Adv] ──► Sunset timer (+5 min per hold)
+├── 7H [Adv] ──► Ramp config menu
+│   ├── Item 1: Floor level
+│   ├── Item 2: Ceiling level
+│   └── Item 3: Steps / speed
+├── 9H [Adv] ──► Channel mode enable/disable menu
+│               (multi-channel lights only)
+├── 10C [Adv] ──► Enable manual memory, save current brightness
+└── 10H [Adv] ──► Ramp extras config menu
+    ├── Item 1: Auto vs manual memory
+    ├── Item 2: Manual mem timer
+    ├── Item 3: Ramp-after-moon
+    ├── Item 4: Turbo style
+    └── Item 5: Smooth steps
 
 OFF
 ├── 1C ──► RAMP (ON) — memorized level
@@ -179,33 +345,6 @@ OFF
 │
 ├── 13H ──► Factory Reset (some lights)
 └── 15C+ ──► Version Check
-
-RAMP (ON)
-├── 1C ──► OFF
-├── 1H ──► Ramp up (reverses if released < 1s ago)
-├── 2H ──► Ramp down
-├── 2C ──► Go to / from turbo or ceiling (configurable)
-├── 3C [Adv] ──► Toggle ramp style (smooth / stepped)
-│               (or next channel mode on multi-channel lights)
-├── 6C [Adv] ──► Toggle ramp style (on multi-channel lights)
-├── 3H [Adv] ──► Momentary turbo (or tint ramp if channel supports it)
-├── 4H [Adv] ──► Momentary turbo (on multi-channel lights)
-├── 4C ──► LOCKOUT
-├── 5C [Adv] ──► MOMENTARY
-├── 5H [Adv] ──► Sunset timer (+5 min per hold)
-├── 7H [Adv] ──► Ramp config menu
-│   ├── Item 1: Floor level
-│   ├── Item 2: Ceiling level
-│   └── Item 3: Steps / speed
-├── 9H [Adv] ──► Channel mode enable/disable menu
-│               (multi-channel lights only)
-├── 10C [Adv] ──► Enable manual memory, save current brightness
-└── 10H [Adv] ──► Ramp extras config menu
-    ├── Item 1: Auto vs manual memory
-    ├── Item 2: Manual mem timer
-    ├── Item 3: Ramp-after-moon
-    ├── Item 4: Turbo style
-    └── Item 5: Smooth steps
 ```
 
 ### Manual links
