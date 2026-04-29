@@ -5,6 +5,7 @@
 #pragma once
 
 #include "anduril/lockout-mode.h"
+#include "anduril/lockout-mode-levels.h"
 
 uint8_t lockout_state(Event event, uint16_t arg) {
     #ifdef USE_MOON_DURING_LOCKOUT_MODE
@@ -19,19 +20,16 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         ((B_CLICK | B_PRESS) == (event & (B_CLICK | B_PRESS)))
         && (click_num <= 2)
     ) {
-        uint8_t lvl = cfg.ramp_floors[0];
-        // hold: lowest floor
-        if (1 == click_num) {  // 1st click
-            if (cfg.ramp_floors[1] < lvl) lvl = cfg.ramp_floors[1];
-        }
-        // click, hold: highest floor (or manual mem level)
-        else {  // 2nd click
-            #ifdef USE_MANUAL_MEMORY
-            if (cfg.manual_memory) lvl = cfg.manual_memory;
-            else
-            #endif
-            if (cfg.ramp_floors[1] > lvl) lvl = cfg.ramp_floors[1];
-        }
+        uint8_t manual_memory = 0;
+        #ifdef USE_MANUAL_MEMORY
+        manual_memory = cfg.manual_memory;
+        #endif
+
+        uint8_t lvl = lockout_momentary_level(
+                click_num,
+                cfg.ramp_floors[0],
+                cfg.ramp_floors[1],
+                manual_memory);
         off_state_set_level(lvl);
     }
     // button was released
@@ -222,4 +220,3 @@ uint8_t autolock_config_state(Event event, uint16_t arg) {
     return config_state_base(event, arg, 1, autolock_config_save);
 }
 #endif  // #ifdef USE_AUTOLOCK
-

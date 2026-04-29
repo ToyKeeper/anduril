@@ -14,6 +14,11 @@ formats:
 
 # Next
 
+- Changed lockout momentary moon: `1H` now uses the highest configured ramp
+  floor, matching `2H` when manual memory is not set.  This lets the unused
+  ramp style provide a practical lockout moon level while the primary ramp can
+  still have an ultra-low floor.
+
 # 2025-07-07
 
 Merged a few pull requests, minor improvements, nothing big.  Users can now
@@ -379,4 +384,3 @@ Hardware-specific changes:
 
 
 <!-- vim: set textwidth=78 shiftwidth=2 -->
-

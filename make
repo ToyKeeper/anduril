@@ -27,6 +27,7 @@ Usage: ./make TASK
   docs            Convert all .md files to .html
   models          Generate the MODELS file
   release         Zip up all .hex files to prep for publishing a release
+  test            Run host-side regression tests
   version         Show the current version string
   todo            Show tasks noted in source code files
 
@@ -76,6 +77,9 @@ function main() {
     release)
       ./bin/make-release.sh "$@"
       ;;
+    test)
+      ./tests/run-host-tests.sh
+      ;;
     version)
       ./bin/version-string.sh "$@"
       ;;
@@ -122,4 +126,3 @@ cd "$BASEDIR" || (echo "Error: Can't cd to basedir." && exit 1)
 
 # do whatever the user requested
 main "$@"
-

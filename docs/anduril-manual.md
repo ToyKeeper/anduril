@@ -387,7 +387,7 @@ Lockout mode also doubles as a momentary moon mode, so the user can do
 quick tasks without having to unlock the light.  The brightness in
 lockout mode has two levels:
 
-  - `1H`: Light up at the lowest floor level.
+  - `1H`: Light up at the highest floor level.
 
   - `2H`: Light up at the highest floor level.
           (or the manual mem level, if there is one)
@@ -1125,7 +1125,7 @@ This is a table of all button mappings in Anduril, in one place:
 
 | Mode           | UI     | Button  | Action
 | :---           | :--    | ------: | :-----
-| Lockout        | Any    |`1C`/`1H`| Momentary moon (lowest floor)
+| Lockout        | Any    |`1C`/`1H`| Momentary moon (highest floor)
 | Lockout        | Any    |`2C`/`2H`| Momentary moon (highest floor, or manual mem level)
 | Lockout        | Any    | `3C`    | Unlock (go to "Off" mode)
 | Lockout        | Any    | `3H`    | Next channel mode (if more than one enabled)
@@ -1224,4 +1224,3 @@ This is a table of all button mappings in Anduril, in one place:
 |                |        |         | (goes to Number Entry menu)
 | Number entry   | Full   | Click   | Add 1 to value for current item
 | Number entry   | Full   | Hold    | Add 10 to value for current item
-
