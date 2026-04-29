@@ -174,6 +174,12 @@
 #define USE_LOCKOUT_MODE
 // should lockout mode function as a momentary moon mode?
 #define USE_MOON_DURING_LOCKOUT_MODE
+// after 2C in lockout mode, turn on at floor brightness for this long
+// only enable on targets with enough flash (attiny85 = 8KB, too small)
+#if !defined(PROGMEM_SIZE) || (PROGMEM_SIZE >= 16384)
+#define USE_LOCKOUT_2CLICK_TIMEOUT
+#define LOCKOUT_2CLICK_TIMEOUT (60 * TICKS_PER_SECOND)
+#endif
 // add an optional setting to lock the light after being off for a while
 #define USE_AUTOLOCK
 

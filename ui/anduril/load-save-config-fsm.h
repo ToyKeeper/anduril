@@ -118,6 +118,9 @@ typedef struct Config {
     #ifdef USE_AUTOLOCK
         uint8_t autolock_time;
     #endif
+    #ifdef USE_LOCKOUT_2CLICK_TIMEOUT
+        uint8_t lockout_2click_timeout;
+    #endif
     #ifdef USE_TACTICAL_MODE
         uint8_t tactical_levels[3];
     #endif

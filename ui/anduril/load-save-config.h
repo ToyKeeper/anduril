@@ -159,6 +159,9 @@ Config cfg = {
     #ifdef USE_AUTOLOCK
         .autolock_time = DEFAULT_AUTOLOCK_TIME,
     #endif
+    #ifdef USE_LOCKOUT_2CLICK_TIMEOUT
+        .lockout_2click_timeout = DEFAULT_LOCKOUT_2CLICK_TIMEOUT,
+    #endif
     #ifdef USE_TACTICAL_MODE
         .tactical_levels = { TACTICAL_LEVELS },
     #endif
