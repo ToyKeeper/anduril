@@ -22,6 +22,9 @@ typedef enum {
         button_led_low_ramp_level_step,
         button_led_high_ramp_level_step,
     #endif
+    #if defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS)
+        aux_while_on_step,
+    #endif
     voltage_config_num_steps
 } voltage_config_steps_e;
 

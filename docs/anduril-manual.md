@@ -501,6 +501,10 @@ The voltage config menu has these settings:
      mode while the main LEDs are on.  
      Also controls brightness of post-off voltage display.
 
+  5. Aux while on.  Determines which aux LEDs will be lit up while the main
+     LEDs are on, like in ramping mode:  
+     0 = none, 1 = single color aux only, 2 = RGB aux only, 3 = both.
+
 ### Temperature check:
 
 Blinks out the current temperature in degrees C.  This number should
@@ -908,6 +912,9 @@ The aux LEDs on most lights only turn on when the light is asleep.
 When a light has a single-color aux LED and no RGB, it fast-blinks the
 aux LED in "off" modes when voltage is low.
 
+The aux LED behavior can be configured further by entering the Voltage Config
+Menu inside of Batt Check mode.
+
 
 Post-Off Voltage Display (POVD)
 -------------------------------
@@ -1175,6 +1182,11 @@ This is a table of all button mappings in Anduril, in one place:
 |                |        |         | 4: aux high ramp level
 |                |        |         | ... 0: disabled
 |                |        |         | ... 1+: brighter at this ramp level
+|                |        |         | 5: aux while on
+|                |        |         | ... 0: disabled
+|                |        |         | ... 1: single-color aux only
+|                |        |         | ... 2: RGB aux only
+|                |        |         | ... 3: both
 
 | Mode           | UI     | Button  | Action
 | :---           | :--    | ------: | :-----

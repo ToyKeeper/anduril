@@ -113,6 +113,9 @@ typedef struct Config {
             uint8_t post_off_voltage;
         #endif
     #endif
+    #if defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS)
+        uint8_t aux_while_on;
+    #endif
 
     ///// misc other mode settings
     #ifdef USE_AUTOLOCK

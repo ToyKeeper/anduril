@@ -285,7 +285,8 @@ void loop() {
     // "current_state" is volatile, so cache it to reduce code size
     StatePtr state = current_state;
 
-    #ifdef USE_AUX_RGB_LEDS_WHILE_ON
+    #ifdef USE_AUX_RGB_LEDS
+    if (cfg.aux_while_on & 0b10) {
         // display battery charge on RGB button during use
         if (state == steady_state) {
             #ifdef USE_AUX_THRESHOLD_CONFIG
@@ -293,10 +294,13 @@ void loop() {
             // we are above the configured minimum ramp level
             if (actual_level > cfg.button_led_low_ramp_level)
                 rgb_led_voltage_readout(actual_level > cfg.button_led_high_ramp_level);
-            #else
+            #elif (USE_AUX_RGB_LEDS_WHILE_ON + 0) > 0
                 rgb_led_voltage_readout(actual_level > USE_AUX_RGB_LEDS_WHILE_ON);
+            #else
+                rgb_led_voltage_readout(actual_level > 25);
             #endif
         }
+    }
     #endif
 
     if (0) {}  // placeholder

@@ -13,6 +13,8 @@
 // (in case there's a RGB button)
 #define USE_AUX_RGB_LEDS_WHILE_ON  40
 #define USE_INDICATOR_LED_WHILE_RAMPING
+// no RGB aux while on, only single-color aux (unless user changes it)
+#define DEFAULT_AUX_WHILE_ON  0b01
 
 // channel modes...
 // CM_MAIN2, CM_LED3, CM_LED4, CM_ALL,

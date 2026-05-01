@@ -153,6 +153,15 @@ Config cfg = {
             .post_off_voltage = DEFAULT_POST_OFF_VOLTAGE_SECONDS,
         #endif
     #endif
+    #if defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS)
+        #ifdef DEFAULT_AUX_WHILE_ON
+            .aux_while_on = DEFAULT_AUX_WHILE_ON,
+        #elif (USE_AUX_RGB_LEDS_WHILE_ON + 0)
+            .aux_while_on = 0b11,
+        #else
+            .aux_while_on = 0b01,
+        #endif
+    #endif
 
     ///// misc other mode settings
 
