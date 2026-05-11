@@ -34,7 +34,7 @@ enum channel_modes_e {
 };
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b00011000
+#define CHANNEL_MODES_ENABLED 0b00001000
 #define USE_CHANNEL_MODE_ARGS
 // _, _, _, 128=middle CCT, 0=warm-to-cool
 #define CHANNEL_MODE_ARGS     0,0,0,128,0,0
