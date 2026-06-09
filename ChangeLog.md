@@ -14,6 +14,45 @@ formats:
 
 # Next
 
+# 2025-07-07
+
+Merged a few pull requests, minor improvements, nothing big.  Users can now
+configure if and when the button LEDs light up during use and during POVD.
+
+General:
+
+- Added config options to make button LED brightness thresholds configurable.
+  Battcheck -> 7H -> Options 3+4 now set the aux low/high ramp levels, for the
+  brightness of the button while the main LEDs are on, and the brightness of
+  Post-Off Voltage Display (POVD) after turning the main LEDs off.
+  (may be options 2+3 on lights with no RGB aux, instead of 3+4)
+  (new options are only available on lights with more than 8 KiB ROM)
+- Lockout mode now only does momentary moon/low on 1st and 2nd presses.
+- Documentation updates.
+- Fixed broken GitHub CI.
+
+Hardware-specific changes:
+
+- &emisar-d3aa: Reduced moon preflash even more.
+  If it still flashes, it probably can't be fixed in software.
+
+
+# 2025-04-29
+
+Pretty minor release.  Things have been weird lately.
+
+General:
+
+- Removed access to strobe/mood modes in Extended Simple UI, to make it more
+  safe and simple by default.
+
+New lights:
+
+- Added &hank-lume-x1 (0281): Covers all of Hank's recent Lume X1-based lights.
+- Added &wurkkos-ts10-rgbaux-lowfet (0712): Variant with lower max power,
+  created at Wurkkos's request, to stop new batches of low-Vf lights from
+  damaging themselves.
+
 # 2024-04-20
 
 General:

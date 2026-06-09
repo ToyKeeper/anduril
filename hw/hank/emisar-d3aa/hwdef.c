@@ -22,15 +22,26 @@ Channel channels[] = {
 };
 
 
+inline void nfet_delay() {
+    #if IN_NFET_DELAY_TIME > 0
+    delay_4ms(IN_NFET_DELAY_TIME/4);
+    #else
+    delay_zero();
+    delay_zero();
+    #endif
+}
+
 void set_level_zero() {
     DAC_LVL  = 0;  // DAC off
     DAC_VREF = V10;  // low Vref
     HDR_ENABLE_PORT &= ~(1 << HDR_ENABLE_PIN);  // HDR off
 
-    // prevent post-off flash
-    IN_NFET_ENABLE_PORT |= (1 << IN_NFET_ENABLE_PIN);
-    delay_4ms(IN_NFET_DELAY_TIME/4);
-    IN_NFET_ENABLE_PORT &= ~(1 << IN_NFET_ENABLE_PIN);
+    if (actual_level) {
+        // prevent post-off flash
+        IN_NFET_ENABLE_PORT |= (1 << IN_NFET_ENABLE_PIN);
+        nfet_delay();
+        IN_NFET_ENABLE_PORT &= ~(1 << IN_NFET_ENABLE_PIN);
+    }
 
     // turn off boost last
     BST_ENABLE_PORT &= ~(1 << BST_ENABLE_PIN);  // BST off
@@ -45,15 +56,18 @@ void set_level_main(uint8_t level) {
     if ((! actual_level) && (level < HDR_ENABLE_LEVEL_MIN)) {
         noflash = 1;
         IN_NFET_ENABLE_PORT |= (1 << IN_NFET_ENABLE_PIN);
+        //nfet_delay();
     }
-
-    // BST on first, to give it a few extra microseconds to spin up
-    BST_ENABLE_PORT |= (1 << BST_ENABLE_PIN);
 
     // pre-load ramp data so it can be assigned faster later
     // DAC level register is left-aligned
     PWM1_DATATYPE dac_lvl  = PWM1_GET(level) << 6;
     PWM2_DATATYPE dac_vref = PWM2_GET(level);
+
+    // set these in successive clock cycles to avoid getting out of sync
+    // (minimizes ramp bumps when changing gears)
+    DAC_LVL  = dac_lvl;
+    DAC_VREF = dac_vref;
 
     // enable HDR on top half of ramp
     if (level >= (HDR_ENABLE_LEVEL_MIN-1))
@@ -61,14 +75,15 @@ void set_level_main(uint8_t level) {
     else
         HDR_ENABLE_PORT &= ~(1 << HDR_ENABLE_PIN);
 
-    // set these in successive clock cycles to avoid getting out of sync
-    // (minimizes ramp bumps when changing gears)
-    DAC_LVL  = dac_lvl;
-    DAC_VREF = dac_vref;
+    // if turning on from off, let things stabilize before enabling power
+    if (noflash) { nfet_delay(); }
+
+    // BST on last, after its inputs are set and stabilized
+    BST_ENABLE_PORT |= (1 << BST_ENABLE_PIN);
 
     if (noflash) {
         // wait for flash prevention to finish
-        delay_4ms(IN_NFET_DELAY_TIME/4);
+        nfet_delay();
         IN_NFET_ENABLE_PORT &= ~(1 << IN_NFET_ENABLE_PIN);
     }
 }
@@ -131,9 +146,17 @@ void detect_weak_battery() {
 
     uint16_t resting, loaded;
 
-    // baseline unloaded measurement
     set_level(0);
-    for (uint8_t i=0; i<32; i++) { delay_zero(); }  // wait about 10ms
+
+    // wait a moment so user can tighten the tailcap
+    #ifdef WEAK_BATTERY_TEST_DELAY
+        for (uint16_t i=0; i<(WEAK_BATTERY_TEST_DELAY * 2 / 3); i++)
+            delay_zero();
+    #else
+        for (uint8_t i=0; i<32; i++) delay_zero();  // wait about 10ms
+    #endif
+
+    // baseline unloaded measurement
     //resting = voltage_raw2cooked(adc_smooth[0]);  // probably not settled yet
     resting = quick_volt_measurement();
 

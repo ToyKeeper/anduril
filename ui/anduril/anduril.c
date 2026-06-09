@@ -285,10 +285,22 @@ void loop() {
     // "current_state" is volatile, so cache it to reduce code size
     StatePtr state = current_state;
 
-    #ifdef USE_AUX_RGB_LEDS_WHILE_ON
-    // display battery charge on RGB button during use
-    if (state == steady_state)
-        rgb_led_voltage_readout(actual_level > USE_AUX_RGB_LEDS_WHILE_ON);
+    #ifdef USE_AUX_RGB_LEDS
+    if (cfg.aux_while_on & 0b10) {
+        // display battery charge on RGB button during use
+        if (state == steady_state) {
+            #ifdef USE_AUX_THRESHOLD_CONFIG
+            // only show voltage if feature is enabled and
+            // we are above the configured minimum ramp level
+            if (actual_level > cfg.button_led_low_ramp_level)
+                rgb_led_voltage_readout(actual_level > cfg.button_led_high_ramp_level);
+            #elif (USE_AUX_RGB_LEDS_WHILE_ON + 0) > 0
+                rgb_led_voltage_readout(actual_level > USE_AUX_RGB_LEDS_WHILE_ON);
+            #else
+                rgb_led_voltage_readout(actual_level > 25);
+            #endif
+        }
+    }
     #endif
 
     if (0) {}  // placeholder
@@ -341,6 +353,15 @@ void loop() {
     #ifdef USE_THERMAL_REGULATION
     // TODO: blink out therm_ceil during thermal_config_state?
     else if (state == tempcheck_state) {
+        // temperature is type int16_t
+        // but blink_num is uint8_t, so -10 will blink as 246
+        #ifdef USE_LONG_BLINK_FOR_NEGATIVE_SIGN
+        if (temperature < 0) {
+            blink_negative();
+            blink_num(-temperature);
+        }
+        else
+        #endif
         blink_num(temperature);
         nice_delay_ms(1000);
     }

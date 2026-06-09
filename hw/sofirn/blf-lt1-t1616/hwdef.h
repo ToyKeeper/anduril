@@ -34,7 +34,7 @@ enum channel_modes_e {
 };
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b00011000
+#define CHANNEL_MODES_ENABLED 0b00001000
 #define USE_CHANNEL_MODE_ARGS
 // _, _, _, 128=middle CCT, 0=warm-to-cool
 #define CHANNEL_MODE_ARGS     0,0,0,128,0,0
@@ -70,14 +70,14 @@ enum channel_modes_e {
 // warm LEDs
 uint16_t ch1_dsm_lvl;
 uint8_t ch1_pwm, ch1_dsm;
-#define CH1_PIN  PB1
-#define CH1_PWM  TCA0.SINGLE.CMP1BUF  // CMP1 is the output compare register for PB1
+#define CH1_PIN  PB0
+#define CH1_PWM  TCA0.SINGLE.CMP0BUF  // CMP0 is the output compare register for PB0
 
 // cold LEDs
 uint16_t ch2_dsm_lvl;
 uint8_t ch2_pwm, ch2_dsm;
-#define CH2_PIN  PB0
-#define CH2_PWM  TCA0.SINGLE.CMP0BUF  // CMP0 is the output compare register for PB0
+#define CH2_PIN  PB1
+#define CH2_PWM  TCA0.SINGLE.CMP1BUF  // CMP1 is the output compare register for PB1
 
 // lighted button
 #define AUXLED_PIN   PIN5_bp

@@ -97,6 +97,10 @@ typedef struct Config {
         uint8_t therm_ceil;
         int8_t therm_cal_offset;
     #endif
+    #ifdef USE_AUX_THRESHOLD_CONFIG
+        uint8_t button_led_low_ramp_level;
+        uint8_t button_led_high_ramp_level;
+    #endif
 
     ///// aux LEDs
     #ifdef USE_INDICATOR_LED
@@ -108,6 +112,9 @@ typedef struct Config {
         #ifdef USE_POST_OFF_VOLTAGE
             uint8_t post_off_voltage;
         #endif
+    #endif
+    #if defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS)
+        uint8_t aux_while_on;
     #endif
 
     ///// misc other mode settings
