@@ -84,7 +84,7 @@ uint8_t ch1_pwm, ch1_dsm;
 // e-switch
 #define SWITCH_PIN      PIN5_bp
 #define SWITCH_PORT     VPORTA.IN
-#define SWITCH_ISC_REG  PORTA.PIN2CTRL
+#define SWITCH_ISC_REG  PORTA.PIN5CTRL
 #define SWITCH_VECT     PORTA_PORT_vect
 #define SWITCH_INTFLG   VPORTA.INTFLAGS
 
