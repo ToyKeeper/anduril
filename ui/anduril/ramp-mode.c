@@ -174,6 +174,11 @@ uint8_t steady_state(Event event, uint16_t arg) {
             // click, hold should always go down if possible
             if (event == EV_click2_hold) { ramp_direction = -1; }
             // make it ramp down instead, if already at max
+            #ifdef USE_RAMP_LEVEL_HARD_LIMIT
+            else if ( ramp_level_hard_limit
+                    && (actual_level >= ramp_level_hard_limit)
+                    ) { ramp_direction = -1; }
+            #endif
             else if (actual_level >= mode_max) { ramp_direction = -1; }
             // make it ramp up if already at min
             // (off->hold->stepped_min->release causes this state)
@@ -661,6 +666,11 @@ uint8_t nearest_level(int16_t target) {
         uint8_t mid = (mode_max + mode_min) >> 1;
         return mid;
     }
+
+    #ifdef USE_RAMP_LEVEL_HARD_LIMIT
+    if (ramp_level_hard_limit && (target > ramp_level_hard_limit))
+        return ramp_level_hard_limit;
+    #endif
     if (target < mode_min) return mode_min;
     if (target > mode_max) return mode_max;
     // the rest isn't relevant for smooth ramping
@@ -693,6 +703,10 @@ void ramp_update_config() {
 
 #if defined(USE_THERMAL_REGULATION) || defined(USE_SMOOTH_STEPS)
 void set_level_and_therm_target(uint8_t level) {
+    #ifdef USE_RAMP_LEVEL_HARD_LIMIT
+    if (ramp_level_hard_limit && (level > ramp_level_hard_limit))
+        level = ramp_level_hard_limit;
+    #endif
     #ifdef USE_THERMAL_REGULATION
     target_level = level;
     #endif
