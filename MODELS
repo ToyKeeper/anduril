@@ -1,4 +1,4 @@
-Models: 82
+Models: 83
 
 Model     MCU         Name
 -----     ---         ----
@@ -37,6 +37,7 @@ Model     MCU         Name
 0261      attiny1634  hank-noctigon-k9.3
 0262      attiny1634  hank-noctigon-k9.3-nofet
 0263      attiny1634  hank-noctigon-k9.3-219
+0264      attiny1634  hank-dm1.12
 0265      attiny1634  noctigon-k9.3-tintramp-nofet  (old, use 0262)
 0266      attiny1634  noctigon-k9.3-tintramp-fet    (old, use 0261)
 0267      attiny1634  noctigon-k9.3-tintramp-219    (old, use 0263)
