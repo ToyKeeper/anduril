@@ -25,10 +25,6 @@ uint8_t off_state(Event event, uint16_t arg) {
             arg |= smooth_steps_in_progress;
         #endif
         ticks_since_on = 0;
-        #if NUM_CHANNEL_MODES > 1
-            // reset to ramp mode's channel when light turns off
-            channel_mode = cfg.channel_mode;
-        #endif
         #ifdef USE_INDICATOR_LED
         // redundant, sleep tick does the same thing
         //indicator_led_update(cfg.indicator_led_mode & 0x03, 0);
@@ -41,7 +37,13 @@ uint8_t off_state(Event event, uint16_t arg) {
         #endif
         // sleep while off  (lower power use)
         // (unless delay requested; give the ADC some time to catch up)
-        if (! arg) { go_to_standby = 1; }
+        if (! arg) {
+            #if NUM_CHANNEL_MODES > 1
+                // reset to ramp mode's channel when light finished animating and turns off
+                channel_mode = cfg.channel_mode;
+            #endif
+            go_to_standby = 1;
+        }
         return EVENT_HANDLED;
     }
 
@@ -52,6 +54,10 @@ uint8_t off_state(Event event, uint16_t arg) {
                 && (! smooth_steps_in_progress)
             #endif
             ) {
+            // ensure return to ramp channel_mode, esp. after smooth_steps to off
+            #if NUM_CHANNEL_MODES > 1
+                channel_mode = cfg.channel_mode;
+            #endif
             go_to_standby = 1;
             #ifdef USE_INDICATOR_LED
             // redundant, sleep tick does the same thing
@@ -94,8 +100,19 @@ uint8_t off_state(Event event, uint16_t arg) {
 
     #if (B_TIMING_ON == B_PRESS_T)
     // hold (initially): go to lowest level (floor), but allow abort for regular click
+    // restore ramp channel_mode in case off animation was interrupted by a click
     else if (event == EV_click1_press) {
+        #if NUM_CHANNEL_MODES > 1
+            channel_mode = cfg.channel_mode;
+        #endif
         off_state_set_level(nearest_level(1));
+        return EVENT_HANDLED;
+    }
+    #else
+    else if (event == EV_click1_press) {
+        #if NUM_CHANNEL_MODES > 1
+            channel_mode = cfg.channel_mode;
+        #endif
         return EVENT_HANDLED;
     }
     #endif  // B_TIMING_ON == B_PRESS_T
@@ -381,4 +398,3 @@ void off_state_set_level(uint8_t level) {
     #endif
     set_level(level);
 }
-
