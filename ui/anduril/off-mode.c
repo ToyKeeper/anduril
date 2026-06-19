@@ -321,6 +321,15 @@ uint8_t off_state(Event event, uint16_t arg) {
     }
     #endif  // ifdef USE_EXTENDED_SIMPLE_UI
 
+    // 10 clicks: enable simple UI
+    else if (event == EV_10clicks) {
+        blink_once();
+        cfg.simple_ui_active = 1;
+        save_config();
+        return EVENT_HANDLED;
+    }
+    #endif  // ifdef USE_SIMPLE_UI
+
     // click, click, long-click: strobe mode
     #ifdef USE_STROBE_STATE
     else if (event == EV_click3_hold) {
@@ -333,15 +342,6 @@ uint8_t off_state(Event event, uint16_t arg) {
         return EVENT_HANDLED;
     }
     #endif
-
-    // 10 clicks: enable simple UI
-    else if (event == EV_10clicks) {
-        blink_once();
-        cfg.simple_ui_active = 1;
-        save_config();
-        return EVENT_HANDLED;
-    }
-    #endif  // ifdef USE_SIMPLE_UI
 
     #ifdef USE_MOMENTARY_MODE
     // 5 clicks: momentary mode
