@@ -31,7 +31,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         #endif
         #ifdef USE_INDICATOR_LED
         // redundant, sleep tick does the same thing
-        //indicator_led_update(cfg.indicator_led_mode & 0x03, 0);
+        //indicator_led_update(cfg.indicator_led_mode, 0);
         #elif defined(USE_AUX_RGB_LEDS)
         // redundant, sleep tick does the same thing
         //rgb_led_update(cfg.rgb_led_off_mode, 0);
@@ -55,7 +55,7 @@ uint8_t off_state(Event event, uint16_t arg) {
             go_to_standby = 1;
             #ifdef USE_INDICATOR_LED
             // redundant, sleep tick does the same thing
-            //indicator_led_update(cfg.indicator_led_mode & 0x03, arg);
+            //indicator_led_update(cfg.indicator_led_mode, arg);
             #elif defined(USE_AUX_RGB_LEDS)
             // redundant, sleep tick does the same thing
             //rgb_led_update(cfg.rgb_led_off_mode, arg);
@@ -76,7 +76,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         }
         #endif  // ifdef USE_MANUAL_MEMORY_TIMER
         #ifdef USE_INDICATOR_LED
-        indicator_led_update(cfg.indicator_led_mode & 0x03, arg);
+        indicator_led_update(cfg.indicator_led_mode, arg);
         #elif defined(USE_AUX_RGB_LEDS)
         rgb_led_update(cfg.rgb_led_off_mode, arg);
         #endif
@@ -267,18 +267,12 @@ uint8_t off_state(Event event, uint16_t arg) {
     #ifdef USE_INDICATOR_LED
     // 7 clicks: change indicator LED mode
     else if (event == EV_7clicks) {
-        uint8_t mode = (cfg.indicator_led_mode & 3) + 1;
-        #ifdef TICK_DURING_STANDBY
-        mode = mode & 3;
-        #else
-        mode = mode % 3;
-        #endif
+        uint8_t mode = (cfg.indicator_led_mode & INDICATOR_LED_CFG_MASK) + 1;
+        mode = mode % INDICATOR_LED_NUM_PATTERNS;
         #ifdef INDICATOR_LED_SKIP_LOW
         if (mode == 1) { mode ++; }
         #endif
-        cfg.indicator_led_mode = (cfg.indicator_led_mode & 0b11111100) | mode;
-        // redundant, sleep tick does the same thing
-        //indicator_led_update(cfg.indicator_led_mode & 0x03, arg);
+        cfg.indicator_led_mode = (cfg.indicator_led_mode & ~INDICATOR_LED_CFG_MASK) | mode;
         save_config();
         return EVENT_HANDLED;
     }

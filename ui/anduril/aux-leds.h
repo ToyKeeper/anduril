@@ -33,8 +33,12 @@ const PROGMEM uint8_t rgb_led_colors[] = {
 };
 // intentionally 1 higher than total modes, to make "voltage" easier to reach
 // (at Hank's request)
-#define RGB_LED_NUM_COLORS 11
-#define RGB_LED_NUM_PATTERNS 4
+const uint8_t RGB_LED_NUM_COLORS = 11
+    #ifdef USE_BUTTON_LED
+    +1
+    #endif
+    ;
+#define RGB_LED_NUM_PATTERNS 6
 #ifndef RGB_LED_OFF_DEFAULT
 #define RGB_LED_OFF_DEFAULT 0x19  // low, voltage
 //#define RGB_LED_OFF_DEFAULT 0x18  // low, rainbow
@@ -48,18 +52,34 @@ const PROGMEM uint8_t rgb_led_colors[] = {
 #endif
 #endif
 
-//#define USE_OLD_BLINKING_INDICATOR
-//#define USE_FANCIER_BLINKING_INDICATOR
+#ifdef USE_EXTENDED_INDICATOR_PATTERNS
+    #define INDICATOR_LED_NUM_PATTERNS 6
+    #define INDICATOR_LED_CFG_MASK 0x0F
+    #define INDICATOR_LED_CFG_OFFSET 4
+#else
+    #define INDICATOR_LED_NUM_PATTERNS 4
+    #define INDICATOR_LED_CFG_MASK 0x03
+    #define INDICATOR_LED_CFG_OFFSET 2
+#endif
+
 #ifdef USE_INDICATOR_LED
-    // bits 2-3 control lockout mode
-    // bits 0-1 control "off" mode
-    // modes are: 0=off, 1=low, 2=high, 3=blinking (if TICK_DURING_STANDBY enabled)
+    #ifndef TICK_DURING_STANDBY
+        #error "USE_INDICATOR_LED requires TICK_DURING_STANDBY"
+    #endif
+    // low nibble:  off state
+    // high nibble: lockout state
+    // modes are:
+    //   0=off
+    //   1=low
+    //   2=high
+    //   3=fancy blinking
+    //   4=low blinking
+    //   5=high blinking
     #ifndef INDICATOR_LED_DEFAULT_MODE
         #ifdef USE_INDICATOR_LED_WHILE_RAMPING
-            #define INDICATOR_LED_DEFAULT_MODE ((2<<2) + 1)
+            #define INDICATOR_LED_DEFAULT_MODE ((2<<INDICATOR_LED_CFG_OFFSET) + 1)
         #else
-            #define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
+            #define INDICATOR_LED_DEFAULT_MODE ((3<<INDICATOR_LED_CFG_OFFSET) + 1)
         #endif
     #endif
 #endif
-

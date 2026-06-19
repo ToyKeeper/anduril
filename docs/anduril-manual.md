@@ -865,7 +865,9 @@ Aux LED modes typically include:
   - Off
   - Low
   - High
-  - Blinking
+  - Blinking (fancy animation)
+  - Low blinking
+  - High blinking
 
 To configure the aux LEDs, go to the mode you want to configure and then
 click the button 7 times.  This should change the aux LEDs to the next
@@ -891,6 +893,7 @@ On most lights, the colors follow this sequence:
   - Disco (fast random colors)
   - Rainbow (cycles through all colors in order)
   - Voltage (uses color to display battery charge)
+  - Off (only light up the button LED if present)
 
 In voltage mode, the colors follow the same sequence, in the same order
 as a rainbow...  with red indicating a low battery and purple indicating

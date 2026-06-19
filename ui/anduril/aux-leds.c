@@ -21,35 +21,36 @@ void indicator_led_update(uint8_t mode, uint8_t tick) {
     //#ifdef USE_INDICATOR_LOW_BAT_WARNING
     #ifndef DUAL_VOLTAGE_FLOOR // this isn't set up for dual-voltage lights like the Sofirn SP10 Pro
     // fast blink a warning when battery is low but not critical
+    // use only low because high would drain the battery even quicker
     else if (voltage < VOLTAGE_RED) {
-        indicator_led(mode & (((tick & 0b0010)>>1) - 3));
+        indicator_led(!(tick & 2));
     }
     #endif
     //#endif
-    // normal steady output, 0/1/2 = off / low / high
-    else if ((mode & 0b00001111) < 3) {
-        indicator_led(mode);
-    }
-    // beacon-like blinky mode
     else {
-        #ifdef USE_OLD_BLINKING_INDICATOR
-
-        // basic blink, 1/8th duty cycle
-        if (! (tick & 7)) {
-            indicator_led(2);
-        }
-        else {
-            indicator_led(0);
-        }
-
-        #else
+        // Keep only relevant bits
+        mode &= INDICATOR_LED_CFG_MASK;
 
         // fancy blink, set off/low/high levels here:
-        static const uint8_t seq[] = {0, 1, 2, 1,  0, 0, 0, 0,
-                                      0, 0, 1, 0,  0, 0, 0, 0};
-        indicator_led(seq[tick & 15]);
+        static const uint8_t fancy_seq[] = {0, 1, 2, 1,  0, 0, 0, 0,
+                                            0, 0, 1, 0,  0, 0, 0, 0};
 
-        #endif  // ifdef USE_OLD_BLINKING_INDICATOR
+        uint8_t level = mode;
+        switch (mode) {
+            case 3:
+                // fancy blink
+                level = fancy_seq[tick & 15];
+                break;
+            #ifdef USE_EXTENDED_INDICATOR_PATTERNS
+            case 4:
+            case 5:
+                // low or high blink, 1/8th duty cycle
+                level = (tick & 7) ? 0 : mode - 3;
+                break;
+            #endif
+        }
+
+        indicator_led(level);
     }
 }
 #endif
@@ -138,7 +139,11 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
                    | (prev_level >= POST_OFF_VOLTAGE_BRIGHTNESS));
         #endif
         // voltage mode
-        color = RGB_LED_NUM_COLORS - 1;
+        color = RGB_LED_NUM_COLORS - 1
+            #ifdef USE_BUTTON_LED
+            -1
+            #endif
+            ;
     }
     #endif
 
@@ -159,6 +164,11 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
         }
         actual_color = pgm_read_byte(colors + rainbow);
     }
+    #ifdef USE_BUTTON_LED
+    else if (color == RGB_LED_NUM_COLORS - 1) {  // off
+        actual_color = 0;
+    }
+    #endif
     else {  // voltage
         // show actual voltage while asleep...
         if (go_to_standby) {
@@ -171,14 +181,22 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
         }
     }
 
-    // pick a brightness from the animation sequence
-    if (pattern == 3) {
-        // uses an odd length to avoid lining up with rainbow loop
-        static const uint8_t animation[] = {2, 1, 0, 0,  0, 0, 0, 0,  0,
-                                            1, 0, 0, 0,  0, 0, 0, 0,  0, 1};
-        frame = (frame + 1) % sizeof(animation);
-        pattern = animation[frame];
+    // uses an odd length to avoid lining up with rainbow loop
+    static const uint8_t animation[] = {2, 1, 0, 0,  0, 0, 0, 0,  0,
+                                        1, 0, 0, 0,  0, 0, 0, 0,  0, 1};
+
+    switch (pattern) {
+        case 3:
+            frame = (frame + 1) % sizeof(animation);
+            pattern = animation[frame];
+            break;
+        case 4:
+        case 5:
+            // low or high blink, 1/8th duty cycle
+            pattern = (arg & 7) ? 0 : pattern - 3;
+            break;
     }
+
     uint8_t result;
     #ifdef USE_BUTTON_LED
     uint8_t button_led_result;
