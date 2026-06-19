@@ -14,3 +14,9 @@ uint8_t lockout_state(Event event, uint16_t arg);
 uint8_t autolock_config_state(Event event, uint16_t arg);
 #endif
 
+#ifdef USE_LOCKOUT_2CLICK_TIMEOUT
+#ifndef DEFAULT_LOCKOUT_2CLICK_TIMEOUT
+// 0 = disabled; N = N*60 seconds lit after 2-click in lockout
+#define DEFAULT_LOCKOUT_2CLICK_TIMEOUT 0
+#endif
+#endif
