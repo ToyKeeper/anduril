@@ -27,6 +27,10 @@ volatile uint8_t adc_reset = 2;
 #ifndef VOLTAGE_RED
 #define VOLTAGE_RED (33*dV)
 #endif
+// battery is around 50% charge (~3.70V for Li-ion)
+#ifndef VOLTAGE_MEDIUM
+#define VOLTAGE_MEDIUM (37*dV)
+#endif
 // MCU sees voltage 0.X volts lower than actual, add X/2 to readings
 #ifndef VOLTAGE_FUDGE_FACTOR
 #ifdef USE_VOLTAGE_DIVIDER

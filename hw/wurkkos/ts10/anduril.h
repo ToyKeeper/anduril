@@ -9,6 +9,7 @@
 
 // uses forward-facing aux LEDs
 #define USE_INDICATOR_LED
+#define USE_INDICATOR_ANIMATION_MODES
 // don't turn on the aux LEDs while main LEDs are on
 #ifdef USE_INDICATOR_LED_WHILE_RAMPING
 #undef USE_INDICATOR_LED_WHILE_RAMPING

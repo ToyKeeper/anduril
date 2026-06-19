@@ -132,6 +132,7 @@ enum CHANNEL_MODES {
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
+#define USE_RGB_ANIMATION_MODES
 
 // Define e-switch Pin and ISR
 #ifndef SWITCH_PIN   // PD4

@@ -79,7 +79,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         }
         #endif  // ifdef USE_MANUAL_MEMORY_TIMER
         #if defined(USE_INDICATOR_LED)
-        indicator_led_update(cfg.indicator_led_mode >> 2, arg);
+        indicator_led_update(cfg.indicator_led_mode >> 4, arg);
         #elif defined(USE_AUX_RGB_LEDS)
         rgb_led_update(cfg.rgb_led_lockout_mode, arg);
         #endif
@@ -146,18 +146,18 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     // 7 clicks: rotate through indicator LED modes (lockout mode)
     else if (event == EV_7clicks) {
         #if defined(USE_INDICATOR_LED)
-            uint8_t mode = cfg.indicator_led_mode >> 2;
+            uint8_t mode = cfg.indicator_led_mode >> 4;
             #ifdef TICK_DURING_STANDBY
-            mode = (mode + 1) & 3;
+            mode = (mode + 1) % (INDICATOR_PATTERN_LAST - INDICATOR_PATTERN_FIRST + 1);
             #else
-            mode = (mode + 1) % 3;
+            mode = (mode + 1) % INDICATOR_PATTERN_BLINKING;  // exclude animated modes when no standby tick
             #endif
             #ifdef INDICATOR_LED_SKIP_LOW
             if (mode == 1) { mode ++; }
             #endif
-            cfg.indicator_led_mode = (mode << 2) + (cfg.indicator_led_mode & 0x03);
+            cfg.indicator_led_mode = (mode << 4) | (cfg.indicator_led_mode & 0x0f);
             // redundant, sleep tick does the same thing
-            //indicator_led_update(cfg.indicator_led_mode >> 2, arg);
+            //indicator_led_update(cfg.indicator_led_mode >> 4, arg);
         #elif defined(USE_AUX_RGB_LEDS)
         #endif
         save_config();
@@ -169,7 +169,15 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         uint8_t mode = (cfg.rgb_led_lockout_mode >> 4) + 1;
         mode = mode % RGB_LED_NUM_PATTERNS;
         cfg.rgb_led_lockout_mode = (mode << 4) | (cfg.rgb_led_lockout_mode & 0x0f);
+        // animated modes preview at LOW so they're visually distinct from static OFF/HIGH
+        #ifdef USE_RGB_ANIMATION_MODES
+        uint8_t preview = (mode >= RGB_PATTERN_HEARTBEAT)
+            ? ((RGB_PATTERN_LOW << 4) | (cfg.rgb_led_lockout_mode & 0x0f))
+            : cfg.rgb_led_lockout_mode;
+        rgb_led_update(preview, 0);
+        #else
         rgb_led_update(cfg.rgb_led_lockout_mode, 0);
+        #endif
         save_config();
         blink_once();
         return EVENT_HANDLED;

@@ -867,15 +867,22 @@ Aux LED modes typically include:
   - High
   - Blinking
 
+On lights with enough flash memory, additional animated modes are available:
+
+  - Heartbeat (lub-dub pattern: strong pulse, weaker pulse, long pause)
+  - Breathing (quick fade in, slow fade out, pause)
+  - Pulse (battery-level indicator: 1 low flash = good (>=50%), 2 low flashes = medium (<50%), then long pause)
+
 To configure the aux LEDs, go to the mode you want to configure and then
 click the button 7 times.  This should change the aux LEDs to the next
 mode supported on this light.
 
   - `7C`: Next aux LED mode.
 
-If the aux LEDs can change color, there are additional actions to change
-the color.  It is the same as above, but hold the button on the last
-click and then let go when the desired color is reached.
+On lights with RGB aux LEDs, each mode uses the currently selected color.
+This means Blinking, Heartbeat, Breathing, and Pulse all animate in the
+chosen color.  There are additional actions to change the color -- hold
+the button on the last click and release when the desired color is reached.
 
   - `7H`: Next aux LED color.
 

@@ -85,6 +85,7 @@
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
+#define USE_RGB_ANIMATION_MODES
 
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
