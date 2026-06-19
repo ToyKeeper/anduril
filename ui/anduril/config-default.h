@@ -223,3 +223,6 @@
 // (but allow disabling this feature per build)
 #define USE_CHANNEL_PER_STROBE
 
+// We want this bugfix on everything except the original t85 LT1 (because it doesn't fit)
+#define USE_TINT_RAMP_DIRECTION_FIX
+

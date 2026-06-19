@@ -98,6 +98,10 @@
 // party strobe, tac strobe, lightning, candle, bike
 #define DEFAULT_STROBE_CHANNELS  CM_BOTH,CM_BOTH,CM_AUTO,CM_AUTO,CM_AUTO
 
+// FIXME: This light has a known issue (https://github.com/ToyKeeper/anduril/issues/69)
+// but the fix doesn't fit on the t85, so disable it
+#undef USE_TINT_RAMP_DIRECTION_FIX
+
 // for consistency with other models
 #define USE_SOFT_FACTORY_RESET
 
