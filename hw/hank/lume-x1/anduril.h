@@ -70,6 +70,8 @@
 //**       THERMAL SETTINGS            **
 //***************************************
 
+#define AVRXMEGA3   // pulled from loneocean a9acd48 https://github.com/ToyKeeper/anduril/commit/a9acd48a86e3f63063fad6a41acf3a9cc11fdb5e
+
 // stop panicking at 6W (not sure of this numbers yet since it depends on the host..)
 #define THERM_FASTER_LEVEL 100  // about 6W
 #define MIN_THERM_STEPDOWN 60   // similar to single amc7135 in a 3V light
