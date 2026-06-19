@@ -97,5 +97,16 @@ uint8_t voltage_config_state(Event event, uint16_t arg) {
                              voltage_config_num_steps - 1,
                              voltage_config_save);
 }
+#else  // #ifdef USE_VOLTAGE_CORRECTION
+#ifdef USE_POST_OFF_VOLTAGE
+void voltage_config_save(uint8_t step, uint8_t value) {
+    if (value) cfg.post_off_voltage = value;
+}
+uint8_t voltage_config_state(Event event, uint16_t arg) {
+    #define VOLTAGE_CONFIG_STEPS  1
+    return config_state_base(event, arg,
+                             VOLTAGE_CONFIG_STEPS,
+                             voltage_config_save);
+}
+#endif  // #ifdef USE_POST_OFF_VOLTAGE
 #endif  // #ifdef USE_VOLTAGE_CORRECTION
-
