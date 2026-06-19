@@ -55,7 +55,8 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
 
     #ifdef USE_CUSTOM_CHANNEL_3H_MODES
     // defer to mode-specific function if defined
-    else if (channel_3H_modes[channel_mode]) {
+    else if ((event == EV_click3_hold || event == EV_click3_hold_release) &&
+            channel_3H_modes[channel_mode]) {
         StatePtr tint_func = channel_3H_modes[channel_mode];
         uint8_t err = tint_func(event, arg);
         if (EVENT_HANDLED == err) return EVENT_HANDLED;
