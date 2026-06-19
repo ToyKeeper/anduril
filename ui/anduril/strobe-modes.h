@@ -45,8 +45,8 @@ inline void strobe_state_iter();
 inline void party_tactical_strobe_mode_iter(uint8_t st);
 #endif
 
-#ifdef USE_POLICE_COLOR_STROBE_MODE
-inline void police_color_strobe_iter();
+#if defined(USE_POLICE_COLOR_STROBE_MODE) || defined(USE_CONSTRUCTION_COLOR_STROBE_MODE)
+inline void police_construction_color_strobe_iter(uint8_t st);
 #endif
 
 #ifdef USE_LIGHTNING_MODE

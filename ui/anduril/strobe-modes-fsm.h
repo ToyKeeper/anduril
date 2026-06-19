@@ -37,6 +37,9 @@ typedef enum {
     #ifdef USE_POLICE_COLOR_STROBE_MODE
     police_color_strobe_e,
     #endif
+    #ifdef USE_CONSTRUCTION_COLOR_STROBE_MODE
+    construction_color_strobe_e,
+    #endif
     #ifdef USE_LIGHTNING_MODE
     lightning_storm_e,
     #endif
