@@ -126,10 +126,16 @@ uint8_t config_state_base(
 
 uint8_t number_entry_state(Event event, uint16_t arg) {
     static uint8_t entry_step;
+    #ifdef USE_NUMBER_ENTRY_BIGNUM
+      uint8_t bignum_steps = 0;
+    #endif
 
     if (event == EV_enter_state) {
         number_entry_value = 0;
         entry_step = 0;
+        #ifdef USE_NUMBER_ENTRY_BIGNUM
+          bignum_steps = 0;
+        #endif
         set_level(0);  // initial pause should be dark
     }
 
@@ -170,17 +176,18 @@ uint8_t number_entry_state(Event event, uint16_t arg) {
         return EVENT_HANDLED;
     }
 
+//    #ifndef USE_NUMBER_ENTRY_BIGNUM
     // count clicks: click = +1, hold = +10
     else if ((event == EV_click1_release)
-            #ifdef USE_NUMBER_ENTRY_PLUS10
+            #if defined(USE_NUMBER_ENTRY_PLUS10) && !defined(USE_NUMBER_ENTRY_BIGNUM)
             || (event == EV_click1_hold_release)
             #endif
             ) {
         entry_step = 1;  // in case user clicked during initial delay
-        #ifdef USE_NUMBER_ENTRY_PLUS10
-            if (event == EV_click1_hold_release) number_entry_value += 10;
-            else
-        #endif
+          #if defined(USE_NUMBER_ENTRY_PLUS10) && !defined(USE_NUMBER_ENTRY_BIGNUM)
+              if (event == EV_click1_hold_release) number_entry_value += 10;
+              else
+          #endif
         number_entry_value ++;  // update the result
         empty_event_sequence();  // reset FSM's click count
         #ifdef CONFIG_BLINK_CHANNEL
@@ -189,6 +196,32 @@ uint8_t number_entry_state(Event event, uint16_t arg) {
         set_level(RAMP_SIZE/2);  // flash briefly
         return EVENT_HANDLED;
     }
+    #ifdef USE_NUMBER_ENTRY_BIGNUM
+    else if (event == EV_click1_hold){
+        if ((arg % (TICKS_PER_SECOND) == 0)){ // loop (roughly) every 1 second
+            // increment by 10 on the first pass (for a single hold for +10), then skip an increment
+            // for ~2 seconds to give a buffer for overholding, then start incrementing +10 each time
+            if ((!bignum_steps) || (bignum_steps > 3)){
+                //first time round. We don't rely on `arg` here as it will eventually wrap back round.
+                if (bignum_steps) bignum_steps++; //increment from 0 to activate the delay, but only the very first time
+                blip();
+                number_entry_value += 10;
+            }
+            else {
+                //second time round only, skip to give a delay before starting to add additional increments of 10
+                bignum_steps++; //increment again so we keep adding 10 each cycle
+            }
+        }
+        else return EVENT_HANDLED;
+    }
+    else if (event == EV_click1_hold_release){
+        #ifdef CONFIG_BLINK_CHANNEL
+        set_channel_mode(CONFIG_BLINK_CHANNEL);
+        #endif
+        set_level(RAMP_SIZE/2);  // flash briefly
+        return EVENT_HANDLED;
+    }
+    #endif
 
     // eat all other events; don't pass any through to parent
     return EVENT_HANDLED;
