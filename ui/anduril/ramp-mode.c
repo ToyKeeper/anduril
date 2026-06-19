@@ -290,8 +290,8 @@ uint8_t steady_state(Event event, uint16_t arg) {
         #ifdef USE_SET_LEVEL_GRADUALLY
         int16_t diff = gradual_target - actual_level;
         static uint16_t ticks_since_adjust = 0;
-        ticks_since_adjust++;
         if (diff) {
+            ticks_since_adjust++;
             uint16_t ticks_per_adjust = 256 / GRADUAL_ADJUST_SPEED;
             if (diff < 0) {
                 //diff = -diff;
@@ -315,7 +315,8 @@ uint8_t steady_state(Event event, uint16_t arg) {
                 gradual_tick();
                 ticks_since_adjust = 0;
             }
-        }
+        } else
+            ticks_since_adjust = 0;
         #endif  // ifdef USE_SET_LEVEL_GRADUALLY
         return EVENT_HANDLED;
     }
