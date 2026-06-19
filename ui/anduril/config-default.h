@@ -223,3 +223,10 @@
 // (but allow disabling this feature per build)
 #define USE_CHANNEL_PER_STROBE
 
+// if weak battery detection is enabled, this needs delay_zero
+#ifdef USE_WEAK_BATTERY_PROTECTION
+#ifndef USE_DELAY_ZERO
+#define USE_DELAY_ZERO
+#endif
+#endif
+

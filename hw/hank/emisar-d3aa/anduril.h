@@ -107,6 +107,7 @@
 
 // Misc
 
+#define USE_DELAY_ZERO  // needed for detect_weak_battery
 #define PARTY_STROBE_ONTIME 1  // slow down party strobe
 #define STROBE_OFF_LEVEL 1  // keep the regulator chip on between pulses
 
