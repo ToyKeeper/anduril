@@ -158,7 +158,40 @@ void indicator_led(uint8_t lvl) {
             #endif
             break;
 
-        #else  // MCU is old tiny style, not newer mega style
+        #elif (MCU==0x1634)  // for ATTINY1634 with a single AUX channel connected to one pin on a lume1 driver
+
+        case 0:  // indicator off
+            DDRA &= 0xff ^ (1 << AUXLED_PIN);
+            PUEA &= 0xff ^ (1 << AUXLED_PIN);
+            PORTA &= 0xff ^ (1 << AUXLED_PIN);
+            #ifdef AUXLED2_PIN  // second LED mirrors the first
+            DDRA &= 0xff ^ (1 << AUXLED2_PIN);
+            PUEA &= 0xff ^ (1 << AUXLED2_PIN);
+            PORTA &= 0xff ^ (1 << AUXLED2_PIN);
+            #endif
+            break;
+        case 1:  // indicator low
+            DDRA &= 0xff ^ (1 << AUXLED_PIN);
+            PUEA |= (1 << AUXLED_PIN);
+            PORTA |= (1 << AUXLED_PIN);
+            #ifdef AUXLED2_PIN  // second LED mirrors the first
+            DDRA &= 0xff ^ (1 << AUXLED2_PIN);
+            PUEA |= (1 << AUXLED2_PIN);
+            PORTA |= (1 << AUXLED2_PIN);
+            #endif
+            break;
+        default:  // indicator high
+            DDRA |= (1 << AUXLED_PIN);
+            PUEA |= (1 << AUXLED_PIN);
+            PORTA |= (1 << AUXLED_PIN);
+            #ifdef AUXLED2_PIN  // second LED mirrors the first
+            DDRA |= (1 << AUXLED2_PIN);
+            PUEA |= (1 << AUXLED2_PIN);
+            PORTA |= (1 << AUXLED2_PIN);
+            #endif
+            break;
+
+        #else  // MCU is old tiny style, not newer mega style nor is it ATTINY1634
 
         case 0:  // indicator off
             DDRB &= 0xff ^ (1 << AUXLED_PIN);
@@ -184,7 +217,7 @@ void indicator_led(uint8_t lvl) {
             PORTB |= (1 << AUXLED2_PIN);
             #endif
             break;
-
+            
         #endif  // MCU type
     }
 }
