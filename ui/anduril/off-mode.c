@@ -78,7 +78,16 @@ uint8_t off_state(Event event, uint16_t arg) {
         #ifdef USE_INDICATOR_LED
         indicator_led_update(cfg.indicator_led_mode & 0x03, arg);
         #elif defined(USE_AUX_RGB_LEDS)
+        #ifdef INDEPENDENT_AUX_RGB_LEDS
+        if (cfg.simple_ui_active == 1) {
+            rgb_led_update(cfg.rgb_led_simple_off_mode, arg);
+        }
+        else {
+            rgb_led_update(cfg.rgb_led_off_mode, arg);
+        }
+        #else
         rgb_led_update(cfg.rgb_led_off_mode, arg);
+        #endif
         #endif
 
         #ifdef USE_AUTOLOCK
@@ -285,10 +294,25 @@ uint8_t off_state(Event event, uint16_t arg) {
     #elif defined(USE_AUX_RGB_LEDS)
     // 7 clicks: change RGB aux LED pattern
     else if (event == EV_7clicks) {
+        #ifdef INDEPENDENT_AUX_RGB_LEDS
+        if (cfg.simple_ui_active == 1) {
+            uint8_t mode = (cfg.rgb_led_simple_off_mode >> 4) + 1;
+            mode = mode % RGB_LED_NUM_PATTERNS;
+            cfg.rgb_led_simple_off_mode = (mode << 4) | (cfg.rgb_led_simple_off_mode & 0x0f);
+            rgb_led_update(cfg.rgb_led_simple_off_mode, 0);
+        }
+        else {
+            uint8_t mode = (cfg.rgb_led_off_mode >> 4) + 1;
+            mode = mode % RGB_LED_NUM_PATTERNS;
+            cfg.rgb_led_off_mode = (mode << 4) | (cfg.rgb_led_off_mode & 0x0f);
+            rgb_led_update(cfg.rgb_led_off_mode, 0);
+        }
+        #else
         uint8_t mode = (cfg.rgb_led_off_mode >> 4) + 1;
         mode = mode % RGB_LED_NUM_PATTERNS;
         cfg.rgb_led_off_mode = (mode << 4) | (cfg.rgb_led_off_mode & 0x0f);
         rgb_led_update(cfg.rgb_led_off_mode, 0);
+        #endif
         save_config();
         blink_once();
         return EVENT_HANDLED;
@@ -296,6 +320,26 @@ uint8_t off_state(Event event, uint16_t arg) {
     // 7 clicks (hold last): change RGB aux LED color
     else if (event == EV_click7_hold) {
         setting_rgb_mode_now = 1;
+        #ifdef INDEPENDENT_AUX_RGB_LEDS
+        if (0 == (arg & 0x3f)) {
+            if (cfg.simple_ui_active == 1) {
+                uint8_t mode = (cfg.rgb_led_simple_off_mode & 0x0f) + 1;
+                mode = mode % RGB_LED_NUM_COLORS;
+                cfg.rgb_led_simple_off_mode = mode | (cfg.rgb_led_simple_off_mode & 0xf0);
+            }
+            else {
+                uint8_t mode = (cfg.rgb_led_off_mode & 0x0f) + 1;
+                mode = mode % RGB_LED_NUM_COLORS;
+                cfg.rgb_led_off_mode = mode | (cfg.rgb_led_off_mode & 0xf0);
+            }
+        }
+        if (cfg.simple_ui_active == 1) {
+            rgb_led_update(cfg.rgb_led_simple_off_mode, arg);
+        }
+        else {
+            rgb_led_update(cfg.rgb_led_off_mode, arg);
+        }
+        #else
         if (0 == (arg & 0x3f)) {
             uint8_t mode = (cfg.rgb_led_off_mode & 0x0f) + 1;
             mode = mode % RGB_LED_NUM_COLORS;
@@ -303,6 +347,7 @@ uint8_t off_state(Event event, uint16_t arg) {
             //save_config();
         }
         rgb_led_update(cfg.rgb_led_off_mode, arg);
+        #endif
         return EVENT_HANDLED;
     }
     else if (event == EV_click7_hold_release) {
