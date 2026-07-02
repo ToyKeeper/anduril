@@ -46,16 +46,22 @@
 // channel modes:
 // * 0. main LEDs
 // * 1+. aux RGB
-#define NUM_CHANNEL_MODES   (1 + NUM_RGB_AUX_CHANNEL_MODES)
+#define NUM_CHANNEL_MODES   (2 + NUM_RGB_AUX_CHANNEL_MODES)
 enum CHANNEL_MODES {
     CM_MAIN = 0,
+    CM_HSV,
     RGB_AUX_ENUMS
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b0000000000000001
+#define CHANNEL_MODES_ENABLED  0b0000000000000001
+#define USE_CHANNEL_MODE_ARGS
+#define CHANNEL_MODE_ARGS  0,0,RGB_AUX_CM_ARGS
+#define USE_CUSTOM_CHANNEL_3H_MODES
+#define USE_CIRCULAR_TINT_3H
+#define USE_HSV2RGB
 
 //***************************************
 //**       SET UP DAC AND PWM          **
@@ -69,6 +75,8 @@ enum CHANNEL_MODES {
 #define PWM1_GET(x)   PWM_GET16(pwm1_levels, x)
 #define PWM2_DATATYPE uint8_t   // DAC Vref table (4/6 options)
 #define PWM2_GET(x)   PWM_GET8(pwm2_levels, x)
+#define PWM3_DATATYPE uint8_t   // aux RGB ramp
+#define PWM3_GET(x)   PWM_GET8(pwm3_levels, x)
 
 //***************************************
 //**         PIN DEFINITIONS           **
@@ -121,14 +129,19 @@ enum CHANNEL_MODES {
 
 #define AUXLED_RGB_PORT PORTA
 
-/*
-#define AUXLED_R_PORT   PORTA
-#define AUXLED_G_PORT   PORTA
-#define AUXLED_B_PORT   PORTA
+// aux RGB PWM
+#define CH_R_PIN  PA1
+//#define CH_R_PWM  TCA0.SINGLE.CMP1BUF
+#define CH_R_PWM  TCA0.SPLIT.LCMP1
+#define CH_G_PIN  PA2
+//#define CH_G_PWM  TCA0.SINGLE.CMP2BUF
+#define CH_G_PWM  TCA0.SPLIT.LCMP2
+#define CH_B_PIN  PA3
+//#define CH_B_PWM  TCA0.SINGLE.CMP0BUF
+#define CH_B_PWM  TCA0.SPLIT.HCMP0
 
-// if aux leds are on different ports
-#define AUXLED_RGB_DIFFERENT_PORTS
-*/
+//#define PWM_RGB_TOP       TCA0.SINGLE.PERBUF
+#define PWM_RGB_TOP_INIT  255
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS
@@ -158,8 +171,9 @@ inline void hwdef_setup() {
     mcu_clock_speed();
 
     // set output pins
-    VPORTA.DIR = PIN1_bm | PIN2_bm | PIN3_bm |
-                 PIN4_bm | PIN5_bm | PIN6_bm | PIN7_bm;
+    VPORTA.DIR = PIN1_bm | PIN2_bm | PIN3_bm |  // aux RGB
+                 PIN4_bm |  // aux button LED
+                 PIN5_bm | PIN6_bm | PIN7_bm;  // high/low/moon path
     VPORTC.DIR = PIN1_bm;
     VPORTD.DIR = PIN6_bm;
 
@@ -206,6 +220,40 @@ inline void hwdef_setup() {
     //       to generate a zero without spending power on the DAC
     //       (and do this in set_level_zero() too)
 
+    // set up the PWM for aux RGB
+    // AVR32_16DD20_14_Prel_DataSheet_DS40002413-2997818.pdf
+    // data sheet section 23.4 Register Summary - Normal Mode
+    // PA1 is TCA0:WO1, use TCA_SINGLE_CMP1EN_bm
+    // PA2 is TCA0:WO2, use TCA_SINGLE_CMP2EN_bm
+    // PA3 is TCA0:WO3, only available in split mode (i.e. this doesn't work)
+    // For Fast (Single Slope) PWM use TCA_SINGLE_WGMODE_SINGLESLOPE_gc
+    // For Phase Correct (Dual Slope) PWM use TCA_SINGLE_WGMODE_DSBOTTOM_gc
+    // See the manual for other pins, clocks, configs, portmux, etc
+    //TCA0.SINGLE.CTRLB = TCA_SINGLE_CMP0EN_bm
+    //                  | TCA_SINGLE_CMP1EN_bm
+    //                  | TCA_SINGLE_CMP2EN_bm
+    //                  | TCA_SINGLE_WGMODE_DSBOTTOM_gc;
+    //TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc
+    //                  | TCA_SINGLE_ENABLE_bm;
+    //PWM_RGB_TOP = PWM_RGB_TOP_INIT;
+
+    // data sheet section 23.6 Register Summary - Split Mode
+    // PA1 is TCA0:WO1, use TCA_SPLIT_LCMP1EN_bm
+    // PA2 is TCA0:WO2, use TCA_SPLIT_LCMP2EN_bm
+    // PA3 is TCA0:WO3, use TCA_SPLIT_HCMP0EN_bm
+    // PWM is locked by hardware to single-slope fast mode only
+    // set split mode
+    TCA0.SPLIT.CTRLD = TCA_SPLIT_SPLITM_bm;
+    // must set period for both counters individually
+    TCA0.SPLIT.LPER = PWM_RGB_TOP_INIT;
+    TCA0.SPLIT.HPER = PWM_RGB_TOP_INIT;
+    // enable the comparators we need
+    TCA0.SPLIT.CTRLB = TCA_SPLIT_LCMP1EN_bm
+                     | TCA_SPLIT_LCMP2EN_bm
+                     | TCA_SPLIT_HCMP0EN_bm;
+    // enable and start
+    TCA0.SPLIT.CTRLA = TCA_SPLIT_CLKSEL_DIV1_gc
+                     | TCA_SPLIT_ENABLE_bm;
 }
 
 // set fuses, these carry over to the ELF file

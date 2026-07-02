@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "anduril/channel-modes.h"  // for circular_tint_3h()
 #include "fsm/chan-rgbaux.c"
 
 // Declare variables and functions to support UDR multiple power paths
@@ -18,17 +19,33 @@ void set_level_udr(uint8_t level);
 bool gradual_tick_main(uint8_t gt);
 void set_power_path(uint8_t ramp_level);
 
+void enable_aux_rgb_pwm();
+void disable_aux_rgb_pwm();
+void set_rgb(uint8_t r, uint8_t g, uint8_t b);
+void set_level_hsv(uint8_t level);
+bool gradual_tick_hsv(uint8_t gt);
+
 Channel channels[] = {
     { // main LEDs
         .set_level    = set_level_udr,
-        .gradual_tick = gradual_tick_main
+        .gradual_tick = gradual_tick_main,
+        .has_args = 0
+    },
+    { // aux RGB LEDs
+        .set_level    = set_level_hsv,
+        .gradual_tick = gradual_tick_hsv,
+        .has_args = 1
     },
     RGB_AUX_CHANNELS
 };
 
+// HSV mode needs a different 3H handler
+StatePtr channel_3H_modes[NUM_CHANNEL_MODES] = {
+    NULL, circular_tint_3h,
+};
+
 // turn off
 void set_level_zero() {
-
     DAC_LVL  = 0;           // set DAC to 0
     DAC_VREF = V10;         // set DAC Vref to lowest
 
@@ -40,6 +57,9 @@ void set_level_zero() {
     LED_PATH1_PORT &= ~LED_PATH1_PIN;
     LED_PATH2_PORT &= ~LED_PATH2_PIN;
     LED_PATH3_PORT &= ~LED_PATH3_PIN;
+
+    // turn off PWM for aux RGB
+    disable_aux_rgb_pwm();
 }
 
 // UDR for set_level, which sets the led brightness based on ramp tables.
@@ -90,8 +110,7 @@ bool gradual_tick_main(uint8_t gt) {
 }
 
 // handles dynamic power pathways based on threshold levels
-void set_power_path(uint8_t ramp_level){
-
+void set_power_path(uint8_t ramp_level) {
     ramp_level ++;  // convert to 1-based indexing
 
     if (ramp_level >= LED_PATH3_PIN_LEVEL_MIN) {
@@ -112,5 +131,65 @@ void set_power_path(uint8_t ramp_level){
         LED_PATH2_PORT &= ~LED_PATH2_PIN;
         LED_PATH3_PORT &= ~LED_PATH3_PIN;
     }
+}
+
+
+///// RGB aux PWM stuff
+
+void enable_aux_rgb_pwm() {
+    TCA0.SPLIT.CTRLD = TCA_SPLIT_SPLITM_bm;
+    TCA0.SPLIT.LPER = PWM_RGB_TOP_INIT;
+    TCA0.SPLIT.HPER = PWM_RGB_TOP_INIT;
+    TCA0.SPLIT.CTRLB = TCA_SPLIT_LCMP1EN_bm
+                     | TCA_SPLIT_LCMP2EN_bm
+                     | TCA_SPLIT_HCMP0EN_bm;
+    TCA0.SPLIT.CTRLA = TCA_SPLIT_CLKSEL_DIV1_gc
+                     | TCA_SPLIT_ENABLE_bm;
+}
+
+void disable_aux_rgb_pwm() {
+    TCA0.SINGLE.CTRLB = 0;
+    TCA0.SINGLE.CTRLA = 0;
+}
+
+void set_rgb(uint8_t r, uint8_t g, uint8_t b) {
+    CH_R_PWM = r;
+    CH_G_PWM = g;
+    CH_B_PWM = b;
+}
+
+bool gradual_adjust_rgb(PWM3_DATATYPE r, PWM3_DATATYPE g, PWM3_DATATYPE b) {
+    GRADUAL_ADJUST_SIMPLE(r, CH_R_PWM);
+    GRADUAL_ADJUST_SIMPLE(g, CH_G_PWM);
+    GRADUAL_ADJUST_SIMPLE(b, CH_B_PWM);
+
+    if ((r == CH_R_PWM)
+     && (g == CH_G_PWM)
+     && (b == CH_B_PWM)) {
+        return true;  // done
+    }
+    return false;  // not done yet
+}
+
+void set_level_hsv(uint8_t level) {
+    RGB_t color;
+    uint8_t h = cfg.channel_mode_args[channel_mode];
+    uint8_t s = 255;  // TODO: drop saturation at brightest levels
+    PWM3_DATATYPE v = PWM3_GET(level);
+    color = hsv2rgb(h, s, v);
+
+    enable_aux_rgb_pwm();
+    set_rgb(color.r, color.g, color.b);
+}
+
+bool gradual_tick_hsv(uint8_t gt) {
+    // figure out what exact PWM levels we're aiming for
+    RGB_t color;
+    uint8_t h = cfg.channel_mode_args[channel_mode];
+    uint8_t s = 255;  // TODO: drop saturation at brightest levels
+    PWM3_DATATYPE v = PWM3_GET(gt);
+    color = hsv2rgb(h, s, v);
+
+    return gradual_adjust_rgb(color.r, color.g, color.b);
 }
 
