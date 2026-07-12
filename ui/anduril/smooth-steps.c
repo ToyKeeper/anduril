@@ -14,7 +14,8 @@ void smooth_steps_iter() {
         set_level(smooth_steps_target);
         smooth_steps_in_progress = 0;
         // restore prev_level when animation ends
-        prev_level = smooth_steps_start;
+        if (smooth_steps_start)
+            prev_level = smooth_steps_start;
     }
     else if (smooth_steps_target > actual_level) {
         // power-linear(ish) ascent

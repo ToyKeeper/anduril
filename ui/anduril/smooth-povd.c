@@ -12,10 +12,12 @@
 #define MS_PER_TICK  16  // FIXME: this should be defined elsewhere
 
 uint8_t smooth_povd_state(Event event, uint16_t arg) {
-    // 0 = ramp-up
-    // 1 = steady
-    // 2 = ramp-down
-    // 3+ = done, exit
+    // phase 0..15: wait before starting
+    // 16 = ramp-up
+    // 17 = steady
+    // 18 = ramp-down
+    // 19+ = done, exit
+    #define smooth_povd_phase_start  (256 / MS_PER_TICK)
     static uint8_t phase = 0;
     static uint8_t  brightness;
     static uint8_t povd_brightness;
@@ -49,13 +51,13 @@ uint8_t smooth_povd_state(Event event, uint16_t arg) {
     else if (event == EV_leave_state) {
         RGB_t color = { .r=0, .g=0, .b=0 };
         set_level_rgbaux(color);
-        //set_level(0);
+        set_level(0);
         return EVENT_HANDLED;
     }
 
     // any button press event: abort and let event fall through
     // (also abort if animation complete)
-    else if ((event & B_CLICK) || (phase > 2)) {
+    else if ((event & B_CLICK) || (phase > (2 + smooth_povd_phase_start))) {
         //set_level_zero();
         //if (smooth_povd_state == current_state) pop_state();
         pop_state();
@@ -76,8 +78,12 @@ uint8_t smooth_povd_state(Event event, uint16_t arg) {
         }
         else { ADC_voltage_handler(); }  // update 'voltage'
 
+        // wait a moment before starting
+        if (phase < smooth_povd_phase_start) {
+            phase ++;
+        }
         // ramp up
-        if (0 == phase) {
+        else if ((0 + smooth_povd_phase_start) == phase) {
             // fading in
             if (povd_brightness > brightness) {
                 // power-linear(ish) ascent
@@ -90,12 +96,12 @@ uint8_t smooth_povd_state(Event event, uint16_t arg) {
             else { phase ++; }
         }
         // steady / main read-out
-        else if (1 == phase) {
+        else if ((1 + smooth_povd_phase_start) == phase) {
             ticks --;
             if (! ticks) phase ++;
         }
         // ramp down
-        else if (2 == phase) {
+        else if ((2 + smooth_povd_phase_start) == phase) {
             if (brightness > 8) {
                 brightness -= 8;
             }
