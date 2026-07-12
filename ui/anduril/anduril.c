@@ -150,6 +150,10 @@
 #include "anduril/smooth-steps.h"
 #endif
 
+#ifdef USE_SMOOTH_POVD
+#include "anduril/smooth-povd.h"
+#endif
+
 // this should be last, so other headers have a chance to declare values
 #include "anduril/load-save-config.h"
 
@@ -217,9 +221,15 @@
 #include "anduril/smooth-steps.c"
 #endif
 
+#ifdef USE_SMOOTH_POVD
+#include "anduril/smooth-povd.c"
+#endif
+
 
 // runs one time at boot, when power is connected
 void setup() {
+
+    just_booted = 1;
 
     #ifndef START_AT_MEMORIZED_LEVEL
 

@@ -56,6 +56,7 @@ void debug_blink(uint8_t num) {
 
 // Define these in your SpaghettiMonster recipe
 // boot-time tasks
+uint8_t just_booted;
 void setup();
 // single loop iteration, runs continuously
 void loop();

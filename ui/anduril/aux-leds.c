@@ -66,25 +66,27 @@ uint8_t voltage_to_rgb() {
 }
 
 #ifdef USE_SMOOTH_POVD
-RGB8_t voltage_to_rgb8 () {
+RGB_t voltage_to_rgb_t (rgb_uint_t brightness) {
     // calculate in-between voltage colors
     // by doing linear interpolation between voltage_colors[] entries
 
+    // adjust down by 0.06V to better match non-smooth povd colors
+    //uint8_t volts = voltage - (dV * 3 / 5);
     uint8_t volts = voltage;
 
-    RGB8_t color;
+    RGB_t color;
     uint8_t i;
     for (i = 0;  volts >= pgm_read_byte(voltage_colors + i);  i += 2) {}
-    uint8_t voltage_low = pgm_read_byte(voltage_colors + (i - 2));
-    uint8_t voltage_hi = pgm_read_byte(voltage_colors + (i));
+    uint8_t voltage_low   = pgm_read_byte(voltage_colors + (i - 2));
     uint8_t color_num_low = pgm_read_byte(voltage_colors + (i - 2) + 1);
-    uint8_t color_num_hi = pgm_read_byte(voltage_colors + (i) + 1);
+    uint8_t voltage_hi    = pgm_read_byte(voltage_colors + (i + 0));
+    uint8_t color_num_hi  = pgm_read_byte(voltage_colors + (i + 0) + 1);
     uint8_t color_low = pgm_read_byte(rgb_led_colors + color_num_low);
-    uint8_t color_hi = pgm_read_byte(rgb_led_colors + color_num_hi);
+    uint8_t color_hi  = pgm_read_byte(rgb_led_colors + color_num_hi);
     // 0 to N-1 where 0 = low color and N = hi color
     // (N is 5 minimum, or 20 max usually, but may occasionally be 50+)
     uint8_t steps = voltage_hi - voltage_low;
-    uint8_t levels_per_step = RAMP_SIZE / steps;
+    rgb_uint_t levels_per_step = brightness / steps;
     uint8_t ratio = voltage - voltage_low;
     color.r = (levels_per_step * ratio * (color_hi & 0b00000001))
         + (levels_per_step * (steps - ratio) * (color_low & 0b00000001));
@@ -92,6 +94,12 @@ RGB8_t voltage_to_rgb8 () {
         + (levels_per_step * (steps - ratio) * ((color_low & 0b00000100) >> 2));
     color.b = (levels_per_step * ratio * ((color_hi & 0b00010000) >> 4))
         + (levels_per_step * (steps - ratio) * ((color_low & 0b00010000) >> 4));
+
+    // scale to requested brightness
+    //color.r = (uint16_t)color.r * brightness / RGB_MAX;
+    //color.g = (uint16_t)color.g * brightness / RGB_MAX;
+    //color.b = (uint16_t)color.b * brightness / RGB_MAX;
+
     return color;
 }
 #endif
@@ -124,7 +132,7 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
     // always preview in high mode
     if (setting_rgb_mode_now) { pattern = 2; }
 
-    #ifdef USE_POST_OFF_VOLTAGE
+    #if defined(USE_POST_OFF_VOLTAGE) && (!defined(USE_SMOOTH_POVD))
     // use voltage high mode for a few seconds after initial poweroff
     // (but not after changing aux LED settings and other similar actions)
     else if ((arg < (cfg.post_off_voltage * SLEEP_TICKS_PER_SECOND))

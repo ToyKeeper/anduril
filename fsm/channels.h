@@ -95,12 +95,29 @@ void calc_2ch_blend(
 #endif
 
 #ifdef USE_HSV2RGB
-typedef struct RGB_t {
+typedef struct RGB8_t {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+} RGB8_t;
+
+typedef struct RGB16_t {
     uint16_t r;
     uint16_t g;
     uint16_t b;
-} RGB_t;
-RGB_t hsv2rgb(uint8_t h, uint8_t s, uint16_t v);
+} RGB16_t;
+
+#if (8==RGB_BITS)
+#define RGB_t  RGB8_t
+#define rgb_uint_t  uint8_t
+#define RGB_MAX  255
+#else
+#define RGB_t  RGB16_t
+#define rgb_uint_t  uint16_t
+#define RGB_MAX  65535
+#endif
+
+RGB_t hsv2rgb(uint8_t h, uint8_t s, rgb_uint_t v);
 #endif  // ifdef USE_HSV2RGB
 
 

@@ -130,6 +130,7 @@ enum CHANNEL_MODES {
 #define AUXLED_RGB_PORT PORTA
 
 // aux RGB PWM
+#define RGB_BITS  8
 #define CH_R_PIN  PA1
 //#define CH_R_PWM  TCA0.SINGLE.CMP1BUF
 #define CH_R_PWM  TCA0.SPLIT.LCMP1

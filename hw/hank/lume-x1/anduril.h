@@ -93,6 +93,8 @@
 //#undef USE_INDICATOR_LED_WHILE_RAMPING
 //#endif
 
+#define USE_SMOOTH_POVD
+
 
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS

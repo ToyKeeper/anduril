@@ -152,10 +152,16 @@ void disable_aux_rgb_pwm() {
     TCA0.SINGLE.CTRLA = 0;
 }
 
-void set_rgb(uint8_t r, uint8_t g, uint8_t b) {
-    CH_R_PWM = r;
-    CH_G_PWM = g;
-    CH_B_PWM = b;
+//void set_rgb(uint8_t r, uint8_t g, uint8_t b) {
+void set_level_rgbaux(RGB8_t color) {
+    if (! TCA0.SINGLE.CTRLA) { enable_aux_rgb_pwm(); }
+    // convert ramp level to raw PWM value
+    if (color.r) color.r = PWM3_GET(color.r - 1);
+    if (color.g) color.g = PWM3_GET(color.g - 1);
+    if (color.b) color.b = PWM3_GET(color.b - 1);
+    CH_R_PWM = color.r;
+    CH_G_PWM = color.g;
+    CH_B_PWM = color.b;
 }
 
 bool gradual_adjust_rgb(PWM3_DATATYPE r, PWM3_DATATYPE g, PWM3_DATATYPE b) {
@@ -179,7 +185,7 @@ void set_level_hsv(uint8_t level) {
     color = hsv2rgb(h, s, v);
 
     enable_aux_rgb_pwm();
-    set_rgb(color.r, color.g, color.b);
+    set_level_rgbaux(color);
 }
 
 bool gradual_tick_hsv(uint8_t gt) {

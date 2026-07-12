@@ -24,6 +24,13 @@ uint8_t off_state(Event event, uint16_t arg) {
             // don't go to sleep while animating
             arg |= smooth_steps_in_progress;
         #endif
+        #ifdef USE_SMOOTH_POVD
+            //if (cfg.post_off_voltage && (! just_booted)) {
+            if (cfg.post_off_voltage) {
+                arg |= 1;
+                push_state(smooth_povd_state, 0);
+            }
+        #endif
         ticks_since_on = 0;
         #if NUM_CHANNEL_MODES > 1
             // reset to ramp mode's channel when light turns off
@@ -42,6 +49,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         // sleep while off  (lower power use)
         // (unless delay requested; give the ADC some time to catch up)
         if (! arg) { go_to_standby = 1; }
+        just_booted = 0;
         return EVENT_HANDLED;
     }
 

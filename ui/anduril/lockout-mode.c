@@ -53,6 +53,12 @@ uint8_t lockout_state(Event event, uint16_t arg) {
         #elif defined(USE_AUX_RGB_LEDS)
             rgb_led_update(cfg.rgb_led_lockout_mode, 0);
         #endif
+        #ifdef USE_SMOOTH_POVD
+            if (cfg.post_off_voltage) {
+                //arg |= 1;
+                push_state(smooth_povd_state, 0);
+            }
+        #endif
     }
 
     else if (event == EV_tick) {

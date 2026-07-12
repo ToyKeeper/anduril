@@ -1,0 +1,126 @@
+// smooth-povd.c: Smooth post-off voltage display
+// Copyright (C) 2026 Selene ToyKeeper
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+#pragma once
+
+#include "anduril/smooth-povd.h"
+
+#ifdef USE_SMOOTH_POVD
+
+//#define povd_brightness  RAMP_SIZE
+#define MS_PER_TICK  16  // FIXME: this should be defined elsewhere
+
+uint8_t smooth_povd_state(Event event, uint16_t arg) {
+    // 0 = ramp-up
+    // 1 = steady
+    // 2 = ramp-down
+    // 3+ = done, exit
+    static uint8_t phase = 0;
+    static uint8_t  brightness;
+    static uint8_t povd_brightness;
+    static uint16_t ticks;
+
+    // instead of using hard thresholds, ramp brightness down
+    #ifdef USE_AUX_THRESHOLD_CONFIG
+        if (prev_level < cfg.button_led_low_ramp_level) povd_brightness = 0;
+        else if (prev_level < cfg.button_led_high_ramp_level) {
+            povd_brightness = RAMP_SIZE
+                * (prev_level - cfg.button_led_low_ramp_level)
+                / (cfg.button_led_high_ramp_level - cfg.button_led_low_ramp_level);
+        }
+    #else
+        if (prev_level < POST_OFF_VOLTAGE_BRIGHTNESS) {
+            povd_brightness = RAMP_SIZE
+                * prev_level
+                / POST_OFF_VOLTAGE_BRIGHTNESS;
+        }
+    #endif
+    else povd_brightness = RAMP_SIZE;
+
+    if (event == EV_enter_state) {
+        phase = 0;
+        brightness = 0;
+        ticks = cfg.post_off_voltage * (1000 / MS_PER_TICK);
+        //ticks = cfg.post_off_voltage * (1000 / 4);
+        return EVENT_HANDLED;
+    }
+
+    else if (event == EV_leave_state) {
+        RGB_t color = { .r=0, .g=0, .b=0 };
+        set_level_rgbaux(color);
+        //set_level(0);
+        return EVENT_HANDLED;
+    }
+
+    // any button press event: abort and let event fall through
+    // (also abort if animation complete)
+    else if ((event & B_CLICK) || (phase > 2)) {
+        //set_level_zero();
+        //if (smooth_povd_state == current_state) pop_state();
+        pop_state();
+        return EVENT_NOT_HANDLED;
+    }
+
+    #ifdef USE_SMOOTH_STEPS
+    // wait for main LED animation to finish
+    else if (smooth_steps_in_progress) return EVENT_HANDLED;
+    #endif
+
+    // clock tick: animate
+    else if (event == EV_tick) {
+        // force ADC into voltage mode, and update 'voltage' var
+        if (adc_channel) {  // force voltage, not temperature
+            adc_voltage_mode();
+            return EVENT_HANDLED;
+        }
+        else { ADC_voltage_handler(); }  // update 'voltage'
+
+        // ramp up
+        if (0 == phase) {
+            // fading in
+            if (povd_brightness > brightness) {
+                // power-linear(ish) ascent
+                // (jump by ~20% of remaining distance on each frame)
+                uint8_t diff = povd_brightness - brightness;
+                uint8_t this = diff / smooth_povd_speed;
+                if (!this) this = 1;
+                brightness += this;
+            }
+            else { phase ++; }
+        }
+        // steady / main read-out
+        else if (1 == phase) {
+            ticks --;
+            if (! ticks) phase ++;
+        }
+        // ramp down
+        else if (2 == phase) {
+            if (brightness > 8) {
+                brightness -= 8;
+            }
+            else {
+                brightness = 0;
+                phase ++;
+            }
+        }
+        //// done
+        //// (should never reach this point)
+        //else {
+        //    set_level_zero();
+        //    pop_state();
+        //}
+
+        // draw this frame
+        RGB_t color;
+        color = voltage_to_rgb_t(brightness);
+        set_level_rgbaux(color);
+
+        return EVENT_HANDLED;
+    }
+
+    return EVENT_HANDLED;
+}
+
+#endif  // ifdef USE_SMOOTH_POVD
+

@@ -88,7 +88,7 @@ void calc_2ch_blend(
 
 
 #ifdef USE_HSV2RGB
-RGB_t hsv2rgb(uint8_t h, uint8_t s, uint16_t v) {
+RGB_t hsv2rgb(uint8_t h, uint8_t s, rgb_uint_t v) {
     RGB_t color;
 
     if (s == 0) {  // grey
@@ -98,7 +98,7 @@ RGB_t hsv2rgb(uint8_t h, uint8_t s, uint16_t v) {
 
     uint8_t region;
     uint16_t fpart;
-    uint16_t high, low, rising, falling;
+    rgb_uint_t high, low, rising, falling;
 
     // hue has 6 segments, 0-5
     region = ((uint16_t)h * 6) >> 8;

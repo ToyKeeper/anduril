@@ -3,18 +3,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-typedef struct RGB8_t {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-} RGB8_t;
-
-typedef struct RGB16_t {
-    uint16_t r;
-    uint16_t g;
-    uint16_t b;
-} RGB16_t;
-
 #if defined(USE_INDICATOR_LED) && defined(TICK_DURING_STANDBY)
 void indicator_led_update(uint8_t mode, uint8_t tick);
 #endif
@@ -22,6 +10,9 @@ void indicator_led_update(uint8_t mode, uint8_t tick);
 uint8_t setting_rgb_mode_now = 0;
 void rgb_led_update(uint8_t mode, uint16_t arg);
 void rgb_led_voltage_readout(uint8_t bright);
+#ifdef USE_SMOOTH_POVD
+RGB_t voltage_to_rgb_t (rgb_uint_t brightness);
+#endif
 /*
  * 0: R
  * 1: RG
@@ -48,6 +39,7 @@ const PROGMEM uint8_t voltage_colors[] = {
         0, 0, // black
     #ifdef DUAL_VOLTAGE_FLOOR
     // AA / NiMH voltages
+     8*dV, 0, // black
      9*dV, 1, // R
     10*dV, 2, // R+G
     11*dV, 3, //   G
@@ -58,7 +50,8 @@ const PROGMEM uint8_t voltage_colors[] = {
     20*dV, 0, // black
     #endif
     // li-ion voltages
-    29*dV, 1, // R
+    29*dV, 0, // black
+    30*dV, 1, // R
     33*dV, 2, // R+G
     35*dV, 3, //   G
     37*dV, 4, //   G+B
