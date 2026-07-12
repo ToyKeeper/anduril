@@ -3,6 +3,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
+typedef struct RGB8_t {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+} RGB8_t;
+
+typedef struct RGB16_t {
+    uint16_t r;
+    uint16_t g;
+    uint16_t b;
+} RGB16_t;
+
 #if defined(USE_INDICATOR_LED) && defined(TICK_DURING_STANDBY)
 void indicator_led_update(uint8_t mode, uint8_t tick);
 #endif
@@ -31,6 +43,31 @@ const PROGMEM uint8_t rgb_led_colors[] = {
     0b00010001,  // 6: purple
     0b00010101,  // 7: white
 };
+const PROGMEM uint8_t voltage_colors[] = {
+    // voltage, color
+        0, 0, // black
+    #ifdef DUAL_VOLTAGE_FLOOR
+    // AA / NiMH voltages
+     9*dV, 1, // R
+    10*dV, 2, // R+G
+    11*dV, 3, //   G
+    12*dV, 4, //   G+B
+    13*dV, 5, //     B
+    14*dV, 6, // R + B
+    16*dV, 7, // R+G+B
+    20*dV, 0, // black
+    #endif
+    // li-ion voltages
+    29*dV, 1, // R
+    33*dV, 2, // R+G
+    35*dV, 3, //   G
+    37*dV, 4, //   G+B
+    39*dV, 5, //     B
+    41*dV, 6, // R + B
+    44*dV, 7, // R+G+B  // skip; looks too similar to G+B
+      255, 7, // R+G+B
+};
+
 // intentionally 1 higher than total modes, to make "voltage" easier to reach
 // (at Hank's request)
 #define RGB_LED_NUM_COLORS 11

@@ -56,38 +56,45 @@ void indicator_led_update(uint8_t mode, uint8_t tick) {
 
 #if defined(USE_AUX_RGB_LEDS) && defined(TICK_DURING_STANDBY)
 uint8_t voltage_to_rgb() {
-    static const uint8_t levels[] = {
-    // voltage, color
-            0, 0, // black
-        #ifdef DUAL_VOLTAGE_FLOOR
-        // AA / NiMH voltages
-         9*dV, 1, // R
-        10*dV, 2, // R+G
-        11*dV, 3, //   G
-        12*dV, 4, //   G+B
-        13*dV, 5, //     B
-        14*dV, 6, // R + B
-        16*dV, 7, // R+G+B
-        20*dV, 0, // black
-        #endif
-        // li-ion voltages
-        29*dV, 1, // R
-        33*dV, 2, // R+G
-        35*dV, 3, //   G
-        37*dV, 4, //   G+B
-        39*dV, 5, //     B
-        41*dV, 6, // R + B
-        44*dV, 7, // R+G+B  // skip; looks too similar to G+B
-          255, 7, // R+G+B
-    };
     uint8_t volts = voltage;
     //if (volts < VOLTAGE_LOW) return 0;
 
     uint8_t i;
-    for (i = 0;  volts >= levels[i];  i += 2) {}
-    uint8_t color_num = levels[(i - 2) + 1];
+    for (i = 0;  volts >= pgm_read_byte(voltage_colors + i);  i += 2) {}
+    uint8_t color_num = pgm_read_byte(voltage_colors + (i - 2) + 1);
     return pgm_read_byte(rgb_led_colors + color_num);
 }
+
+#ifdef USE_SMOOTH_POVD
+RGB8_t voltage_to_rgb8 () {
+    // calculate in-between voltage colors
+    // by doing linear interpolation between voltage_colors[] entries
+
+    uint8_t volts = voltage;
+
+    RGB8_t color;
+    uint8_t i;
+    for (i = 0;  volts >= pgm_read_byte(voltage_colors + i);  i += 2) {}
+    uint8_t voltage_low = pgm_read_byte(voltage_colors + (i - 2));
+    uint8_t voltage_hi = pgm_read_byte(voltage_colors + (i));
+    uint8_t color_num_low = pgm_read_byte(voltage_colors + (i - 2) + 1);
+    uint8_t color_num_hi = pgm_read_byte(voltage_colors + (i) + 1);
+    uint8_t color_low = pgm_read_byte(rgb_led_colors + color_num_low);
+    uint8_t color_hi = pgm_read_byte(rgb_led_colors + color_num_hi);
+    // 0 to N-1 where 0 = low color and N = hi color
+    // (N is 5 minimum, or 20 max usually, but may occasionally be 50+)
+    uint8_t steps = voltage_hi - voltage_low;
+    uint8_t levels_per_step = RAMP_SIZE / steps;
+    uint8_t ratio = voltage - voltage_low;
+    color.r = (levels_per_step * ratio * (color_hi & 0b00000001))
+        + (levels_per_step * (steps - ratio) * (color_low & 0b00000001));
+    color.g = (levels_per_step * ratio * ((color_hi & 0b00000100) >> 2))
+        + (levels_per_step * (steps - ratio) * ((color_low & 0b00000100) >> 2));
+    color.b = (levels_per_step * ratio * ((color_hi & 0b00010000) >> 4))
+        + (levels_per_step * (steps - ratio) * ((color_low & 0b00010000) >> 4));
+    return color;
+}
+#endif
 
 // do fancy stuff with the RGB aux LEDs
 // mode: 0bPPPPCCCC where PPPP is the pattern and CCCC is the color
