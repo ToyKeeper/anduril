@@ -23,22 +23,7 @@ uint8_t smooth_povd_state(Event event, uint16_t arg) {
     static uint8_t povd_brightness;
     static uint16_t ticks;
 
-    // instead of using hard thresholds, ramp brightness down
-    #ifdef USE_AUX_THRESHOLD_CONFIG
-        if (prev_level < cfg.button_led_low_ramp_level) povd_brightness = 0;
-        else if (prev_level < cfg.button_led_high_ramp_level) {
-            povd_brightness = RAMP_SIZE
-                * (prev_level - cfg.button_led_low_ramp_level)
-                / (cfg.button_led_high_ramp_level - cfg.button_led_low_ramp_level);
-        }
-    #else
-        if (prev_level < POST_OFF_VOLTAGE_BRIGHTNESS) {
-            povd_brightness = RAMP_SIZE
-                * prev_level
-                / POST_OFF_VOLTAGE_BRIGHTNESS;
-        }
-    #endif
-    else povd_brightness = RAMP_SIZE;
+    povd_brightness = calc_smooth_povd_brightness(prev_level);
 
     if (event == EV_enter_state) {
         phase = 0;
@@ -116,14 +101,40 @@ uint8_t smooth_povd_state(Event event, uint16_t arg) {
         //}
 
         // draw this frame
-        rgb_uint_t pwm = get_level_rgbaux(brightness);
-        RGB_t color = voltage_to_rgb_t(pwm);
-        set_pwm_rgbaux(color);
+        draw_smooth_povd(brightness);
 
         return EVENT_HANDLED;
     }
 
     return EVENT_HANDLED;
+}
+
+
+uint8_t calc_smooth_povd_brightness (uint8_t level) {
+    uint8_t povd_brightness;
+    // instead of using hard thresholds, ramp brightness down
+    #ifdef USE_AUX_THRESHOLD_CONFIG
+        if (level < cfg.button_led_low_ramp_level) povd_brightness = 0;
+        else if (level < cfg.button_led_high_ramp_level) {
+            povd_brightness = RAMP_SIZE
+                * (level - cfg.button_led_low_ramp_level)
+                / (cfg.button_led_high_ramp_level - cfg.button_led_low_ramp_level);
+        }
+    #else
+        if (level < POST_OFF_VOLTAGE_BRIGHTNESS) {
+            povd_brightness = RAMP_SIZE
+                * level
+                / POST_OFF_VOLTAGE_BRIGHTNESS;
+        }
+    #endif
+    else povd_brightness = RAMP_SIZE;
+    return povd_brightness;
+}
+
+void draw_smooth_povd (uint8_t level) {
+    rgb_uint_t pwm = get_level_rgbaux(level);
+    RGB_t color = voltage_to_rgb_t(pwm);
+    set_pwm_rgbaux(color);
 }
 
 #endif  // ifdef USE_SMOOTH_POVD

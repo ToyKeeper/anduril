@@ -299,6 +299,10 @@ void loop() {
     if (cfg.aux_while_on & 0b10) {
         // display battery charge on RGB button during use
         if (state == steady_state) {
+        #ifdef USE_SMOOTH_POVD
+            uint8_t povd_level = calc_smooth_povd_brightness(actual_level);
+            draw_smooth_povd(povd_level);
+        #else
             #ifdef USE_AUX_THRESHOLD_CONFIG
             // only show voltage if feature is enabled and
             // we are above the configured minimum ramp level
@@ -309,6 +313,7 @@ void loop() {
             #else
                 rgb_led_voltage_readout(actual_level > 25);
             #endif
+        #endif
         }
     }
     #endif
