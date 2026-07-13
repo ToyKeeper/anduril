@@ -22,7 +22,7 @@ void set_power_path(uint8_t ramp_level);
 void enable_aux_rgb_pwm();
 void disable_aux_rgb_pwm();
 rgb_uint_t get_level_rgbaux(uint8_t level);
-void set_level_rgbaux(RGB8_t color);
+void set_pwm_rgbaux(RGB8_t color);
 void set_level_hsv(uint8_t level);
 bool gradual_tick_hsv(uint8_t gt);
 
@@ -159,13 +159,8 @@ rgb_uint_t get_level_rgbaux(uint8_t level) {
     return level;
 }
 
-//void set_rgb(uint8_t r, uint8_t g, uint8_t b) {
-void set_level_rgbaux(RGB8_t color) {
+void set_pwm_rgbaux(RGB8_t color) {
     if (! TCA0.SINGLE.CTRLA) { enable_aux_rgb_pwm(); }
-    // convert ramp level to raw PWM value
-    //if (color.r) color.r = PWM3_GET(color.r - 1);
-    //if (color.g) color.g = PWM3_GET(color.g - 1);
-    //if (color.b) color.b = PWM3_GET(color.b - 1);
     CH_R_PWM = color.r;
     CH_G_PWM = color.g;
     CH_B_PWM = color.b;
@@ -188,11 +183,10 @@ void set_level_hsv(uint8_t level) {
     RGB_t color;
     uint8_t h = cfg.channel_mode_args[channel_mode];
     uint8_t s = 255;  // TODO: drop saturation at brightest levels
-    PWM3_DATATYPE v = get_level_rgbaux(level);
+    PWM3_DATATYPE v = PWM3_GET(level);
     color = hsv2rgb(h, s, v);
 
-    //enable_aux_rgb_pwm();
-    set_level_rgbaux(color);
+    set_pwm_rgbaux(color);
 }
 
 bool gradual_tick_hsv(uint8_t gt) {
@@ -200,7 +194,7 @@ bool gradual_tick_hsv(uint8_t gt) {
     RGB_t color;
     uint8_t h = cfg.channel_mode_args[channel_mode];
     uint8_t s = 255;  // TODO: drop saturation at brightest levels
-    PWM3_DATATYPE v = get_level_rgbaux(gt);
+    PWM3_DATATYPE v = PWM3_GET(gt);
     color = hsv2rgb(h, s, v);
 
     return gradual_adjust_rgb(color.r, color.g, color.b);

@@ -50,7 +50,7 @@ uint8_t smooth_povd_state(Event event, uint16_t arg) {
 
     else if (event == EV_leave_state) {
         RGB_t color = { .r=0, .g=0, .b=0 };
-        set_level_rgbaux(color);
+        set_pwm_rgbaux(color);
         set_level(0);
         return EVENT_HANDLED;
     }
@@ -58,8 +58,6 @@ uint8_t smooth_povd_state(Event event, uint16_t arg) {
     // any button press event: abort and let event fall through
     // (also abort if animation complete)
     else if ((event & B_CLICK) || (phase > (2 + smooth_povd_phase_start))) {
-        //set_level_zero();
-        //if (smooth_povd_state == current_state) pop_state();
         pop_state();
         return EVENT_NOT_HANDLED;
     }
@@ -120,7 +118,7 @@ uint8_t smooth_povd_state(Event event, uint16_t arg) {
         // draw this frame
         rgb_uint_t pwm = get_level_rgbaux(brightness);
         RGB_t color = voltage_to_rgb_t(pwm);
-        set_level_rgbaux(color);
+        set_pwm_rgbaux(color);
 
         return EVENT_HANDLED;
     }
