@@ -1,8 +1,9 @@
 // Emisar D3AA helper functions
-// Copyright (C) 2023 Selene ToyKeeper
+// Copyright (C) 2023-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
+#include "anduril/channel-modes.h"  // for circular_tint_3h()
 #include "fsm/chan-rgbaux.c"
 #include "fsm/ramping.h"
 #include "ui/anduril/misc.h"
@@ -12,15 +13,31 @@ void set_level_zero();
 void set_level_main(uint8_t level);
 bool gradual_tick_main(uint8_t gt);
 
+void enable_aux_rgb_pwm();
+void disable_aux_rgb_pwm();
+rgb_uint_t get_level_rgbaux(uint8_t level);
+void set_pwm_rgbaux(RGB8_t color);
+void set_level_hsv(uint8_t level);
+bool gradual_tick_hsv(uint8_t gt);
 
 Channel channels[] = {
     { // main LEDs
         .set_level    = set_level_main,
-        .gradual_tick = gradual_tick_main
+        .gradual_tick = gradual_tick_main,
+        .has_args = 0
+    },
+    { // aux RGB LEDs
+        .set_level    = set_level_hsv,
+        .gradual_tick = gradual_tick_hsv,
+        .has_args = 1
     },
     RGB_AUX_CHANNELS
 };
 
+// HSV mode needs a different 3H handler
+StatePtr channel_3H_modes[NUM_CHANNEL_MODES] = {
+    NULL, circular_tint_3h,
+};
 
 inline void nfet_delay() {
     #if IN_NFET_DELAY_TIME > 0
@@ -45,6 +62,9 @@ void set_level_zero() {
 
     // turn off boost last
     BST_ENABLE_PORT &= ~(1 << BST_ENABLE_PIN);  // BST off
+
+    // turn off PWM for aux RGB
+    disable_aux_rgb_pwm();
 }
 
 // single set of LEDs with 1 regulated power channel
@@ -112,6 +132,73 @@ bool gradual_tick_main(uint8_t gt) {
     return false;  // not done yet
 }
 
+///// RGB aux PWM stuff
+
+void enable_aux_rgb_pwm() {
+    TCA0.SPLIT.CTRLD = TCA_SPLIT_SPLITM_bm;
+    TCA0.SPLIT.LPER = PWM_RGB_TOP_INIT;
+    TCA0.SPLIT.HPER = PWM_RGB_TOP_INIT;
+    TCA0.SPLIT.CTRLB = TCA_SPLIT_LCMP0EN_bm
+                     | TCA_SPLIT_LCMP2EN_bm
+                     | TCA_SPLIT_HCMP0EN_bm;
+    TCA0.SPLIT.CTRLA = TCA_SPLIT_CLKSEL_DIV1_gc
+                     | TCA_SPLIT_ENABLE_bm;
+}
+
+void disable_aux_rgb_pwm() {
+    TCA0.SINGLE.CTRLB = 0;
+    TCA0.SINGLE.CTRLA = 0;
+}
+
+rgb_uint_t get_level_rgbaux(uint8_t level) {
+    // convert ramp level to raw PWM value
+    if (level) level = PWM3_GET(level - 1);
+    return level;
+}
+
+void set_pwm_rgbaux(RGB8_t color) {
+    if (! TCA0.SINGLE.CTRLA) { enable_aux_rgb_pwm(); }
+    CH_R_PWM = color.r;
+    CH_G_PWM = color.g;
+    CH_B_PWM = color.b;
+}
+
+bool gradual_adjust_rgb(PWM3_DATATYPE r, PWM3_DATATYPE g, PWM3_DATATYPE b) {
+    GRADUAL_ADJUST_SIMPLE(r, CH_R_PWM);
+    GRADUAL_ADJUST_SIMPLE(g, CH_G_PWM);
+    GRADUAL_ADJUST_SIMPLE(b, CH_B_PWM);
+
+    if ((r == CH_R_PWM)
+     && (g == CH_G_PWM)
+     && (b == CH_B_PWM)) {
+        return true;  // done
+    }
+    return false;  // not done yet
+}
+
+void set_level_hsv(uint8_t level) {
+    RGB_t color;
+    uint8_t h = cfg.channel_mode_args[channel_mode];
+    uint8_t s = 255;  // TODO: drop saturation at brightest levels
+    PWM3_DATATYPE v = PWM3_GET(level);
+    color = hsv2rgb(h, s, v);
+
+    set_pwm_rgbaux(color);
+}
+
+bool gradual_tick_hsv(uint8_t gt) {
+    // figure out what exact PWM levels we're aiming for
+    RGB_t color;
+    uint8_t h = cfg.channel_mode_args[channel_mode];
+    uint8_t s = 255;  // TODO: drop saturation at brightest levels
+    PWM3_DATATYPE v = PWM3_GET(gt);
+    color = hsv2rgb(h, s, v);
+
+    return gradual_adjust_rgb(color.r, color.g, color.b);
+}
+
+
+///// Voltage measurement and weak battery detection
 
 #ifdef USE_VOLTAGE_DIVIDER
 uint8_t voltage_raw2cooked(uint16_t measurement) {
