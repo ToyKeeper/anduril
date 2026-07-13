@@ -118,8 +118,8 @@ uint8_t smooth_povd_state(Event event, uint16_t arg) {
         //}
 
         // draw this frame
-        RGB_t color;
-        color = voltage_to_rgb_t(brightness);
+        rgb_uint_t pwm = get_level_rgbaux(brightness);
+        RGB_t color = voltage_to_rgb_t(pwm);
         set_level_rgbaux(color);
 
         return EVENT_HANDLED;

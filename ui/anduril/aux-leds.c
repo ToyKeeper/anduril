@@ -71,7 +71,7 @@ RGB_t voltage_to_rgb_t (rgb_uint_t brightness) {
     // by doing linear interpolation between voltage_colors[] entries
 
     // adjust down slightly to better match non-smooth povd colors
-    uint8_t volts = voltage - (voltage / (5*dV));
+    uint8_t volts = voltage - (voltage / (6*dV));
 
     RGB_t color;
     uint8_t i;
@@ -86,6 +86,7 @@ RGB_t voltage_to_rgb_t (rgb_uint_t brightness) {
     // (N is 5 minimum, or 20 max usually, but may occasionally be 50+)
     uint8_t steps = voltage_hi - voltage_low;
     rgb_uint_t levels_per_step = brightness / steps;
+    if (brightness && (! levels_per_step)) levels_per_step = 1;
     uint8_t ratio = volts - voltage_low;
     color.r = (levels_per_step * ratio * (color_hi & 0b00000001))
         + (levels_per_step * (steps - ratio) * (color_low & 0b00000001));

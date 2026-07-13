@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2023 Selene ToyKeeper
+// Copyright (C) 2017-2026 Selene ToyKeeper
 //               2021-2024 loneoceans
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
