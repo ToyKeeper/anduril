@@ -28,8 +28,7 @@ typedef struct Channel {
         ChannelArgFuncPtr ramp_channel_arg;
     #endif
     #ifdef USE_CHANNEL_MODE_ARGS
-        bool has_args;
-        //uint8_t arg;  // is in the config struct, not here
+        uint8_t flags;
     #endif
 } Channel;
 
@@ -69,16 +68,17 @@ StatePtr channel_3H_modes[NUM_CHANNEL_MODES];
     #endif
 #endif
 
+#define CHANNEL_FLAG_HAS_ARGS  0b00000001
+#define CHANNEL_FLAG_IS_AUX    0b00000010
 #ifdef USE_CHANNEL_MODE_ARGS
     #ifndef USE_CFG
     // one byte of extra data per channel mode, like for tint value
     uint8_t channel_mode_args[NUM_CHANNEL_MODES] = { CHANNEL_MODE_ARGS };
     #endif
     // which modes respond to their "arg", and which don't?
-    //const uint8_t channel_has_args = CHANNEL_HAS_ARGS;
-    //#define channel_has_args(n) ((CHANNEL_HAS_ARGS >> n) & 1)
-    // struct member
-    #define channel_has_args(n) (channels[n].has_args)
+    #define channel_has_args(n)  (channels[n].flags & CHANNEL_FLAG_HAS_ARGS)
+    // which modes are displayed on the aux LEDs?
+    #define channel_is_aux(n)    (channels[n].flags & CHANNEL_FLAG_IS_AUX)
 #endif
 
 #if NUM_CHANNEL_MODES > 1

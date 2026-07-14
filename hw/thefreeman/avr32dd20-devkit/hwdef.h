@@ -1,5 +1,5 @@
 // hwdef for thefreeman's avr32dd20 dev kit
-// Copyright (C) 2023 thefreeman, Selene ToyKeeper
+// Copyright (C) 2026 thefreeman, Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -24,9 +24,9 @@
  *  14   GND    GND
  *  15   PF6    RESET
  *  16   PF7    UPDI
- *  17   PA0    R: aux red
- *  18   PA1    G: aux green
- *  19   PA2    B: aux blue
+ *  17   PA0    R: aux red    (PWM + passive)
+ *  18   PA1    G: aux green  (PWM + passive)
+ *  19   PA2    B: aux blue   (PWM + passive)
  *  20   PA3    CH: detect charging
  *              or BBY: boost bypass PFET
  *
@@ -50,18 +50,25 @@
 // channel modes:
 // * 0. main LEDs
 // * 1+. aux RGB
-#define NUM_CHANNEL_MODES   (1 + NUM_RGB_AUX_CHANNEL_MODES)
+#define NUM_CHANNEL_MODES   (2 + NUM_RGB_AUX_CHANNEL_MODES)
 enum CHANNEL_MODES {
     CM_MAIN = 0,
+    CM_HSV,
     RGB_AUX_ENUMS
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b0000000000000001
+#define CHANNEL_MODES_ENABLED  0b0000000000000001
+#define USE_CHANNEL_MODE_ARGS
+#define CHANNEL_MODE_ARGS  0,0,RGB_AUX_CM_ARGS
+#define USE_CUSTOM_CHANNEL_3H_MODES
+#define USE_CIRCULAR_TINT_3H
+#define USE_HSV2RGB
 
 
+// DAC max is 1023, Anduril is written for 255, so regulate at 4X speed
 #undef  GRADUAL_ADJUST_SPEED
 #define GRADUAL_ADJUST_SPEED  4
 
@@ -69,9 +76,11 @@ enum CHANNEL_MODES {
 #define PWM_DATATYPE  uint16_t
 #define PWM_DATATYPE2 uint32_t  // only needs 32-bit if ramp values go over 255
 #define PWM1_DATATYPE uint16_t  // main LED ramp
-#define PWM1_GET(l)   PWM_GET16(pwm1_levels, l)
+#define PWM1_GET(x)   PWM_GET16(pwm1_levels, x)
 #define PWM2_DATATYPE uint8_t   // DAC Vref table
-#define PWM2_GET(l)   PWM_GET8(pwm2_levels, l)
+#define PWM2_GET(x)   PWM_GET8(pwm2_levels, x)
+#define PWM3_DATATYPE uint8_t   // aux RGB ramp
+#define PWM3_GET(x)   PWM_GET8(pwm3_levels, x)
 
 // main LED outputs
 // (DAC_LVL + DAC_VREF + Vref values are defined in arch/*.h)
@@ -127,6 +136,18 @@ uint8_t voltage_raw2cooked(uint16_t measurement);
 #define AUXLED_G_PIN  PIN1_bp
 #define AUXLED_B_PIN  PIN2_bp
 #define AUXLED_RGB_PORT PORTA
+
+// aux RGB PWM
+#define RGB_BITS  8
+#define CH_R_PIN  PA0
+#define CH_R_PWM  TCA0.SINGLE.CMP0BUF
+#define CH_G_PIN  PA1
+#define CH_G_PWM  TCA0.SINGLE.CMP1BUF
+#define CH_B_PIN  PA2
+#define CH_B_PWM  TCA0.SINGLE.CMP2BUF
+
+#define PWM_RGB_TOP       TCA0.SINGLE.PERBUF
+#define PWM_RGB_TOP_INIT  255
 
 // this light has three aux LED channels: R, G, B
 #define USE_AUX_RGB_LEDS

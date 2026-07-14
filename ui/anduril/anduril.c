@@ -298,7 +298,11 @@ void loop() {
     #ifdef USE_AUX_RGB_LEDS
     if (cfg.aux_while_on & 0b10) {
         // display battery charge on RGB button during use
-        if (state == steady_state) {
+        if ((state == steady_state)
+            #ifdef USE_CHANNEL_MODE_ARGS
+                && (! channel_is_aux(channel_mode))
+            #endif
+        ) {
         #ifdef USE_SMOOTH_POVD
             uint8_t povd_level = calc_smooth_povd_brightness(actual_level);
             draw_smooth_povd(povd_level);

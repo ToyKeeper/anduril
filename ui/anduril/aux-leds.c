@@ -27,7 +27,7 @@ void indicator_led_update(uint8_t mode, uint8_t tick) {
     #endif
     //#endif
     // normal steady output, 0/1/2 = off / low / high
-    else if ((mode & 0b00001111) < 3) {
+    else if (mode < 3) {
         indicator_led(mode);
     }
     // beacon-like blinky mode
@@ -153,20 +153,20 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
                    | (prev_level >= POST_OFF_VOLTAGE_BRIGHTNESS));
         #endif
         // voltage mode
-        color = RGB_LED_NUM_COLORS - 1;
+        color = aux_rgb_voltage_e;
     }
     #endif
 
     const uint8_t *colors = rgb_led_colors + 1;
     uint8_t actual_color = 0;
-    if (color < 7) {  // normal color
+    if (color <= aux_rgb_white_e) {  // normal color
         actual_color = pgm_read_byte(colors + color);
     }
-    else if (color == 7) {  // disco
+    else if (color == aux_rgb_disco_e) {  // disco
         rainbow = (rainbow + 1 + pseudo_rand() % 5) % 6;
         actual_color = pgm_read_byte(colors + rainbow);
     }
-    else if (color == 8) {  // rainbow
+    else if (color == aux_rgb_rainbow_e) {  // rainbow
         uint8_t speed = 0x03;  // awake speed
         if (go_to_standby) speed = RGB_RAINBOW_SPEED;  // asleep speed
         if (0 == (arg & speed)) {
@@ -187,8 +187,10 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
     }
 
     // pick a brightness from the animation sequence
-    if (pattern == 3) {
+    if (pattern == aux_blinking_e) {
         // uses an odd length to avoid lining up with rainbow loop
+        // FIXME: move to progmem
+        // FIXME: add more blink patterns
         static const uint8_t animation[] = {2, 1, 0, 0,  0, 0, 0, 0,  0,
                                             1, 0, 0, 0,  0, 0, 0, 0,  0, 1};
         frame = (frame + 1) % sizeof(animation);

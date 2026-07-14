@@ -61,17 +61,39 @@ const PROGMEM uint8_t voltage_colors[] = {
       255, 7, // R+G+B
 };
 
-// intentionally 1 higher than total modes, to make "voltage" easier to reach
-// (at Hank's request)
-#define RGB_LED_NUM_COLORS 11
-#define RGB_LED_NUM_PATTERNS 4
+typedef enum {
+    aux_off_e = 0,
+    aux_low_e,
+    aux_high_e,
+    #ifdef TICK_DURING_STANDBY
+    aux_blinking_e,
+    #endif
+    aux_num_modes_e
+} aux_modes_t;
+typedef enum {
+    aux_rgb_red_e = 0,
+    aux_rgb_yellow_e,
+    aux_rgb_green_e,
+    aux_rgb_cyan_e,
+    aux_rgb_blue_e,
+    aux_rgb_purple_e,
+    aux_rgb_white_e,
+    aux_rgb_disco_e,
+    aux_rgb_rainbow_e,
+    aux_rgb_voltage_e,
+    // extra copy, to make "voltage" easier to reach (at Hank's request)
+    aux_rgb_voltage_again_e,
+    aux_rgb_num_colors_e
+} aux_rgb_colors_t;
+//#define RGB_LED_NUM_COLORS  aux_rgb_num_colors_e
+//#define RGB_LED_NUM_PATTERNS  aux_num_modes_e
 #ifndef RGB_LED_OFF_DEFAULT
-#define RGB_LED_OFF_DEFAULT 0x19  // low, voltage
-//#define RGB_LED_OFF_DEFAULT 0x18  // low, rainbow
+#define RGB_LED_OFF_DEFAULT  ((aux_low_e << 4) | (aux_rgb_voltage_e))
+//#define RGB_LED_OFF_DEFAULT  ((aux_low_e << 4) | (aux_rgb_rainbow_e))
 #endif
 #ifndef RGB_LED_LOCKOUT_DEFAULT
-#define RGB_LED_LOCKOUT_DEFAULT 0x39  // blinking, voltage
-//#define RGB_LED_LOCKOUT_DEFAULT 0x37  // blinking, disco
+#define RGB_LED_LOCKOUT_DEFAULT  ((aux_blinking_e << 4) | (aux_rgb_voltage_e))
+//#define RGB_LED_LOCKOUT_DEFAULT  ((aux_blinking_e << 4) | (aux_rgb_disco_e))
 #endif
 #ifndef RGB_RAINBOW_SPEED
 #define RGB_RAINBOW_SPEED 0x0f  // change color every 16 frames
@@ -81,14 +103,15 @@ const PROGMEM uint8_t voltage_colors[] = {
 //#define USE_OLD_BLINKING_INDICATOR
 //#define USE_FANCIER_BLINKING_INDICATOR
 #ifdef USE_INDICATOR_LED
-    // bits 2-3 control lockout mode
-    // bits 0-1 control "off" mode
+    // bits 4-7 control lockout mode
+    // bits 0-3 control "off" mode
     // modes are: 0=off, 1=low, 2=high, 3=blinking (if TICK_DURING_STANDBY enabled)
+    //   (and maybe other modes, depending on hardware capabilities)
     #ifndef INDICATOR_LED_DEFAULT_MODE
-        #ifdef USE_INDICATOR_LED_WHILE_RAMPING
-            #define INDICATOR_LED_DEFAULT_MODE ((2<<2) + 1)
+        #ifdef TICK_DURING_STANDBY
+            #define INDICATOR_LED_DEFAULT_MODE ((aux_blinking_e<<4) + aux_low_e)
         #else
-            #define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
+            #define INDICATOR_LED_DEFAULT_MODE ((aux_low_e<<4) + aux_low_e)
         #endif
     #endif
 #endif
