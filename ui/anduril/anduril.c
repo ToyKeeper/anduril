@@ -158,6 +158,10 @@
 #include "anduril/load-save-config.h"
 
 
+/********* bring in FSM / SpaghettiMonster *********/
+
+#include "fsm/spaghetti-monster.c"
+
 /********* Include all the app logic source files *********/
 // (is a bit weird to do things this way,
 //  but it saves a lot of space by letting us use the -fwhole-program flag)
@@ -292,37 +296,29 @@ void setup() {
 // runs repeatedly whenever light is "on" (not in standby)
 void loop() {
 
-    // "current_state" is volatile, so cache it to reduce code size
-    StatePtr state = current_state;
-
-    #ifdef USE_AUX_RGB_LEDS
-    if (cfg.aux_while_on & 0b10) {
-        // display battery charge on RGB button during use
-        if ((state == steady_state)
-            #ifdef USE_CHANNEL_MODE_ARGS
-                && (! channel_is_aux(channel_mode))
-            #endif
-        ) {
-        #ifdef USE_SMOOTH_POVD
-            uint8_t povd_level = calc_smooth_povd_brightness(actual_level);
-            draw_smooth_povd(povd_level);
-        #else
-            #ifdef USE_AUX_THRESHOLD_CONFIG
-            // only show voltage if feature is enabled and
-            // we are above the configured minimum ramp level
-            if (actual_level > cfg.button_led_low_ramp_level)
-                rgb_led_voltage_readout(actual_level > cfg.button_led_high_ramp_level);
-            #elif (USE_AUX_RGB_LEDS_WHILE_ON + 0) > 0
-                rgb_led_voltage_readout(actual_level > USE_AUX_RGB_LEDS_WHILE_ON);
-            #else
-                rgb_led_voltage_readout(actual_level > 25);
-            #endif
-        #endif
-        }
+    #ifdef USE_SMOOTH_STEPS
+    if (cfg.smooth_steps_style && smooth_steps_in_progress) {
+        smooth_steps_iter();
     }
     #endif
 
+    // "current_state" is volatile, so cache it to reduce code size
+    StatePtr state = current_state;
+
     if (0) {}  // placeholder
+
+    else if (state == steady_state) {
+        #ifdef USE_AUX_RGB_LEDS
+            if (cfg.aux_while_on & 0b10) {
+                // display battery charge on RGB button during use
+                set_level_aux_rgb_leds(actual_level);
+            }
+        #endif
+        #ifdef USE_IDLE_MODE
+            // reduce power slightly, until next clock tick
+            idle_mode();
+        #endif
+    }
 
     #ifdef USE_VERSION_CHECK
     else if (state == version_check_state) {
@@ -398,15 +394,9 @@ void loop() {
     }
     #endif
 
-    #ifdef USE_SMOOTH_STEPS
-    else if (cfg.smooth_steps_style && smooth_steps_in_progress) {
-        smooth_steps_iter();
-    }
-    #endif
-
     #ifdef USE_IDLE_MODE
     else {
-        // doze until next clock tick
+        // reduce power slightly, until next clock tick
         idle_mode();
     }
     #endif

@@ -1,5 +1,5 @@
 // fsm-ramping.h: Ramping functions for SpaghettiMonster.
-// Copyright (C) 2017-2023 Selene ToyKeeper
+// Copyright (C) 2017-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -18,6 +18,7 @@ uint8_t ramp_level_hard_limit = 0;
 void set_level(uint8_t level);
 //void set_level_smooth(uint8_t level);
 void set_level_zero();  // implement this in a hwdef
+void set_level_aux_rgb_leds(uint8_t level);
 
 #ifdef USE_SET_LEVEL_GRADUALLY
 // adjust brightness very smoothly

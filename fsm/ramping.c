@@ -1,5 +1,5 @@
 // fsm-ramping.c: Ramping functions for SpaghettiMonster.
-// Copyright (C) 2017-2023 Selene ToyKeeper
+// Copyright (C) 2017-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -48,21 +48,34 @@ inline void set_level_aux_leds(uint8_t level) {
 #ifdef USE_AUX_RGB_LEDS
 // TODO: maybe move this stuff into FSM
 #include "anduril/aux-leds.h"  // for rgb_led_voltage_readout()
-inline void set_level_aux_rgb_leds(uint8_t level) {
+void set_level_aux_rgb_leds(uint8_t level) {
     if (! go_to_standby) {
+        #ifdef USE_CHANNEL_MODE_ARGS
+        if (! channel_is_aux(channel_mode)) {
+        #endif
         uint8_t rgb_level = (cfg.aux_while_on & 0b10) ? level : 0;
-        #ifdef USE_AUX_THRESHOLD_CONFIG
-        if (rgb_level > cfg.button_led_low_ramp_level) {
-            rgb_led_voltage_readout(rgb_level > cfg.button_led_high_ramp_level);
-        }
+        #ifdef USE_SMOOTH_POVD
+            uint8_t povd_level = calc_smooth_povd_brightness(rgb_level);
+            draw_smooth_povd(povd_level);
         #else
-        if (rgb_level > 0) {
-            rgb_led_voltage_readout(rgb_level > (USE_AUX_RGB_LEDS_WHILE_ON + 0));
+            if (rgb_level > 0) {
+                #ifdef USE_AUX_THRESHOLD_CONFIG
+                if (rgb_level > cfg.button_led_low_ramp_level) {
+                    rgb_led_voltage_readout(rgb_level > cfg.button_led_high_ramp_level);
+                }
+                #elif (USE_AUX_RGB_LEDS_WHILE_ON + 0) > 0
+                    rgb_led_voltage_readout(rgb_level > USE_AUX_RGB_LEDS_WHILE_ON);
+                #else
+                    rgb_led_voltage_readout(rgb_level > 25);
+                #endif
+            } else {
+                rgb_led_set(0);
+            }
+        #endif  // #ifdef USE_SMOOTH_POVD
+        #ifdef USE_CHANNEL_MODE_ARGS
         }
         #endif
-        else {
-            rgb_led_set(0);
-        }
+
         // some drivers can be wired with RGB or single color to button
         // ... so support both even though only one is connected
         #ifdef USE_BUTTON_LED
