@@ -62,12 +62,24 @@ const PROGMEM uint8_t voltage_colors[] = {
       255, 7, // R+G+B
 };
 
+const PROGMEM uint8_t aux_animations[] = {
+    // each line is: num_frames, then frame data
+    // 2-level blink at ~0.84 Hz; is an odd length to avoid lining up with rainbow loop
+    19, 2, 1, 0, 0,  0, 0, 0, 0,  0,  1, 0, 0, 0,  0, 0, 0, 0,  0, 1,
+    // 2 blinks every 2 seconds  (1/8th power)
+    16, 1, 0, 0, 1,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,
+    // 1 blink every 2 seconds  (1/16th power)
+    16, 1, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,
+};
+
 typedef enum {
     aux_off_e = 0,
     aux_low_e,
     aux_high_e,
     #ifdef TICK_DURING_STANDBY
     aux_blinking_e,
+    aux_blinking_2_e,
+    aux_blinking_3_e,
     #endif
     aux_num_modes_e
 } aux_modes_t;

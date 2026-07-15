@@ -187,14 +187,16 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
     }
 
     // pick a brightness from the animation sequence
-    if (pattern == aux_blinking_e) {
-        // uses an odd length to avoid lining up with rainbow loop
-        // FIXME: move to progmem
-        // FIXME: add more blink patterns
-        static const uint8_t animation[] = {2, 1, 0, 0,  0, 0, 0, 0,  0,
-                                            1, 0, 0, 0,  0, 0, 0, 0,  0, 1};
-        frame = (frame + 1) % sizeof(animation);
-        pattern = animation[frame];
+    if (pattern >= aux_blinking_e) {
+        // find correct animation
+        uint8_t base = 0;
+        for (uint8_t f = aux_blinking_e;  f < pattern;  f++) {
+            base = base + 1 + pgm_read_byte(aux_animations + base);
+        }
+        // display next frame
+        uint8_t num_frames = pgm_read_byte(aux_animations + base);
+        frame = (frame + 1) % num_frames;
+        pattern = pgm_read_byte(aux_animations + base + frame + 1);
     }
     uint8_t result;
     #ifdef USE_BUTTON_LED
