@@ -15,6 +15,8 @@
 
 #define HWDEF_C  sofirn/lt1s-pro/hwdef.c
 
+#define USE_CHANNEL_FLAGS
+
 // channel modes:
 // * 0. warm/cool white blend
 // * 1. auto 2ch white blend (warm -> cool by ramp level)

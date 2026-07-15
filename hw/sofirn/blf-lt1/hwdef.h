@@ -14,6 +14,8 @@
 
 #define HWDEF_C  sofirn/blf-lt1/hwdef.c
 
+#define USE_CHANNEL_FLAGS
+
 // channel modes:
 // * 0. channel 1 only
 // * 1. channel 2 only

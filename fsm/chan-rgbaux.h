@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
+#define USE_CHANNEL_FLAGS
+
 #define RGB_AUX_ENUMS  \
     CM_AUXRED, \
     CM_AUXYEL, \
@@ -17,7 +19,7 @@
 #define NUM_RGB_AUX_CHANNEL_MODES  7
 
 // include / exclude field based on compile options
-#ifdef USE_CHANNEL_MODE_ARGS
+#ifdef USE_CHANNEL_FLAGS
     #define AUX_RGB_FLAGS , .flags = CHANNEL_FLAG_IS_AUX
 #else
     #define AUX_RGB_FLAGS

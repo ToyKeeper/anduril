@@ -13,6 +13,7 @@ void rgb_led_voltage_readout(uint8_t bright);
 #ifdef USE_SMOOTH_POVD
 RGB_t voltage_to_rgb_t (rgb_uint_t brightness);
 #endif
+#endif
 /*
  * 0: R
  * 1: RG
@@ -97,7 +98,6 @@ typedef enum {
 #endif
 #ifndef RGB_RAINBOW_SPEED
 #define RGB_RAINBOW_SPEED 0x0f  // change color every 16 frames
-#endif
 #endif
 
 //#define USE_OLD_BLINKING_INDICATOR

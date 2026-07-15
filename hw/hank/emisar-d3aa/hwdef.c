@@ -24,12 +24,12 @@ Channel channels[] = {
     { // main LEDs
         .set_level    = set_level_main,
         .gradual_tick = gradual_tick_main,
-        .has_args = 0
+        .flags        = 0
     },
     { // aux RGB LEDs
         .set_level    = set_level_hsv,
         .gradual_tick = gradual_tick_hsv,
-        .has_args = 1
+        .flags        = CHANNEL_FLAG_IS_AUX | CHANNEL_FLAG_HAS_ARGS
     },
     RGB_AUX_CHANNELS
 };

@@ -3,10 +3,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
+#define USE_CHANNEL_FLAGS
+
 #define NUM_AUX_CHANNEL_MODES  1
 
 // include / exclude field based on compile options
-#ifdef USE_CHANNEL_MODE_ARGS
+#ifdef USE_CHANNEL_FLAGS
     #define AUX_FLAGS , .flags = CHANNEL_FLAG_IS_AUX
 #else
     #define AUX_FLAGS

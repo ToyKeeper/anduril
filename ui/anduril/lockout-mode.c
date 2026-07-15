@@ -153,7 +153,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     else if (event == EV_7clicks) {
         #if defined(USE_INDICATOR_LED)
             uint8_t mode = ((cfg.indicator_led_mode >> 4) + 1)
-                % num_aux_modes_e;
+                % aux_num_modes_e;
             #ifdef INDICATOR_LED_SKIP_LOW
             if (mode == 1) { mode ++; }
             #endif

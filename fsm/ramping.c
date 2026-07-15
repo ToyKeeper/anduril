@@ -50,7 +50,7 @@ inline void set_level_aux_leds(uint8_t level) {
 #include "anduril/aux-leds.h"  // for rgb_led_voltage_readout()
 void set_level_aux_rgb_leds(uint8_t level) {
     if (! go_to_standby) {
-        #ifdef USE_CHANNEL_MODE_ARGS
+        #ifdef USE_CHANNEL_FLAGS
         if (! channel_is_aux(channel_mode)) {
         #endif
         uint8_t rgb_level = (cfg.aux_while_on & 0b10) ? level : 0;
@@ -72,7 +72,7 @@ void set_level_aux_rgb_leds(uint8_t level) {
                 rgb_led_set(0);
             }
         #endif  // #ifdef USE_SMOOTH_POVD
-        #ifdef USE_CHANNEL_MODE_ARGS
+        #ifdef USE_CHANNEL_FLAGS
         }
         #endif
 
