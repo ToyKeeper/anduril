@@ -1,7 +1,6 @@
 // Noctigon KR4 (no DD FET) PWM helper functions
-// Copyright (C) 2020-2023 Selene ToyKeeper
+// Copyright (C) 2020-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
-
 #pragma once
 
 #include "fsm/chan-rgbaux.c"
@@ -17,7 +16,7 @@ Channel channels[] = {
         .set_level    = set_level_main,
         .gradual_tick = gradual_tick_main
     },
-    RGB_AUX_CHANNELS
+    AUXRGB_CHANNELS
 };
 
 

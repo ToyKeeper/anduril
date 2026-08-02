@@ -1,16 +1,16 @@
 // BLF/Lumintop GT Mini config options for Anduril
-// Copyright (C) 2018-2023 Selene ToyKeeper
+// Copyright (C) 2018-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "lumintop/blf-gt-mini/hwdef.h"
 // Same as an Emisar D1S, except it has a lighted button
 #include "hank/emisar-d1s/anduril.h"
+#undef HWDEF_H
+#define HWDEF_H  lumintop/blf-gt-mini/hwdef.h
 
 // the button lights up
-#define USE_INDICATOR_LED
 // the button is visible while main LEDs are on
-#define USE_INDICATOR_LED_WHILE_RAMPING
+#define USE_AUX1_LED_WHILE_RAMPING
 
 // too big, remove stuff to make room
 #undef USE_TACTICAL_MODE

@@ -1,47 +1,22 @@
 // Noctigon K9.3 config options for Anduril
-// Copyright (C) 2020-2023 Selene ToyKeeper
+// Copyright (C) 2020-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "hank/emisar-2ch/fet/hwdef.h"
+#define HWDEF_H  hank/emisar-2ch/fet/hwdef.h
 #include "hank/anduril.h"
-
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
-// the aux LEDs are front-facing, so turn them off while main LEDs are on
-// it also has an independent LED in the button
-#define USE_BUTTON_LED
-// TODO: the whole "indicator LED" thing needs to be refactored into
-//       "aux LED(s)" and "button LED(s)" since they work a bit differently
-// enabling this option breaks the button LED on D4v2.5
-#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-#undef USE_INDICATOR_LED_WHILE_RAMPING
-#endif
-
-// channel modes...
-// CM_CH1, CM_CH2, CM_BOTH, CM_BLEND, CM_AUTO
-// enable max brightness out of the box
-#define DEFAULT_CHANNEL_MODE           CM_BOTH
-
-#define USE_CONFIG_COLORS
-
-// blink numbers on the main LEDs by default (but allow user to change it)
-#define DEFAULT_BLINK_CHANNEL  CM_BOTH
-
-#define POLICE_COLOR_STROBE_CH1        CM_CH1
-#define POLICE_COLOR_STROBE_CH2        CM_CH2
 
 // how much to increase total brightness at middle tint
 // (0 = 100% brightness, 64 = 200% brightness)
 #define TINT_RAMPING_CORRECTION 0  // none, linear regulator doesn't need it
 
+#define RAMP_SIZE 150
 
 // main LEDs
 //   max regulated: 1500 to 2000 lm?
 //   FET: 5000 to 8000 lm?
 // 2nd LEDs
 //   max regulated: ~1500 lm
-#define RAMP_SIZE 150
 
 // linear+FET ramp: maxreg at 120/150
 // level_calc.py 5.01 2 150 7135 1 0.1 1872 FET 1 10 5000 --pwm dyn:63:4096:255:3 --clock 8:16:0
@@ -58,29 +33,52 @@
 // PWM_TOPS values for linear-only ramp
 #define PWM5_LEVELS 4096,3681,3247,2794,2328,1856,2937,2393,1860,2690,2273,1875,2281,1959,1658,1893,1646,1774,1569,1381,1466,1309,1166,1224,1104,996,1033,942,858,882,810,746,687,634,586,604,561,522,487,454,425,397,409,385,362,341,321,302,311,295,279,286,271,257,263,250,255,258,246,249,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
 
-#define DEFAULT_LEVEL      65
-#define MAX_1x7135         120
-#define MAX_Nx7135         MAX_1x7135
-#define HALFSPEED_LEVEL    16
-#define QUARTERSPEED_LEVEL 8
+#define DEFAULT_LEVEL        65
+#define MAX_1x7135           120
+#define MAX_Nx7135           MAX_1x7135
+#define HALFSPEED_LEVEL      16
+#define QUARTERSPEED_LEVEL   8
 
-#define RAMP_SMOOTH_FLOOR  10  // level 1 is unreliable (?)
-#define RAMP_SMOOTH_CEIL   120
-// 10, 28, 46, [65], 83, 101, 120
-#define RAMP_DISCRETE_FLOOR 10
-#define RAMP_DISCRETE_CEIL  RAMP_SMOOTH_CEIL
-#define RAMP_DISCRETE_STEPS 7
+#define RAMP_SMOOTH_FLOOR    10  // level 1 is unreliable (?)
+#define RAMP_SMOOTH_CEIL     120
+// 10 28 46 [65] 83 101 120
+#define RAMP_DISCRETE_FLOOR  10
+#define RAMP_DISCRETE_CEIL   RAMP_SMOOTH_CEIL
+#define RAMP_DISCRETE_STEPS  7
 
-// 10, 37, [65], 92, 120
-#define SIMPLE_UI_FLOOR  RAMP_DISCRETE_FLOOR
-#define SIMPLE_UI_CEIL   RAMP_DISCRETE_CEIL
-#define SIMPLE_UI_STEPS  5
+// 10 37 [65] 92 120
+#define SIMPLE_UI_FLOOR      RAMP_DISCRETE_FLOOR
+#define SIMPLE_UI_CEIL       RAMP_DISCRETE_CEIL
+#define SIMPLE_UI_STEPS      5
 
 // stop panicking at ~25% power or ~1000 lm
-#define THERM_FASTER_LEVEL 100
-#define MIN_THERM_STEPDOWN 60  // should be above highest dyn_pwm level
+#define THERM_FASTER_LEVEL  100
+#define MIN_THERM_STEPDOWN  60  // should be above highest dyn_pwm level
+
+#define THERM_CAL_OFFSET 5
+
+
+// AUX + channel modes
+
+#define USE_AUX_THRESHOLD_CONFIG
+
+// channel modes...
+// CM_CH1, CM_CH2, CM_BOTH, CM_BLEND, CM_AUTO
+// enable max brightness out of the box
+#define DEFAULT_CHANNEL_MODE           CM_BOTH
+
+#define USE_CONFIG_COLORS
+
+// blink numbers on the main LEDs by default (but allow user to change it)
+#define DEFAULT_BLINK_CHANNEL  CM_BOTH
 
 #define USE_POLICE_COLOR_STROBE_MODE
+#define POLICE_COLOR_STROBE_CH1        CM_CH1
+#define POLICE_COLOR_STROBE_CH2        CM_CH2
+
+
+// Misc
+
 #undef  TACTICAL_LEVELS
 #define TACTICAL_LEVELS 120,30,(RAMP_SIZE+3)  // high, low, police strobe
 
@@ -99,8 +97,6 @@
 #define DEFAULT_JUMP_START_LEVEL 35
 #define BLINK_BRIGHTNESS 30
 #define BLINK_ONCE_TIME 12  // longer blink, since main LEDs are slow
-
-#define THERM_CAL_OFFSET 5
 
 // don't blink while ramping
 #ifdef BLINK_AT_RAMP_MIDDLE

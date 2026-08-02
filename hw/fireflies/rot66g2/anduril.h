@@ -1,23 +1,9 @@
 // Fireflies ROT66 G2 config options for Anduril
-// Copyright (C) 2019-2023 Selene ToyKeeper
+// Copyright (C) 2019-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
 #include "fireflies/rot66/anduril.h"
-
-// if the "low" mode was disabled, turn it back on
-#ifdef INDICATOR_LED_SKIP_LOW
-#undef INDICATOR_LED_SKIP_LOW
-#endif
-
-// lockout: blinking (3), off: low (1)
-#ifdef INDICATOR_LED_DEFAULT_MODE
-#undef INDICATOR_LED_DEFAULT_MODE
-#endif
-#define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
-
-// the button is *not* visible while main LEDs are on
-#undef USE_INDICATOR_LED_WHILE_RAMPING
 
 // ramp shape is different than original ROT66
 // 1x7135: 150 lm
@@ -54,4 +40,19 @@
 #define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
 #define SIMPLE_UI_CEIL MAX_Nx7135
 #define SIMPLE_UI_STEPS 5
+
+// if the "low" mode was disabled, turn it back on
+#ifdef INDICATOR_LED_SKIP_LOW
+#undef INDICATOR_LED_SKIP_LOW
+#endif
+
+// lockout: blinking (3), off: low (1)
+#ifdef AUX1_DEFAULT_MODE
+#undef AUX1_DEFAULT_MODE
+#endif
+#define AUX1_DEFAULT_MODE  aux1_cfg_byte(aux_low_e, aux_blinking_e)
+
+// front aux shouldn't be on while main LEDs are on
+#undef USE_AUX1_LED_WHILE_RAMPING
+
 

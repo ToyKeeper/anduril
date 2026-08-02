@@ -1,5 +1,5 @@
 // thefreeman's avr32dd20 devkit board
-// Copyright (C) 2023 thefreeman, Selene ToyKeeper
+// Copyright (C) 2023-2026 thefreeman, Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -84,14 +84,11 @@
 
 // AUX
 
-//#define USE_BUTTON_LED
-
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
 // turn on the aux LEDs while main LEDs are on
 // because this is a dev board and it's useful to see that
-#define USE_AUX_RGB_LEDS_WHILE_ON  20
-#define USE_INDICATOR_LED_WHILE_RAMPING
+#define USE_AUXRGB_LEDS_WHILE_ON  20
+#define USE_AUX_THRESHOLD_CONFIG
+#define USE_SMOOTH_POVD
 
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
@@ -104,13 +101,6 @@
 #define POLICE_STROBE_USES_AUX
 #define POLICE_COLOR_STROBE_CH1        CM_AUXRED
 #define POLICE_COLOR_STROBE_CH2        CM_AUXBLU
-
-// the aux LEDs are front-facing, so turn them off while main LEDs are on
-#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-#undef USE_INDICATOR_LED_WHILE_RAMPING
-#endif
-
-#define USE_SMOOTH_POVD
 
 
 // Misc

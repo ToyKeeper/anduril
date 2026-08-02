@@ -18,7 +18,6 @@ uint8_t ramp_level_hard_limit = 0;
 void set_level(uint8_t level);
 //void set_level_smooth(uint8_t level);
 void set_level_zero();  // implement this in a hwdef
-void set_level_aux_rgb_leds(uint8_t level);
 
 #ifdef USE_SET_LEVEL_GRADUALLY
 // adjust brightness very smoothly
@@ -119,23 +118,17 @@ PROGMEM const PWM4_DATATYPE pwm4_levels[] = { PWM4_LEVELS };
 #ifdef PWM5_LEVELS
 PROGMEM const PWM5_DATATYPE pwm5_levels[] = { PWM5_LEVELS };
 #endif
-
-// convenience defs for 1 LED with stacked channels
-// FIXME: remove this, use pwm1/2/3 instead
-#ifdef LOW_PWM_LEVELS
-PROGMEM const PWM_DATATYPE low_pwm_levels[]  = { LOW_PWM_LEVELS };
+#ifdef PWM6_LEVELS
+PROGMEM const PWM6_DATATYPE pwm6_levels[] = { PWM6_LEVELS };
 #endif
-#ifdef MED_PWM_LEVELS
-PROGMEM const PWM_DATATYPE med_pwm_levels[]  = { MED_PWM_LEVELS };
+#ifdef PWM7_LEVELS
+PROGMEM const PWM7_DATATYPE pwm7_levels[] = { PWM7_LEVELS };
 #endif
-#ifdef HIGH_PWM_LEVELS
-PROGMEM const PWM_DATATYPE high_pwm_levels[] = { HIGH_PWM_LEVELS };
+#ifdef PWM8_LEVELS
+PROGMEM const PWM8_DATATYPE pwm8_levels[] = { PWM8_LEVELS };
 #endif
-
-// 2 channel CCT blending ramp
-#ifdef BLEND_PWM_LEVELS
-// FIXME: remove this, use pwm1/2/3 instead
-PROGMEM const PWM_DATATYPE blend_pwm_levels[] = { BLEND_PWM_LEVELS };
+#ifdef PWM9_LEVELS
+PROGMEM const PWM9_DATATYPE pwm9_levels[] = { PWM9_LEVELS };
 #endif
 
 

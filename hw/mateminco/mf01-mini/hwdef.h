@@ -1,5 +1,5 @@
 // Mateminco MF01-Mini driver layout
-// Copyright (C) 2019-2023 Selene ToyKeeper
+// Copyright (C) 2019-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -17,14 +17,14 @@
 // channel modes
 // * 0. FET+N+1 stacked
 #define NUM_CHANNEL_MODES  1
-enum CHANNEL_MODES {
+enum channel_modes_e {
     CM_MAIN = 0,
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b00000001
+#define CHANNEL_MODES_ENABLED  0b00000001
 
 
 #define PWM_CHANNELS 3  // old, remove this
@@ -52,7 +52,10 @@ enum CHANNEL_MODES {
 #define CH3_PWM  OCR1B      // OCR1B is the output compare register for PB4
 
 // lighted button and 1-channel front aux
-#define AUXLED_PIN   PB2    // pin 7
+#define USE_AUX1_LED
+#define AUX1_LED_PIN   PB2    // pin 7
+#define AUX1_LED_PORT  PORTB
+#define AUX1_LED_DDR   DDRB
 
 // e-switch
 #ifndef SWITCH_PIN

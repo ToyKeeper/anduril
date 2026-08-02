@@ -1,28 +1,24 @@
+// Emisar/Noctigon Lume-X1 helper functions
 // Copyright (C) 2017-2026 Selene ToyKeeper
 //               2021-2024 loneoceans
 // SPDX-License-Identifier: GPL-3.0-or-later
-
-//***********************************************
-//**  HELPER FUNCTIONS FOR LUME-X1-AVR32DD20   **
-//***********************************************
-
 #pragma once
 
 #include "anduril/channel-modes.h"  // for circular_tint_3h()
 #include "fsm/chan-rgbaux.c"
 
-// Declare variables and functions to support UDR multiple power paths
 uint8_t is_boost_currently_on = 0;   // for turn-on delay during first turn on
 
 void set_level_zero();
+
 void set_level_udr(uint8_t level);
 bool gradual_tick_main(uint8_t gt);
 void set_power_path(uint8_t ramp_level);
 
-void enable_aux_rgb_pwm();
-void disable_aux_rgb_pwm();
-rgb_uint_t get_level_rgbaux(uint8_t level);
-void set_pwm_rgbaux(RGB8_t color);
+void enable_auxrgb_pwm();
+void disable_auxrgb_pwm();
+rgb_uint_t get_level_auxrgb(uint8_t level);
+void set_auxrgb_pwm(RGB8_t color);
 void set_level_hsv(uint8_t level);
 bool gradual_tick_hsv(uint8_t gt);
 
@@ -37,7 +33,7 @@ Channel channels[] = {
         .gradual_tick = gradual_tick_hsv,
         .flags        = CHANNEL_FLAG_IS_AUX | CHANNEL_FLAG_HAS_ARGS
     },
-    RGB_AUX_CHANNELS
+    AUXRGB_CHANNELS
 };
 
 // HSV mode needs a different 3H handler
@@ -45,10 +41,9 @@ StatePtr channel_3H_modes[NUM_CHANNEL_MODES] = {
     NULL, circular_tint_3h,
 };
 
-// turn off
 void set_level_zero() {
-    DAC_LVL  = 0;           // set DAC to 0
-    DAC_VREF = V10;         // set DAC Vref to lowest
+    DAC_LVL  = 0;  // DAC off
+    DAC_VREF = V10;  // set DAC Vref to lowest
 
     // turn off DC/DC converter and amplifier
     BST_ENABLE_PORT &= ~(1 << BST_ENABLE_PIN);
@@ -60,11 +55,11 @@ void set_level_zero() {
     LED_PATH3_PORT &= ~LED_PATH3_PIN;
 
     // turn off PWM for aux RGB
-    disable_aux_rgb_pwm();
+    disable_auxrgb_pwm();
 }
 
 // UDR for set_level, which sets the led brightness based on ramp tables.
-// single set of LED(s), fully regulated boost at all levels
+// single set of LEDs, regulated boost at all levels
 void set_level_udr(uint8_t level) {
     if (level == actual_level - 1) return;  //  no-op
 
@@ -93,21 +88,23 @@ bool gradual_tick_main(uint8_t gt) {
 
     // if Vref is the same, make gradual adjustments.
     // else, jump to the next ramp level and use set_level() to handle power paths.
-    PWM2_DATATYPE vref_next = PWM2_GET(gt); // DAC ramp table Vref
+    // different gear = full adjustment
+    PWM2_DATATYPE vref_next = PWM2_GET(gt);
+    if (vref_next != DAC_VREF) return true;  // let parent set_level() for us
 
-    // if different vref level, make a ramp level adjustment..
-    if (vref_next != DAC_VREF) return true;  // use set_level() to handle normally
+    // same gear = small adjustment
+    PWM1_DATATYPE dac_now  = DAC_LVL >> 6;  // register is left-aligned
+    PWM1_DATATYPE dac_next = PWM1_GET(gt);
 
-    // .. else, same vref, adjust level gradually.
-    PWM1_DATATYPE dac_next  = PWM1_GET(gt); // DAC ramp table data
-    PWM1_DATATYPE dac_curr  = DAC_LVL >> 6; // register is left-aligned
+    // only adjust 1 dac level, max is 1023
+    // (but speed it up with "#define GRADUAL_ADJUST_SPEED  4" elsewhere)
+    GRADUAL_ADJUST_SIMPLE(dac_next, dac_now);
 
-    GRADUAL_ADJUST_SIMPLE(dac_next, dac_curr);
-    DAC_LVL = dac_curr << 6;
+    DAC_LVL = dac_now << 6;
 
-    if (dac_next == dac_curr) return true;  // done
+    if (dac_next == dac_now) return true;  // done
 
-    return false;
+    return false;  // not done yet
 }
 
 // handles dynamic power pathways based on threshold levels
@@ -137,30 +134,58 @@ void set_power_path(uint8_t ramp_level) {
 
 ///// RGB aux PWM stuff
 
-void enable_aux_rgb_pwm() {
+void enable_auxrgb_pwm() {
+    // set up the PWM for aux RGB
+    // AVR32_16DD20_14_Prel_DataSheet_DS40002413-2997818.pdf
+    // data sheet section 23.4 Register Summary - Normal Mode
+    // PA1 is TCA0:WO1, use TCA_SINGLE_CMP1EN_bm
+    // PA2 is TCA0:WO2, use TCA_SINGLE_CMP2EN_bm
+    // PA3 is TCA0:WO3, only available in split mode (i.e. this doesn't work)
+    // For Fast (Single Slope) PWM use TCA_SINGLE_WGMODE_SINGLESLOPE_gc
+    // For Phase Correct (Dual Slope) PWM use TCA_SINGLE_WGMODE_DSBOTTOM_gc
+    // See the manual for other pins, clocks, configs, portmux, etc
+    //TCA0.SINGLE.CTRLB = TCA_SINGLE_CMP0EN_bm
+    //                  | TCA_SINGLE_CMP1EN_bm
+    //                  | TCA_SINGLE_CMP2EN_bm
+    //                  | TCA_SINGLE_WGMODE_DSBOTTOM_gc;
+    //TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc
+    //                  | TCA_SINGLE_ENABLE_bm;
+    //PWM_RGB_TOP = PWM_RGB_TOP_INIT;
+
+    // data sheet section 23.6 Register Summary - Split Mode
+    // PA1 is TCA0:WO1, use TCA_SPLIT_LCMP1EN_bm
+    // PA2 is TCA0:WO2, use TCA_SPLIT_LCMP2EN_bm
+    // PA3 is TCA0:WO3, use TCA_SPLIT_HCMP0EN_bm
+    // PWM is locked by hardware to single-slope fast mode only
+    // set split mode
     TCA0.SPLIT.CTRLD = TCA_SPLIT_SPLITM_bm;
+    // must set period for both counters individually
     TCA0.SPLIT.LPER = PWM_RGB_TOP_INIT;
     TCA0.SPLIT.HPER = PWM_RGB_TOP_INIT;
+    // enable the comparators we need
     TCA0.SPLIT.CTRLB = TCA_SPLIT_LCMP1EN_bm
                      | TCA_SPLIT_LCMP2EN_bm
                      | TCA_SPLIT_HCMP0EN_bm;
+    // enable and start
     TCA0.SPLIT.CTRLA = TCA_SPLIT_CLKSEL_DIV1_gc
                      | TCA_SPLIT_ENABLE_bm;
 }
 
-void disable_aux_rgb_pwm() {
+void disable_auxrgb_pwm() {
+    // TCA no longer being used, so turn it off
     TCA0.SINGLE.CTRLB = 0;
     TCA0.SINGLE.CTRLA = 0;
+    set_auxrgb_power(0);
 }
 
-rgb_uint_t get_level_rgbaux(uint8_t level) {
+rgb_uint_t get_level_auxrgb(uint8_t level) {
     // convert ramp level to raw PWM value
     if (level) level = PWM3_GET(level - 1);
     return level;
 }
 
-void set_pwm_rgbaux(RGB8_t color) {
-    if (! TCA0.SINGLE.CTRLA) { enable_aux_rgb_pwm(); }
+void set_auxrgb_pwm(RGB8_t color) {
+    if (! TCA0.SINGLE.CTRLA) { enable_auxrgb_pwm(); }
     CH_R_PWM = color.r;
     CH_G_PWM = color.g;
     CH_B_PWM = color.b;
@@ -186,7 +211,7 @@ void set_level_hsv(uint8_t level) {
     PWM3_DATATYPE v = PWM3_GET(level);
     color = hsv2rgb(h, s, v);
 
-    set_pwm_rgbaux(color);
+    set_auxrgb_pwm(color);
 }
 
 bool gradual_tick_hsv(uint8_t gt) {

@@ -55,15 +55,16 @@
 #define MAX_1x7135     49
 
 #define RAMP_SMOOTH_FLOOR    1
-#define RAMP_SMOOTH_CEIL   130
+#define RAMP_SMOOTH_CEIL     130
 
-#define RAMP_DISCRETE_FLOOR   10
+#define RAMP_DISCRETE_FLOOR  10
 #define RAMP_DISCRETE_CEIL   130
-#define RAMP_DISCRETE_STEPS    7
+#define RAMP_DISCRETE_STEPS  7
 
-#define SIMPLE_UI_FLOOR   10
-#define SIMPLE_UI_CEIL   110      // about ~12W
-#define SIMPLE_UI_STEPS    5
+// 10 35 [60] 85 110
+#define SIMPLE_UI_FLOOR      10
+#define SIMPLE_UI_CEIL       110      // about ~12W
+#define SIMPLE_UI_STEPS      5
 
 // don't blink mid-ramp
 #ifdef BLINK_AT_RAMP_MIDDLE
@@ -75,27 +76,18 @@
 //***************************************
 
 // stop panicking at 6W (not sure of this numbers yet since it depends on the host..)
-#define THERM_FASTER_LEVEL 100  // about 6W
-#define MIN_THERM_STEPDOWN 60   // similar to single amc7135 in a 3V light
+#define THERM_FASTER_LEVEL  100  // about 6W
+#define MIN_THERM_STEPDOWN  60   // similar to single amc7135 in a 3V light
 
 //***************************************
 //**       AUX LEDs and MISC           **
 //***************************************
 
-#define USE_BUTTON_LED
-
 // this light has three aux LED channels: R, G, B
 // (and some builds tie these also to a RGB side button)
-#define USE_AUX_RGB_LEDS
-#define USE_AUX_RGB_LEDS_WHILE_ON  25
-#define USE_INDICATOR_LED_WHILE_RAMPING
-// the aux LEDs are front-facing, so turn them off while main LEDs are on
-//#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-//#undef USE_INDICATOR_LED_WHILE_RAMPING
-//#endif
-
+#define USE_AUX_THRESHOLD_CONFIG
 #define USE_SMOOTH_POVD
-
+#define USE_AUXRGB_LEDS_WHILE_ON  25
 
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
@@ -109,8 +101,11 @@
 #define POLICE_COLOR_STROBE_CH1        CM_AUXRED
 #define POLICE_COLOR_STROBE_CH2        CM_AUXBLU
 
+
+// Misc
+
 #define PARTY_STROBE_ONTIME 1  // slow down party strobe
-#define STROBE_OFF_LEVEL 1  // keep the regulator chips on between pulses
+#define STROBE_OFF_LEVEL 1  // keep the regulator chip on between pulses
 
 // smoother candle mode with bigger oscillations
 #define CANDLE_AMPLITUDE 30  // default 25

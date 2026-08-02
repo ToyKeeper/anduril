@@ -35,7 +35,7 @@ uint8_t smooth_povd_state(Event event, uint16_t arg) {
 
     else if (event == EV_leave_state) {
         RGB_t color = { .r=0, .g=0, .b=0 };
-        set_pwm_rgbaux(color);
+        set_auxrgb_pwm(color);
         set_level(0);
         return EVENT_HANDLED;
     }
@@ -59,7 +59,12 @@ uint8_t smooth_povd_state(Event event, uint16_t arg) {
             adc_voltage_mode();
             return EVENT_HANDLED;
         }
-        else { ADC_voltage_handler(); }  // update 'voltage'
+        else {  // update 'voltage'
+            ADC_voltage_handler();
+            // speed up measurement
+            // (sync to latest raw value, then lowpass until next tick)
+            adc_smooth[0] = adc_raw[0];
+        }
 
         // wait a moment before starting
         if (phase < smooth_povd_phase_start) {
@@ -114,11 +119,11 @@ uint8_t calc_smooth_povd_brightness (uint8_t level) {
     uint8_t povd_brightness;
     // instead of using hard thresholds, ramp brightness down
     #ifdef USE_AUX_THRESHOLD_CONFIG
-        if (level < cfg.button_led_low_ramp_level) povd_brightness = 0;
-        else if (level < cfg.button_led_high_ramp_level) {
+        if (level < cfg.aux_low_ramp_level) povd_brightness = 0;
+        else if (level < cfg.aux_high_ramp_level) {
             povd_brightness = RAMP_SIZE
-                * (level - cfg.button_led_low_ramp_level)
-                / (cfg.button_led_high_ramp_level - cfg.button_led_low_ramp_level);
+                * (level - cfg.aux_low_ramp_level)
+                / (cfg.aux_high_ramp_level - cfg.aux_low_ramp_level);
         }
     #else
         if (level < POST_OFF_VOLTAGE_BRIGHTNESS) {
@@ -132,9 +137,9 @@ uint8_t calc_smooth_povd_brightness (uint8_t level) {
 }
 
 void draw_smooth_povd (uint8_t level) {
-    rgb_uint_t pwm = get_level_rgbaux(level);
+    rgb_uint_t pwm = get_level_auxrgb(level);
     RGB_t color = voltage_to_rgb_t(pwm);
-    set_pwm_rgbaux(color);
+    set_auxrgb_pwm(color);
 }
 
 #endif  // ifdef USE_SMOOTH_POVD

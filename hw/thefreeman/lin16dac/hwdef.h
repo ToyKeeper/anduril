@@ -1,5 +1,5 @@
 // thefreeman's Linear 16 driver using DAC control
-// Copyright (C) 2021-2023 thefreeman, Selene ToyKeeper
+// Copyright (C) 2021-2026 thefreeman, Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -21,7 +21,7 @@
 // * 0. main LEDs
 // * 1+. aux RGB
 #define NUM_CHANNEL_MODES  2
-enum CHANNEL_MODES {
+enum channel_modes_e {
     CM_MAIN = 0,
     CM_AUX
 };
@@ -29,7 +29,7 @@ enum CHANNEL_MODES {
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b0000000000000001
+#define CHANNEL_MODES_ENABLED  0b0000000000000001
 
 
 #define PWM_BITS      8         // 8-bit DAC
@@ -60,7 +60,7 @@ enum CHANNEL_MODES {
 // e-switch
 #define SWITCH_PIN      PIN4_bp
 #define SWITCH_PORT     VPORTB.IN
-#define SWITCH_ISC_REG  PORTB.PIN2CTRL
+#define SWITCH_ISC_REG  PORTB.PIN4CTRL
 #define SWITCH_VECT     PORTB_PORT_vect
 #define SWITCH_INTFLG   VPORTB.INTFLAGS
 
@@ -70,8 +70,9 @@ enum CHANNEL_MODES {
 #endif
 
 // lighted button
-#define AUXLED_PIN   PIN5_bp
-#define AUXLED_PORT  PORTB
+#define USE_AUX1_LED
+#define AUX1_LED_PIN   PIN5_bp
+#define AUX1_LED_PORT  PORTB
 
 
 inline void hwdef_setup() {
@@ -82,7 +83,8 @@ inline void hwdef_setup() {
 
     VPORTA.DIR = PIN6_bm   // DAC
                | PIN7_bm;  // Opamp
-    VPORTB.DIR = PIN3_bm;  // HDR
+    VPORTB.DIR = PIN3_bm   // HDR
+               | PIN5_bm;  // Aux LED
     //VPORTC.DIR = 0b00000000;
 
     // enable pullups on the input pins to reduce power

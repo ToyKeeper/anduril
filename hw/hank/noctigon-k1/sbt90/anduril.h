@@ -1,28 +1,19 @@
 // Noctigon K1-SBT90.2 config options for Anduril
-// Copyright (C) 2019-2023 Selene ToyKeeper
+// Copyright (C) 2019-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
 // (is a K1 host with a KR4-like driver and a really high-powered LED)
-#include "hank/noctigon-k1/sbt90/hwdef.h"
+#define HWDEF_H  hank/noctigon-k1/sbt90/hwdef.h
 #include "hank/anduril.h"
 
-// this light can safely run a bit hotter than most
-#undef DEFAULT_THERM_CEIL
-#define DEFAULT_THERM_CEIL 55
-
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
-#define USE_AUX_RGB_LEDS_WHILE_ON  10
-#define USE_INDICATOR_LED_WHILE_RAMPING
-
+#define RAMP_SIZE 150
 
 // brightness:
 // 0/1023: 0.35 lm
 // 1/1023: 2.56 lm
 // max regulated: 1740 lm
 // FET: ~3700 lm
-#define RAMP_SIZE 150
 // FIXME: it should probably have max_regulated at 120, not 130
 // ramp copied from noctigon-kr4
 // nice low lows, but might have visible ripple on some lights:
@@ -33,10 +24,10 @@
 #define PWM_TOPS     16383,16383,11750,14690,9183,12439,13615,13955,13877,13560,13093,12529,13291,12513,12756,12769,11893,11747,12085,11725,11329,11316,10851,10713,10518,10282,10016,9729,9428,9298,8971,8794,8459,8257,8043,7715,7497,7275,7052,6753,6538,6260,5994,5798,5501,5271,5006,4758,4525,4268,4030,3775,3508,3263,3010,2752,2517,2256,1998,1763,1512,1249,994,749,497,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
 #define MIN_THERM_STEPDOWN 66  // should be above highest dyn_pwm level
 
-#define MAX_1x7135 130
-#define DEFAULT_LEVEL 50
-#define HALFSPEED_LEVEL 12
-#define QUARTERSPEED_LEVEL 4
+#define MAX_1x7135           130
+#define DEFAULT_LEVEL        50
+#define HALFSPEED_LEVEL      12
+#define QUARTERSPEED_LEVEL   4
 
 #if 0  // original 10-bit ramp
 // maxreg at 130: level_calc.py cube 2 150 7135 0 2.5 1740 FET 1 10 2565
@@ -49,24 +40,36 @@
 #define QUARTERSPEED_LEVEL 2
 #endif
 
-#define RAMP_SMOOTH_FLOOR 11  // low levels may be unreliable
-#define RAMP_SMOOTH_CEIL  130
+#define RAMP_SMOOTH_FLOOR    11  // low levels may be unreliable
+#define RAMP_SMOOTH_CEIL     130
 // 11 30 [50] 70 90 110 [130]
-#define RAMP_DISCRETE_FLOOR 11
-#define RAMP_DISCRETE_CEIL  RAMP_SMOOTH_CEIL
-#define RAMP_DISCRETE_STEPS 7
+#define RAMP_DISCRETE_FLOOR  11
+#define RAMP_DISCRETE_CEIL   RAMP_SMOOTH_CEIL
+#define RAMP_DISCRETE_STEPS  7
 
 // safe limit ~33% power
-#define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
-#define SIMPLE_UI_CEIL 120
-#define SIMPLE_UI_STEPS 5
+#define SIMPLE_UI_FLOOR      RAMP_DISCRETE_FLOOR
+#define SIMPLE_UI_CEIL       120
+#define SIMPLE_UI_STEPS      5
 
 // stop panicking at ~40% power or ~1700 lm
-#define THERM_FASTER_LEVEL 130
+#define THERM_FASTER_LEVEL  130
 //#define THERM_NEXT_WARNING_THRESHOLD 16  // accumulate less error before adjusting
 //#define THERM_RESPONSE_MAGNITUDE 128  // bigger adjustments
 
+// this light can safely run a bit hotter than most
+#undef DEFAULT_THERM_CEIL
+#define DEFAULT_THERM_CEIL  55
+
 #define THERM_CAL_OFFSET 5
+
+// AUX + channel modes
+
+#define USE_AUX_THRESHOLD_CONFIG
+
+// the button has RGB
+#define USE_AUXRGB_LEDS_WHILE_ON  10
+
 
 // the power regulator is a bit slow, so push it harder for a quick response from off
 // (unsure if necessary, copied from noctigon-kr4)

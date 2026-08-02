@@ -15,7 +15,7 @@
 volatile uint8_t irq_wdt = 0;  // WDT interrupt happened?
 
 #ifdef TICK_DURING_STANDBY
-  #if defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS)
+  #if defined(USE_AUX1_LED) || defined(USE_AUXRGB_LEDS)
   // measure battery charge while asleep
   #define USE_SLEEP_LVP
   #endif

@@ -1,5 +1,5 @@
 // hwdef for thefreeman's avr32dd20 dev kit
-// Copyright (C) 2026 thefreeman, Selene ToyKeeper
+// Copyright (C) 2023-2026 thefreeman, Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -50,11 +50,11 @@
 // channel modes:
 // * 0. main LEDs
 // * 1+. aux RGB
-#define NUM_CHANNEL_MODES   (2 + NUM_RGB_AUX_CHANNEL_MODES)
-enum CHANNEL_MODES {
+#define NUM_CHANNEL_MODES   (2 + NUM_AUXRGB_CHANNEL_MODES)
+enum channel_modes_e {
     CM_MAIN = 0,
     CM_HSV,
-    RGB_AUX_ENUMS
+    AUXRGB_CM_ENUMS
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
@@ -62,7 +62,7 @@ enum CHANNEL_MODES {
 // right-most bit first, modes are in fedcba9876543210 order
 #define CHANNEL_MODES_ENABLED  0b0000000000000001
 #define USE_CHANNEL_MODE_ARGS
-#define CHANNEL_MODE_ARGS  0,0,RGB_AUX_CM_ARGS
+#define CHANNEL_MODE_ARGS  0,0,AUXRGB_CM_ARGS
 #define USE_CUSTOM_CHANNEL_3H_MODES
 #define USE_CIRCULAR_TINT_3H
 #define USE_HSV2RGB
@@ -131,11 +131,16 @@ uint8_t voltage_raw2cooked(uint16_t measurement);
 #define VOLTAGE_FUDGE_FACTOR 0  // using a PFET so no appreciable drop
 #endif
 
-// this driver allows for aux LEDs under the optic
-#define AUXLED_R_PIN  PIN0_bp
-#define AUXLED_G_PIN  PIN1_bp
-#define AUXLED_B_PIN  PIN2_bp
-#define AUXLED_RGB_PORT PORTA
+// this light has RGB aux LEDs
+#define USE_AUXRGB_LEDS
+
+// aux RGB passive
+#define AUXRGB_R_PORT  PORTA
+#define AUXRGB_R_PIN   PIN0_bp
+#define AUXRGB_G_PORT  PORTA
+#define AUXRGB_G_PIN   PIN1_bp
+#define AUXRGB_B_PORT  PORTA
+#define AUXRGB_B_PIN   PIN2_bp
 
 // aux RGB PWM
 #define RGB_BITS  8
@@ -148,9 +153,6 @@ uint8_t voltage_raw2cooked(uint16_t measurement);
 
 #define PWM_RGB_TOP       TCA0.SINGLE.PERBUF
 #define PWM_RGB_TOP_INIT  255
-
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
 
 
 inline void hwdef_setup() {
@@ -211,7 +213,7 @@ inline void hwdef_setup() {
     //       to generate a zero without spending power on the DAC
     //       (and do this in set_level_zero() too)
 
-    // TCA/TCB/TCD aren't being used, so turn them off
+    // TCA/TCB/TCD aren't used at boot time, so turn them off
     TCA0.SINGLE.CTRLA = 0;
     TCB0.CTRLA = 0;
     TCB1.CTRLA = 0;

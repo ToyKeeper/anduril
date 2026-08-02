@@ -1,10 +1,10 @@
 // Wurkkos TS10 PWM helper functions
 // Copyright (C) 2023 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
-
 #pragma once
 
 #include "fsm/chan-aux.c"
+
 
 void set_level_zero();
 
@@ -17,10 +17,7 @@ Channel channels[] = {
         .set_level    = set_level_main,
         .gradual_tick = gradual_tick_main
     },
-    { // aux LEDs
-        .set_level    = set_level_aux,
-        .gradual_tick = gradual_tick_null
-    }
+    AUX_CHANNELS
 };
 
 

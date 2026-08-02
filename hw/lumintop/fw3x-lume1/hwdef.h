@@ -1,5 +1,5 @@
 // lume1 Driver Rev B for FW3x driver layout (attiny1634)
-// Copyright (C) 2020-2023 LoneOceans, Selene ToyKeeper
+// Copyright (C) 2020-2026 LoneOceans, Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -42,16 +42,16 @@
 // channel modes:
 // * 0. main LEDs
 // * 1+. aux RGB
-#define NUM_CHANNEL_MODES   (1 + NUM_RGB_AUX_CHANNEL_MODES)
-enum CHANNEL_MODES {
+#define NUM_CHANNEL_MODES   (1 + NUM_AUXRGB_CHANNEL_MODES)
+enum channel_modes_e {
     CM_MAIN = 0,
-    RGB_AUX_ENUMS
+    AUXRGB_CM_ENUMS
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b0000000000000001
+#define CHANNEL_MODES_ENABLED  0b0000000000000001
 
 
 #define PWM_BITS      16        // 0 to 32640 (0 to 255 PWM + 0 to 127 DSM) at constant kHz
@@ -152,19 +152,28 @@ uint16_t temp_raw2cooked(uint16_t measurement);
 // VCC reference (2.5V), Channel PC2
 #define ADMUX_THERM_EXTERNAL_SENSOR 0b00001011
 
-// this driver allows for aux LEDs under the optic
+// this light has RGB aux LEDs
+#define USE_AUXRGB_LEDS
+
+// aux RGB passive
 #ifdef FW3X_RGB_SWAP  // wiring fixed by end user
-    #define AUXLED_R_PIN    PA5    // pin 2
-    #define AUXLED_G_PIN    PA4    // pin 3
-    #define AUXLED_B_PIN    PA3    // pin 4
+    #define AUXRGB_R_PIN    PA5    // pin 2
+    #define AUXRGB_G_PIN    PA4    // pin 3
+    #define AUXRGB_B_PIN    PA3    // pin 4
 #else  // Lumintop's factory wiring
-    #define AUXLED_R_PIN    PA3    // pin 4
-    #define AUXLED_G_PIN    PA4    // pin 3
-    #define AUXLED_B_PIN    PA5    // pin 2
+    #define AUXRGB_R_PIN    PA3    // pin 4
+    #define AUXRGB_G_PIN    PA4    // pin 3
+    #define AUXRGB_B_PIN    PA5    // pin 2
 #endif
-#define AUXLED_RGB_PORT PORTA  // PORTA or PORTB or PORTC
-#define AUXLED_RGB_DDR  DDRA   // DDRA or DDRB or DDRC
-#define AUXLED_RGB_PUE  PUEA   // PUEA or PUEB or PUEC
+#define AUXRGB_R_PORT PORTA  // PORTA or PORTB or PORTC
+#define AUXRGB_R_DDR  DDRA   // DDRA or DDRB or DDRC
+#define AUXRGB_R_PUE  PUEA   // PUEA or PUEB or PUEC
+#define AUXRGB_G_PORT PORTA
+#define AUXRGB_G_DDR  DDRA
+#define AUXRGB_G_PUE  PUEA
+#define AUXRGB_B_PORT PORTA
+#define AUXRGB_B_DDR  DDRA
+#define AUXRGB_B_PUE  PUEA
 
 // For lume1 driver, no SW support for Auxillary Jumpers X1 to X4 yet!
 inline void hwdef_setup() {
@@ -174,9 +183,9 @@ inline void hwdef_setup() {
     // Main PWM, Buck Boost Enable Pin, aux R/G/B
     DDRA = (1 << CH1_PIN)
          | (1 << CH1_ENABLE_PIN)
-         | (1 << AUXLED_R_PIN)
-         | (1 << AUXLED_G_PIN)
-         | (1 << AUXLED_B_PIN)
+         | (1 << AUXRGB_R_PIN)
+         | (1 << AUXRGB_G_PIN)
+         | (1 << AUXRGB_B_PIN)
          ;
 
     //DDRB&=~(1<<VOLTAGE_PIN); // All pins are input by default

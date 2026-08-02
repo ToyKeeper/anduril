@@ -1,5 +1,5 @@
 // thefreeman linear t1616 DAC driver helper functions
-// Copyright (C) 2023 Selene ToyKeeper
+// Copyright (C) 2023-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 

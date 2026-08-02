@@ -1,10 +1,11 @@
 // Emisar D4K 3-channel hwdef
-// Copyright (C) 2023 Selene ToyKeeper
+// Copyright (C) 2023-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
 #include "anduril/channel-modes.h"  //for circular_tint_3h()
 #include "fsm/chan-rgbaux.c"
+
 
 void set_level_zero();
 
@@ -68,7 +69,7 @@ Channel channels[] = {
         .gradual_tick = gradual_tick_auto3,
         .flags        = 0
     },
-    RGB_AUX_CHANNELS
+    AUXRGB_CHANNELS
 };
 
 // HSV mode needs a different 3H handler

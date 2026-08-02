@@ -1,9 +1,9 @@
 // Emisar D18 (FET+13+1) config options for Anduril
-// Copyright (C) 2019-2023 Selene ToyKeeper
+// Copyright (C) 2019-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "hank/emisar-d18/hwdef.h"
+#define HWDEF_H  hank/emisar-d18/hwdef.h
 #include "hank/anduril.h"
 
 #define RAMP_SIZE 150
@@ -14,22 +14,22 @@
 #define PWM2_LEVELS 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,8,10,11,13,14,16,18,19,21,23,26,28,30,33,35,38,41,44,47,51,54,58,62,66,70,75,79,84,90,95,101,106,112,119,126,133,140,147,155,164,172,181,190,200,210,221,232,243,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0
 #define PWM3_LEVELS 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,7,9,11,13,15,18,20,23,25,28,31,34,37,40,44,47,51,54,58,62,66,70,75,79,84,89,94,99,104,110,115,121,127,134,140,147,154,161,168,176,183,191,200,208,217,226,235,245,255
 
-#define DEFAULT_LEVEL       50
-#define MAX_1x7135          50
-#define MAX_Nx7135          100
-#define HALFSPEED_LEVEL     15
-#define QUARTERSPEED_LEVEL  6
+#define DEFAULT_LEVEL        50
+#define MAX_1x7135           50
+#define MAX_Nx7135           100
+#define HALFSPEED_LEVEL      15
+#define QUARTERSPEED_LEVEL   6
 
 // start at ~2000 lm after battery change, not ~150 lm (at Emisar's request)
-//#define DEFAULT_LEVEL MAX_Nx7135
+//#define DEFAULT_LEVEL        MAX_Nx7135
 
 // go up to ~4000 lm
-#define RAMP_SMOOTH_FLOOR 1
-#define RAMP_SMOOTH_CEIL  117
+#define RAMP_SMOOTH_FLOOR    1
+#define RAMP_SMOOTH_CEIL     117
 // 20 36 52 68 84 [100] 117
-#define RAMP_DISCRETE_FLOOR 20
-#define RAMP_DISCRETE_CEIL  RAMP_SMOOTH_CEIL
-#define RAMP_DISCRETE_STEPS 7
+#define RAMP_DISCRETE_FLOOR  20
+#define RAMP_DISCRETE_CEIL   RAMP_SMOOTH_CEIL
+#define RAMP_DISCRETE_STEPS  7
 
 // safe limit ~20% power / max regulated
 // 20 40 60 80 100
@@ -46,7 +46,7 @@
 #endif
 
 // stop panicking at about ~40% power or ~5000 lm
-#define THERM_FASTER_LEVEL 125
+#define THERM_FASTER_LEVEL  125
 
 // enable extra features
 #define USE_SMOOTH_STEPS

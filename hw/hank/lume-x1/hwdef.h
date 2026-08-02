@@ -46,11 +46,11 @@
 // channel modes:
 // * 0. main LEDs
 // * 1+. aux RGB
-#define NUM_CHANNEL_MODES   (2 + NUM_RGB_AUX_CHANNEL_MODES)
-enum CHANNEL_MODES {
+#define NUM_CHANNEL_MODES   (2 + NUM_AUXRGB_CHANNEL_MODES)
+enum channel_modes_e {
     CM_MAIN = 0,
     CM_HSV,
-    RGB_AUX_ENUMS
+    AUXRGB_CM_ENUMS
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
@@ -58,7 +58,7 @@ enum CHANNEL_MODES {
 // right-most bit first, modes are in fedcba9876543210 order
 #define CHANNEL_MODES_ENABLED  0b0000000000000001
 #define USE_CHANNEL_MODE_ARGS
-#define CHANNEL_MODE_ARGS  0,0,RGB_AUX_CM_ARGS
+#define CHANNEL_MODE_ARGS  0,0,AUXRGB_CM_ARGS
 #define USE_CUSTOM_CHANNEL_3H_MODES
 #define USE_CIRCULAR_TINT_3H
 #define USE_HSV2RGB
@@ -67,7 +67,11 @@ enum CHANNEL_MODES {
 //**       SET UP DAC AND PWM          **
 //***************************************
 
-// Define DAC control
+// DAC max is 1023, Anduril is written for 255, so regulate at 4X speed
+#undef  GRADUAL_ADJUST_SPEED
+#define GRADUAL_ADJUST_SPEED  4
+
+// DAC control
 #define PWM_BITS      16        // 10-bit DAC
 #define PWM_DATATYPE  uint16_t
 #define PWM_DATATYPE2 uint32_t
@@ -114,38 +118,36 @@ enum CHANNEL_MODES {
 #define LED_PATH3_PIN   PIN5_bm
 #define LED_PATH3_PORT  PORTA_OUT
 
-// Define Aux LED Pins
 
-// lighted switch button aux led (PA4)
-#ifndef BUTTON_LED_PIN
-#define BUTTON_LED_PIN  PIN4_bp
-#define BUTTON_LED_PORT PORTA
-#endif
+// this light has RGB aux LEDs
+// (and some builds tie these also to a RGB side button)
+#define USE_AUXRGB_LEDS
 
-// this driver allows for aux LEDs under the optic
-#define AUXLED_R_PIN   PIN1_bp
-#define AUXLED_G_PIN   PIN2_bp
-#define AUXLED_B_PIN   PIN3_bp
-
-#define AUXLED_RGB_PORT PORTA
+// aux RGB passive
+#define AUXRGB_R_PORT  PORTA
+#define AUXRGB_R_PIN   PIN1_bp
+#define AUXRGB_G_PORT  PORTA
+#define AUXRGB_G_PIN   PIN2_bp
+#define AUXRGB_B_PORT  PORTA
+#define AUXRGB_B_PIN   PIN3_bp
 
 // aux RGB PWM
 #define RGB_BITS  8
 #define CH_R_PIN  PA1
-//#define CH_R_PWM  TCA0.SINGLE.CMP1BUF
 #define CH_R_PWM  TCA0.SPLIT.LCMP1
 #define CH_G_PIN  PA2
-//#define CH_G_PWM  TCA0.SINGLE.CMP2BUF
 #define CH_G_PWM  TCA0.SPLIT.LCMP2
 #define CH_B_PIN  PA3
-//#define CH_B_PWM  TCA0.SINGLE.CMP0BUF
 #define CH_B_PWM  TCA0.SPLIT.HCMP0
 
 //#define PWM_RGB_TOP       TCA0.SINGLE.PERBUF
 #define PWM_RGB_TOP_INIT  255
 
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
+// button LED
+#define USE_AUX1_LED
+#define AUX1_LED_PIN   PIN4_bp
+#define AUX1_LED_PORT  PORTA
+
 
 // Define e-switch Pin and ISR
 #ifndef SWITCH_PIN   // PD4
@@ -221,41 +223,14 @@ inline void hwdef_setup() {
     //       to generate a zero without spending power on the DAC
     //       (and do this in set_level_zero() too)
 
-    // set up the PWM for aux RGB
-    // AVR32_16DD20_14_Prel_DataSheet_DS40002413-2997818.pdf
-    // data sheet section 23.4 Register Summary - Normal Mode
-    // PA1 is TCA0:WO1, use TCA_SINGLE_CMP1EN_bm
-    // PA2 is TCA0:WO2, use TCA_SINGLE_CMP2EN_bm
-    // PA3 is TCA0:WO3, only available in split mode (i.e. this doesn't work)
-    // For Fast (Single Slope) PWM use TCA_SINGLE_WGMODE_SINGLESLOPE_gc
-    // For Phase Correct (Dual Slope) PWM use TCA_SINGLE_WGMODE_DSBOTTOM_gc
-    // See the manual for other pins, clocks, configs, portmux, etc
-    //TCA0.SINGLE.CTRLB = TCA_SINGLE_CMP0EN_bm
-    //                  | TCA_SINGLE_CMP1EN_bm
-    //                  | TCA_SINGLE_CMP2EN_bm
-    //                  | TCA_SINGLE_WGMODE_DSBOTTOM_gc;
-    //TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc
-    //                  | TCA_SINGLE_ENABLE_bm;
-    //PWM_RGB_TOP = PWM_RGB_TOP_INIT;
+    // TCA/TCB/TCD aren't used at boot time, so turn them off
+    TCA0.SINGLE.CTRLA = 0;
+    TCB0.CTRLA = 0;
+    TCB1.CTRLA = 0;
+    TCD0.CTRLA = 0;
 
-    // data sheet section 23.6 Register Summary - Split Mode
-    // PA1 is TCA0:WO1, use TCA_SPLIT_LCMP1EN_bm
-    // PA2 is TCA0:WO2, use TCA_SPLIT_LCMP2EN_bm
-    // PA3 is TCA0:WO3, use TCA_SPLIT_HCMP0EN_bm
-    // PWM is locked by hardware to single-slope fast mode only
-    // set split mode
-    TCA0.SPLIT.CTRLD = TCA_SPLIT_SPLITM_bm;
-    // must set period for both counters individually
-    TCA0.SPLIT.LPER = PWM_RGB_TOP_INIT;
-    TCA0.SPLIT.HPER = PWM_RGB_TOP_INIT;
-    // enable the comparators we need
-    TCA0.SPLIT.CTRLB = TCA_SPLIT_LCMP1EN_bm
-                     | TCA_SPLIT_LCMP2EN_bm
-                     | TCA_SPLIT_HCMP0EN_bm;
-    // enable and start
-    TCA0.SPLIT.CTRLA = TCA_SPLIT_CLKSEL_DIV1_gc
-                     | TCA_SPLIT_ENABLE_bm;
 }
+
 
 // set fuses, these carry over to the ELF file
 // we need this for enabling BOD in Active Mode from the factory.

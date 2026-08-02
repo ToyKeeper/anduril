@@ -1,5 +1,5 @@
 // Noctigon K1 driver layout (attiny1634)
-// Copyright (C) 2019-2023 Selene ToyKeeper
+// Copyright (C) 2019-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -46,16 +46,16 @@
 // channel modes:
 // * 0. main LED
 // * 1+. aux RGB
-#define NUM_CHANNEL_MODES   (1 + NUM_RGB_AUX_CHANNEL_MODES)
-enum CHANNEL_MODES {
+#define NUM_CHANNEL_MODES   (1 + NUM_AUXRGB_CHANNEL_MODES)
+enum channel_modes_e {
     CM_MAIN = 0,
-    RGB_AUX_ENUMS
+    AUXRGB_CM_ENUMS
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b0000000000000001
+#define CHANNEL_MODES_ENABLED  0b0000000000000001
 // no args
 //#define USE_CHANNEL_MODE_ARGS
 //#define CHANNEL_MODE_ARGS     0,0,0,0,0,0,0,0
@@ -80,24 +80,34 @@ enum CHANNEL_MODES {
 #define CH1_ENABLE_PORT  PORTB  // control port for PB0
 
 // e-switch
-#define SWITCH_PIN   PA7    // pin 20
-#define SWITCH_PCINT PCINT7 // pin 20 pin change interrupt
-#define SWITCH_PCIE  PCIE0  // PCIE0 is for PCINT[7:0]
-#define SWITCH_PCMSK PCMSK0 // PCMSK0 is for PCINT[7:0]
-#define SWITCH_PORT  PINA   // PINA or PINB or PINC
-#define SWITCH_PUE   PUEA   // pullup group A
+#define SWITCH_PIN   PA7     // pin 20
+#define SWITCH_PCINT PCINT7  // pin 20 pin change interrupt
+#define SWITCH_PCIE  PCIE0   // PCIE0 is for PCINT[7:0]
+#define SWITCH_PCMSK PCMSK0  // PCMSK0 is for PCINT[7:0]
+#define SWITCH_PORT  PINA    // PINA or PINB or PINC
+#define SWITCH_PUE   PUEA    // pullup group A
 #define SWITCH_VECT  PCINT0_vect  // ISR for PCINT[7:0]
 
 
 #include "hank/vdivider-1634.h"
 
-// this light has aux LEDs under the optic
-#define AUXLED_R_PIN    PA5    // pin 2
-#define AUXLED_G_PIN    PA4    // pin 3
-#define AUXLED_B_PIN    PA3    // pin 4
-#define AUXLED_RGB_PORT PORTA  // PORTA or PORTB or PORTC
-#define AUXLED_RGB_DDR  DDRA   // DDRA or DDRB or DDRC
-#define AUXLED_RGB_PUE  PUEA   // PUEA or PUEB or PUEC
+
+// this light has RGB aux LEDs
+#define USE_AUXRGB_LEDS
+
+// aux RGB passive
+#define AUXRGB_R_PIN    PA5    // pin 2
+#define AUXRGB_R_PORT   PORTA  // PORTA or PORTB or PORTC
+#define AUXRGB_R_DDR    DDRA   // DDRA or DDRB or DDRC
+#define AUXRGB_R_PUE    PUEA   // PUEA or PUEB or PUEC
+#define AUXRGB_G_PIN    PA4    // pin 3
+#define AUXRGB_G_PORT   PORTA
+#define AUXRGB_G_DDR    DDRA
+#define AUXRGB_G_PUE    PUEA
+#define AUXRGB_B_PIN    PA3    // pin 4
+#define AUXRGB_B_PORT   PORTA
+#define AUXRGB_B_DDR    DDRA
+#define AUXRGB_B_PUE    PUEA
 
 
 inline void hwdef_setup() {
@@ -106,9 +116,9 @@ inline void hwdef_setup() {
     DDRB = (1 << CH1_PIN)
          | (1 << CH1_ENABLE_PIN);
     // aux R/G/B
-    DDRA = (1 << AUXLED_R_PIN)
-         | (1 << AUXLED_G_PIN)
-         | (1 << AUXLED_B_PIN)
+    DDRA = (1 << AUXRGB_R_PIN)
+         | (1 << AUXRGB_G_PIN)
+         | (1 << AUXRGB_B_PIN)
          ;
 
     // configure PWM
@@ -118,13 +128,13 @@ inline void hwdef_setup() {
     // CS1[2:0]:    0,0,1: clk/1 (No prescaling) (DS table 12-6)
     // COM1A[1:0]:    1,0: PWM OC1A in the normal direction (DS table 12-4)
     // COM1B[1:0]:    0,0: PWM OC1B disabled (DS table 12-4)
-    TCCR1A  = (1<<WGM11)  | (1<<WGM10)   // 10-bit (TOP=0x03FF) (DS table 12-5)
-            | (1<<COM1A1) | (0<<COM1A0)  // PWM 1A in normal direction (DS table 12-4)
-            | (0<<COM1B1) | (0<<COM1B0)  // PWM 1B in normal direction (DS table 12-4)
-            ;
-    TCCR1B  = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
-            | (0<<WGM13)  | (0<<WGM12)  // phase-correct PWM (DS table 12-5)
-            ;
+    TCCR1A = (1<<WGM11)  | (1<<WGM10)   // 10-bit (TOP=0x03FF) (DS table 12-5)
+           | (1<<COM1A1) | (0<<COM1A0)  // PWM 1A in normal direction (DS table 12-4)
+           | (0<<COM1B1) | (0<<COM1B0)  // PWM 1B in normal direction (DS table 12-4)
+           ;
+    TCCR1B = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
+           | (0<<WGM13)  | (0<<WGM12)  // phase-correct PWM (DS table 12-5)
+           ;
 
     // set PWM resolution
     //PWM_TOP = PWM_TOP_INIT;

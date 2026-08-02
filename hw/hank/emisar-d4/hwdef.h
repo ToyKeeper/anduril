@@ -1,5 +1,5 @@
 // Emisar D4 driver layout
-// Copyright (C) 2017-2023 Selene ToyKeeper
+// Copyright (C) 2017-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -15,7 +15,7 @@
 #define HWDEF_C  hank/emisar-d4/hwdef.c
 
 // allow using aux LEDs as extra channel modes (when they exist)
-//#ifdef AUXLED_PIN
+//#ifdef USE_AUX1_LED
 #if 0
 #include "fsm/chan-aux.h"
 #else
@@ -26,7 +26,7 @@
 // * 0. FET+7135 stacked
 // * 1. button LED (only on some derivative models, like BLF Q8)
 #define NUM_CHANNEL_MODES   (1 + NUM_AUX_CHANNEL_MODES)
-enum CHANNEL_MODES {
+enum channel_modes_e {
     CM_MAIN = 0,
     CM_AUX,
 };
@@ -34,7 +34,7 @@ enum CHANNEL_MODES {
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b00000001
+#define CHANNEL_MODES_ENABLED  0b00000001
 
 
 #define PWM_CHANNELS 2  // old, remove this
@@ -60,7 +60,14 @@ enum CHANNEL_MODES {
 #define CH2_PWM  OCR0B      // OCR0B is the output compare register for PB1
 #endif
 
-//#define AUXLED_PIN   PB4    // pin 3
+#if 0
+// example; copy this into your hwdef to enable it
+#define USE_AUX1_LED
+#define USE_AUX1_LED_WHILE_RAMPING
+#define AUX1_LED_PIN   PB4    // pin 3
+#define AUX1_LED_PORT  PORTB
+#define AUX1_LED_DDR   DDRB
+#endif
 
 // e-switch
 #ifndef SWITCH_PIN

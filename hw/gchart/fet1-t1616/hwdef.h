@@ -1,5 +1,5 @@
 // gChart's custom FET+1 driver layout
-// Copyright (C) 2020-2023 gchart, Selene ToyKeeper
+// Copyright (C) 2020-2026 gchart, Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -22,7 +22,7 @@
 // * 0. FET+7135 stacked
 // * 1. aux LEDs
 #define NUM_CHANNEL_MODES  2
-enum CHANNEL_MODES {
+enum channel_modes_e {
     CM_MAIN = 0,
     CM_AUX
 };
@@ -68,9 +68,10 @@ enum CHANNEL_MODES {
 #define VOLTAGE_FUDGE_FACTOR 8  // 4 = add 0.20V
 #endif
 
-// lighted button
-#define AUXLED_PIN   PIN3_bp
-#define AUXLED_PORT  PORTB
+// lighted button (single channel, passive)
+#define USE_AUX1_LED
+#define AUX1_LED_PIN   PIN3_bp
+#define AUX1_LED_PORT  PORTB
 
 
 inline void hwdef_setup() {
@@ -86,7 +87,7 @@ inline void hwdef_setup() {
                | PIN3_bm;  // Aux LED
     //VPORTC.DIR = 0b00000000;
 
-    // enable pullups on the input pins to reduce power
+    // enable pullups on the unused pins to reduce power
     PORTA.PIN0CTRL = PORT_PULLUPEN_bm;
     PORTA.PIN1CTRL = PORT_PULLUPEN_bm;
     PORTA.PIN2CTRL = PORT_PULLUPEN_bm;

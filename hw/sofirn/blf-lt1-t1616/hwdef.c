@@ -1,5 +1,5 @@
 // Sofirn LT1-t1616 PWM helpers
-// Copyright (C) 2023 SiteRelEnby, Selene ToyKeeper
+// Copyright (C) 2023-2026 SiteRelEnby, Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 

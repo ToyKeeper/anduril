@@ -62,19 +62,19 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
 // 13 = add 0.30V
 void voltage_config_save(uint8_t step, uint8_t value) {
     switch (step) {
-        #if defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS)
+        #if defined(USE_AUX1_LED) || defined(USE_AUXRGB_LEDS)
         case aux_while_on_step:
             cfg.aux_while_on = value;
             break;
         #endif
         #if defined(USE_AUX_THRESHOLD_CONFIG)
-        case button_led_low_ramp_level_step:
+        case aux_low_ramp_level_step:
             // 0 clicks = 255 = never turn on
-            cfg.button_led_low_ramp_level = value - 1;
+            cfg.aux_low_ramp_level = value - 1;
             break;
-        case button_led_high_ramp_level_step:
+        case aux_high_ramp_level_step:
             // 0 clicks = 255 = never turn on
-            cfg.button_led_high_ramp_level = value - 1;
+            cfg.aux_high_ramp_level = value - 1;
             break;
         #endif
 

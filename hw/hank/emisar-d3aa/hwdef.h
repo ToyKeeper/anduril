@@ -47,11 +47,11 @@
 // channel modes:
 // * 0. main LEDs
 // * 1+. aux RGB
-#define NUM_CHANNEL_MODES   (2 + NUM_RGB_AUX_CHANNEL_MODES)
-enum CHANNEL_MODES {
+#define NUM_CHANNEL_MODES   (2 + NUM_AUXRGB_CHANNEL_MODES)
+enum channel_modes_e {
     CM_MAIN = 0,
     CM_HSV,
-    RGB_AUX_ENUMS
+    AUXRGB_CM_ENUMS
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
@@ -59,7 +59,7 @@ enum CHANNEL_MODES {
 // right-most bit first, modes are in fedcba9876543210 order
 #define CHANNEL_MODES_ENABLED  0b0000000000000001
 #define USE_CHANNEL_MODE_ARGS
-#define CHANNEL_MODE_ARGS  0,0,RGB_AUX_CM_ARGS
+#define CHANNEL_MODE_ARGS  0,0,AUXRGB_CM_ARGS
 #define USE_CUSTOM_CHANNEL_3H_MODES
 #define USE_CIRCULAR_TINT_3H
 #define USE_HSV2RGB
@@ -137,11 +137,16 @@ enum CHANNEL_MODES {
 #define VOLTAGE_FUDGE_FACTOR 0  // using a PFET so no appreciable drop
 #endif
 
-// this driver allows for aux LEDs under the optic
-#define AUXLED_R_PIN  PIN3_bp
-#define AUXLED_G_PIN  PIN2_bp
-#define AUXLED_B_PIN  PIN0_bp
-#define AUXLED_RGB_PORT PORTA
+// this light has RGB aux LEDs
+#define USE_AUXRGB_LEDS
+
+// aux RGB passive
+#define AUXRGB_R_PORT  PORTA
+#define AUXRGB_R_PIN   PIN3_bp
+#define AUXRGB_G_PORT  PORTA
+#define AUXRGB_G_PIN   PIN2_bp
+#define AUXRGB_B_PORT  PORTA
+#define AUXRGB_B_PIN   PIN0_bp
 
 // aux RGB PWM
 #define RGB_BITS  8
@@ -154,14 +159,10 @@ enum CHANNEL_MODES {
 
 #define PWM_RGB_TOP_INIT  255
 
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
-
 // A: button LED
-#ifndef BUTTON_LED_PIN
-#define BUTTON_LED_PIN  PIN7_bp
-#define BUTTON_LED_PORT PORTA
-#endif
+#define USE_AUX1_LED
+#define AUX1_LED_PIN   PIN7_bp
+#define AUX1_LED_PORT  PORTA
 
 
 inline void hwdef_setup() {
@@ -217,25 +218,12 @@ inline void hwdef_setup() {
     //       to generate a zero without spending power on the DAC
     //       (and do this in set_level_zero() too)
 
-    // set up the PWM for aux RGB
-    // AVR32_16DD20_14_Prel_DataSheet_DS40002413-2997818.pdf
-    // data sheet section 23.6 Register Summary - Split Mode
-    // PA0 is TCA0:WO0, use TCA_SPLIT_LCMP0EN_bm
-    // PA2 is TCA0:WO2, use TCA_SPLIT_LCMP2EN_bm
-    // PA3 is TCA0:WO3, use TCA_SPLIT_HCMP0EN_bm
-    // PWM is locked by hardware to single-slope fast mode only
-    // set split mode
-    TCA0.SPLIT.CTRLD = TCA_SPLIT_SPLITM_bm;
-    // must set period for both counters individually
-    TCA0.SPLIT.LPER = PWM_RGB_TOP_INIT;
-    TCA0.SPLIT.HPER = PWM_RGB_TOP_INIT;
-    // enable the comparators we need
-    TCA0.SPLIT.CTRLB = TCA_SPLIT_LCMP0EN_bm
-                     | TCA_SPLIT_LCMP2EN_bm
-                     | TCA_SPLIT_HCMP0EN_bm;
-    // enable and start
-    TCA0.SPLIT.CTRLA = TCA_SPLIT_CLKSEL_DIV1_gc
-                     | TCA_SPLIT_ENABLE_bm;
+    // TCA/TCB/TCD aren't used at boot time, so turn them off
+    TCA0.SINGLE.CTRLA = 0;
+    TCB0.CTRLA = 0;
+    TCB1.CTRLA = 0;
+    TCD0.CTRLA = 0;
+
 }
 
 

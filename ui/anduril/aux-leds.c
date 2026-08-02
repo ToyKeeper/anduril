@@ -6,8 +6,8 @@
 #include "anduril/aux-leds.h"
 
 
-#if defined(USE_INDICATOR_LED)
-void indicator_led_update(uint8_t mode, uint8_t tick) {
+#if defined(USE_AUX1_LED) && (!defined(USE_AUXRGB_LEDS))
+void aux1_led_update(uint8_t mode, uint8_t tick) {
     //uint8_t volts = voltage;  // save a few bytes by caching volatile value
     // turn off when battery is too low
     #ifdef DUAL_VOLTAGE_FLOOR
@@ -16,19 +16,19 @@ void indicator_led_update(uint8_t mode, uint8_t tick) {
     #else
     if (voltage < VOLTAGE_LOW) {
     #endif
-        indicator_led(0);
+        set_aux1_power(0);
     }
-    //#ifdef USE_INDICATOR_LOW_BAT_WARNING
+    //#ifdef USE_AUX1LOW_BAT_WARNING
     #ifndef DUAL_VOLTAGE_FLOOR // this isn't set up for dual-voltage lights like the Sofirn SP10 Pro
     // fast blink a warning when battery is low but not critical
     else if (voltage < VOLTAGE_RED) {
-        indicator_led(mode & (((tick & 0b0010)>>1) - 3));
+        set_aux1_power(mode & (((tick & 0b0010)>>1) - 3));
     }
     #endif
     //#endif
     // normal steady output, 0/1/2 = off / low / high
     else if (mode < 3) {
-        indicator_led(mode);
+        set_aux1_power(mode);
     }
     // beacon-like blinky mode
     else {
@@ -36,10 +36,10 @@ void indicator_led_update(uint8_t mode, uint8_t tick) {
 
         // basic blink, 1/8th duty cycle
         if (! (tick & 7)) {
-            indicator_led(2);
+            set_aux1_power(2);
         }
         else {
-            indicator_led(0);
+            set_aux1_power(0);
         }
 
         #else
@@ -47,14 +47,14 @@ void indicator_led_update(uint8_t mode, uint8_t tick) {
         // fancy blink, set off/low/high levels here:
         static const uint8_t seq[] = {0, 1, 2, 1,  0, 0, 0, 0,
                                       0, 0, 1, 0,  0, 0, 0, 0};
-        indicator_led(seq[tick & 15]);
+        set_aux1_power(seq[tick & 15]);
 
         #endif  // ifdef USE_OLD_BLINKING_INDICATOR
     }
 }
 #endif
 
-#if defined(USE_AUX_RGB_LEDS) && defined(TICK_DURING_STANDBY)
+#if defined(USE_AUXRGB_LEDS) && defined(TICK_DURING_STANDBY)
 uint8_t voltage_to_rgb() {
     uint8_t volts = voltage;
     //if (volts < VOLTAGE_LOW) return 0;
@@ -119,9 +119,9 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
     #else
     if ((volts) && (volts < VOLTAGE_LOW)) {
     #endif
-        rgb_led_set(0);
-        #ifdef USE_BUTTON_LED
-        button_led_set(0);
+        set_auxrgb_power(0);
+        #ifdef USE_AUX1_LED
+        set_aux1_power(0);
         #endif
         return;
     }
@@ -145,8 +145,8 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
             // otherwise 0/1/2 depending on recent main LED brightness
             // (using >= makes it off by 1, but allows POVD at boot time)
             if (pattern != 2)
-                pattern = (prev_level >= cfg.button_led_low_ramp_level)
-                    << (prev_level > cfg.button_led_high_ramp_level);
+                pattern = (prev_level >= cfg.aux_low_ramp_level)
+                       << (prev_level > cfg.aux_high_ramp_level);
         #else
             pattern = 1
                 + ((2 == pattern)
@@ -199,39 +199,47 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
         pattern = pgm_read_byte(aux_animations + base + frame + 1);
     }
     uint8_t result;
-    #ifdef USE_BUTTON_LED
+    #ifdef USE_AUX1_LED
     uint8_t button_led_result;
     #endif
     switch (pattern) {
         case 0:  // off
             result = 0;
-            #ifdef USE_BUTTON_LED
+            #ifdef USE_AUX1_LED
             button_led_result = 0;
             #endif
             break;
         case 1:  // low
             result = actual_color;
-            #ifdef USE_BUTTON_LED
+            #ifdef USE_AUX1_LED
             button_led_result = 1;
             #endif
             break;
         default:  // high
             result = (actual_color << 1);
-            #ifdef USE_BUTTON_LED
+            #ifdef USE_AUX1_LED
             button_led_result = 2;
             #endif
             break;
     }
-    rgb_led_set(result);
-    #ifdef USE_BUTTON_LED
-    button_led_set(button_led_result);
+    set_auxrgb_power(result);
+    #ifdef USE_AUX1_LED
+    set_aux1_power(button_led_result);
     #endif
 }
 
-void rgb_led_voltage_readout(uint8_t bright) {
-    uint8_t color = voltage_to_rgb();
-    if (bright) color = color << 1;
-    rgb_led_set(color);
+void rgb_led_voltage_readout(uint8_t power) {
+    switch(power) {
+        case 0:  // off
+            set_auxrgb_power(0);
+            break;
+        case 1:  // low
+            set_auxrgb_power(voltage_to_rgb());
+            break;
+        default:  // high
+            set_auxrgb_power(voltage_to_rgb() << 1);
+            break;
+    }
 }
 #endif
 

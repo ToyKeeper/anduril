@@ -308,10 +308,10 @@ void loop() {
     if (0) {}  // placeholder
 
     else if (state == steady_state) {
-        #ifdef USE_AUX_RGB_LEDS
+        #ifdef USE_AUXRGB_LEDS
             if (cfg.aux_while_on & 0b10) {
                 // display battery charge on RGB button during use
-                set_level_aux_rgb_leds(actual_level);
+                set_level_aux_leds(actual_level);
             }
         #endif
         #ifdef USE_IDLE_MODE

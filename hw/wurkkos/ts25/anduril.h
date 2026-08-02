@@ -1,19 +1,10 @@
 // Wurkkos TS25, modelled after the TS10 but with RGB Aux
-// Copyright (C) 2022-2023 (FIXME)
+// Copyright (C) 2022-2026 gchart, Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-//#include "wurkkos/ts25/hwdef.h"
 #define HWDEF_H  wurkkos/ts25/hwdef.h
 #include "wurkkos/anduril.h"
-
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
-
-// don't turn on the aux LEDs while main LEDs are on
-#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-#undef USE_INDICATOR_LED_WHILE_RAMPING
-#endif
 
 // voltage readings were a little high with the Q8 value
 #undef VOLTAGE_FUDGE_FACTOR
@@ -42,11 +33,11 @@
 #define PWM2_LEVELS  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,4,6,7,8,10,11,13,14,16,17,19,21,22,24,26,28,30,32,34,37,39,41,44,46,48,51,54,56,59,62,65,68,71,74,77,81,84,87,91,94,98,102,106,110,114,118,122,126,130,135,139,144,148,153,158,163,168,173,178,184,189,195,200,206,212,218,224,230,236,242,248,255
 #define PWM_TOPS     4095,2701,3200,3586,2518,2778,2834,2795,2705,2587,2455,2582,2412,2247,2256,2091,2062,1907,1860,1802,1737,1605,1542,1477,1412,1347,1284,1222,1162,1105,1050,997,946,898,853,810,768,730,693,658,625,594,564,536,503,485,462,439,418,398,384,366,353,340,327,319,307,298,292,284,280,273,269,266,263,260,258,256,256,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
 
-#define MAX_1x7135 75
-#define DEFAULT_LEVEL 50
-#define MIN_THERM_STEPDOWN 60
-#define HALFSPEED_LEVEL 20
-#define QUARTERSPEED_LEVEL 5
+#define MAX_1x7135           75
+#define DEFAULT_LEVEL        50
+#define MIN_THERM_STEPDOWN   60
+#define HALFSPEED_LEVEL      20
+#define QUARTERSPEED_LEVEL   5
 
 #define RAMP_SMOOTH_FLOOR    1
 #define RAMP_SMOOTH_CEIL     150
@@ -61,8 +52,19 @@
 #define SIMPLE_UI_CEIL   125
 #define SIMPLE_UI_STEPS  5
 
+// don't blink mid-ramp
+#ifdef BLINK_AT_RAMP_MIDDLE
+#undef BLINK_AT_RAMP_MIDDLE
+#endif
+
 // stop panicking at ~50% power
 #define THERM_FASTER_LEVEL 120  // throttle back faster when high
+
+
+// AUX
+
+#define USE_AUX_THRESHOLD_CONFIG
+#define DEFAULT_AUX_WHILE_ON  0b00  // off unless user enables it
 
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
@@ -78,9 +80,4 @@
 #define POLICE_STROBE_USES_AUX
 #define POLICE_COLOR_STROBE_CH1        CM_AUXRED
 #define POLICE_COLOR_STROBE_CH2        CM_AUXBLU
-
-// don't blink mid-ramp
-#ifdef BLINK_AT_RAMP_MIDDLE
-#undef BLINK_AT_RAMP_MIDDLE
-#endif
 

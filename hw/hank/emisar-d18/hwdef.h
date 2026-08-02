@@ -17,7 +17,7 @@
 // channel modes
 // * 0. FET+N+1 stacked
 #define NUM_CHANNEL_MODES   1
-enum CHANNEL_MODES {
+enum channel_modes_e {
     CM_MAIN = 0,
 };
 
@@ -51,15 +51,26 @@ enum CHANNEL_MODES {
 #define CH3_PIN  PB4        // pin 3, FET PWM
 #define CH3_PWM  OCR1B      // OCR1B is the output compare register for PB4
 
+#if 0
+// could theoretically add an aux channel, but stock hardware has none
+#define USE_AUX1_LED
+#define USE_AUX1_LED_WHILE_RAMPING
+#define AUX1_LED_PIN   PB2    // pin 7
+#define AUX1_LED_PORT  PORTB
+#define AUX1_LED_DDR   DDRB
+#endif
+
 // e-switch
 #ifndef SWITCH_PIN
 #define SWITCH_PIN   PB3    // pin 2
 #define SWITCH_PCINT PCINT3 // pin 2 pin change interrupt
 #endif
 
-#ifndef AUXLED_PIN
-#define AUXLED_PIN PB2      // pin 7
+#ifdef VISION_PIN
+// this is not a FW3A
+#undef VISION_PIN
 #endif
+
 #define ADC_PRSCL   0x07    // clk/128
 
 // average drop across diode on this hardware

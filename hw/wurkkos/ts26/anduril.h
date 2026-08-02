@@ -1,24 +1,10 @@
 // Wurkkos TS26
-// Copyright (C) 2023 Selene ToyKeeper
+// Copyright (C) 2023-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
 #define HWDEF_H  wurkkos/ts26/hwdef.h
 #include "wurkkos/anduril.h"
-
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
-
-// don't turn on the aux LEDs while main LEDs are on
-#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-#undef USE_INDICATOR_LED_WHILE_RAMPING
-#endif
-// (nope, 20250210 prototype has front aux instead of RGB button)
-// show real-time battery status on RGB button
-// when main LEDs are bright enough to overpower the front aux
-//#define USE_INDICATOR_LED_WHILE_RAMPING
-//#define USE_AUX_RGB_LEDS_WHILE_ON  20
-
 
 #define RAMP_SIZE 150
 
@@ -67,11 +53,22 @@
 #define SIMPLE_UI_CEIL   125
 #define SIMPLE_UI_STEPS  5
 
+// don't blink mid-ramp
+#ifdef BLINK_AT_RAMP_MIDDLE
+#undef BLINK_AT_RAMP_MIDDLE
+#endif
+
 // stop panicking at ~50% power
 #define THERM_FASTER_LEVEL 120  // throttle back faster when high
 
 #define BLINK_BRIGHTNESS 30
 #define BLINK_ONCE_TIME 12
+
+
+// AUX
+
+#define USE_AUX_THRESHOLD_CONFIG
+#define DEFAULT_AUX_WHILE_ON  0b00  // off unless user enables it
 
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
@@ -94,9 +91,4 @@
 
 // the default of 26 looks a bit rough, so increase it to make it smoother
 #define CANDLE_AMPLITUDE 33
-
-// don't blink mid-ramp
-#ifdef BLINK_AT_RAMP_MIDDLE
-#undef BLINK_AT_RAMP_MIDDLE
-#endif
 

@@ -1,5 +1,5 @@
 // Emisar D4Sv2 driver layout (attiny1634)
-// Copyright (C) 2019-2023 Selene ToyKeeper
+// Copyright (C) 2019-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -7,10 +7,10 @@
  * (same layout as D4v2, except it's a FET+3+1 instead of FET+1)
  *
  * Pin / Name / Function
- *   1    PA6   FET PWM (PWM1B)
- *   2    PA5   red aux LED (PWM0B)
- *   3    PA4   green aux LED
- *   4    PA3   blue aux LED
+ *   1    PA6   FET PWM (direct drive) (PWM1B)
+ *   2    PA5   R: red aux LED (PWM0B)
+ *   3    PA4   G: green aux LED
+ *   4    PA3   B: blue aux LED
  *   5    PA2   e-switch
  *   6    PA1   button LED?
  *   7    PA0   (none)
@@ -38,16 +38,16 @@
 // channel modes:
 // * 0. FET+3+1 stacked
 // * 1+. aux RGB
-#define NUM_CHANNEL_MODES   (1 + NUM_RGB_AUX_CHANNEL_MODES)
-enum CHANNEL_MODES {
+#define NUM_CHANNEL_MODES   (1 + NUM_AUXRGB_CHANNEL_MODES)
+enum channel_modes_e {
     CM_MAIN = 0,
-    RGB_AUX_ENUMS
+    AUXRGB_CM_ENUMS
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b0000000000000001
+#define CHANNEL_MODES_ENABLED  0b0000000000000001
 // no args
 //#define USE_CHANNEL_MODE_ARGS
 //#define CHANNEL_MODE_ARGS     0,0,0,0,0,0,0,0
@@ -97,27 +97,29 @@ enum CHANNEL_MODES {
 #define VOLTAGE_FUDGE_FACTOR 4  // add 0.20V  (measured 0.22V)
 #endif
 
-// this light has aux LEDs under the optic
-#define AUXLED_R_PIN    PA5    // pin 2
-#define AUXLED_G_PIN    PA4    // pin 3
-#define AUXLED_B_PIN    PA3    // pin 4
-#define AUXLED_RGB_PORT PORTA  // PORTA or PORTB or PORTC
-#define AUXLED_RGB_DDR  DDRA   // DDRA or DDRB or DDRC
-#define AUXLED_RGB_PUE  PUEA   // PUEA or PUEB or PUEC
+// this light has RGB aux LEDs
+#define USE_AUXRGB_LEDS
 
-#define BUTTON_LED_PIN  PA1    // pin 6
-#define BUTTON_LED_PORT PORTA  // for all "PA" pins
-#define BUTTON_LED_DDR  DDRA   // for all "PA" pins
-#define BUTTON_LED_PUE  PUEA   // for all "PA" pins
+// aux RGB passive
+#define AUXRGB_R_PIN    PA5    // pin 2
+#define AUXRGB_R_PORT   PORTA  // PORTA or PORTB or PORTC
+#define AUXRGB_R_DDR    DDRA   // DDRA or DDRB or DDRC
+#define AUXRGB_R_PUE    PUEA   // PUEA or PUEB or PUEC
+#define AUXRGB_G_PIN    PA4    // pin 3
+#define AUXRGB_G_PORT   PORTA
+#define AUXRGB_G_DDR    DDRA
+#define AUXRGB_G_PUE    PUEA
+#define AUXRGB_B_PIN    PA3    // pin 4
+#define AUXRGB_B_PORT   PORTA
+#define AUXRGB_B_DDR    DDRA
+#define AUXRGB_B_PUE    PUEA
 
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
-// it also has an independent LED in the button
-#define USE_BUTTON_LED
-// the aux LEDs are front-facing, so turn them off while main LEDs are on
-#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-#undef USE_INDICATOR_LED_WHILE_RAMPING
-#endif
+// button LED
+#define USE_AUX1_LED
+#define AUX1_LED_PIN   PA1    // pin 6
+#define AUX1_LED_PORT  PORTA
+#define AUX1_LED_DDR   DDRA
+#define AUX1_LED_PUE   PUEA
 
 
 inline void hwdef_setup() {
@@ -128,10 +130,10 @@ inline void hwdef_setup() {
     DDRB = (1 << CH1_PIN);
     // FET, aux R/G/B
     DDRA = (1 << CH3_PIN)
-         | (1 << AUXLED_R_PIN)
-         | (1 << AUXLED_G_PIN)
-         | (1 << AUXLED_B_PIN)
-         | (1 << BUTTON_LED_PIN)
+         | (1 << AUXRGB_R_PIN)
+         | (1 << AUXRGB_G_PIN)
+         | (1 << AUXRGB_B_PIN)
+         | (1 << AUX1_LED_PIN)
          ;
 
     // configure PWM

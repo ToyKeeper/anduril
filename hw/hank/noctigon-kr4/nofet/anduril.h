@@ -1,5 +1,5 @@
 // Noctigon KR4 (no DD FET) config options for Anduril
-// Copyright (C) 2020-2023 Selene ToyKeeper
+// Copyright (C) 2020-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -8,12 +8,16 @@
 #define HWDEF_C  hank/noctigon-kr4/nofet/hwdef.c
 #include "hank/noctigon-kr4/anduril.h"
 
+// the ramp uses only the linear regulator, no DD FET
+#ifdef PWM_CHANNELS
+#undef PWM_CHANNELS
+#define PWM_CHANNELS 1
+#endif
+
 // brightness w/ SST-20 4000K LEDs:
 // 0/1023: 0.35 lm
 // 1/1023: 2.56 lm
 // max regulated: 1740 lm
-#undef PWM_CHANNELS
-#define PWM_CHANNELS 1
 #define RAMP_SIZE 150
 // prioritize low lows, at risk of visible ripple
 // level_calc.py 5.01 1 149 7135 1 0.3 1740 --pwm dyn:78:16384:255

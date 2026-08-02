@@ -1,28 +1,9 @@
 // BLF Lantern config options for Anduril using the Attiny1616
-// Copyright (C) 2021-2023 (original author TBD), Selene ToyKeeper
+// Copyright (C) 2021-2026 (original author TBD), Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "sofirn/blf-lt1-t1616/hwdef.h"
-
-// the button lights up
-#define USE_INDICATOR_LED
-// the button is visible while main LEDs are on
-#define USE_INDICATOR_LED_WHILE_RAMPING
-// off mode: low (1)
-// lockout: blinking (3)
-#define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
-
-// channel modes...
-// CM_CH1, CM_CH2, CM_BOTH, CM_BLEND, CM_AUTO
-#define DEFAULT_CHANNEL_MODE   CM_BLEND
-#define DEFAULT_BLINK_CHANNEL  CM_BOTH
-
-#define CONFIG_WAITING_CHANNEL         CM_BOTH
-#define CONFIG_BLINK_CHANNEL           CM_BOTH
-
-// blink numbers on the main LEDs by default (but allow user to change it)
-#define DEFAULT_BLINK_CHANNEL  CM_BOTH
+#define HWDEF_H  sofirn/blf-lt1-t1616/hwdef.h
 
 // how much to increase total brightness at middle tint
 // (0 = 100% brightness, 64 = 200% brightness)
@@ -37,10 +18,10 @@
 // 4 + level_calc.py 3.333 1 149 7135 80 1 600 --pwm 32640
 #define PWM1_LEVELS  4,80,88,96,105,114,125,136,148,161,175,190,206,223,241,260,281,303,325,350,375,402,430,460,491,524,558,594,632,671,712,755,800,846,895,945,998,1053,1109,1168,1229,1293,1358,1426,1497,1570,1645,1723,1803,1886,1972,2060,2152,2246,2343,2443,2546,2652,2760,2873,2988,3106,3228,3353,3482,3614,3749,3888,4031,4177,4327,4481,4638,4799,4965,5134,5307,5484,5666,5851,6041,6235,6434,6636,6844,7055,7272,7493,7718,7949,8184,8424,8669,8919,9174,9434,9699,9969,10245,10525,10811,11103,11400,11703,12011,12325,12644,12970,13301,13638,13981,14330,14685,15046,15413,15787,16167,16553,16945,17345,17750,18163,18581,19007,19440,19879,20325,20778,21239,21706,22180,22662,23151,23648,24151,24663,25181,25708,26242,26784,27333,27890,28456,29029,29610,30200,30797,31403,32017,32640
 
-#define DEFAULT_LEVEL 75
-#define MAX_1x7135 75
-#define HALFSPEED_LEVEL 0  // always use tint ramping correction
-#define QUARTERSPEED_LEVEL 2  // quarter speed at level 1, full speed at 2+
+#define DEFAULT_LEVEL       75
+#define MAX_1x7135          75
+#define HALFSPEED_LEVEL     0  // always use tint ramping correction
+#define QUARTERSPEED_LEVEL  2  // quarter speed at level 1, full speed at 2+
 //#undef USE_DYNAMIC_UNDERCLOCKING  // makes huge bumps in the ramp
 
 #define USE_SET_LEVEL_GRADUALLY
@@ -68,30 +49,50 @@
 // allow Aux Config and Strobe Modes in Simple UI
 #define USE_EXTENDED_SIMPLE_UI
 
+// the sensor (attiny1616) is nowhere near the emitters
+// so thermal regulation can't work
+// (but enabling it makes the temperature check mode work)
+#ifdef USE_THERMAL_REGULATION
+#undef USE_THERMAL_REGULATION
+#endif
+
+
+// AUX + channel modes
+
+#define USE_AUX_THRESHOLD_CONFIG
+#define DEFAULT_AUX_WHILE_ON  0b01  // button LED on while main LEDs are on
+
+
+// channel modes...
+// CM_CH1, CM_CH2, CM_BOTH, CM_BLEND, CM_AUTO
+#define DEFAULT_CHANNEL_MODE    CM_BLEND
+#define DEFAULT_BLINK_CHANNEL   CM_BOTH
+
+#define CONFIG_WAITING_CHANNEL  CM_BOTH
+#define CONFIG_BLINK_CHANNEL    CM_BOTH
+
+// blink numbers on the main LEDs by default (but allow user to change it)
+#define DEFAULT_BLINK_CHANNEL   CM_BOTH
+
+
+// Misc
+
 #define USE_SOS_MODE
 #define USE_SOS_MODE_IN_BLINKY_GROUP
 
 // the default of 26 looks a bit flat, so increase it
 #define CANDLE_AMPLITUDE 40
 
+// no RGB aux, can only use main LEDs for police strobe
 #define USE_POLICE_COLOR_STROBE_MODE
 #define POLICE_COLOR_STROBE_CH1        CM_CH1
 #define POLICE_COLOR_STROBE_CH2        CM_CH2
-// aux red + aux blue are the correct colors, but are dim
-//#define POLICE_COLOR_STROBE_CH1        CM_AUXRED
-//#define POLICE_COLOR_STROBE_CH2        CM_AUXBLU
 
 #undef  TACTICAL_LEVELS
 #define TACTICAL_LEVELS 120,30,(RAMP_SIZE+3)  // high, low, police strobe
 
 // party strobe, tac strobe, police, lightning, candle, bike
 #define DEFAULT_STROBE_CHANNELS  CM_BOTH,CM_BOTH,CM_BOTH,CM_AUTO,CM_AUTO,CM_AUTO
-
-// the sensor (attiny1616) is nowhere near the emitters
-// so thermal regulation can't work
-#ifdef USE_THERMAL_REGULATION
-#undef USE_THERMAL_REGULATION
-#endif
 
 // don't blink while ramping
 #ifdef BLINK_AT_RAMP_FLOOR
@@ -101,6 +102,7 @@
 #undef BLINK_AT_RAMP_MIDDLE
 #endif
 // except the top... blink at the top
+// without this, it's really hard to tell when ramping up stops
 #ifndef BLINK_AT_RAMP_CEIL
 #define BLINK_AT_RAMP_CEIL
 #endif

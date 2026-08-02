@@ -1,9 +1,9 @@
 // Emisar D3AA config options for Anduril
-// Copyright (C) 2023 thefreeman, Selene ToyKeeper
+// Copyright (C) 2023-2026 thefreeman, Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#define HWDEF_H hank/emisar-d3aa/hwdef.h
+#define HWDEF_H  hank/emisar-d3aa/hwdef.h
 #include "hank/anduril.h"
 
 // HPRsense : 4.2+0.3+20 = 24.5mR
@@ -85,12 +85,10 @@
 #define DEFAULT_2C_STYLE 1 // enable 2 click turbo
 
 
-// AUX
+// AUX + channel modes
 
-#define USE_BUTTON_LED
-
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
+#define USE_AUX_THRESHOLD_CONFIG
+#define USE_SMOOTH_POVD
 
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
@@ -103,13 +101,6 @@
 #define POLICE_STROBE_USES_AUX
 #define POLICE_COLOR_STROBE_CH1        CM_AUXRED
 #define POLICE_COLOR_STROBE_CH2        CM_AUXBLU
-
-// the aux LEDs are front-facing, so turn them off while main LEDs are on
-#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-#undef USE_INDICATOR_LED_WHILE_RAMPING
-#endif
-
-#define USE_SMOOTH_POVD
 
 
 // Misc

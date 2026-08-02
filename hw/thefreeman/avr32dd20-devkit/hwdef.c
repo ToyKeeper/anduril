@@ -1,5 +1,5 @@
 // thefreeman boost driver 2.1 output helper functions
-// Copyright (C) 2023 Selene ToyKeeper
+// Copyright (C) 2023-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -12,10 +12,10 @@ void set_level_zero();
 void set_level_main(uint8_t level);
 bool gradual_tick_main(uint8_t gt);
 
-void enable_aux_rgb_pwm();
-void disable_aux_rgb_pwm();
-rgb_uint_t get_level_rgbaux(uint8_t level);
-void set_pwm_rgbaux(RGB8_t color);
+void enable_auxrgb_pwm();
+void disable_auxrgb_pwm();
+rgb_uint_t get_level_auxrgb(uint8_t level);
+void set_auxrgb_pwm(RGB8_t color);
 void set_level_hsv(uint8_t level);
 bool gradual_tick_hsv(uint8_t gt);
 
@@ -30,7 +30,7 @@ Channel channels[] = {
         .gradual_tick = gradual_tick_hsv,
         .flags        = CHANNEL_FLAG_IS_AUX | CHANNEL_FLAG_HAS_ARGS
     },
-    RGB_AUX_CHANNELS
+    AUXRGB_CHANNELS
 };
 
 // HSV mode needs a different 3H handler
@@ -57,7 +57,7 @@ void set_level_zero() {
     BST_ENABLE_PORT &= ~(1 << BST_ENABLE_PIN);  // BST off
 
     // turn off PWM for aux RGB
-    disable_aux_rgb_pwm();
+    disable_auxrgb_pwm();
 }
 
 // single set of LEDs with 1 regulated power channel
@@ -139,7 +139,7 @@ bool gradual_tick_main(uint8_t gt) {
 
 ///// RGB aux PWM stuff
 
-void enable_aux_rgb_pwm() {
+void enable_auxrgb_pwm() {
     // set up the PWM for aux RGB
     // AVR32_16DD20_14_Prel_DataSheet_DS40002413-2997818.pdf
     // data sheet section 23.4 Register Summary - Normal Mode
@@ -160,20 +160,21 @@ void enable_aux_rgb_pwm() {
     PWM_RGB_TOP = PWM_RGB_TOP_INIT;
 }
 
-void disable_aux_rgb_pwm() {
+void disable_auxrgb_pwm() {
     // TCA no longer being used, so turn it off
     TCA0.SINGLE.CTRLB = 0;
     TCA0.SINGLE.CTRLA = 0;
+    set_auxrgb_power(0);
 }
 
-rgb_uint_t get_level_rgbaux(uint8_t level) {
+rgb_uint_t get_level_auxrgb(uint8_t level) {
     // convert ramp level to raw PWM value
     if (level) level = PWM3_GET(level - 1);
     return level;
 }
 
-void set_pwm_rgbaux(RGB8_t color) {
-    if (! TCA0.SINGLE.CTRLA) { enable_aux_rgb_pwm(); }
+void set_auxrgb_pwm(RGB8_t color) {
+    if (! TCA0.SINGLE.CTRLA) { enable_auxrgb_pwm(); }
     CH_R_PWM = color.r;
     CH_G_PWM = color.g;
     CH_B_PWM = color.b;
@@ -199,7 +200,7 @@ void set_level_hsv(uint8_t level) {
     PWM3_DATATYPE v = PWM3_GET(level);
     color = hsv2rgb(h, s, v);
 
-    set_pwm_rgbaux(color);
+    set_auxrgb_pwm(color);
 }
 
 bool gradual_tick_hsv(uint8_t gt) {

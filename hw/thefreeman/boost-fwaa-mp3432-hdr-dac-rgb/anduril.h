@@ -1,9 +1,9 @@
 // thefreeman's BCK-FWAA-MP3432 (li-ion / AA)
-// Copyright (C) 2023 TBD (thefreeman), Selene ToyKeeper
+// Copyright (C) 2023-2026 thefreeman, Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "thefreeman/boost-fwaa-mp3432-hdr-dac-rgb/hwdef.h"
+#define HWDEF_H  thefreeman/boost-fwaa-mp3432-hdr-dac-rgb/hwdef.h
 
 // HPRsense : 4.2+0.3+20 = 24.5mR (DMN1004UFDF+trace resistance+20mR)
 // R1=165k Vsense=49.02 Iout=2001mA
@@ -30,6 +30,10 @@
         V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25, \
         V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05,V05, \
         V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25,V25
+// RGB aux ramp
+// ./bin/level_calc.py 1.6 1 150 7135 2 0.01 60 --pwm 255
+#define PWM3_LEVELS \
+        2,2,3,3,3,4,4,5,5,6,6,7,7,8,9,9,10,11,12,12,13,14,15,16,17,18,19,19,20,21,22,24,25,26,27,28,29,30,31,33,34,35,36,38,39,40,42,43,44,46,47,48,50,51,53,54,56,57,59,60,62,63,65,67,68,70,72,73,75,77,78,80,82,84,85,87,89,91,93,94,96,98,100,102,104,106,108,110,112,114,116,118,120,122,124,126,128,130,132,134,136,138,140,143,145,147,149,151,154,156,158,160,163,165,167,170,172,174,177,179,181,184,186,188,191,193,196,198,201,203,206,208,211,213,216,218,221,223,226,228,231,234,236,239,242,244,247,250,252,255
 
 #define MAX_1x7135           50
 #define DEFAULT_LEVEL        44
@@ -81,15 +85,15 @@
 #define DEFAULT_2C_STYLE 1 // enable 2 click turbo
 
 
-// AUX
+// AUX + channel modes
 
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
+#define USE_AUX_THRESHOLD_CONFIG
+#define USE_SMOOTH_POVD
 
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
 
-// blink numbers on the main LEDs by default
+// blink numbers on the main LEDs by default (but allow user to change it)
 #define DEFAULT_BLINK_CHANNEL  CM_MAIN
 
 // use aux red + aux blue for police strobe
@@ -97,11 +101,6 @@
 #define POLICE_STROBE_USES_AUX
 #define POLICE_COLOR_STROBE_CH1        CM_AUXRED
 #define POLICE_COLOR_STROBE_CH2        CM_AUXBLU
-
-// the aux LEDs are front-facing, so turn them off while main LEDs are on
-#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-#undef USE_INDICATOR_LED_WHILE_RAMPING
-#endif
 
 
 // Misc

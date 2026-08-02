@@ -1,10 +1,9 @@
 // Emisar D1S config options for Anduril
-// Copyright (C) 2018-2023 Selene ToyKeeper
+// Copyright (C) 2018-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
 // same as Emisar D4, mostly
-#include "hank/emisar-d4/hwdef.h"
 #include "hank/emisar-d4/anduril.h"
 
 // safe limit ~50% power
@@ -19,3 +18,4 @@
 
 // too big, turn off extra features
 //#undef USE_TACTICAL_MODE
+

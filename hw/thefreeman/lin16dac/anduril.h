@@ -1,17 +1,10 @@
 // thefreeman's Linear 16 driver using DAC control
-// Copyright (C) 2021-2023 (FIXME)
+// Copyright (C) 2021-2026 thefreeman, Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
 #define HWDEF_H  thefreeman/lin16dac/hwdef.h
 
-// the button lights up
-#define USE_INDICATOR_LED
-// the button is visible while main LEDs are on
-#define USE_INDICATOR_LED_WHILE_RAMPING
-// off mode: low (1)
-// lockout: blinking (3)
-#define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
 
 // level_calc.py ninth 2 150 7135 1 0.03 6.4 7135 1 6.3 1600
 #define RAMP_SIZE 150
@@ -53,6 +46,13 @@
 
 // enable 2 click turbo
 #define DEFAULT_2C_STYLE 1
+
+
+// AUX + channel modes
+
+#define USE_AUX_THRESHOLD_CONFIG
+#define USE_AUX1_LED_WHILE_RAMPING
+
 
 // don't blink mid-ramp
 #ifdef BLINK_AT_RAMP_MIDDLE

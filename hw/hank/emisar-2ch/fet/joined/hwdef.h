@@ -1,5 +1,5 @@
 // Emisar 2-channel-plus-FET-joined-into-1-channel
-// Copyright (C) 2024 Selene ToyKeeper
+// Copyright (C) 2024-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -44,19 +44,19 @@
 // * 0. linear (ch1) only
 // * 1. linear (ch1) + DD FET  <-- Hank's primary config, as far as I can tell
 // x 2. linear (both) + DD FET (not used)
-#define NUM_CHANNEL_MODES   (2 + NUM_RGB_AUX_CHANNEL_MODES)
+#define NUM_CHANNEL_MODES   (2 + NUM_AUXRGB_CHANNEL_MODES)
 enum channel_modes_e {
     CM_CH1 = 0,
     CM_CH1_FET,    // <-- default
     //CM_BOTH_FET,
-    RGB_AUX_ENUMS
+    AUXRGB_CM_ENUMS
 };
 
 // right-most bit first, modes are in fedcba9876543210 order
 #define CHANNEL_MODES_ENABLED 0b0000000000000010
 //#define USE_CHANNEL_MODE_ARGS
 // _, _, _, 128=middle CCT, 0=warm-to-cool
-//#define CHANNEL_MODE_ARGS     0,0,0,RGB_AUX_CM_ARGS
+//#define CHANNEL_MODE_ARGS     0,0,0,AUXRGB_CM_ARGS
 
 #define PWM_CHANNELS 3  // old, remove this
 
@@ -118,18 +118,29 @@ uint8_t ch1_pwm, ch1_dsm;
 
 #include "hank/vdivider-1634.h"
 
-// this light has aux LEDs under the optic
-#define AUXLED_R_PIN    PA5    // pin 2
-#define AUXLED_G_PIN    PA4    // pin 3
-#define AUXLED_B_PIN    PA3    // pin 4
-#define AUXLED_RGB_PORT PORTA  // PORTA or PORTB or PORTC
-#define AUXLED_RGB_DDR  DDRA   // DDRA or DDRB or DDRC
-#define AUXLED_RGB_PUE  PUEA   // PUEA or PUEB or PUEC
+// this light has RGB aux LEDs
+#define USE_AUXRGB_LEDS
 
-#define BUTTON_LED_PIN  PA2    // pin 5
-#define BUTTON_LED_PORT PORTA  // for all "PA" pins
-#define BUTTON_LED_DDR  DDRA   // for all "PA" pins
-#define BUTTON_LED_PUE  PUEA   // for all "PA" pins
+// aux RGB passive
+#define AUXRGB_R_PIN    PA5    // pin 2
+#define AUXRGB_R_PORT   PORTA  // PORTA or PORTB or PORTC
+#define AUXRGB_R_DDR    DDRA   // DDRA or DDRB or DDRC
+#define AUXRGB_R_PUE    PUEA   // PUEA or PUEB or PUEC
+#define AUXRGB_G_PIN    PA4    // pin 3
+#define AUXRGB_G_PORT   PORTA
+#define AUXRGB_G_DDR    DDRA
+#define AUXRGB_G_PUE    PUEA
+#define AUXRGB_B_PIN    PA3    // pin 4
+#define AUXRGB_B_PORT   PORTA
+#define AUXRGB_B_DDR    DDRA
+#define AUXRGB_B_PUE    PUEA
+
+// button LED
+#define USE_AUX1_LED
+#define AUX1_LED_PIN   PA2    // pin 5
+#define AUX1_LED_PORT  PORTA
+#define AUX1_LED_DDR   DDRA
+#define AUX1_LED_PUE   PUEA
 
 
 inline void hwdef_setup() {
@@ -137,10 +148,10 @@ inline void hwdef_setup() {
     DDRC = (1 << CH3_PIN);
     DDRB = (1 << CH1_PIN);
     DDRA = (1 << CH2_PIN)
-         | (1 << AUXLED_R_PIN)
-         | (1 << AUXLED_G_PIN)
-         | (1 << AUXLED_B_PIN)
-         | (1 << BUTTON_LED_PIN)
+         | (1 << AUXRGB_R_PIN)
+         | (1 << AUXRGB_G_PIN)
+         | (1 << AUXRGB_B_PIN)
+         | (1 << AUX1_LED_PIN)
          | (1 << CH1_ENABLE_PIN)
          | (1 << CH2_ENABLE_PIN)
          ;

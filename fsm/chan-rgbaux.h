@@ -5,7 +5,7 @@
 
 #define USE_CHANNEL_FLAGS
 
-#define RGB_AUX_ENUMS  \
+#define AUXRGB_CM_ENUMS  \
     CM_AUXRED, \
     CM_AUXYEL, \
     CM_AUXGRN, \
@@ -14,52 +14,52 @@
     CM_AUXPRP, \
     CM_AUXWHT
 
-#define RGB_AUX_CM_ARGS  0,0,0,0,0,0,0
+#define AUXRGB_CM_ARGS  0,0,0,0,0,0,0
 
-#define NUM_RGB_AUX_CHANNEL_MODES  7
+#define NUM_AUXRGB_CHANNEL_MODES  7
 
 // include / exclude field based on compile options
 #ifdef USE_CHANNEL_FLAGS
-    #define AUX_RGB_FLAGS , .flags = CHANNEL_FLAG_IS_AUX
+    #define AUXRGB_FLAGS , .flags = CHANNEL_FLAG_IS_AUX
 #else
-    #define AUX_RGB_FLAGS
+    #define AUXRGB_FLAGS
 #endif
 
-#define RGB_AUX_CHANNELS \
+#define AUXRGB_CHANNELS \
     { \
         .set_level    = set_level_auxred, \
         .gradual_tick = gradual_tick_null \
-        AUX_RGB_FLAGS \
+        AUXRGB_FLAGS \
     }, \
     { \
         .set_level    = set_level_auxyel, \
         .gradual_tick = gradual_tick_null \
-        AUX_RGB_FLAGS \
+        AUXRGB_FLAGS \
     }, \
     { \
         .set_level    = set_level_auxgrn, \
         .gradual_tick = gradual_tick_null \
-        AUX_RGB_FLAGS \
+        AUXRGB_FLAGS \
     }, \
     { \
         .set_level    = set_level_auxcyn, \
         .gradual_tick = gradual_tick_null \
-        AUX_RGB_FLAGS \
+        AUXRGB_FLAGS \
     }, \
     { \
         .set_level    = set_level_auxblu, \
         .gradual_tick = gradual_tick_null \
-        AUX_RGB_FLAGS \
+        AUXRGB_FLAGS \
     }, \
     { \
         .set_level    = set_level_auxprp, \
         .gradual_tick = gradual_tick_null \
-        AUX_RGB_FLAGS \
+        AUXRGB_FLAGS \
     }, \
     { \
         .set_level    = set_level_auxwht, \
         .gradual_tick = gradual_tick_null \
-        AUX_RGB_FLAGS \
+        AUXRGB_FLAGS \
     }
 
 void set_level_auxred(uint8_t level);

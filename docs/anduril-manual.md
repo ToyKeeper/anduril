@@ -950,6 +950,38 @@ normal for battery voltage to measure low during and immediately after turbo,
 but it should recover soon afterward.
 
 
+Smooth POVD
+-----------
+
+Some lights have the ability to dim the RGB aux LEDs beyond just
+high/low/off.  On these lights, the POVD mode fades in, displays voltage by
+color with much higher resolution, then fades out.  The additional color
+resolution is also used while the main LEDs are on, if you have "RGB aux
+while on" enabled.
+
+The original / passive POVD mode has just 6 colors during normal use: red,
+yellow, green, cyan, blue, and purple.  These are created by turning
+red/green/blue LEDs on and off.  Smooth POVD has a full rainbow, with
+a different shade for every possible voltage value.  The colors go in the
+same order and indicate the same voltage ranges, but instead of 6 main
+shades, it has more like 60 shades.  (from 3.00V to 4.20V, in 0.02V steps,
+that works out to ~60 different colors)  So after getting a feel for it, the
+user may be able to tell the battery voltage within 0.02V or 0.04V, just
+based on what color the POVD mode shows.
+
+After the main POVD readout finishes, the aux LEDs resume their configured
+standby mode, and may change color if using the "voltage" mode on a light
+with passive aux LEDs.  Typically, it settles down to the nearest of the main
+6 shades, but this depends on the exact hardware model.  It depends on
+whether the hardware generates RGB PWM from the main MCU chip, or if it has
+an external aux control chip.
+
+The brightness of Smooth POVD mode uses the same configuration as regular
+POVD mode.  The "aux low ramp level" and "aux high ramp level" mostly work
+the same, except the brightness ramps between the two.  The same brightness
+ramp applies in that range during regular "on" modes, if enabled.
+
+
 Misc Config Menu
 ----------------
 

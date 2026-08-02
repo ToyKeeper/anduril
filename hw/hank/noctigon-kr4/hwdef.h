@@ -1,5 +1,5 @@
 // Noctigon KR4 / D4V2.5 driver layout (attiny1634)
-// Copyright (C) 2020-2023 Selene ToyKeeper
+// Copyright (C) 2020-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -45,22 +45,24 @@
 // channel modes:
 // * 0. linear + DD FET stacked
 // * 1+. aux RGB
-#define NUM_CHANNEL_MODES   (1 + NUM_RGB_AUX_CHANNEL_MODES)
-enum CHANNEL_MODES {
+#define NUM_CHANNEL_MODES   (1 + NUM_AUXRGB_CHANNEL_MODES)
+enum channel_modes_e {
     CM_MAIN = 0,
-    RGB_AUX_ENUMS
+    AUXRGB_CM_ENUMS
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b0000000000000001
+#define CHANNEL_MODES_ENABLED  0b0000000000000001
 // no args
 //#define USE_CHANNEL_MODE_ARGS
 //#define CHANNEL_MODE_ARGS     0,0,0,0,0,0,0,0
 
 
-#define PWM_CHANNELS  2  // old, remove this
+#ifndef PWM_CHANNELS
+#define PWM_CHANNELS 2  // old, remove this
+#endif
 
 #define PWM_BITS      16        // dynamic 16-bit, but never goes over 255
 #define PWM_GET       PWM_GET8
@@ -99,27 +101,31 @@ enum CHANNEL_MODES {
 
 #include "hank/vdivider-1634.h"
 
-// this light has aux LEDs under the optic
-#define AUXLED_R_PIN    PA5    // pin 2
-#define AUXLED_G_PIN    PA4    // pin 3
-#define AUXLED_B_PIN    PA3    // pin 4
-#define AUXLED_RGB_PORT PORTA  // PORTA or PORTB or PORTC
-#define AUXLED_RGB_DDR  DDRA   // DDRA or DDRB or DDRC
-#define AUXLED_RGB_PUE  PUEA   // PUEA or PUEB or PUEC
 
-#define BUTTON_LED_PIN  PA2    // pin 5
-#define BUTTON_LED_PORT PORTA  // for all "PA" pins
-#define BUTTON_LED_DDR  DDRA   // for all "PA" pins
-#define BUTTON_LED_PUE  PUEA   // for all "PA" pins
+// this light has RGB aux LEDs
+#define USE_AUXRGB_LEDS
 
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
+// aux RGB passive
+#define AUXRGB_R_PIN    PA5    // pin 2
+#define AUXRGB_R_PORT   PORTA  // PORTA or PORTB or PORTC
+#define AUXRGB_R_DDR    DDRA   // DDRA or DDRB or DDRC
+#define AUXRGB_R_PUE    PUEA   // PUEA or PUEB or PUEC
+#define AUXRGB_G_PIN    PA4    // pin 3
+#define AUXRGB_G_PORT   PORTA
+#define AUXRGB_G_DDR    DDRA
+#define AUXRGB_G_PUE    PUEA
+#define AUXRGB_B_PIN    PA3    // pin 4
+#define AUXRGB_B_PORT   PORTA
+#define AUXRGB_B_DDR    DDRA
+#define AUXRGB_B_PUE    PUEA
+
+// button LED
 // some variants also have an independent LED in the button
-#define USE_BUTTON_LED
-// the aux LEDs are front-facing, so turn them off while main LEDs are on
-#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-#undef USE_INDICATOR_LED_WHILE_RAMPING
-#endif
+#define USE_AUX1_LED
+#define AUX1_LED_PIN   PA2    // pin 5
+#define AUX1_LED_PORT  PORTA
+#define AUX1_LED_DDR   DDRA
+#define AUX1_LED_PUE   PUEA
 
 
 inline void hwdef_setup() {
@@ -129,10 +135,10 @@ inline void hwdef_setup() {
          | (1 << CH1_ENABLE_PIN);
     // DD FET PWM, aux R/G/B, button LED
     DDRA = (1 << CH2_PIN)
-         | (1 << AUXLED_R_PIN)
-         | (1 << AUXLED_G_PIN)
-         | (1 << AUXLED_B_PIN)
-         | (1 << BUTTON_LED_PIN)
+         | (1 << AUXRGB_R_PIN)
+         | (1 << AUXRGB_G_PIN)
+         | (1 << AUXRGB_B_PIN)
+         | (1 << AUX1_LED_PIN)
          ;
 
     // configure PWM
@@ -142,13 +148,13 @@ inline void hwdef_setup() {
     // CS1[2:0]:    0,0,1: clk/1 (No prescaling) (DS table 12-6)
     // COM1A[1:0]:    1,0: PWM OC1A in the normal direction (DS table 12-4)
     // COM1B[1:0]:    1,0: PWM OC1B in the normal direction (DS table 12-4)
-    TCCR1A  = (1<<WGM11)  | (0<<WGM10)   // adjustable PWM (TOP=ICR1) (DS table 12-5)
-            | (1<<COM1A1) | (0<<COM1A0)  // PWM 1A in normal direction (DS table 12-4)
-            | (1<<COM1B1) | (0<<COM1B0)  // PWM 1B in normal direction (DS table 12-4)
-            ;
-    TCCR1B  = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
-            | (1<<WGM13)  | (0<<WGM12)  // phase-correct adjustable PWM (DS table 12-5)
-            ;
+    TCCR1A = (1<<WGM11)  | (0<<WGM10)   // adjustable PWM (TOP=ICR1) (DS table 12-5)
+           | (1<<COM1A1) | (0<<COM1A0)  // PWM 1A in normal direction (DS table 12-4)
+           | (1<<COM1B1) | (0<<COM1B0)  // PWM 1B in normal direction (DS table 12-4)
+           ;
+    TCCR1B = (0<<CS12)   | (0<<CS11) | (1<<CS10)  // clk/1 (no prescaling) (DS table 12-6)
+           | (1<<WGM13)  | (0<<WGM12)  // phase-correct adjustable PWM (DS table 12-5)
+           ;
 
     // set PWM resolution
     PWM_TOP = PWM_TOP_INIT;

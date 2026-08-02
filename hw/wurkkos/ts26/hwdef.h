@@ -1,5 +1,5 @@
 // Wurkkos TS26 driver layout
-// Copyright (C) 2023 Selene ToyKeeper
+// Copyright (C) 2023-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -40,10 +40,10 @@
 // channel modes:
 // * 0. main LEDs
 // * 1+. aux RGB
-#define NUM_CHANNEL_MODES   (1 + NUM_RGB_AUX_CHANNEL_MODES)
-enum CHANNEL_MODES {
+#define NUM_CHANNEL_MODES   (1 + NUM_AUXRGB_CHANNEL_MODES)
+enum channel_modes_e {
     CM_MAIN = 0,
-    RGB_AUX_ENUMS
+    AUXRGB_CM_ENUMS
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
@@ -103,14 +103,16 @@ uint8_t ch1_pwm, ch1_dsm;
 #define ADC_44  4095  // raw value at 4.40V
 #define ADC_22  2048  // raw value at 2.20V
 
-// this light has aux LEDs under the optic
-#define AUXLED_R_PIN    PIN3_bp    // pin 3
-#define AUXLED_G_PIN    PIN2_bp    // pin 2
-#define AUXLED_B_PIN    PIN1_bp    // pin 1
-#define AUXLED_RGB_PORT PORTC  // PORTA or PORTB or PORTC
+// this light has RGB aux LEDs
+#define USE_AUXRGB_LEDS
 
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
+// aux RGB passive
+#define AUXRGB_R_PORT  PORTC
+#define AUXRGB_R_PIN   PIN3_bp
+#define AUXRGB_G_PORT  PORTC
+#define AUXRGB_G_PIN   PIN2_bp
+#define AUXRGB_B_PORT  PORTC
+#define AUXRGB_B_PIN   PIN1_bp
 
 
 inline void hwdef_setup() {

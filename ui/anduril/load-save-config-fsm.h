@@ -97,23 +97,22 @@ typedef struct Config {
         uint8_t therm_ceil;
         int8_t therm_cal_offset;
     #endif
-    #ifdef USE_AUX_THRESHOLD_CONFIG
-        uint8_t button_led_low_ramp_level;
-        uint8_t button_led_high_ramp_level;
-    #endif
 
     ///// aux LEDs
-    #ifdef USE_INDICATOR_LED
-        uint8_t indicator_led_mode;
+    #ifdef USE_AUX_THRESHOLD_CONFIG
+        uint8_t aux_low_ramp_level;
+        uint8_t aux_high_ramp_level;
     #endif
-    #ifdef USE_AUX_RGB_LEDS
-        uint8_t rgb_led_off_mode;
-        uint8_t rgb_led_lockout_mode;
+    #ifdef USE_AUXRGB_LEDS
+        uint8_t auxrgb_off_mode;
+        uint8_t auxrgb_lockout_mode;
         #ifdef USE_POST_OFF_VOLTAGE
             uint8_t post_off_voltage;
         #endif
+    #elif defined(USE_AUX1_LED)
+        uint8_t aux1_mode;
     #endif
-    #if defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS)
+    #if defined(USE_AUX1_LED) || defined(USE_AUXRGB_LEDS)
         uint8_t aux_while_on;
     #endif
 

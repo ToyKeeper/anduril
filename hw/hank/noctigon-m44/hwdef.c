@@ -1,5 +1,5 @@
 // hwdef for Noctigon M44 2-channel light
-// Copyright (C) 2023 Selene ToyKeeper
+// Copyright (C) 2023-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -47,7 +47,7 @@ Channel channels[] = {
         .gradual_tick = gradual_tick_auto,
         .flags        = CHANNEL_FLAG_HAS_ARGS
     },
-    RGB_AUX_CHANNELS
+    AUXRGB_CHANNELS
 };
 
 

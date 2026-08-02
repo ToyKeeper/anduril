@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#if defined(USE_INDICATOR_LED) && defined(TICK_DURING_STANDBY)
-void indicator_led_update(uint8_t mode, uint8_t tick);
+#if defined(USE_AUX1_LED) && defined(TICK_DURING_STANDBY)
+void aux1_led_update(uint8_t mode, uint8_t tick);
 #endif
-#if defined(USE_AUX_RGB_LEDS) && defined(TICK_DURING_STANDBY)
+#if defined(USE_AUXRGB_LEDS) && defined(TICK_DURING_STANDBY)
 uint8_t setting_rgb_mode_now = 0;
 void rgb_led_update(uint8_t mode, uint16_t arg);
-void rgb_led_voltage_readout(uint8_t bright);
+void rgb_led_voltage_readout(uint8_t power);
 #ifdef USE_SMOOTH_POVD
 RGB_t voltage_to_rgb_t (rgb_uint_t brightness);
 #endif
@@ -77,9 +77,14 @@ typedef enum {
     aux_low_e,
     aux_high_e,
     #ifdef TICK_DURING_STANDBY
-    aux_blinking_e,
-    aux_blinking_2_e,
-    aux_blinking_3_e,
+        aux_blinking_e,
+        #ifdef USE_AUXRGB_LEDS
+            // single-channel-only aux code doesn't support these
+            // (because most of those lights are 8192 bytes only,
+            //  and ROM size matters more than extra blinky patterns)
+            aux_blinking_2_e,
+            aux_blinking_3_e,
+        #endif
     #endif
     aux_num_modes_e
 } aux_modes_t;
@@ -100,13 +105,13 @@ typedef enum {
 } aux_rgb_colors_t;
 //#define RGB_LED_NUM_COLORS  aux_rgb_num_colors_e
 //#define RGB_LED_NUM_PATTERNS  aux_num_modes_e
+#define aux1_cfg_byte(off,lockout)   ((lockout << 4) + off)
+#define auxrgb_cfg_byte(mode,color)  ((mode << 4) + color)
 #ifndef RGB_LED_OFF_DEFAULT
-#define RGB_LED_OFF_DEFAULT  ((aux_low_e << 4) | (aux_rgb_voltage_e))
-//#define RGB_LED_OFF_DEFAULT  ((aux_low_e << 4) | (aux_rgb_rainbow_e))
+#define RGB_LED_OFF_DEFAULT  auxrgb_cfg_byte(aux_low_e, aux_rgb_voltage_e)
 #endif
 #ifndef RGB_LED_LOCKOUT_DEFAULT
-#define RGB_LED_LOCKOUT_DEFAULT  ((aux_blinking_e << 4) | (aux_rgb_voltage_e))
-//#define RGB_LED_LOCKOUT_DEFAULT  ((aux_blinking_e << 4) | (aux_rgb_disco_e))
+#define RGB_LED_LOCKOUT_DEFAULT  auxrgb_cfg_byte(aux_blinking_e, aux_rgb_voltage_e)
 #endif
 #ifndef RGB_RAINBOW_SPEED
 #define RGB_RAINBOW_SPEED 0x0f  // change color every 16 frames
@@ -114,16 +119,16 @@ typedef enum {
 
 //#define USE_OLD_BLINKING_INDICATOR
 //#define USE_FANCIER_BLINKING_INDICATOR
-#ifdef USE_INDICATOR_LED
+#ifdef USE_AUX1_LED
     // bits 4-7 control lockout mode
     // bits 0-3 control "off" mode
     // modes are: 0=off, 1=low, 2=high, 3=blinking (if TICK_DURING_STANDBY enabled)
     //   (and maybe other modes, depending on hardware capabilities)
-    #ifndef INDICATOR_LED_DEFAULT_MODE
+    #ifndef AUX1_DEFAULT_MODE
         #ifdef TICK_DURING_STANDBY
-            #define INDICATOR_LED_DEFAULT_MODE ((aux_blinking_e<<4) + aux_low_e)
+            #define AUX1_DEFAULT_MODE  aux1_cfg_byte(aux_low_e, aux_blinking_e)
         #else
-            #define INDICATOR_LED_DEFAULT_MODE ((aux_low_e<<4) + aux_low_e)
+            #define AUX1_DEFAULT_MODE  aux1_cfg_byte(aux_low_e, aux_low_e)
         #endif
     #endif
 #endif

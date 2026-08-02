@@ -39,28 +39,6 @@ uint8_t blink(uint8_t num, uint8_t speed);
 #endif
 */
 
-#ifdef USE_INDICATOR_LED
-// FIXME: Remove this, replace with button_led()
-// lvl: 0=off, 1=low, 2=high
-void indicator_led(uint8_t lvl);
-#endif
-
-#ifdef USE_BUTTON_LED
-// lvl: 0=off, 1=low, 2=high
-void button_led_set(uint8_t lvl);
-#endif
-
-// if any type of aux LEDs exist, define a shorthand flag for it
-#if defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS) || defined(USE_BUTTON_LED)
-#define HAS_AUX_LEDS
-#endif
-
-#ifdef USE_AUX_RGB_LEDS
-// value: 0b00BBGGRR
-// each pair of bits: 0=off, 1=low, 2=high
-void rgb_led_set(uint8_t value);
-#endif
-
 #ifdef USE_TRIANGLE_WAVE
 uint8_t triangle_wave(uint8_t phase);
 #endif

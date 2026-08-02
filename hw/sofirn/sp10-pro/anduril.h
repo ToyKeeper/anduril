@@ -1,13 +1,17 @@
 // Sofirn SP10 Pro config options for Anduril
-// Copyright (C) 2022-2023 (original author TBD), Selene ToyKeeper
+// Copyright (C) 2022-2026 (original author TBD), Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "sofirn/sp10-pro/hwdef.h"
+#define HWDEF_H  sofirn/sp10-pro/hwdef.h
 
 // 1....15: level_calc.py 3.01 1  15 7135 1 0.1   2 --pwm dyn:15:64:64
 // 16..150: level_calc.py 5.01 1 135 7135 1   2 800 --pwm dyn:49:3072:255:3.0
 #define RAMP_SIZE 150
+// ramp segments:
+// 0 to ~0.15 lm: channel 1 only, very fast PWM
+// ~0.15 lm to top: channel 1 at 100%, channel 2 rises
+// (using PFM / pulse frequency modulation)
 #define _PWM1_LEVELS_  1, 2, 4, 6, 9,12,15,19,23,28,34,41,48,55,64
 #define _PWM1_TOPS_   64,64,64,64,64,64,64,64,64,64,64,64,64,64,64
 #define _PWM2_LEVELS_    1,   1,   2,   2,   3,   3,   4,   4,   5,   5,   6,   6,   6,   7,   7,   7,   7,  7,  7,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  9,  9,  9, 10, 10, 10, 11, 11, 12, 13, 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 33, 34, 35, 37, 38, 39, 41, 42, 44, 46, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 67, 70, 72, 74, 77, 79, 82, 85, 88, 90, 93, 96, 99,103,106,109,113,116,120,123,127,131,135,139,143,147,151,156,160,165,170,175,180,185,190,195,201,206,212,218,223,230,236,242,248,255

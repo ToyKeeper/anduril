@@ -1,5 +1,5 @@
 // FW3A config options for Anduril
-// Copyright (C) 2018-2023 Selene ToyKeeper
+// Copyright (C) 2018-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -14,15 +14,15 @@
 #define PWM2_LEVELS 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,4,6,8,10,13,15,17,19,22,24,26,29,31,34,37,39,42,45,48,51,54,57,60,64,67,70,74,77,81,85,88,92,96,100,104,108,112,116,121,125,130,134,139,143,148,153,158,163,168,173,179,184,189,195,201,206,212,218,224,230,236,243,249,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0
 #define PWM3_LEVELS 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,19,31,43,55,67,79,91,104,117,130,143,157,170,184,198,212,226,240,255
 
-#define DEFAULT_LEVEL       50
-#define MAX_1x7135          65
-#define MAX_Nx7135          130
-#define HALFSPEED_LEVEL     15
-#define QUARTERSPEED_LEVEL  6
+#define DEFAULT_LEVEL        50
+#define MAX_1x7135           65
+#define MAX_Nx7135           130
+#define HALFSPEED_LEVEL      15
+#define QUARTERSPEED_LEVEL   6
 
-#define RAMP_SMOOTH_FLOOR  1
-#define RAMP_SMOOTH_CEIL   MAX_Nx7135
-// 10, 30, 50, [70], 90, 110, 130
+#define RAMP_SMOOTH_FLOOR    1
+#define RAMP_SMOOTH_CEIL     MAX_Nx7135
+// 10 30 50 [70] 90 110 130
 #define RAMP_DISCRETE_FLOOR  10
 #define RAMP_DISCRETE_CEIL   RAMP_SMOOTH_CEIL
 #define RAMP_DISCRETE_STEPS  7
@@ -34,7 +34,7 @@
 #define SIMPLE_UI_STEPS  5
 
 // stop panicking at about 3A or ~1100 lm, this light is a hotrod
-#define THERM_FASTER_LEVEL MAX_Nx7135
+#define THERM_FASTER_LEVEL  MAX_Nx7135
 
 // don't blink during ramp
 #define BLINK_AT_RAMP_CEIL

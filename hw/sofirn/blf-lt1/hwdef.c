@@ -1,7 +1,9 @@
 // BLF LT1 PWM functions
-// Copyright (C) 2023 Selene ToyKeeper
+// Copyright (C) 2023-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
+
+#include "fsm/chan-aux.c"
 
 
 void set_level_zero();
