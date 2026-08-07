@@ -1,10 +1,11 @@
 // Emisar D4K 3-channel hwdef
-// Copyright (C) 2023 Selene ToyKeeper
+// Copyright (C) 2023-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
 #include "anduril/channel-modes.h"  //for circular_tint_3h()
 #include "fsm/chan-rgbaux.c"
+
 
 void set_level_zero();
 
@@ -31,44 +32,44 @@ Channel channels[] = {
     { // main 2 LEDs only
         .set_level    = set_level_main2,
         .gradual_tick = gradual_tick_main2,
-        .has_args     = 0
+        .flags        = 0
     },
     { // 3rd LED only
         .set_level    = set_level_led3,
         .gradual_tick = gradual_tick_led3,
-        .has_args     = 0
+        .flags        = 0
     },
     { // 4th LED only
         .set_level    = set_level_led4,
         .gradual_tick = gradual_tick_led4,
-        .has_args     = 0
+        .flags        = 0
     },
     { // all channels, tied together (equal amounts, max power)
         .set_level    = set_level_all,
         .gradual_tick = gradual_tick_all,
-        .has_args     = 0
+        .flags        = 0
     },
     { // 3rd + 4th LEDs, manual blend (max "100%" power) (8/16/16)
         .set_level    = set_level_led34a_blend,
         .gradual_tick = gradual_tick_led34a_blend,
-        .has_args     = 1
+        .flags        = CHANNEL_FLAG_HAS_ARGS
     },
     { // 3rd + 4th LEDs, manual blend (max "100%" power) (16/16/8)
         .set_level    = set_level_led34b_blend,
         .gradual_tick = gradual_tick_led34b_blend,
-        .has_args     = 1
+        .flags        = CHANNEL_FLAG_HAS_ARGS
     },
     { // 3ch blend (HSV style)
         .set_level    = set_level_hsv,
         .gradual_tick = gradual_tick_hsv,
-        .has_args     = 1
+        .flags        = CHANNEL_FLAG_HAS_ARGS
     },
     { // 3ch auto blend (red-warm-cool style, led4-led3-main2)
         .set_level    = set_level_auto3,
         .gradual_tick = gradual_tick_auto3,
-        .has_args     = 0
+        .flags        = 0
     },
-    RGB_AUX_CHANNELS
+    AUXRGB_CHANNELS
 };
 
 // HSV mode needs a different 3H handler

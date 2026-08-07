@@ -90,6 +90,15 @@ inline void mcu_pcint_on();
 inline void mcu_pcint_off();
 
 
+////////// aux LEDs //////////
+
+#define set_aux1_power  mcu_set_aux1_power
+void mcu_set_aux1_power (uint8_t power);
+
+#define set_auxrgb_power  mcu_set_auxrgb_power
+void mcu_set_auxrgb_power (uint8_t value);
+
+
 ////////// misc //////////
 
 void reboot();

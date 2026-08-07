@@ -1,5 +1,5 @@
 // BLF LT1 driver layout
-// Copyright (C) 2018-2023 Selene ToyKeeper
+// Copyright (C) 2018-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -14,13 +14,16 @@
 
 #define HWDEF_C  sofirn/blf-lt1/hwdef.c
 
+// button LED support
+#include "fsm/chan-aux.h"
+
 // channel modes:
-// * 0. channel 1 only
-// * 1. channel 2 only
+// * 0. warm only
+// * 1. cool only
 // * 2. both channels, tied together, max "200%" power
 // * 3. both channels, manual blend, max "100%" power
 // * 4. both channels, auto blend, reversible
-#define NUM_CHANNEL_MODES   5
+#define NUM_CHANNEL_MODES  5
 enum channel_modes_e {
     CM_CH1 = 0,
     CM_CH2,
@@ -31,7 +34,7 @@ enum channel_modes_e {
 
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b00011000
+#define CHANNEL_MODES_ENABLED  0b00011000
 #define USE_CHANNEL_MODE_ARGS
 // _, _, _, 128=middle CCT, 0=warm-to-cool
 #define CHANNEL_MODE_ARGS     0,0,0,128,0
@@ -40,7 +43,7 @@ enum channel_modes_e {
 #define USE_CALC_2CH_BLEND
 
 
-#define PWM_CHANNELS   1  // old, remove this
+#define PWM_CHANNELS  1  // old, remove this
 
 #define PWM_BITS      16  // 8-bit hardware PWM + 16-bit DSM
 
@@ -73,7 +76,11 @@ uint8_t ch2_pwm, ch2_dsm;
 #define CH2_PWM  OCR0A      // OCR0A is the output compare register for PB0
 
 // lighted button
-#define AUXLED_PIN   PB4    // pin 3
+#define USE_AUX1_LED
+#define AUX1_LED_PIN   PB4    // pin 3
+#define AUX1_LED_PORT  PORTB
+#define AUX1_LED_DDR   DDRB
+//#define AUX1_LED_PUE   PUEB
 
 // e-switch
 #define SWITCH_PIN   PB3    // pin 2

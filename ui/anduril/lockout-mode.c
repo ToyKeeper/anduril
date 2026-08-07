@@ -10,7 +10,7 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     #ifdef USE_MOON_DURING_LOCKOUT_MODE
     // momentary(ish) moon mode during lockout
     // button is being held
-    #ifdef USE_AUX_RGB_LEDS
+    #ifdef USE_AUXRGB_LEDS
     // don't turn on during RGB aux LED configuration
     //if (event == EV_click7_hold) { set_level(0); } else
     #endif
@@ -47,28 +47,33 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     //  even if the user keeps pressing the button)
     if (event == EV_enter_state) {
         ticks_since_on = 0;
-        #ifdef USE_INDICATOR_LED
+        #ifdef USE_SMOOTH_POVD
+            if (cfg.post_off_voltage) {
+                //arg |= 1;
+                push_state(smooth_povd_state, 0);
+            }
+        #elif defined(USE_AUXRGB_LEDS)
+            rgb_led_update(cfg.auxrgb_lockout_mode, 0);
+        #elif defined(USE_AUX1_LED)
             // redundant, sleep tick does the same thing
-            // indicator_led_update(cfg.indicator_led_mode >> 2, 0);
-        #elif defined(USE_AUX_RGB_LEDS)
-            rgb_led_update(cfg.rgb_led_lockout_mode, 0);
+            // aux1_led_update(cfg.aux1_mode >> 4, 0);
         #endif
     }
 
     else if (event == EV_tick) {
         if (arg > HOLD_TIMEOUT) {
             go_to_standby = 1;
-            #ifdef USE_INDICATOR_LED
+            #if defined(USE_AUXRGB_LEDS)
+            rgb_led_update(cfg.auxrgb_lockout_mode, arg);
+            #elif defined(USE_AUX1_LED)
             // redundant, sleep tick does the same thing
-            //indicator_led_update(cfg.indicator_led_mode >> 2, arg);
-            #elif defined(USE_AUX_RGB_LEDS)
-            rgb_led_update(cfg.rgb_led_lockout_mode, arg);
+            //aux1_led_update(cfg.aux1_mode >> 4, arg);
             #endif
         }
         return EVENT_HANDLED;
     }
 
-    #if defined(TICK_DURING_STANDBY) && (defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS))
+    #if defined(TICK_DURING_STANDBY) && (defined(USE_AUX1_LED) || defined(USE_AUXRGB_LEDS))
     else if (event == EV_sleep_tick) {
         if (ticks_since_on < 255) ticks_since_on ++;
         #if defined(USE_MANUAL_MEMORY) && defined(USE_MANUAL_MEMORY_TIMER)
@@ -78,10 +83,10 @@ uint8_t lockout_state(Event event, uint16_t arg) {
             manual_memory_restore();
         }
         #endif  // ifdef USE_MANUAL_MEMORY_TIMER
-        #if defined(USE_INDICATOR_LED)
-        indicator_led_update(cfg.indicator_led_mode >> 2, arg);
-        #elif defined(USE_AUX_RGB_LEDS)
-        rgb_led_update(cfg.rgb_led_lockout_mode, arg);
+        #if defined(USE_AUXRGB_LEDS)
+        rgb_led_update(cfg.auxrgb_lockout_mode, arg);
+        #elif defined(USE_AUX1_LED)
+        aux1_led_update(cfg.aux1_mode >> 4, arg);
         #endif
         return EVENT_HANDLED;
     }
@@ -142,34 +147,27 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     }
     #endif  // if simple UI but not extended simple UI
 
-    #if defined(USE_INDICATOR_LED)
+    #if defined(USE_AUX1_LED) && (!defined(USE_AUXRGB_LEDS))
     // 7 clicks: rotate through indicator LED modes (lockout mode)
     else if (event == EV_7clicks) {
-        #if defined(USE_INDICATOR_LED)
-            uint8_t mode = cfg.indicator_led_mode >> 2;
-            #ifdef TICK_DURING_STANDBY
-            mode = (mode + 1) & 3;
-            #else
-            mode = (mode + 1) % 3;
-            #endif
-            #ifdef INDICATOR_LED_SKIP_LOW
-            if (mode == 1) { mode ++; }
-            #endif
-            cfg.indicator_led_mode = (mode << 2) + (cfg.indicator_led_mode & 0x03);
-            // redundant, sleep tick does the same thing
-            //indicator_led_update(cfg.indicator_led_mode >> 2, arg);
-        #elif defined(USE_AUX_RGB_LEDS)
+        uint8_t mode = ((cfg.aux1_mode >> 4) + 1)
+            % aux_num_modes_e;
+        #ifdef INDICATOR_LED_SKIP_LOW
+        if (mode == aux_low_e) { mode ++; }
         #endif
+        cfg.aux1_mode = (mode << 4) | (cfg.aux1_mode & 0x0f);
+        // redundant, sleep tick does the same thing
+        //aux1_led_update(cfg.aux1_mode >> 4, arg);
         save_config();
         return EVENT_HANDLED;
     }
-    #elif defined(USE_AUX_RGB_LEDS)
+    #elif defined(USE_AUXRGB_LEDS)
     // 7 clicks: change RGB aux LED pattern
     else if (event == EV_7clicks) {
-        uint8_t mode = (cfg.rgb_led_lockout_mode >> 4) + 1;
-        mode = mode % RGB_LED_NUM_PATTERNS;
-        cfg.rgb_led_lockout_mode = (mode << 4) | (cfg.rgb_led_lockout_mode & 0x0f);
-        rgb_led_update(cfg.rgb_led_lockout_mode, 0);
+        uint8_t mode = (cfg.auxrgb_lockout_mode >> 4) + 1;
+        mode = mode % aux_num_modes_e;
+        cfg.auxrgb_lockout_mode = (mode << 4) | (cfg.auxrgb_lockout_mode & 0x0f);
+        rgb_led_update(cfg.auxrgb_lockout_mode, 0);
         save_config();
         blink_once();
         return EVENT_HANDLED;
@@ -178,12 +176,12 @@ uint8_t lockout_state(Event event, uint16_t arg) {
     else if (event == EV_click7_hold) {
         setting_rgb_mode_now = 1;
         if (0 == (arg & 0x3f)) {
-            uint8_t mode = (cfg.rgb_led_lockout_mode & 0x0f) + 1;
-            mode = mode % RGB_LED_NUM_COLORS;
-            cfg.rgb_led_lockout_mode = mode | (cfg.rgb_led_lockout_mode & 0xf0);
+            uint8_t mode = (cfg.auxrgb_lockout_mode & 0x0f) + 1;
+            mode = mode % aux_rgb_num_colors_e;
+            cfg.auxrgb_lockout_mode = mode | (cfg.auxrgb_lockout_mode & 0xf0);
             //save_config();
         }
-        rgb_led_update(cfg.rgb_led_lockout_mode, arg);
+        rgb_led_update(cfg.auxrgb_lockout_mode, arg);
         return EVENT_HANDLED;
     }
     // 7H, release: save new color

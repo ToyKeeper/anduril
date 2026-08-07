@@ -1,22 +1,11 @@
 // Wurkkos TS10 (originally used Sofirn SP36-t1616 firmware) config options for Anduril using the Attiny1616
-// Copyright (C) 2022-2023 (FIXME)
+// Copyright (C) 2022-2026 gchart, Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
 // same as  the  BLF Q8 T1616, mostly (added Dynamic PWM)
-#include "wurkkos/ts10/hwdef.h"
+#define HWDEF_H  wurkkos/ts10/hwdef.h
 #include "wurkkos/anduril.h"
-
-// uses forward-facing aux LEDs
-#define USE_INDICATOR_LED
-// don't turn on the aux LEDs while main LEDs are on
-#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-#undef USE_INDICATOR_LED_WHILE_RAMPING
-#endif
-// the high button LED mode on this light uses too much power, default to low
-// off mode: low (1)
-// lockout: blinking (3)
-#define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
 
 // voltage readings were a little high with the Q8 value
 #undef VOLTAGE_FUDGE_FACTOR
@@ -41,11 +30,11 @@
 #define PWM1_LEVELS     1,   1,   2,   2,   3,   3,   4,   5,   6,   6,   8,   9,   9,  10,  10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  19,  20,  21,  22,  23, 23, 24, 25, 26, 26, 27, 27, 28, 28, 29, 29, 30, 30, 31, 31, 32, 32, 33, 33, 34, 35, 36, 37, 38, 40, 41, 43, 45, 47, 50, 53, 56, 60, 63, 67, 71, 75, 79, 84, 89, 94, 99,104,110,116,122,129,136,143,150,158,166,174,183,192,202,211,222,232,243,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0
 #define PWM2_LEVELS     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  3,  5,  7,  8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 29, 31, 34, 37, 39, 42, 45, 48, 51, 54, 58, 61, 65, 68, 72, 76, 80, 84, 88, 93, 97,102,107,112,117,122,127,133,139,145,151,157,163,170,177,183,191,198,205,213,221,229,238,246,255
 #define PWM_TOPS     4095,2893,3917,2806,3252,2703,2684,2660,2640,2370,3000,2900,2630,2549,2246,2193,2030,1961,1889,1716,1642,1569,1497,1428,1290,1232,1176,1122,1070,976,932,890,849,779,745,685,656,605,579,536,514,476,457,424,407,379,364,340,327,314,302,291,280,276,266,262,257,253,253,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
-#define MAX_1x7135 90
-#define MIN_THERM_STEPDOWN 60
-#define HALFSPEED_LEVEL 11
-#define QUARTERSPEED_LEVEL 5
-#define DEFAULT_LEVEL 50
+#define MAX_1x7135          90
+#define MIN_THERM_STEPDOWN  60
+#define HALFSPEED_LEVEL     11
+#define QUARTERSPEED_LEVEL  5
+#define DEFAULT_LEVEL       50
 
 #define RAMP_SMOOTH_FLOOR    1
 #define RAMP_SMOOTH_CEIL     130
@@ -64,11 +53,22 @@
 // stop panicking at ~50% power
 #define THERM_FASTER_LEVEL 130  // throttle back faster when high
 
+
+// AUX + channel modes
+
+#define USE_AUX_THRESHOLD_CONFIG
+#define DEFAULT_AUX_WHILE_ON  0b00  // off unless user enables it
+
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
 
+// blink numbers on the main LEDs by default
+//#define DEFAULT_BLINK_CHANNEL  CM_MAIN
 // blink numbers on the aux LEDs by default
 #define DEFAULT_BLINK_CHANNEL  CM_AUX
+
+
+// Misc
 
 // the default of 26 looks a bit rough, so increase it to make it smoother
 #define CANDLE_AMPLITUDE 33

@@ -58,8 +58,8 @@
 // there is no lighted button
 // (but it doesn't hurt to leave this enabled,
 //  and then this firmware can be used on D3AA too)
-//#ifdef USE_BUTTON_LED
-//#undef USE_BUTTON_LED
+//#ifdef USE_AUX1_LED
+//#undef USE_AUX1_LED
 //#endif
 
 

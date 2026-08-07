@@ -27,9 +27,8 @@ typedef struct Channel {
         // TODO: implement custom 3H handlers
         ChannelArgFuncPtr ramp_channel_arg;
     #endif
-    #ifdef USE_CHANNEL_MODE_ARGS
-        bool has_args;
-        //uint8_t arg;  // is in the config struct, not here
+    #ifdef USE_CHANNEL_FLAGS
+        uint8_t flags;
     #endif
 } Channel;
 
@@ -69,16 +68,18 @@ StatePtr channel_3H_modes[NUM_CHANNEL_MODES];
     #endif
 #endif
 
+#define CHANNEL_FLAG_HAS_ARGS  0b00000001
+#define CHANNEL_FLAG_IS_AUX    0b00000010
+// which modes respond to their "arg", and which don't?
+#define channel_has_args(n)  (channels[n].flags & CHANNEL_FLAG_HAS_ARGS)
+// which modes are displayed on the aux LEDs?
+#define channel_is_aux(n)    (channels[n].flags & CHANNEL_FLAG_IS_AUX)
+
 #ifdef USE_CHANNEL_MODE_ARGS
     #ifndef USE_CFG
     // one byte of extra data per channel mode, like for tint value
     uint8_t channel_mode_args[NUM_CHANNEL_MODES] = { CHANNEL_MODE_ARGS };
     #endif
-    // which modes respond to their "arg", and which don't?
-    //const uint8_t channel_has_args = CHANNEL_HAS_ARGS;
-    //#define channel_has_args(n) ((CHANNEL_HAS_ARGS >> n) & 1)
-    // struct member
-    #define channel_has_args(n) (channels[n].has_args)
 #endif
 
 #if NUM_CHANNEL_MODES > 1
@@ -95,12 +96,29 @@ void calc_2ch_blend(
 #endif
 
 #ifdef USE_HSV2RGB
-typedef struct RGB_t {
+typedef struct RGB8_t {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+} RGB8_t;
+
+typedef struct RGB16_t {
     uint16_t r;
     uint16_t g;
     uint16_t b;
-} RGB_t;
-RGB_t hsv2rgb(uint8_t h, uint8_t s, uint16_t v);
+} RGB16_t;
+
+#if (8==RGB_BITS)
+#define RGB_t  RGB8_t
+#define rgb_uint_t  uint8_t
+#define RGB_MAX  255
+#else
+#define RGB_t  RGB16_t
+#define rgb_uint_t  uint16_t
+#define RGB_MAX  65535
+#endif
+
+RGB_t hsv2rgb(uint8_t h, uint8_t s, rgb_uint_t v);
 #endif  // ifdef USE_HSV2RGB
 
 

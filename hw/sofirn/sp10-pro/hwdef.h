@@ -17,7 +17,7 @@
 // channel modes:
 // * 0. low+high PWM stacked
 #define NUM_CHANNEL_MODES  1
-enum CHANNEL_MODES {
+enum channel_modes_e {
     CM_MAIN = 0,
 };
 

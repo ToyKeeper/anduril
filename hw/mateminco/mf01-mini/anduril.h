@@ -1,18 +1,9 @@
 // Mateminco/Astrolux MF01-Mini options for Anduril
-// Copyright (C) 2019-2023 Selene ToyKeeper
+// Copyright (C) 2019-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "mateminco/mf01-mini/hwdef.h"
-
-// the button lights up
-#define USE_INDICATOR_LED
-//#define INDICATOR_LED_SKIP_LOW  // low mode doesn't work on this driver
-// the button is visible while main LEDs are on
-//#define USE_INDICATOR_LED_WHILE_RAMPING
-// off mode: low (1)
-// lockout: blinking (3)
-#define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
+#define HWDEF_H  mateminco/mf01-mini/hwdef.h
 
 
 #define RAMP_SIZE 150
@@ -28,32 +19,45 @@
 #define PWM2_LEVELS 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11,13,16,18,20,23,25,28,31,34,37,40,43,47,50,54,58,62,66,70,75,80,85,90,95,100,106,112,118,125,131,138,145,153,161,169,177,185,194,204,213,223,233,244,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0
 #define PWM3_LEVELS 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,6,10,13,17,21,24,28,33,37,41,46,50,55,60,66,71,76,82,88,94,101,107,114,121,128,135,143,151,159,167,176,185,194,203,213,223,233,244,255
 
-#define MAX_1x7135         65  // ~113 lm
-#define MAX_Nx7135         110
-#define HALFSPEED_LEVEL    16
-#define QUARTERSPEED_LEVEL 8
+#define MAX_1x7135           65  // ~113 lm
+#define MAX_Nx7135           110
+#define HALFSPEED_LEVEL      16
+#define QUARTERSPEED_LEVEL   8
 
-#define RAMP_SMOOTH_FLOOR 1   // ~0.3 lm
-#define RAMP_SMOOTH_CEIL  130  // ~??? lm
+#define RAMP_SMOOTH_FLOOR    1   // ~0.3 lm
+#define RAMP_SMOOTH_CEIL     130  // ~??? lm
 // 14/135/6 = 14, 38, 62, 86, [110], 135
 // 20/110/7 = 20, 35, 50, [65], 80, 95, [110]
 // 15/130/7 = 15, 34, 53, 72, 91, [110], 130  <--
-#define RAMP_DISCRETE_FLOOR 15 // ~?? lm
-#define RAMP_DISCRETE_CEIL  130 // ~??? lm
-#define RAMP_DISCRETE_STEPS 7  // ??, ??, ... lm
+#define RAMP_DISCRETE_FLOOR  15 // ~?? lm
+#define RAMP_DISCRETE_CEIL   130 // ~??? lm
+#define RAMP_DISCRETE_STEPS  7  // ??, ??, ... lm
 
 // safe limit max regulated power
 // 15 38 62 86 [110]
-#define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
-#define SIMPLE_UI_CEIL 110
-#define SIMPLE_UI_STEPS 5
+#define SIMPLE_UI_FLOOR  RAMP_DISCRETE_FLOOR
+#define SIMPLE_UI_CEIL   110
+#define SIMPLE_UI_STEPS  5
 
 
-#define THERM_FASTER_LEVEL 130  // throttle back faster when high
+#define THERM_FASTER_LEVEL  130  // throttle back faster when high
+
+
+// AUX
+
+// the button lights up
+// the button is visible while main LEDs are on
+#define USE_AUX1_LED_WHILE_RAMPING
+// off mode: low (1)
+// lockout: blinking (3)
+#define AUX1_DEFAULT_MODE  aux1_cfg_byte(aux_low_e, aux_blinking_e)
+
+
+// Misc
 
 // don't blink during ramp
 //#define BLINK_AT_RAMP_CEIL
-#undef BLINK_AT_RAMP_CEIL
+//#undef BLINK_AT_RAMP_CEIL
 #undef BLINK_AT_RAMP_MIDDLE
 #undef BLINK_AT_RAMP_FLOOR
 

@@ -1,5 +1,5 @@
 // Emisar D4v2-noFET config options for Anduril
-// Copyright (C) 2020-2023 Selene ToyKeeper
+// Copyright (C) 2020-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -9,8 +9,10 @@
 #include "hank/emisar-d4v2/anduril.h"
 
 // the ramp uses only 1x7135 chip, max ~130 lm
+#ifdef PWM_CHANNELS
 #undef PWM_CHANNELS
 #define PWM_CHANNELS 1
+#endif
 
 #undef PWM1_LEVELS
 #undef PWM2_LEVELS

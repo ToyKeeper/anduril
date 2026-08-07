@@ -1,10 +1,9 @@
 // Emisar D4 PWM helper functions
 // Copyright (C) 2017-2023 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
-
 #pragma once
 
-//#ifdef AUXLED_PIN
+//#ifdef USE_AUX1_LED
 #if 0
 #include "fsm/chan-aux.c"
 #else

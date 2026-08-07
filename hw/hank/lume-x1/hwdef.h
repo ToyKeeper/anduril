@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2023 Selene ToyKeeper
+// Copyright (C) 2017-2026 Selene ToyKeeper
 //               2021-2024 loneoceans
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
@@ -46,22 +46,32 @@
 // channel modes:
 // * 0. main LEDs
 // * 1+. aux RGB
-#define NUM_CHANNEL_MODES   (1 + NUM_RGB_AUX_CHANNEL_MODES)
-enum CHANNEL_MODES {
+#define NUM_CHANNEL_MODES   (2 + NUM_AUXRGB_CHANNEL_MODES)
+enum channel_modes_e {
     CM_MAIN = 0,
-    RGB_AUX_ENUMS
+    CM_HSV,
+    AUXRGB_CM_ENUMS
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b0000000000000001
+#define CHANNEL_MODES_ENABLED  0b0000000000000001
+#define USE_CHANNEL_MODE_ARGS
+#define CHANNEL_MODE_ARGS  0,0,AUXRGB_CM_ARGS
+#define USE_CUSTOM_CHANNEL_3H_MODES
+#define USE_CIRCULAR_TINT_3H
+#define USE_HSV2RGB
 
 //***************************************
 //**       SET UP DAC AND PWM          **
 //***************************************
 
-// Define DAC control
+// DAC max is 1023, Anduril is written for 255, so regulate at 4X speed
+#undef  GRADUAL_ADJUST_SPEED
+#define GRADUAL_ADJUST_SPEED  4
+
+// DAC control
 #define PWM_BITS      16        // 10-bit DAC
 #define PWM_DATATYPE  uint16_t
 #define PWM_DATATYPE2 uint32_t
@@ -69,6 +79,8 @@ enum CHANNEL_MODES {
 #define PWM1_GET(x)   PWM_GET16(pwm1_levels, x)
 #define PWM2_DATATYPE uint8_t   // DAC Vref table (4/6 options)
 #define PWM2_GET(x)   PWM_GET8(pwm2_levels, x)
+#define PWM3_DATATYPE uint8_t   // aux RGB ramp
+#define PWM3_GET(x)   PWM_GET8(pwm3_levels, x)
 
 //***************************************
 //**         PIN DEFINITIONS           **
@@ -106,32 +118,36 @@ enum CHANNEL_MODES {
 #define LED_PATH3_PIN   PIN5_bm
 #define LED_PATH3_PORT  PORTA_OUT
 
-// Define Aux LED Pins
 
-// lighted switch button aux led (PA4)
-#ifndef BUTTON_LED_PIN
-#define BUTTON_LED_PIN  PIN4_bp
-#define BUTTON_LED_PORT PORTA
-#endif
+// this light has RGB aux LEDs
+// (and some builds tie these also to a RGB side button)
+#define USE_AUXRGB_LEDS
 
-// this driver allows for aux LEDs under the optic
-#define AUXLED_R_PIN   PIN1_bp
-#define AUXLED_G_PIN   PIN2_bp
-#define AUXLED_B_PIN   PIN3_bp
+// aux RGB passive
+#define AUXRGB_R_PORT  PORTA
+#define AUXRGB_R_PIN   PIN1_bp
+#define AUXRGB_G_PORT  PORTA
+#define AUXRGB_G_PIN   PIN2_bp
+#define AUXRGB_B_PORT  PORTA
+#define AUXRGB_B_PIN   PIN3_bp
 
-#define AUXLED_RGB_PORT PORTA
+// aux RGB PWM
+#define RGB_BITS  8
+#define CH_R_PIN  PA1
+#define CH_R_PWM  TCA0.SPLIT.LCMP1
+#define CH_G_PIN  PA2
+#define CH_G_PWM  TCA0.SPLIT.LCMP2
+#define CH_B_PIN  PA3
+#define CH_B_PWM  TCA0.SPLIT.HCMP0
 
-/*
-#define AUXLED_R_PORT   PORTA
-#define AUXLED_G_PORT   PORTA
-#define AUXLED_B_PORT   PORTA
+//#define PWM_RGB_TOP       TCA0.SINGLE.PERBUF
+#define PWM_RGB_TOP_INIT  255
 
-// if aux leds are on different ports
-#define AUXLED_RGB_DIFFERENT_PORTS
-*/
+// button LED
+#define USE_AUX1_LED
+#define AUX1_LED_PIN   PIN4_bp
+#define AUX1_LED_PORT  PORTA
 
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
 
 // Define e-switch Pin and ISR
 #ifndef SWITCH_PIN   // PD4
@@ -158,8 +174,9 @@ inline void hwdef_setup() {
     mcu_clock_speed();
 
     // set output pins
-    VPORTA.DIR = PIN1_bm | PIN2_bm | PIN3_bm |
-                 PIN4_bm | PIN5_bm | PIN6_bm | PIN7_bm;
+    VPORTA.DIR = PIN1_bm | PIN2_bm | PIN3_bm |  // aux RGB
+                 PIN4_bm |  // aux button LED
+                 PIN5_bm | PIN6_bm | PIN7_bm;  // high/low/moon path
     VPORTC.DIR = PIN1_bm;
     VPORTD.DIR = PIN6_bm;
 
@@ -206,7 +223,14 @@ inline void hwdef_setup() {
     //       to generate a zero without spending power on the DAC
     //       (and do this in set_level_zero() too)
 
+    // TCA/TCB/TCD aren't used at boot time, so turn them off
+    TCA0.SINGLE.CTRLA = 0;
+    TCB0.CTRLA = 0;
+    TCB1.CTRLA = 0;
+    TCD0.CTRLA = 0;
+
 }
+
 
 // set fuses, these carry over to the ELF file
 // we need this for enabling BOD in Active Mode from the factory.

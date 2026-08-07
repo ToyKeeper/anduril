@@ -1,5 +1,5 @@
 // Emisar 2-channel-plus-FET-joined-into-1-channel
-// Copyright (C) 2024 Selene ToyKeeper
+// Copyright (C) 2024-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -19,14 +19,14 @@ Channel channels[] = {
     { // channel 1 only
         .set_level    = set_level_ch1,
         .gradual_tick = gradual_tick_ch1,
-        // .has_args     = 0
+        .flags        = 0
     },
     { // channel 1 + DD FET
         .set_level    = set_level_ch1_fet,
         .gradual_tick = gradual_tick_ch1_fet,
-        // .has_args     = 0
+        .flags        = 0
     },
-    RGB_AUX_CHANNELS
+    AUXRGB_CHANNELS
 };
 
 

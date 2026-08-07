@@ -1,5 +1,5 @@
 // Noctigon DM11 (no DD FET) config options for Anduril
-// Copyright (C) 2021-2023 Selene ToyKeeper
+// Copyright (C) 2021-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 

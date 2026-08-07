@@ -1,19 +1,16 @@
 // Emisar D1v2 (linear+FET) config options for Anduril
 // (2022 re-issue / update of old D1)
-// Copyright (C) 2022-2023 Selene ToyKeeper
+// Copyright (C) 2022-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
 // similar to a Noctigon KR4, sort of
 #include "hank/noctigon-kr4/anduril.h"
 
-// some models use a simple button LED, others use RGB...
-// ... so include support for both
-#define USE_BUTTON_LED
+// some models use a simple button LED, others use RGB
 // the aux LEDs are in the button, so use them while main LEDs are on
-#define USE_AUX_RGB_LEDS
-#define USE_AUX_RGB_LEDS_WHILE_ON  25
-#define USE_INDICATOR_LED_WHILE_RAMPING
+#define USE_AUXRGB_LEDS_WHILE_ON  25
+#define DEFAULT_AUX_WHILE_ON  0b11  // light all aux LEDs while main LEDs are on
 
 // safe limit: max regulated power
 #undef SIMPLE_UI_CEIL

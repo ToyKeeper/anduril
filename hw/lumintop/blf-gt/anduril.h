@@ -1,14 +1,10 @@
 // BLF GT config options for Anduril
-// Copyright (C) 2018-2023 Selene ToyKeeper
+// Copyright (C) 2018-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "lumintop/blf-gt/hwdef.h"
+#define HWDEF_H  lumintop/blf-gt/hwdef.h
 
-// the button lights up
-#define USE_INDICATOR_LED
-// the button is visible while main LEDs are on
-#define USE_INDICATOR_LED_WHILE_RAMPING
 
 #define RAMP_SIZE 150
 
@@ -20,39 +16,50 @@
 // Remainder: values 61-150 of level_calc.py 1 150 7135 1 3 3000
 #define PWM2_LEVELS 25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25, \
     26,27,28,29,30,31,32,33,35,36,37,38,40,41,42,44,45,47,48,50,51,53,54,56,58,59,61,63,65,67,69,70,72,74,76,79,81,83,85,87,89,92,94,96,99,101,104,106,109,112,114,117,120,123,125,128,131,134,137,140,143,147,150,153,156,160,163,167,170,174,177,181,184,188,192,196,200,204,208,212,216,220,224,228,233,237,241,246,250,255
-#define POWER_80PX 138  // 2.0 Amps out of maximum 2.5 Amps
-#define MAX_1x7135 60   // where it switches from PWM to current control
-#define DEFAULT_LEVEL 69  // nice
-#define HALFSPEED_LEVEL 17
-#define QUARTERSPEED_LEVEL 6
+#define POWER_80PX           138  // 2.0 Amps out of maximum 2.5 Amps
+#define MAX_1x7135           60   // where it switches from PWM to current control
+#define DEFAULT_LEVEL        69   // nice
+#define HALFSPEED_LEVEL      17
+#define QUARTERSPEED_LEVEL   6
 
 // use 2.0 A as the ceiling, 2.5 A only for turbo
 // start both ramps at the bottom; even moon throws a long way on the GT
-#define RAMP_SMOOTH_FLOOR 1
-#define RAMP_SMOOTH_CEIL  POWER_80PX
+#define RAMP_SMOOTH_FLOOR    1
+#define RAMP_SMOOTH_CEIL     POWER_80PX
 // 1 23 46 [69] 92 115 138
-#define RAMP_DISCRETE_FLOOR 1
-#define RAMP_DISCRETE_CEIL  POWER_80PX
-#define RAMP_DISCRETE_STEPS 7
+#define RAMP_DISCRETE_FLOOR  1
+#define RAMP_DISCRETE_CEIL   POWER_80PX
+#define RAMP_DISCRETE_STEPS  7
 
 // GT can handle heat well, so don't limit simple mode
-#define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
-#define SIMPLE_UI_CEIL RAMP_DISCRETE_CEIL
-#define SIMPLE_UI_STEPS 5
-
-// smoother, more wobbly candle
-#define CANDLE_AMPLITUDE 33
-
-// turbo (i.e. "giggles" mode), low, tactical strobe
-#define TACTICAL_LEVELS 150,30,(RAMP_SIZE+2)
+#define SIMPLE_UI_FLOOR  RAMP_DISCRETE_FLOOR
+#define SIMPLE_UI_CEIL   RAMP_DISCRETE_CEIL
+#define SIMPLE_UI_STEPS  5
 
 // stop panicking at 80% power, this light has plenty of thermal mass
 #define THERM_FASTER_LEVEL POWER_80PX  // throttle back faster when high
 
+// AUX
+
+// the button lights up
+#define USE_AUX1_LED_WHILE_RAMPING
+// off mode: low (1)
+// lockout: blinking (3)
+#define AUX1_DEFAULT_MODE  aux1_cfg_byte(aux_low_e, aux_blinking_e)
+
+
+// Misc
+
 // don't blink during ramp, it's irrelevant and annoying on this light
-#undef BLINK_AT_RAMP_CEIL
+//#undef BLINK_AT_RAMP_CEIL
 #undef BLINK_AT_RAMP_MIDDLE
 #undef BLINK_AT_RAMP_FLOOR
+
+// smoother, more wobbly candle
+#define CANDLE_AMPLITUDE  33
+
+// turbo (i.e. "giggles" mode), low, tactical strobe
+#define TACTICAL_LEVELS 150,30,(RAMP_SIZE+2)
 
 #define USE_SMOOTH_STEPS
 
@@ -62,6 +69,6 @@
 #undef USE_BEACON_MODE
 #undef USE_RAMP_AFTER_MOON_CONFIG
 //#undef USE_RAMP_SPEED_CONFIG
-//#undef USE_VOLTAGE_CORRECTION
+#undef USE_VOLTAGE_CORRECTION
 #undef USE_2C_STYLE_CONFIG
 

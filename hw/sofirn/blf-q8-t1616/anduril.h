@@ -3,16 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "sofirn/blf-q8-t1616/hwdef.h"
+#define HWDEF_H  sofirn/blf-q8-t1616/hwdef.h
 #include "wurkkos/anduril.h"  // Sofirn lights are closely related to Wurkkos
-
-// the button lights up
-#define USE_INDICATOR_LED
-// the button is visible while main LEDs are on
-#define USE_INDICATOR_LED_WHILE_RAMPING
-// off mode: low (1)
-// lockout: blinking (3)
-#define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
 
 // copied from Wurkkos TS25 ramp
 #define RAMP_SIZE 150
@@ -26,11 +18,11 @@
 #define PWM2_LEVELS  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,4,6,7,8,10,11,13,14,16,17,19,21,22,24,26,28,30,32,34,37,39,41,44,46,48,51,54,56,59,62,65,68,71,74,77,81,84,87,91,94,98,102,106,110,114,118,122,126,130,135,139,144,148,153,158,163,168,173,178,184,189,195,200,206,212,218,224,230,236,242,248,255
 #define PWM_TOPS     4095,2701,3200,3586,2518,2778,2834,2795,2705,2587,2455,2582,2412,2247,2256,2091,2062,1907,1860,1802,1737,1605,1542,1477,1412,1347,1284,1222,1162,1105,1050,997,946,898,853,810,768,730,693,658,625,594,564,536,503,485,462,439,418,398,384,366,353,340,327,319,307,298,292,284,280,273,269,266,263,260,258,256,256,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
 
-#define MAX_1x7135 75
-#define DEFAULT_LEVEL 50
-#define MIN_THERM_STEPDOWN 60
-#define HALFSPEED_LEVEL 20
-#define QUARTERSPEED_LEVEL 5
+#define MAX_1x7135          75
+#define MIN_THERM_STEPDOWN  60
+#define HALFSPEED_LEVEL     20
+#define QUARTERSPEED_LEVEL  5
+#define DEFAULT_LEVEL       50
 
 #define RAMP_SMOOTH_FLOOR    1
 #define RAMP_SMOOTH_CEIL     150
@@ -47,10 +39,6 @@
 // also at Sofirn's request, enable 2 click turbo (Anduril 1 style)
 #define DEFAULT_2C_STYLE 1
 
-// enable SOS in the blinkies group
-#define USE_SOS_MODE
-#define USE_SOS_MODE_IN_BLINKY_GROUP
-
 // Allow 3C in Simple UI for switching between smooth and stepped ramping
 #define USE_SIMPLE_UI_RAMPING_TOGGLE
 
@@ -60,14 +48,28 @@
 // stop panicking at ~75% power or ~3000 lm, this light has high thermal mass
 #define THERM_FASTER_LEVEL (RAMP_SIZE*9/10)  // throttle back faster when high
 
+// AUX + channel modes
+
+#define USE_AUX_THRESHOLD_CONFIG
+#define DEFAULT_AUX_WHILE_ON  0b01  // enable button LED while main LEDs are on
+
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
 
+// blink numbers on the main LEDs by default
+#define DEFAULT_BLINK_CHANNEL  CM_MAIN
 // blink numbers on the aux LEDs by default
-#define DEFAULT_BLINK_CHANNEL  CM_AUX
+//#define DEFAULT_BLINK_CHANNEL  CM_AUX
+
+
+// Misc
 
 // the default of 26 looks a bit rough, so increase it to make it smoother
 #define CANDLE_AMPLITUDE 33
+
+// enable SOS in the blinkies group
+#define USE_SOS_MODE
+#define USE_SOS_MODE_IN_BLINKY_GROUP
 
 // don't blink during the ramp; the button LED brightness is sufficient
 // to indicate which power channel(s) are being used

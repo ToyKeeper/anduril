@@ -1,5 +1,5 @@
 // FW3X Lume1 helper functions
-// Copyright (C) 2023 Selene ToyKeeper
+// Copyright (C) 202-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -13,11 +13,11 @@ bool gradual_tick_main(uint8_t gt);
 
 
 Channel channels[] = {
-    { // channel 1 only
+    { // main LEDs
         .set_level    = set_level_main,
         .gradual_tick = gradual_tick_main
     },
-    RGB_AUX_CHANNELS
+    AUXRGB_CHANNELS
 };
 
 

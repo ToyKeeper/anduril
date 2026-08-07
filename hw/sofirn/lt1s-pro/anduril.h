@@ -1,34 +1,9 @@
 // Sofirn LT1S Pro config file for Anduril
-// Copyright (C) 2022-2023 (FIXME)
+// Copyright (C) 2022-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "sofirn/lt1s-pro/hwdef.h"
-
-// off mode: low (1)
-// lockout: blinking (3)
-// Standby power usage:
-// - aux high: 6.9 mA (30 days)
-// - aux low:  0.16 mA (3.5 years)
-// - red moon: 2.17 mA (96 days)
-// - white moon: 1.47 mA (141 days)
-// Low mode isn't bright enough to be useful on this light,
-// but at least it doesn't drain the battery 3X faster than moon mode.
-// (it seriously would be more practical to just use moon instead)
-#define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
-
-// channel modes...
-// CM_WHITE, CM_AUTO2, CM_AUTO3, CM_RED, CM_WHITE_RED
-#define DEFAULT_CHANNEL_MODE           CM_AUTO3
-
-#define FACTORY_RESET_WARN_CHANNEL     CM_RED
-#define FACTORY_RESET_SUCCESS_CHANNEL  CM_WHITE
-
-#define CONFIG_WAITING_CHANNEL         CM_RED
-#define CONFIG_BLINK_CHANNEL           CM_WHITE
-
-// blink numbers on the main LEDs by default (but allow user to change it)
-#define DEFAULT_BLINK_CHANNEL  CM_RED
+#define HWDEF_H  sofirn/lt1s-pro/hwdef.h
 
 // how much to increase total brightness at middle tint
 // (0 = 100% brightness, 64 = 200% brightness)
@@ -56,17 +31,14 @@
 //#define PWM2_LEVELS ...
 // tops for PWM2
 //#define PWM3_LEVELS ...
-#define MAX_1x7135 75
-#define MIN_THERM_STEPDOWN 75  // should be above highest dyn_pwm level
-#define HALFSPEED_LEVEL 12
-#define QUARTERSPEED_LEVEL 5
-
-// the default of 26 looks a bit flat, so increase it
-#define CANDLE_AMPLITUDE 40
+#define MAX_1x7135          75
+#define MIN_THERM_STEPDOWN  75  // should be above highest dyn_pwm level
+#define HALFSPEED_LEVEL     12
+#define QUARTERSPEED_LEVEL  5
 
 // override default ramp style
 #undef RAMP_STYLE
-#define RAMP_STYLE 1  // 0 = smooth, 1 = stepped
+#define RAMP_STYLE  1  // 0 = smooth, 1 = stepped
 // set floor and ceiling as far apart as possible
 // because this lantern isn't overpowered
 #define RAMP_SMOOTH_FLOOR    1
@@ -77,7 +49,7 @@
 #define RAMP_DISCRETE_STEPS  7
 
 // LT1S can handle heat well, so don't limit simple mode
-//#define SIMPLE_UI_FLOOR 10  // 10 45 80 115 150
+//#define SIMPLE_UI_FLOOR  10  // 10 45 80 115 150
 #define SIMPLE_UI_FLOOR  1
 #define SIMPLE_UI_CEIL   150
 #define SIMPLE_UI_STEPS  7
@@ -87,6 +59,39 @@
 
 // allow Aux Config and Strobe Modes in Simple UI
 //#define USE_EXTENDED_SIMPLE_UI
+
+// AUX + channel modes
+
+#define USE_AUX_THRESHOLD_CONFIG
+#define DEFAULT_AUX_WHILE_ON  0b01  // button LED on while main LEDs are on
+
+// off mode: low (1)
+// lockout: blinking (3)
+// Standby power usage:
+// - aux high: 6.9 mA (30 days)  (WTF)
+// - aux low:  0.16 mA (3.5 years)
+// - red moon: 2.17 mA (96 days)
+// - white moon: 1.47 mA (141 days)
+// Low mode isn't bright enough to be useful on this light,
+// but at least it doesn't drain the battery 3X faster than moon mode.
+// (it seriously would be more practical to just use moon instead)
+#define AUX1_DEFAULT_MODE  aux1_cfg_byte(aux_low_e, aux_blinking_e)
+
+// channel modes...
+// CM_WHITE, CM_AUTO2, CM_AUTO3, CM_RED, CM_WHITE_RED
+#define DEFAULT_CHANNEL_MODE           CM_AUTO3
+
+#define FACTORY_RESET_WARN_CHANNEL     CM_RED
+#define FACTORY_RESET_SUCCESS_CHANNEL  CM_WHITE
+
+#define CONFIG_WAITING_CHANNEL         CM_RED
+#define CONFIG_BLINK_CHANNEL           CM_WHITE
+
+// blink numbers on the main LEDs by default (but allow user to change it)
+#define DEFAULT_BLINK_CHANNEL          CM_RED
+
+
+// Misc
 
 // turn on at med-low brightness by default (level 50/150, or ramp step 3/7)
 // (also sets lockout mode 2H to a useful level)
@@ -100,6 +105,10 @@
 #define USE_SOS_MODE
 #define USE_SOS_MODE_IN_BLINKY_GROUP
 
+// the default of 26 looks a bit flat, so increase it
+#define CANDLE_AMPLITUDE 40
+
+// no RGB aux, can only use main LEDs for police strobe
 #define USE_POLICE_COLOR_STROBE_MODE
 #define POLICE_COLOR_STROBE_CH1        CM_RED
 #define POLICE_COLOR_STROBE_CH2        CM_WHITE
@@ -107,17 +116,21 @@
 #undef  TACTICAL_LEVELS
 #define TACTICAL_LEVELS 120,30,(RAMP_SIZE+3)  // high, low, police strobe
 
+// party strobe, tac strobe, police, lightning, candle, bike
+#define DEFAULT_STROBE_CHANNELS  CM_WHITE,CM_RED,CM_AUTO3,CM_AUTO2,CM_AUTO3,CM_WHITE
+
 // don't blink while ramping
-#ifdef BLINK_AT_RAMP_MIDDLE
-#undef BLINK_AT_RAMP_MIDDLE
-#endif
 #ifdef BLINK_AT_RAMP_FLOOR
 #undef BLINK_AT_RAMP_FLOOR
 #endif
-#ifdef BLINK_AT_RAMP_CEIL
-#undef BLINK_AT_RAMP_CEIL
+#ifdef BLINK_AT_RAMP_MIDDLE
+#undef BLINK_AT_RAMP_MIDDLE
 #endif
+// except the top... blink at the top
 // without this, it's really hard to tell when ramping up stops
+#ifndef BLINK_AT_RAMP_CEIL
 #define BLINK_AT_RAMP_CEIL
+#endif
 
 #define USE_SOFT_FACTORY_RESET
+

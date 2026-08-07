@@ -1,5 +1,5 @@
 // hwdef for thefreeman's boost FWAA driver 1.1 w/ MP3432, HDR DAC, RGB aux
-// Copyright (C) 2023 TBD (thefreeman), Selene ToyKeeper
+// Copyright (C) 2023-2026 thefreeman, Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -44,16 +44,22 @@
 // channel modes:
 // * 0. main LEDs
 // * 1+. aux RGB
-#define NUM_CHANNEL_MODES   (1 + NUM_RGB_AUX_CHANNEL_MODES)
-enum CHANNEL_MODES {
+#define NUM_CHANNEL_MODES   (2 + NUM_AUXRGB_CHANNEL_MODES)
+enum channel_modes_e {
     CM_MAIN = 0,
-    RGB_AUX_ENUMS
+    CM_HSV,
+    AUXRGB_CM_ENUMS
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b0000000000000001
+#define CHANNEL_MODES_ENABLED  0b0000000000000001
+#define USE_CHANNEL_MODE_ARGS
+#define CHANNEL_MODE_ARGS  0,0,AUXRGB_CM_ARGS
+#define USE_CUSTOM_CHANNEL_3H_MODES
+#define USE_CIRCULAR_TINT_3H
+#define USE_HSV2RGB
 
 
 #define PWM_BITS      8         // 8-bit DAC
@@ -63,6 +69,8 @@ enum CHANNEL_MODES {
 #define PWM1_GET(l)   PWM_GET8(pwm1_levels, l)
 #define PWM2_DATATYPE uint8_t   // DAC Vref table
 #define PWM2_GET(l)   PWM_GET8(pwm2_levels, l)
+#define PWM3_DATATYPE uint8_t   // aux RGB ramp
+#define PWM3_GET(x)   PWM_GET8(pwm3_levels, x)
 
 // main LED outputs
 // (DAC_LVL + DAC_VREF + Vref values are defined in arch/*.h)
@@ -100,6 +108,36 @@ enum CHANNEL_MODES {
 #undef voltage_raw2cooked
 #define voltage_raw2cooked  mcu_vdivider_raw2cooked
 
+// this light has RGB aux LEDs
+#define USE_AUXRGB_LEDS
+
+// aux RGB passive
+#define AUXRGB_R_PORT  PORTB
+#define AUXRGB_R_PIN   PIN3_bp
+#define AUXRGB_G_PORT  PORTB
+#define AUXRGB_G_PIN   PIN4_bp
+#define AUXRGB_B_PORT  PORTB
+#define AUXRGB_B_PIN   PIN5_bp
+
+// aux RGB PWM
+#define RGB_BITS  8
+#define CH_R_PIN  PB3
+#define CH_R_PWM  TCA0.SINGLE.CMP0BUF
+#define CH_G_PIN  PB4
+#define CH_G_PWM  TCA0.SINGLE.CMP1BUF
+#define CH_B_PIN  PB5
+#define CH_B_PWM  TCA0.SINGLE.CMP2BUF
+
+#define PWM_RGB_TOP       TCA0.SINGLE.PERBUF
+#define PWM_RGB_TOP_INIT  255
+
+// A: button LED
+#define USE_AUX1_LED
+#ifndef AUX1_LED_PIN
+#define AUX1_LED_PIN   PIN1_bp
+#define AUX1_LED_PORT  PORTC
+#endif
+
 
 // Raw ADC readings at 4.4V and 2.2V
 // calibrate the voltage readout here
@@ -108,15 +146,6 @@ enum CHANNEL_MODES {
 // Resistors are 330k and 100k
 #define ADC_44  3810  // raw value at 4.40V
 #define ADC_22  1905  // raw value at 2.20V
-
-// this driver allows for aux LEDs under the optic
-#define AUXLED_R_PIN  PIN3_bp
-#define AUXLED_G_PIN  PIN4_bp
-#define AUXLED_B_PIN  PIN5_bp
-#define AUXLED_RGB_PORT PORTB  // PORTA or PORTB or PORTC
-
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
 
 
 inline void hwdef_setup() {
@@ -164,6 +193,16 @@ inline void hwdef_setup() {
     VREF.CTRLB |= VREF_DAC0REFEN_bm;  // enable DAC Vref
     DAC0.CTRLA = DAC_ENABLE_bm | DAC_OUTEN_bm;  // enable DAC
     DAC_LVL = 0;  // turn off output at boot
+
+    // TCA/TCB/TCD aren't used at boot time, so turn them off
+    TCA0.SINGLE.CTRLA = 0;
+    TCB0.CTRLA = 0;
+    TCB1.CTRLA = 0;
+    TCD0.CTRLA = 0;
+
+    // enable alternate positions for TCA WO0, WO1, WO2
+    // (attiny16 reference manual section 15.3.3, PORTMUX.CTRLC)
+    PORTMUX.CTRLC = 0b00000111;
 
 }
 

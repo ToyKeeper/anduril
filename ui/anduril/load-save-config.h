@@ -139,24 +139,46 @@ Config cfg = {
 
     ///// aux LEDs
 
-    #ifdef USE_INDICATOR_LED
-        // bits 2-3 control lockout mode
-        // bits 0-1 control "off" mode
-        // modes are: 0=off, 1=low, 2=high, 3=blinking (if TICK_DURING_STANDBY enabled)
-        .indicator_led_mode = INDICATOR_LED_DEFAULT_MODE,
+    #if defined(USE_AUX_THRESHOLD_CONFIG)
+        // config for RGB voltage. We need to check these here rather than
+        // setting defaults in `config-default.h` as we only know *after*
+        // defaults are loaded if `USE_AUXRGB_LEDS_WHILE_ON` is set or unset
+        // (in `CFG_H`).
+        #ifdef USE_AUX_LEDS_WHILE_ON_INITIAL_MINIMUM_LEVEL
+            .aux_low_ramp_level = USE_AUX_LEDS_WHILE_ON_INITIAL_MINIMUM_LEVEL,
+        #else
+            .aux_low_ramp_level = 0,  // default
+        #endif
+        #if (USE_AUXRGB_LEDS_WHILE_ON + 0)
+            // if USE_AUXRGB_LEDS_WHILE_ON is an int, passes. If blank (undefined
+            // or defined with no value), evaluates to `(+0)` which evaluates to
+            // false.
+            .aux_high_ramp_level = USE_AUXRGB_LEDS_WHILE_ON,
+        #else
+            #ifdef USE_AUXRGB_LEDS
+                //#warning "USE_AUXRGB_LEDS_WHILE_ON defined but has no value. Setting to default value."
+                .aux_high_ramp_level = 25 - 1,  // default
+            #else
+                .aux_high_ramp_level = DEFAULT_LEVEL - 1,  // default
+            #endif
+        #endif
     #endif
-    #ifdef USE_AUX_RGB_LEDS
-        .rgb_led_off_mode = RGB_LED_OFF_DEFAULT,
-        .rgb_led_lockout_mode = RGB_LED_LOCKOUT_DEFAULT,
+
+    #ifdef USE_AUXRGB_LEDS
+        .auxrgb_off_mode = RGB_LED_OFF_DEFAULT,
+        .auxrgb_lockout_mode = RGB_LED_LOCKOUT_DEFAULT,
         #ifdef USE_POST_OFF_VOLTAGE
             // display voltage readout for a while after turning off?
             .post_off_voltage = DEFAULT_POST_OFF_VOLTAGE_SECONDS,
         #endif
+    #elif defined(USE_AUX1_LED)
+        // single color aux LED
+        .aux1_mode = AUX1_DEFAULT_MODE,
     #endif
-    #if defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS)
+    #if defined(USE_AUX1_LED) || defined(USE_AUXRGB_LEDS)
         #ifdef DEFAULT_AUX_WHILE_ON
             .aux_while_on = DEFAULT_AUX_WHILE_ON,
-        #elif (USE_AUX_RGB_LEDS_WHILE_ON + 0)
+        #elif (USE_AUXRGB_LEDS_WHILE_ON + 0)
             .aux_while_on = 0b11,
         #else
             .aux_while_on = 0b01,
@@ -176,31 +198,6 @@ Config cfg = {
 
     #ifdef USE_JUMP_START
         .jump_start_level = DEFAULT_JUMP_START_LEVEL,
-    #endif
-
-    #if defined(USE_AUX_THRESHOLD_CONFIG)
-        // config for RGB voltage. We need to check these here rather than
-        // setting defaults in `config-default.h` as we only know *after*
-        // defaults are loaded if `USE_AUX_RGB_LEDS_WHILE_ON` is set or unset
-        // (in `CFG_H`).
-        #ifdef USE_AUX_LEDS_WHILE_ON_INITIAL_MINIMUM_LEVEL
-            .button_led_low_ramp_level = USE_AUX_LEDS_WHILE_ON_INITIAL_MINIMUM_LEVEL,
-        #else
-            .button_led_low_ramp_level = 0,  // default
-        #endif
-        #if (USE_AUX_RGB_LEDS_WHILE_ON + 0)
-            // if USE_AUX_RGB_LEDS_WHILE_ON is an int, passes. If blank (undefined
-            // or defined with no value), evaluates to `(+0)` which evaluates to
-            // false.
-            .button_led_high_ramp_level = USE_AUX_RGB_LEDS_WHILE_ON,
-        #else
-            #ifdef USE_AUX_RGB_LEDS
-                //#warning "USE_AUX_RGB_LEDS_WHILE_ON defined but has no value. Setting to default value."
-                .button_led_high_ramp_level = 25 - 1,  // default
-            #else
-                .button_led_high_ramp_level = DEFAULT_LEVEL - 1,  // default
-            #endif
-        #endif
     #endif
 
 };

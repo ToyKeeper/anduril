@@ -17,14 +17,14 @@
 // channel modes
 // * 0. small FET + big FET stacked
 #define NUM_CHANNEL_MODES  1
-enum CHANNEL_MODES {
+enum channel_modes_e {
     CM_MAIN = 0,
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b00000001
+#define CHANNEL_MODES_ENABLED  0b00000001
 
 
 #define PWM_CHANNELS 2  // old, remove this
@@ -47,7 +47,10 @@ enum CHANNEL_MODES {
 #define CH2_PWM  OCR0B      // OCR0B is the output compare register for PB1
 
 // lighted button and 1-channel front aux
-#define AUXLED_PIN   PB4    // pin 3
+#define USE_AUX1_LED
+#define AUX1_LED_PIN   PB4    // pin 3
+#define AUX1_LED_PORT  PORTB
+#define AUX1_LED_DDR   DDRB
 
 // e-switch
 #ifndef SWITCH_PIN

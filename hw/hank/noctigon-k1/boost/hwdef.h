@@ -1,9 +1,11 @@
 // Noctigon K1 12V driver layout (attiny1634)
-// Copyright (C) 2019-2023 Selene ToyKeeper
+// Copyright (C) 2019-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
 /*
+ * (basically the same as a DM11-boost driver, but no AUX1 button LED)
+ *
  * Pin / Name / Function
  *   1    PA6   (none) (PWM1B) (reserved for DD drivers)
  *   2    PA5   R: red aux LED (PWM0B)
@@ -40,18 +42,18 @@
 #include "fsm/chan-rgbaux.h"
 
 // channel modes:
-// * 0. main LEDs
+// * 0. main LED
 // * 1+. aux RGB
-#define NUM_CHANNEL_MODES   (1 + NUM_RGB_AUX_CHANNEL_MODES)
-enum CHANNEL_MODES {
+#define NUM_CHANNEL_MODES   (1 + NUM_AUXRGB_CHANNEL_MODES)
+enum channel_modes_e {
     CM_MAIN = 0,
-    RGB_AUX_ENUMS
+    AUXRGB_CM_ENUMS
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b0000000000000001
+#define CHANNEL_MODES_ENABLED  0b0000000000000001
 // no args
 //#define USE_CHANNEL_MODE_ARGS
 //#define CHANNEL_MODE_ARGS     0,0,0,0,0,0,0,0
@@ -101,13 +103,24 @@ uint8_t ch1_pwm, ch1_dsm;
 
 #include "hank/vdivider-1634.h"
 
-// this light has aux LEDs under the optic
-#define AUXLED_R_PIN    PA5    // pin 2
-#define AUXLED_G_PIN    PA4    // pin 3
-#define AUXLED_B_PIN    PA3    // pin 4
-#define AUXLED_RGB_PORT PORTA  // PORTA or PORTB or PORTC
-#define AUXLED_RGB_DDR  DDRA   // DDRA or DDRB or DDRC
-#define AUXLED_RGB_PUE  PUEA   // PUEA or PUEB or PUEC
+
+// this light has RGB aux LEDs
+#define USE_AUXRGB_LEDS
+
+// aux RGB passive
+#define AUXRGB_R_PIN    PA5    // pin 2
+#define AUXRGB_R_PORT   PORTA  // PORTA or PORTB or PORTC
+#define AUXRGB_R_DDR    DDRA   // DDRA or DDRB or DDRC
+#define AUXRGB_R_PUE    PUEA   // PUEA or PUEB or PUEC
+#define AUXRGB_G_PIN    PA4    // pin 3
+#define AUXRGB_G_PORT   PORTA
+#define AUXRGB_G_DDR    DDRA
+#define AUXRGB_G_PUE    PUEA
+#define AUXRGB_B_PIN    PA3    // pin 4
+#define AUXRGB_B_PORT   PORTA
+#define AUXRGB_B_DDR    DDRA
+#define AUXRGB_B_PUE    PUEA
+
 
 inline void hwdef_setup() {
     // enable output ports
@@ -117,9 +130,9 @@ inline void hwdef_setup() {
     DDRB = (1 << CH1_PIN)
          | (1 << CH1_ENABLE_PIN);
     // aux R/G/B
-    DDRA = (1 << AUXLED_R_PIN)
-         | (1 << AUXLED_G_PIN)
-         | (1 << AUXLED_B_PIN)
+    DDRA = (1 << AUXRGB_R_PIN)
+         | (1 << AUXRGB_G_PIN)
+         | (1 << AUXRGB_B_PIN)
          ;
 
     // configure PWM

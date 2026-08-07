@@ -1,10 +1,10 @@
 // Noctigon K1 PWM helper functions
-// Copyright (C) 2019-2023 Selene ToyKeeper
+// Copyright (C) 2019-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
-
 #pragma once
 
 #include "fsm/chan-rgbaux.c"
+
 
 void set_level_zero();
 
@@ -17,7 +17,7 @@ Channel channels[] = {
         .set_level    = set_level_main,
         .gradual_tick = gradual_tick_main
     },
-    RGB_AUX_CHANNELS
+    AUXRGB_CHANNELS
 };
 
 

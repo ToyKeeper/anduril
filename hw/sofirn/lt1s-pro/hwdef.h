@@ -1,5 +1,5 @@
 // BLF LT1S Pro driver layout using the Attiny1616
-// Copyright (C) 2022-2023 (FIXME)
+// Copyright (C) 2022-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -14,6 +14,8 @@
  */
 
 #define HWDEF_C  sofirn/lt1s-pro/hwdef.c
+
+#define USE_CHANNEL_FLAGS
 
 // channel modes:
 // * 0. warm/cool white blend
@@ -30,7 +32,7 @@ enum channel_modes_e {
     CM_WHITE_RED,
 };
 
-#define CHANNEL_MODES_ENABLED 0b00011111
+#define CHANNEL_MODES_ENABLED  0b00011111
 #define USE_CHANNEL_MODE_ARGS
 // 128=middle CCT, _, _, _, 255=100% red
 #define CHANNEL_MODE_ARGS     128,0,0,0,255
@@ -69,20 +71,19 @@ enum channel_modes_e {
 #define RED_PWM_LVL TCA0.SINGLE.CMP2BUF   // CMP2 is the output compare register for PB2
 
 // lighted button
-#define AUXLED_PIN   PIN5_bp
-#define AUXLED_PORT  PORTB
+#define USE_AUX1_LED
+#define AUX1_LED_PIN   PIN5_bp
+#define AUX1_LED_PORT  PORTB
 
-// the button lights up
-#define USE_INDICATOR_LED
 // the button is visible while main LEDs are on
-#define USE_INDICATOR_LED_WHILE_RAMPING
+#define USE_AUX1_LED_WHILE_RAMPING
 
 // e-switch
-#define SWITCH_PIN     PIN5_bp
-#define SWITCH_PORT    VPORTA.IN
-#define SWITCH_ISC_REG PORTA.PIN2CTRL
-#define SWITCH_VECT    PORTA_PORT_vect
-#define SWITCH_INTFLG  VPORTA.INTFLAGS
+#define SWITCH_PIN      PIN5_bp
+#define SWITCH_PORT     VPORTA.IN
+#define SWITCH_ISC_REG  PORTA.PIN5CTRL
+#define SWITCH_VECT     PORTA_PORT_vect
+#define SWITCH_INTFLG   VPORTA.INTFLAGS
 
 // average drop across diode on this hardware
 #ifndef VOLTAGE_FUDGE_FACTOR

@@ -1,5 +1,5 @@
 // Noctigon KR4 2-channel config options for Anduril
-// Copyright (C) 2021-2023 Selene ToyKeeper
+// Copyright (C) 2021-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -9,5 +9,6 @@
 #include "hank/emisar-2ch/anduril.h"
 
 // the button doesn't light up
-#undef USE_BUTTON_LED
+// (but leaving it enabled doesn't hurt anything)
+//#undef USE_AUX1_LED
 

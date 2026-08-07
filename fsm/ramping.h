@@ -1,5 +1,5 @@
 // fsm-ramping.h: Ramping functions for SpaghettiMonster.
-// Copyright (C) 2017-2023 Selene ToyKeeper
+// Copyright (C) 2017-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -9,7 +9,8 @@
 // actual_level: last ramp level set by set_level()
 uint8_t actual_level = 0;
 // the level used before actual
-uint8_t prev_level = 0;
+// (start non-zero at boot to make aux LEDs turn on faster)
+uint8_t prev_level = RAMP_SIZE / 5;
 #ifdef USE_RAMP_LEVEL_HARD_LIMIT
 uint8_t ramp_level_hard_limit = 0;
 #endif
@@ -117,23 +118,17 @@ PROGMEM const PWM4_DATATYPE pwm4_levels[] = { PWM4_LEVELS };
 #ifdef PWM5_LEVELS
 PROGMEM const PWM5_DATATYPE pwm5_levels[] = { PWM5_LEVELS };
 #endif
-
-// convenience defs for 1 LED with stacked channels
-// FIXME: remove this, use pwm1/2/3 instead
-#ifdef LOW_PWM_LEVELS
-PROGMEM const PWM_DATATYPE low_pwm_levels[]  = { LOW_PWM_LEVELS };
+#ifdef PWM6_LEVELS
+PROGMEM const PWM6_DATATYPE pwm6_levels[] = { PWM6_LEVELS };
 #endif
-#ifdef MED_PWM_LEVELS
-PROGMEM const PWM_DATATYPE med_pwm_levels[]  = { MED_PWM_LEVELS };
+#ifdef PWM7_LEVELS
+PROGMEM const PWM7_DATATYPE pwm7_levels[] = { PWM7_LEVELS };
 #endif
-#ifdef HIGH_PWM_LEVELS
-PROGMEM const PWM_DATATYPE high_pwm_levels[] = { HIGH_PWM_LEVELS };
+#ifdef PWM8_LEVELS
+PROGMEM const PWM8_DATATYPE pwm8_levels[] = { PWM8_LEVELS };
 #endif
-
-// 2 channel CCT blending ramp
-#ifdef BLEND_PWM_LEVELS
-// FIXME: remove this, use pwm1/2/3 instead
-PROGMEM const PWM_DATATYPE blend_pwm_levels[] = { BLEND_PWM_LEVELS };
+#ifdef PWM9_LEVELS
+PROGMEM const PWM9_DATATYPE pwm9_levels[] = { PWM9_LEVELS };
 #endif
 
 

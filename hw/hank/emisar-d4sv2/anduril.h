@@ -1,9 +1,9 @@
 // Emisar D4S V2 config options for Anduril
-// Copyright (C) 2019-2023 Selene ToyKeeper
+// Copyright (C) 2019-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "hank/emisar-d4sv2/hwdef.h"
+#define HWDEF_H  hank/emisar-d4sv2/hwdef.h
 #include "hank/anduril.h"
 
 #define RAMP_SIZE 150
@@ -16,11 +16,12 @@
 #define PWM3_LEVELS  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,5,7,10,12,15,17,20,22,25,28,31,34,38,41,44,48,52,56,60,64,68,72,77,81,86,91,96,101,107,112,118,124,130,136,143,149,156,163,170,178,186,193,201,210,218,227,236,245,255
 #define PWM_TOPS     4095,2701,3200,3586,2518,2778,2834,2795,2705,2587,2455,2582,2412,2247,2256,2091,2062,1907,1860,1802,1737,1605,1542,1477,1412,1347,1284,1222,1162,1105,1050,997,946,898,853,810,768,730,693,658,625,594,564,536,503,485,462,439,418,398,384,366,353,340,327,319,307,298,292,284,280,273,269,266,263,260,258,256,256,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
 
-#define MIN_THERM_STEPDOWN 70  // should be above highest dyn_pwm level
-#define MAX_1x7135 75
-#define MAX_Nx7135 100
-#define HALFSPEED_LEVEL 20
-#define QUARTERSPEED_LEVEL 5
+#define MAX_1x7135           75
+#define MAX_Nx7135           100
+#define DEFAULT_LEVEL        50
+#define MIN_THERM_STEPDOWN   70  // should be above highest dyn_pwm level
+#define HALFSPEED_LEVEL      20
+#define QUARTERSPEED_LEVEL   5
 
 // old
 //// ../../../bin/level_calc.py seventh 3 150 7135 1 2.3 130 7135 11 5 400.1 FET 2 10 4000
@@ -34,21 +35,18 @@
 //#define HALFSPEED_LEVEL 18
 //#define QUARTERSPEED_LEVEL 8
 
-
-#define DEFAULT_LEVEL MAX_Nx7135
-
-#define RAMP_SMOOTH_FLOOR 1
-#define RAMP_SMOOTH_CEIL  130
-// 20, 38, 56, [75], 93, 111, 130
-#define RAMP_DISCRETE_FLOOR 20
-#define RAMP_DISCRETE_CEIL  RAMP_SMOOTH_CEIL
-#define RAMP_DISCRETE_STEPS 7
+#define RAMP_SMOOTH_FLOOR    1
+#define RAMP_SMOOTH_CEIL     130
+// 20 38 56 [75] 93 111 130
+#define RAMP_DISCRETE_FLOOR  20
+#define RAMP_DISCRETE_CEIL   RAMP_SMOOTH_CEIL
+#define RAMP_DISCRETE_STEPS  7
 
 // safe limit ~35% power, 150% of sustainable thermal power
 // 25 50 [75] [100] 125
-#define SIMPLE_UI_FLOOR 25
-#define SIMPLE_UI_CEIL 125
-#define SIMPLE_UI_STEPS 5
+#define SIMPLE_UI_FLOOR      25
+#define SIMPLE_UI_CEIL       125
+#define SIMPLE_UI_STEPS      5
 
 #define STROBE_BRIGHTNESS  MAX_LEVEL
 
@@ -56,6 +54,11 @@
 #define THERM_FASTER_LEVEL 130
 
 #define THERM_CAL_OFFSET 5
+
+
+// AUX
+
+#define USE_AUX_THRESHOLD_CONFIG
 
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
@@ -68,6 +71,9 @@
 #define POLICE_STROBE_USES_AUX
 #define POLICE_COLOR_STROBE_CH1        CM_AUXRED
 #define POLICE_COLOR_STROBE_CH2        CM_AUXBLU
+
+
+// Misc
 
 // the default of 26 looks a bit rough, so increase it to make it smoother
 #define CANDLE_AMPLITUDE 33

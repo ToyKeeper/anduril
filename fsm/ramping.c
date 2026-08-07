@@ -1,83 +1,87 @@
 // fsm-ramping.c: Ramping functions for SpaghettiMonster.
-// Copyright (C) 2017-2023 Selene ToyKeeper
+// Copyright (C) 2017-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
 #ifdef USE_RAMPING
 
-#ifdef HAS_AUX_LEDS
-inline void set_level_aux_leds(uint8_t level) {
-    #ifdef USE_AUX_THRESHOLD_CONFIG
-        #define AUX_BRIGHTNESS ((level > cfg.button_led_low_ramp_level) \
-            << (level > cfg.button_led_high_ramp_level))
-    #else
-        #define AUX_BRIGHTNESS ((level > 0) + (level > DEFAULT_LEVEL))
-    #endif
-    #ifdef USE_INDICATOR_LED_WHILE_RAMPING
-        // use side-facing aux LEDs while main LEDs are on
-        if (! go_to_standby) {
-        #ifdef USE_INDICATOR_LED
-            indicator_led(AUX_BRIGHTNESS);
-        #endif
-        #ifdef USE_BUTTON_LED
-            button_led_set(AUX_BRIGHTNESS);
-        #endif
-        }
-    #else  // turn off front-facing aux LEDs while main LEDs are on
-        #if defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS)
-        if (! go_to_standby) {
-            #ifdef USE_INDICATOR_LED
-                indicator_led(0);
-            #endif
-            #ifdef USE_AUX_RGB_LEDS
-                rgb_led_set(0);
-                #ifdef USE_BUTTON_LED
-                    button_led_set(AUX_BRIGHTNESS);
-                #endif
-            #endif
-        }
-        #endif
-    #endif
-    #ifdef AUX_BRIGHTNESS
-    #undef AUX_BRIGHTNESS
-    #endif
-}
-#endif  // ifdef HAS_AUX_LEDS
-
-#ifdef USE_AUX_RGB_LEDS
-// TODO: maybe move this stuff into FSM
+#if defined(USE_AUX1_LED) || defined(USE_AUXRGB_LEDS)
+#ifdef USE_AUXRGB_LEDS
 #include "anduril/aux-leds.h"  // for rgb_led_voltage_readout()
-inline void set_level_aux_rgb_leds(uint8_t level) {
-    if (! go_to_standby) {
-        uint8_t rgb_level = (cfg.aux_while_on & 0b10) ? level : 0;
-        #ifdef USE_AUX_THRESHOLD_CONFIG
-        if (rgb_level > cfg.button_led_low_ramp_level) {
-            rgb_led_voltage_readout(rgb_level > cfg.button_led_high_ramp_level);
-        }
-        #else
-        if (rgb_level > 0) {
-            rgb_led_voltage_readout(rgb_level > (USE_AUX_RGB_LEDS_WHILE_ON + 0));
-        }
+#endif
+
+void set_level_aux_leds(uint8_t level) {
+    if (go_to_standby) return;
+
+    if (! level) {
+        #if defined(USE_AUX1_LED)
+        set_aux1_power(0);
         #endif
-        else {
-            rgb_led_set(0);
-        }
-        // some drivers can be wired with RGB or single color to button
-        // ... so support both even though only one is connected
-        #ifdef USE_BUTTON_LED
-            uint8_t button_level = (cfg.aux_while_on & 0b01) ? level : 0;
-            #ifdef USE_AUX_THRESHOLD_CONFIG
-            button_led_set(
-                    (button_level > cfg.button_led_low_ramp_level)
-                    << (button_level > cfg.button_led_high_ramp_level));
-            #else
-            button_led_set((button_level > 0) + (button_level > DEFAULT_LEVEL));
-            #endif
+        #if defined(USE_AUXRGB_LEDS)
+        set_auxrgb_power(0);
         #endif
+        return;
     }
+
+    #ifdef USE_AUX1_LED
+    #if defined(USE_CHANNEL_FLAGS) && (!defined(USE_AUXRGB_LEDS))
+    if (channel_is_aux(channel_mode)) return;
+    #endif
+
+    #if (defined(USE_AUX1_LED_WHILE_RAMPING) || defined(USE_AUX_THRESHOLD_CONFIG))
+    {
+        uint8_t lvl = (cfg.aux_while_on & 0b01) ? level : 0;
+        uint8_t power;
+        #ifdef USE_AUX_THRESHOLD_CONFIG
+        power = (lvl > cfg.aux_low_ramp_level)
+             << (lvl > cfg.aux_high_ramp_level);
+        #elif (USE_AUXRGB_LEDS_WHILE_ON + 0) > 0
+        power = 1 + (auxrgb_level > USE_AUXRGB_LEDS_WHILE_ON);
+        #else
+        power = 1 + (lvl > DEFAULT_LEVEL);
+        #endif
+        set_aux1_power(power);
+    }
+    #else
+    set_aux1_power(0);
+    #endif  // #if (defined(USE_AUX1_LED_WHILE_RAMPING) || defined(USE_AUX_THRESHOLD_CONFIG))
+    #endif  // #ifdef USE_AUX1_LED
+
+    #ifdef USE_AUXRGB_LEDS
+    #if (defined(USE_AUXRGB_LEDS_WHILE_ON) || defined(USE_AUX_THRESHOLD_CONFIG))
+    // "aux while on" can't work when using aux LED channel modes
+    #ifdef USE_CHANNEL_FLAGS
+    if (channel_is_aux(channel_mode)) return;
+    #endif
+
+    {
+        uint8_t lvl = (cfg.aux_while_on & 0b10) ? level : 0;
+        #ifdef USE_SMOOTH_POVD
+            // active RGB LEDs (adjustable brightness)
+            uint8_t povd_level = calc_smooth_povd_brightness(lvl);
+            draw_smooth_povd(povd_level);
+        #else
+            // passive RGB LEDs (off/low/high only)
+            uint8_t power;
+            #ifdef USE_AUX_THRESHOLD_CONFIG
+            power = (lvl > cfg.aux_low_ramp_level)
+                 << (lvl > cfg.aux_high_ramp_level);
+            #elif (USE_AUXRGB_LEDS_WHILE_ON + 0) > 0
+            power = 1 + (lvl > USE_AUXRGB_LEDS_WHILE_ON);
+            #else
+            power = 1 + (lvl > 25);
+            //power = (lvl > 0) + (lvl > DEFAULT_LEVEL);
+            #endif
+            rgb_led_voltage_readout(power);
+        #endif  // #ifdef USE_SMOOTH_POVD
+    }
+    #else
+    set_auxrgb_power(0);
+    #endif  // #if (defined(USE_AUXRGB_LEDS_WHILE_RAMPING) || defined(USE_AUX_THRESHOLD_CONFIG))
+    #endif  // #ifdef USE_AUXRGB_LEDS
 }
-#endif  // ifdef USE_AUX_RGB_LEDS
+#endif  // if defined(USE_AUX1_LED) || defined(USE_AUXRGB_LEDS)
 
 
 void set_level(uint8_t level) {
@@ -102,13 +106,8 @@ void set_level(uint8_t level) {
     }
     #endif
 
-    #ifdef HAS_AUX_LEDS
-    set_level_aux_leds((cfg.aux_while_on & 0b01) ? level : 0);
-    #endif
-
-    #ifdef USE_AUX_RGB_LEDS
-    //set_level_aux_rgb_leds((cfg.aux_while_on & 0b10) ? level : 0);
-    set_level_aux_rgb_leds(level);
+    #if defined(USE_AUXRGB_LEDS) || defined(USE_AUX1_LED)
+    set_level_aux_leds(level);
     #endif
 
     if (0 == level) {

@@ -1,5 +1,5 @@
 // BLF/TLF FW3A driver layout
-// Copyright (C) 2018-2023 Selene ToyKeeper
+// Copyright (C) 2018-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -17,14 +17,14 @@
 // channel modes
 // * 0. FET+7+1 stacked
 #define NUM_CHANNEL_MODES   1
-enum CHANNEL_MODES {
+enum channel_modes_e {
     CM_MAIN = 0,
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b00000001
+#define CHANNEL_MODES_ENABLED  0b00000001
 
 
 #define PWM_CHANNELS 3  // old, remove this

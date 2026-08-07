@@ -1,17 +1,9 @@
 // gChart's custom FET+1 driver config options for Anduril
-// Copyright (C) 2020-2023 gchart, Selene ToyKeeper
+// Copyright (C) 2020-2026 gchart, Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "gchart/fet1-t1616/hwdef.h"
-
-// the button lights up
-#define USE_INDICATOR_LED
-// the button is visible while main LEDs are on
-#define USE_INDICATOR_LED_WHILE_RAMPING
-// off mode: low (1)
-// lockout: blinking (3)
-#define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 1)
+#define HWDEF_H  gchart/fet1-t1616/hwdef.h
 
 #define RAMP_SIZE 150
 
@@ -42,9 +34,22 @@
 // stop panicking at ~50% power
 #define THERM_FASTER_LEVEL 130  // throttle back faster when high
 
+
+// AUX
+
+// the button lights up
+// the button is visible while main LEDs are on
+#define USE_AUX_THRESHOLD_CONFIG
+#define DEFAULT_AUX_WHILE_ON  0b01  // yes, light the button while main LEDs are on
+// off mode: low
+// lockout: blinking
+#define AUX1_DEFAULT_MODE  aux1_cfg_byte(aux_low_e, aux_blinking_e)
+
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
 
+// blink numbers on the main LEDs by default
+//#define DEFAULT_BLINK_CHANNEL  CM_MAIN
 // blink numbers on the aux LEDs by default
 //#define DEFAULT_BLINK_CHANNEL  CM_AUX
 

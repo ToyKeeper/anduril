@@ -1,5 +1,5 @@
 // fsm-misc.c: Miscellaneous function for SpaghettiMonster.
-// Copyright (C) 2017-2023 Selene ToyKeeper
+// Copyright (C) 2017-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -21,7 +21,7 @@ void auto_clock_speed() {
         clock_prescale_set(clock_div_1);
     }
 }
-#endif
+#endif  // #ifdef USE_DYNAMIC_UNDERCLOCKING
 
 #if defined(USE_BLINK_NUM) || defined(USE_BLINK_DIGIT)
 #define BLINK_SPEED 1000
@@ -74,8 +74,8 @@ void blink_negative() {
     set_level(0);
     nice_delay_ms(ontime * 5);
 }
-#endif
-#endif
+#endif  // #ifdef USE_LONG_BLINK_FOR_NEGATIVE_SIGN
+#endif  // #if defined(USE_BLINK_NUM) || defined(USE_BLINK_DIGIT)
 
 #ifdef USE_BLINK_BIG_NUM
 uint8_t blink_big_num(uint16_t num) {
@@ -98,7 +98,8 @@ uint8_t blink_big_num(uint16_t num) {
 
     return nice_delay_ms(1000);
 }
-#endif
+#endif  // #ifdef USE_BLINK_BIG_NUM
+
 #ifdef USE_BLINK_NUM
 uint8_t blink_num(uint8_t num) {
     #if 1
@@ -123,221 +124,7 @@ uint8_t blink_num(uint8_t num) {
     if (hundreds || tens) blink_digit(tens);
     return blink_digit(num);
 }
-#endif
-
-#ifdef USE_INDICATOR_LED
-void indicator_led(uint8_t lvl) {
-    switch (lvl) {
-        // FIXME: move this logic to arch/*
-        #if (MCU==0x1616) || (MCU==0x32dd20)  // ATTINY816, 817, etc
-
-        case 0:  // indicator off
-            AUXLED_PORT.DIRSET = (1 << AUXLED_PIN); // set as output
-            AUXLED_PORT.OUTCLR = (1 << AUXLED_PIN); // set output low
-            #ifdef AUXLED2_PIN  // second LED mirrors the first
-            AUXLED2_PORT.DIRSET = (1 << AUXLED2_PIN); // set as output
-            AUXLED2_PORT.OUTCLR = (1 << AUXLED2_PIN); // set output low
-            #endif
-            break;
-        case 1:  // indicator low
-            AUXLED_PORT.DIRCLR = (1 << AUXLED_PIN); // set as input
-            // this resolves to PORTx.PINxCTRL = PORT_PULLUPEN_bm;
-            *((uint8_t *)&AUXLED_PORT + 0x10 + AUXLED_PIN) = PORT_PULLUPEN_bm; // enable internal pull-up
-            #ifdef AUXLED2_PIN  // second LED mirrors the first
-            AUXLED2_PORT.DIRCLR = (1 << AUXLED2_PIN); // set as input
-            // this resolves to PORTx.PINxCTRL = PORT_PULLUPEN_bm;
-            *((uint8_t *)&AUXLED2_PORT + 0x10 + AUXLED2_PIN) = PORT_PULLUPEN_bm; // enable internal pull-up
-            #endif
-            break;
-        default:  // indicator high
-            AUXLED_PORT.DIRSET = (1 << AUXLED_PIN); // set as output
-            AUXLED_PORT.OUTSET = (1 << AUXLED_PIN); // set as high
-            #ifdef AUXLED2_PIN  // second LED mirrors the first
-            AUXLED2_PORT.DIRSET = (1 << AUXLED2_PIN); // set as output
-            AUXLED2_PORT.OUTSET = (1 << AUXLED2_PIN); // set as high
-            #endif
-            break;
-
-        #else  // MCU is old tiny style, not newer mega style
-
-        case 0:  // indicator off
-            DDRB &= 0xff ^ (1 << AUXLED_PIN);
-            PORTB &= 0xff ^ (1 << AUXLED_PIN);
-            #ifdef AUXLED2_PIN  // second LED mirrors the first
-            DDRB &= 0xff ^ (1 << AUXLED2_PIN);
-            PORTB &= 0xff ^ (1 << AUXLED2_PIN);
-            #endif
-            break;
-        case 1:  // indicator low
-            DDRB &= 0xff ^ (1 << AUXLED_PIN);
-            PORTB |= (1 << AUXLED_PIN);
-            #ifdef AUXLED2_PIN  // second LED mirrors the first
-            DDRB &= 0xff ^ (1 << AUXLED2_PIN);
-            PORTB |= (1 << AUXLED2_PIN);
-            #endif
-            break;
-        default:  // indicator high
-            DDRB |= (1 << AUXLED_PIN);
-            PORTB |= (1 << AUXLED_PIN);
-            #ifdef AUXLED2_PIN  // second LED mirrors the first
-            DDRB |= (1 << AUXLED2_PIN);
-            PORTB |= (1 << AUXLED2_PIN);
-            #endif
-            break;
-
-        #endif  // MCU type
-    }
-}
-
-/*
-void indicator_led_auto() {
-    if (actual_level > MAX_1x7135) indicator_led(2);
-    else if (actual_level > 0) indicator_led(1);
-    else indicator_led(0);
-}
-*/
-#endif  // USE_INDICATOR_LED
-
-#ifdef USE_BUTTON_LED
-// TODO: Refactor this and RGB LED function to merge code and save space
-void button_led_set(uint8_t lvl) {
-    switch (lvl) {
-
-        // FIXME: move this logic to arch/*
-        #if (MCU==0x1616) || (MCU==0x32dd20)  // ATTINY816, 817, etc
-
-        case 0:  // LED off
-            BUTTON_LED_PORT.DIRSET = (1 << BUTTON_LED_PIN); // set as output
-            BUTTON_LED_PORT.OUTCLR = (1 << BUTTON_LED_PIN); // set output low
-            break;
-        case 1:  // LED low
-            BUTTON_LED_PORT.DIRCLR = (1 << BUTTON_LED_PIN); // set as input
-            // this resolves to PORTx.PINxCTRL = PORT_PULLUPEN_bm;
-            *((uint8_t *)&BUTTON_LED_PORT + 0x10 + BUTTON_LED_PIN) = PORT_PULLUPEN_bm; // enable internal pull-up
-            break;
-        default:  // LED high
-            BUTTON_LED_PORT.DIRSET = (1 << BUTTON_LED_PIN); // set as output
-            BUTTON_LED_PORT.OUTSET = (1 << BUTTON_LED_PIN); // set as high
-            break;
-
-        #else
-
-        case 0:  // LED off
-            BUTTON_LED_DDR  &= 0xff ^ (1 << BUTTON_LED_PIN);
-            BUTTON_LED_PUE  &= 0xff ^ (1 << BUTTON_LED_PIN);
-            BUTTON_LED_PORT &= 0xff ^ (1 << BUTTON_LED_PIN);
-            break;
-        case 1:  // LED low
-            BUTTON_LED_DDR  &= 0xff ^ (1 << BUTTON_LED_PIN);
-            BUTTON_LED_PUE  |= (1 << BUTTON_LED_PIN);
-            BUTTON_LED_PORT |= (1 << BUTTON_LED_PIN);
-            break;
-        default:  // LED high
-            BUTTON_LED_DDR  |= (1 << BUTTON_LED_PIN);
-            BUTTON_LED_PUE  |= (1 << BUTTON_LED_PIN);
-            BUTTON_LED_PORT |= (1 << BUTTON_LED_PIN);
-            break;
-
-        #endif  // MCU type
-    }
-}
-#endif
-
-#ifdef USE_AUX_RGB_LEDS
-void rgb_led_set(uint8_t value) {
-    // value: 0b00BBGGRR
-    uint8_t pins[] = { AUXLED_R_PIN, AUXLED_G_PIN, AUXLED_B_PIN };
-    for (uint8_t i=0; i<3; i++) {
-        uint8_t lvl = (value >> (i<<1)) & 0x03;
-        uint8_t pin = pins[i];
-        switch (lvl) {
-
-            // FIXME: move this logic to arch/*
-            #if (MCU==0x1616) || (MCU==0x32dd20)  // ATTINY816, 817, etc
-
-            // FIXME: this *really* needs to be moved to somewhere hardware-specific
-            #ifdef AUXLED_RGB_DIFFERENT_PORTS
-
-            case 0:  // LED off
-                if        (i == 0) {
-                    AUXLED_R_PORT.DIRSET = (1 << pin);
-                    AUXLED_R_PORT.OUTCLR = (1 << pin);
-                } else if (i == 1) {
-                    AUXLED_G_PORT.DIRSET = (1 << pin);
-                    AUXLED_G_PORT.OUTCLR = (1 << pin);
-                } else if (i == 2) {
-                    AUXLED_B_PORT.DIRSET = (1 << pin);
-                    AUXLED_B_PORT.OUTCLR = (1 << pin);
-                }
-                break;
-
-            case 1:  // LED low
-                if        (i == 0) {
-                    AUXLED_R_PORT.DIRCLR = (1 << pin);
-                    *((uint8_t *)&AUXLED_R_PORT + 0x10 + pin) = PORT_PULLUPEN_bm;
-                } else if (i == 1) {
-                    AUXLED_G_PORT.DIRCLR = (1 << pin);
-                    *((uint8_t *)&AUXLED_G_PORT + 0x10 + pin) = PORT_PULLUPEN_bm;
-                } else if (i == 2) {
-                    AUXLED_B_PORT.DIRCLR = (1 << pin);
-                    *((uint8_t *)&AUXLED_B_PORT + 0x10 + pin) = PORT_PULLUPEN_bm;
-                }
-                break;
-
-            default:  // LED high
-                if        (i==0) {
-                    AUXLED_R_PORT.DIRSET = (1 << pin);
-                    AUXLED_R_PORT.OUTSET = (1 << pin);
-                } else if (i==1) {
-                    AUXLED_G_PORT.DIRSET = (1 << pin);
-                    AUXLED_G_PORT.OUTSET = (1 << pin);
-                } else if (i==2) {
-                    AUXLED_B_PORT.DIRSET = (1 << pin);
-                    AUXLED_B_PORT.OUTSET = (1 << pin);
-                }
-                break;
-
-            #else  // not ifdef AUXLED_RGB_DIFFERENT_PORTS
-
-            case 0:  // LED off
-                AUXLED_RGB_PORT.DIRSET = (1 << pin); // set as output
-                AUXLED_RGB_PORT.OUTCLR = (1 << pin); // set output low
-                break;
-            case 1:  // LED low
-                AUXLED_RGB_PORT.DIRCLR = (1 << pin); // set as input
-                // this resolves to PORTx.PINxCTRL = PORT_PULLUPEN_bm;
-                *((uint8_t *)&AUXLED_RGB_PORT + 0x10 + pin) = PORT_PULLUPEN_bm; // enable internal pull-up
-                break;
-            default:  // LED high
-                AUXLED_RGB_PORT.DIRSET = (1 << pin); // set as output
-                AUXLED_RGB_PORT.OUTSET = (1 << pin); // set as high
-                break;
-            
-            #endif
-
-            #else  // not #if (MCU==0x1616) || (MCU==0x32dd20)
-
-            case 0:  // LED off
-                AUXLED_RGB_DDR  &= 0xff ^ (1 << pin);
-                AUXLED_RGB_PUE  &= 0xff ^ (1 << pin);
-                AUXLED_RGB_PORT &= 0xff ^ (1 << pin);
-                break;
-            case 1:  // LED low
-                AUXLED_RGB_DDR  &= 0xff ^ (1 << pin);
-                AUXLED_RGB_PUE  |= (1 << pin);
-                AUXLED_RGB_PORT |= (1 << pin);
-                break;
-            default:  // LED high
-                AUXLED_RGB_DDR  |= (1 << pin);
-                AUXLED_RGB_PUE  |= (1 << pin);
-                AUXLED_RGB_PORT |= (1 << pin);
-                break;
-
-            #endif  // MCU type
-        }
-    }
-}
-#endif  // ifdef USE_AUX_RGB_LEDS
+#endif  // #ifdef USE_BLINK_NUM
 
 #ifdef USE_TRIANGLE_WAVE
 uint8_t triangle_wave(uint8_t phase) {
@@ -345,5 +132,5 @@ uint8_t triangle_wave(uint8_t phase) {
     if (phase > 127) result = 255 - result;
     return result;
 }
-#endif
+#endif  // #ifdef USE_TRIANGLE_WAVE
 

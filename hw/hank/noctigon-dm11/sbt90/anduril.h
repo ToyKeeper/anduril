@@ -1,18 +1,12 @@
 // Noctigon DM11-SBT90.2 config options for Anduril
-// Copyright (C) 2021-2023 Selene ToyKeeper
+// Copyright (C) 2021-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
+// basically the same as a KR4 driver, but different ramp settings
+// (and a lighted button, but KR4 driver already supports that
+//  even though the KR4 host lacks the hardware for it)
 #include "hank/noctigon-kr4/anduril.h"
-
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
-// ... and a single LED in the button
-#define USE_BUTTON_LED
-// don't use aux LEDs while main LED is on
-#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-#undef USE_INDICATOR_LED_WHILE_RAMPING
-#endif
 
 // power channels:
 // - linear: 5A?
@@ -23,7 +17,7 @@
 
 #undef RAMP_SMOOTH_FLOOR
 #define RAMP_SMOOTH_FLOOR 10  // low levels may be unreliable
-// 10, 30, 50, [70], 90, 110, 130
+// 10 30 50 [70] 90 110 130
 #undef RAMP_DISCRETE_FLOOR
 #define RAMP_DISCRETE_FLOOR 10
 

@@ -1,5 +1,5 @@
 // arch/avr32dd20.h: avr32dd20 support functions
-// Copyright (C) 2023 Selene ToyKeeper
+// Copyright (C) 2023-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -246,6 +246,131 @@ inline void mcu_pcint_off() {
     SWITCH_ISC_REG &= ~(PORT_ISC_gm);
 }
 
+
+////////// aux LEDs //////////
+
+#ifdef USE_AUX1_LED
+void mcu_set_aux1_power (uint8_t power) {
+    // 0/1/2+ = off/low/high
+    switch (power) {
+        case 0:  // LED off
+            AUX1_LED_PORT.DIRSET = (1 << AUX1_LED_PIN); // set as output
+            AUX1_LED_PORT.OUTCLR = (1 << AUX1_LED_PIN); // set output low
+            break;
+        case 1:  // LED low
+            AUX1_LED_PORT.DIRCLR = (1 << AUX1_LED_PIN); // set as input
+            // enable internal pull-up
+            // this resolves to PORTx.PINxCTRL = PORT_PULLUPEN_bm;
+            *((uint8_t *)&AUX1_LED_PORT + 0x10 + AUX1_LED_PIN) = PORT_PULLUPEN_bm;
+            break;
+        default:  // LED high
+            AUX1_LED_PORT.DIRSET = (1 << AUX1_LED_PIN); // set as output
+            AUX1_LED_PORT.OUTSET = (1 << AUX1_LED_PIN); // set as high
+            break;
+    }
+}
+#endif
+
+#ifdef USE_AUXRGB_LEDS
+#if 0  // cleaner, but also 63 bytes bigger
+void mcu_set_auxrgb_power (uint8_t value) {
+    // value: 0b00BBGGRR
+    // each of RR/GG/BB is: 0/1/2 = off/low/high
+
+    uint8_t pins[] = { AUXRGB_R_PIN, AUXRGB_G_PIN, AUXRGB_B_PIN };
+    PORT_t * ports[] = { &AUXRGB_R_PORT, &AUXRGB_G_PORT, &AUXRGB_B_PORT };
+
+    for (uint8_t i=0; i<3; i++) {
+        uint8_t power = (value >> (i<<1)) & 0x03;
+        uint8_t pin = pins[i];
+        PORT_t * port = ports[i];
+
+        switch (power) {
+            case 0:  // LED off
+                (*port).DIRSET = (1 << pin); // set as output
+                (*port).OUTCLR = (1 << pin); // set output low
+                break;
+            case 1:  // LED low
+                (*port).DIRCLR = (1 << pin); // set as input
+                // enable internal pull-up
+                // this resolves to PORTx.PINxCTRL = PORT_PULLUPEN_bm;
+                *((uint8_t *)port + 0x10 + pin) = PORT_PULLUPEN_bm;
+                break;
+            default:  // LED high
+                (*port).DIRSET = (1 << pin); // set as output
+                (*port).OUTSET = (1 << pin); // set as high
+                break;
+        }
+    }
+}
+#else
+void mcu_set_auxrgb_power (uint8_t value) {
+    // value: 0b00BBGGRR
+    // each of RR/GG/BB is: 0/1/2 = off/low/high
+    // this function is repetitive, but unrolling it made the ROM smaller
+    // AND more flexible (can use a different port per pin this way)
+
+    uint8_t lvl;
+
+    // red
+    lvl = (value >> (0)) & 0x03;
+    switch (lvl) {
+        case 0:  // LED off
+            AUXRGB_R_PORT.DIRSET = (1 << AUXRGB_R_PIN); // set as output
+            AUXRGB_R_PORT.OUTCLR = (1 << AUXRGB_R_PIN); // set output low
+            break;
+        case 1:  // LED low
+            AUXRGB_R_PORT.DIRCLR = (1 << AUXRGB_R_PIN); // set as input
+            // enable internal pull-up
+            // this resolves to PORTx.PINxCTRL = PORT_PULLUPEN_bm;
+            *((uint8_t *)&AUXRGB_R_PORT + 0x10 + AUXRGB_R_PIN) = PORT_PULLUPEN_bm;
+            break;
+        default:  // LED high
+            AUXRGB_R_PORT.DIRSET = (1 << AUXRGB_R_PIN); // set as output
+            AUXRGB_R_PORT.OUTSET = (1 << AUXRGB_R_PIN); // set as high
+            break;
+    }
+
+    // green
+    lvl = (value >> (2)) & 0x03;
+    switch (lvl) {
+        case 0:  // LED off
+            AUXRGB_G_PORT.DIRSET = (1 << AUXRGB_G_PIN); // set as output
+            AUXRGB_G_PORT.OUTCLR = (1 << AUXRGB_G_PIN); // set output low
+            break;
+        case 1:  // LED low
+            AUXRGB_G_PORT.DIRCLR = (1 << AUXRGB_G_PIN); // set as input
+            // enable internal pull-up
+            // this resolves to PORTx.PINxCTRL = PORT_PULLUPEN_bm;
+            *((uint8_t *)&AUXRGB_G_PORT + 0x10 + AUXRGB_G_PIN) = PORT_PULLUPEN_bm;
+            break;
+        default:  // LED high
+            AUXRGB_G_PORT.DIRSET = (1 << AUXRGB_G_PIN); // set as output
+            AUXRGB_G_PORT.OUTSET = (1 << AUXRGB_G_PIN); // set as high
+            break;
+    }
+
+    // blue
+    lvl = (value >> (4)) & 0x03;
+    switch (lvl) {
+        case 0:  // LED off
+            AUXRGB_B_PORT.DIRSET = (1 << AUXRGB_B_PIN); // set as output
+            AUXRGB_B_PORT.OUTCLR = (1 << AUXRGB_B_PIN); // set output low
+            break;
+        case 1:  // LED low
+            AUXRGB_B_PORT.DIRCLR = (1 << AUXRGB_B_PIN); // set as input
+            // enable internal pull-up
+            // this resolves to PORTx.PINxCTRL = PORT_PULLUPEN_bm;
+            *((uint8_t *)&AUXRGB_B_PORT + 0x10 + AUXRGB_B_PIN) = PORT_PULLUPEN_bm;
+            break;
+        default:  // LED high
+            AUXRGB_B_PORT.DIRSET = (1 << AUXRGB_B_PIN); // set as output
+            AUXRGB_B_PORT.OUTSET = (1 << AUXRGB_B_PIN); // set as high
+            break;
+    }
+}
+#endif
+#endif
 
 ////////// misc //////////
 

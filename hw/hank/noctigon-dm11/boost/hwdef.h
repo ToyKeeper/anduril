@@ -1,5 +1,5 @@
 // Noctigon DM11 boost driver layout (attiny1634)
-// Copyright (C) 2021-2023 Selene ToyKeeper
+// Copyright (C) 2021-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -44,16 +44,16 @@
 // channel modes:
 // * 0. main LEDs
 // * 1+. aux RGB
-#define NUM_CHANNEL_MODES   (1 + NUM_RGB_AUX_CHANNEL_MODES)
-enum CHANNEL_MODES {
+#define NUM_CHANNEL_MODES   (1 + NUM_AUXRGB_CHANNEL_MODES)
+enum channel_modes_e {
     CM_MAIN = 0,
-    RGB_AUX_ENUMS
+    AUXRGB_CM_ENUMS
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b0000000000000001
+#define CHANNEL_MODES_ENABLED  0b0000000000000001
 // no args
 //#define USE_CHANNEL_MODE_ARGS
 //#define CHANNEL_MODE_ARGS     0,0,0,0,0,0,0,0
@@ -103,27 +103,31 @@ uint8_t ch1_pwm, ch1_dsm;
 
 #include "hank/vdivider-1634.h"
 
-// this light has aux LEDs under the optic
-#define AUXLED_R_PIN    PA5    // pin 2
-#define AUXLED_G_PIN    PA4    // pin 3
-#define AUXLED_B_PIN    PA3    // pin 4
-#define AUXLED_RGB_PORT PORTA  // PORTA or PORTB or PORTC
-#define AUXLED_RGB_DDR  DDRA   // DDRA or DDRB or DDRC
-#define AUXLED_RGB_PUE  PUEA   // PUEA or PUEB or PUEC
 
-#define BUTTON_LED_PIN  PA2    // pin 5
-#define BUTTON_LED_PORT PORTA  // for all "PA" pins
-#define BUTTON_LED_DDR  DDRA   // for all "PA" pins
-#define BUTTON_LED_PUE  PUEA   // for all "PA" pins
+// this light has RGB aux LEDs
+#define USE_AUXRGB_LEDS
 
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
-// it also has an independent LED in the button
-#define USE_BUTTON_LED
-// the aux LEDs are front-facing, so turn them off while main LEDs are on
-#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-#undef USE_INDICATOR_LED_WHILE_RAMPING
-#endif
+// aux RGB passive
+#define AUXRGB_R_PIN    PA5    // pin 2
+#define AUXRGB_R_PORT   PORTA  // PORTA or PORTB or PORTC
+#define AUXRGB_R_DDR    DDRA   // DDRA or DDRB or DDRC
+#define AUXRGB_R_PUE    PUEA   // PUEA or PUEB or PUEC
+#define AUXRGB_G_PIN    PA4    // pin 3
+#define AUXRGB_G_PORT   PORTA
+#define AUXRGB_G_DDR    DDRA
+#define AUXRGB_G_PUE    PUEA
+#define AUXRGB_B_PIN    PA3    // pin 4
+#define AUXRGB_B_PORT   PORTA
+#define AUXRGB_B_DDR    DDRA
+#define AUXRGB_B_PUE    PUEA
+
+// button LED
+// some variants also have an independent LED in the button
+#define USE_AUX1_LED
+#define AUX1_LED_PIN   PA2    // pin 5
+#define AUX1_LED_PORT  PORTA
+#define AUX1_LED_DDR   DDRA
+#define AUX1_LED_PUE   PUEA
 
 
 inline void hwdef_setup() {
@@ -134,10 +138,10 @@ inline void hwdef_setup() {
     DDRB = (1 << CH1_PIN)
          | (1 << CH1_ENABLE_PIN);
     // aux R/G/B, button LED
-    DDRA = (1 << AUXLED_R_PIN)
-         | (1 << AUXLED_G_PIN)
-         | (1 << AUXLED_B_PIN)
-         | (1 << BUTTON_LED_PIN)
+    DDRA = (1 << AUXRGB_R_PIN)
+         | (1 << AUXRGB_G_PIN)
+         | (1 << AUXRGB_B_PIN)
+         | (1 << AUX1_LED_PIN)
          ;
 
     // configure PWM

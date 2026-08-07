@@ -5,10 +5,7 @@
 
 #include "wurkkos/ts25/anduril.h"
 
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
-
-// turn on the aux LEDs while main LEDs are on
-#define USE_AUX_RGB_LEDS_WHILE_ON  20
-#define USE_INDICATOR_LED_WHILE_RAMPING
-
+// turn on the aux LEDs (RGB button) while main LEDs are on
+#define USE_AUXRGB_LEDS_WHILE_ON  20
+#undef DEFAULT_AUX_WHILE_ON
+#define DEFAULT_AUX_WHILE_ON  0b10  // RGB aux only

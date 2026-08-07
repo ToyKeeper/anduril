@@ -24,17 +24,24 @@ uint8_t off_state(Event event, uint16_t arg) {
             // don't go to sleep while animating
             arg |= smooth_steps_in_progress;
         #endif
+        #ifdef USE_SMOOTH_POVD
+            //if (cfg.post_off_voltage && (! just_booted)) {
+            if (cfg.post_off_voltage) {
+                arg |= 1;
+                push_state(smooth_povd_state, 0);
+            }
+        #endif
         ticks_since_on = 0;
         #if NUM_CHANNEL_MODES > 1
             // reset to ramp mode's channel when light turns off
             channel_mode = cfg.channel_mode;
         #endif
-        #ifdef USE_INDICATOR_LED
+        #if defined(USE_AUXRGB_LEDS)
         // redundant, sleep tick does the same thing
-        //indicator_led_update(cfg.indicator_led_mode & 0x03, 0);
-        #elif defined(USE_AUX_RGB_LEDS)
+        //rgb_led_update(cfg.auxrgb_off_mode, 0);
+        #elif defined(USE_AUX1_LED)
         // redundant, sleep tick does the same thing
-        //rgb_led_update(cfg.rgb_led_off_mode, 0);
+        //aux1_led_update(cfg.aux1_mode & 0x0f, 0);
         #endif
         #ifdef USE_SUNSET_TIMER
         sunset_timer = 0;  // needs a reset in case previous timer was aborted
@@ -42,6 +49,7 @@ uint8_t off_state(Event event, uint16_t arg) {
         // sleep while off  (lower power use)
         // (unless delay requested; give the ADC some time to catch up)
         if (! arg) { go_to_standby = 1; }
+        just_booted = 0;
         return EVENT_HANDLED;
     }
 
@@ -53,12 +61,12 @@ uint8_t off_state(Event event, uint16_t arg) {
             #endif
             ) {
             go_to_standby = 1;
-            #ifdef USE_INDICATOR_LED
+            #if defined(USE_AUXRGB_LEDS)
             // redundant, sleep tick does the same thing
-            //indicator_led_update(cfg.indicator_led_mode & 0x03, arg);
-            #elif defined(USE_AUX_RGB_LEDS)
+            //rgb_led_update(cfg.auxrgb_off_mode, arg);
+            #elif defined(USE_AUX1_LED)
             // redundant, sleep tick does the same thing
-            //rgb_led_update(cfg.rgb_led_off_mode, arg);
+            //aux1_led_update(cfg.aux1_mode & 0x0f, arg);
             #endif
         }
         return EVENT_HANDLED;
@@ -75,10 +83,10 @@ uint8_t off_state(Event event, uint16_t arg) {
             manual_memory_restore();
         }
         #endif  // ifdef USE_MANUAL_MEMORY_TIMER
-        #ifdef USE_INDICATOR_LED
-        indicator_led_update(cfg.indicator_led_mode & 0x03, arg);
-        #elif defined(USE_AUX_RGB_LEDS)
-        rgb_led_update(cfg.rgb_led_off_mode, arg);
+        #if defined(USE_AUXRGB_LEDS)
+        rgb_led_update(cfg.auxrgb_off_mode, arg);
+        #elif defined(USE_AUX1_LED)
+        aux1_led_update(cfg.aux1_mode & 0x0f, arg);
         #endif
 
         #ifdef USE_AUTOLOCK
@@ -264,31 +272,26 @@ uint8_t off_state(Event event, uint16_t arg) {
     #endif  // ifndef USE_EXTENDED_SIMPLE_UI
     #endif  // ifdef USE_SIMPLE_UI
 
-    #ifdef USE_INDICATOR_LED
+    #if defined(USE_AUX1_LED) && (!defined(USE_AUXRGB_LEDS))
     // 7 clicks: change indicator LED mode
     else if (event == EV_7clicks) {
-        uint8_t mode = (cfg.indicator_led_mode & 3) + 1;
-        #ifdef TICK_DURING_STANDBY
-        mode = mode & 3;
-        #else
-        mode = mode % 3;
-        #endif
+        uint8_t mode = (cfg.aux1_mode + 1) % aux_num_modes_e;
         #ifdef INDICATOR_LED_SKIP_LOW
-        if (mode == 1) { mode ++; }
+        if (mode == aux_low_e) { mode ++; }
         #endif
-        cfg.indicator_led_mode = (cfg.indicator_led_mode & 0b11111100) | mode;
+        cfg.aux1_mode = (cfg.aux1_mode & 0b11110000) | mode;
         // redundant, sleep tick does the same thing
-        //indicator_led_update(cfg.indicator_led_mode & 0x03, arg);
+        //aux1_led_update(cfg.aux1_mode & 0x0f, arg);
         save_config();
         return EVENT_HANDLED;
     }
-    #elif defined(USE_AUX_RGB_LEDS)
+    #elif defined(USE_AUXRGB_LEDS)
     // 7 clicks: change RGB aux LED pattern
     else if (event == EV_7clicks) {
-        uint8_t mode = (cfg.rgb_led_off_mode >> 4) + 1;
-        mode = mode % RGB_LED_NUM_PATTERNS;
-        cfg.rgb_led_off_mode = (mode << 4) | (cfg.rgb_led_off_mode & 0x0f);
-        rgb_led_update(cfg.rgb_led_off_mode, 0);
+        uint8_t mode = (cfg.auxrgb_off_mode >> 4) + 1;
+        mode = mode % aux_num_modes_e;
+        cfg.auxrgb_off_mode = (mode << 4) | (cfg.auxrgb_off_mode & 0x0f);
+        rgb_led_update(cfg.auxrgb_off_mode, 0);
         save_config();
         blink_once();
         return EVENT_HANDLED;
@@ -296,13 +299,13 @@ uint8_t off_state(Event event, uint16_t arg) {
     // 7 clicks (hold last): change RGB aux LED color
     else if (event == EV_click7_hold) {
         setting_rgb_mode_now = 1;
-        if (0 == (arg & 0x3f)) {
-            uint8_t mode = (cfg.rgb_led_off_mode & 0x0f) + 1;
-            mode = mode % RGB_LED_NUM_COLORS;
-            cfg.rgb_led_off_mode = mode | (cfg.rgb_led_off_mode & 0xf0);
+        if (0 == (arg & 0x003f)) {
+            uint8_t mode = (cfg.auxrgb_off_mode & 0x0f) + 1;
+            mode = mode % aux_rgb_num_colors_e;
+            cfg.auxrgb_off_mode = mode | (cfg.auxrgb_off_mode & 0xf0);
             //save_config();
         }
-        rgb_led_update(cfg.rgb_led_off_mode, arg);
+        rgb_led_update(cfg.auxrgb_off_mode, arg);
         return EVENT_HANDLED;
     }
     else if (event == EV_click7_hold_release) {

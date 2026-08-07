@@ -1,5 +1,5 @@
 // Anduril config for Emisar 2ch+FET-joined-into-1-channel
-// Copyright (C) 2024 Selene ToyKeeper
+// Copyright (C) 2024-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -9,32 +9,6 @@
 
 #define HWDEF_H  hank/emisar-2ch/fet/joined/hwdef.h
 #include "hank/anduril.h"
-
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
-// the aux LEDs are front-facing, so turn them off while main LEDs are on
-// it also has an independent LED in the button
-#define USE_BUTTON_LED
-// enabling this option breaks the button LED
-#ifdef USE_INDICATOR_LED_WHILE_RAMPING
-#undef USE_INDICATOR_LED_WHILE_RAMPING
-#endif
-
-// channel modes...
-// CM_CH1      -- linear ch1 only
-// CM_CH1_FET  -- linear ch1 + DD FET
-#define DEFAULT_CHANNEL_MODE           CM_CH1_FET
-
-#define USE_CONFIG_COLORS
-
-// strobes on this light should use the same channel as the ramp
-#undef USE_CHANNEL_PER_STROBE
-
-// blink numbers on the main LEDs by default (but allow user to change it)
-#define DEFAULT_BLINK_CHANNEL          CM_CH1_FET
-
-#define POLICE_COLOR_STROBE_CH1        CM_AUXRED
-#define POLICE_COLOR_STROBE_CH2        CM_AUXBLU
 
 #define RAMP_SIZE 150
 
@@ -62,31 +36,57 @@
 // level_calc.py 4.85 2 150 7135 0 0.5 2500 FET 1 10 4500 --pwm 255
 #define PWM3_LEVELS 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,20,31,42,53,65,76,88,101,113,126,139,152,166,180,194,209,224,239,255
 
-#define DEFAULT_LEVEL      70
-#define MIN_THERM_STEPDOWN 50
-#define MAX_REGULATED      130
-#define MAX_1x7135         MAX_REGULATED
-#define MAX_Nx7135         MAX_REGULATED
-#define HALFSPEED_LEVEL    20
-#define QUARTERSPEED_LEVEL 10
+#define DEFAULT_LEVEL        70
+#define MIN_THERM_STEPDOWN   50
+#define MAX_REGULATED        130
+#define MAX_1x7135           MAX_REGULATED
+#define MAX_Nx7135           MAX_REGULATED
+#define HALFSPEED_LEVEL      20
+#define QUARTERSPEED_LEVEL   10
 
-#define RAMP_SMOOTH_FLOOR  1
-#define RAMP_SMOOTH_CEIL   150
-// 10, 30, 50, [70], 90, 110, [130]
-#define RAMP_DISCRETE_FLOOR 10
-#define RAMP_DISCRETE_CEIL  MAX_REGULATED
-#define RAMP_DISCRETE_STEPS 7
+#define RAMP_SMOOTH_FLOOR    1
+#define RAMP_SMOOTH_CEIL     150
+// 10 30 50 [70] 90 110 [130]
+#define RAMP_DISCRETE_FLOOR  10
+#define RAMP_DISCRETE_CEIL   MAX_REGULATED
+#define RAMP_DISCRETE_STEPS  7
 
 // safe limit highest regulated power (no FET or turbo)
-// 10, 40, [70], 100, [130]
-#define SIMPLE_UI_FLOOR  RAMP_DISCRETE_FLOOR
-#define SIMPLE_UI_CEIL   RAMP_DISCRETE_CEIL
-#define SIMPLE_UI_STEPS  5
+// 10 40 [70] 100 [130]
+#define SIMPLE_UI_FLOOR      RAMP_DISCRETE_FLOOR
+#define SIMPLE_UI_CEIL       RAMP_DISCRETE_CEIL
+#define SIMPLE_UI_STEPS      5
 
 // stop panicking at ~2500 lm
-#define THERM_FASTER_LEVEL MAX_REGULATED
+#define THERM_FASTER_LEVEL  MAX_REGULATED
+
+#define THERM_CAL_OFFSET 5
+
+
+// AUX + channel modes
+
+#define USE_AUX_THRESHOLD_CONFIG
+
+// channel modes...
+// CM_CH1      -- linear ch1 only
+// CM_CH1_FET  -- linear ch1 + DD FET
+#define DEFAULT_CHANNEL_MODE           CM_CH1_FET
+
+// strobes on this light should use the same channel as the ramp
+#undef USE_CHANNEL_PER_STROBE
+
+#define USE_CONFIG_COLORS
+
+// blink numbers on the main LEDs by default (but allow user to change it)
+#define DEFAULT_BLINK_CHANNEL          CM_CH1_FET
 
 #define USE_POLICE_COLOR_STROBE_MODE
+#define POLICE_COLOR_STROBE_CH1        CM_AUXRED
+#define POLICE_COLOR_STROBE_CH2        CM_AUXBLU
+
+
+// Misc
+
 #undef  TACTICAL_LEVELS
 #define TACTICAL_LEVELS MAX_REGULATED,30,(RAMP_SIZE+3)  // high, low, police strobe
 
@@ -103,8 +103,6 @@
 #define DEFAULT_JUMP_START_LEVEL 22
 #define BLINK_BRIGHTNESS 45
 #define BLINK_ONCE_TIME 12  // longer blink, since main LEDs are slow
-
-#define THERM_CAL_OFFSET 5
 
 // don't blink while ramping
 #ifdef BLINK_AT_RAMP_MIDDLE

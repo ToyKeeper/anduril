@@ -1,5 +1,5 @@
 // Wurkkos TS10 driver layout
-// Copyright (C) 2021-2023 gchart, Selene ToyKeeper
+// Copyright (C) 2021-2026 gchart, Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -22,7 +22,7 @@
 // * 0. FET+7135 stacked
 // * 1. aux LEDs
 #define NUM_CHANNEL_MODES  2
-enum CHANNEL_MODES {
+enum channel_modes_e {
     CM_MAIN = 0,
     CM_AUX
 };
@@ -30,7 +30,7 @@ enum CHANNEL_MODES {
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b00000001
+#define CHANNEL_MODES_ENABLED  0b00000001
 
 
 #define PWM_CHANNELS 2  // old, remove this
@@ -56,6 +56,11 @@ enum CHANNEL_MODES {
 #define CH2_PIN  PB0
 #define CH2_PWM  TCA0.SINGLE.CMP0BUF  // CMP0 is the output compare register for PB0
 
+// front-facing aux LEDs (single channel, passive)
+#define USE_AUX1_LED
+#define AUX1_LED_PIN   PIN5_bp
+#define AUX1_LED_PORT  PORTB
+
 // e-switch
 #define SWITCH_PIN      PIN5_bp
 #define SWITCH_PORT     VPORTA.IN
@@ -67,10 +72,6 @@ enum CHANNEL_MODES {
 #ifndef VOLTAGE_FUDGE_FACTOR
 #define VOLTAGE_FUDGE_FACTOR 7  // add 0.35V
 #endif
-
-// front-facing aux LEDs
-#define AUXLED_PIN  PIN5_bp
-#define AUXLED_PORT PORTB
 
 
 inline void hwdef_setup() {

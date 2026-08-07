@@ -191,6 +191,112 @@ inline void mcu_pcint_off() {
 }
 
 
+////////// aux LEDs //////////
+
+#ifdef USE_AUX1_LED
+void mcu_set_aux1_power (uint8_t power) {
+    // 0/1/2+ = off/low/high
+    switch (power) {
+        case 0:  // LED off
+            AUX1_LED_DDR  &= 0xff ^ (1 << AUX1_LED_PIN);
+            AUX1_LED_PORT &= 0xff ^ (1 << AUX1_LED_PIN);
+            #ifdef AUX1_LED2_PIN  // second LED mirrors the first
+            AUX1_LED2_DDR  &= 0xff ^ (1 << AUX1_LED2_PIN);
+            AUX1_LED2_PORT &= 0xff ^ (1 << AUX1_LED2_PIN);
+            #endif
+            break;
+        case 1:  // LED low
+            AUX1_LED_DDR  &= 0xff ^ (1 << AUX1_LED_PIN);
+            AUX1_LED_PORT |= (1 << AUX1_LED_PIN);
+            #ifdef AUX1_LED2_PIN  // second LED mirrors the first
+            AUX1_LED2_DDR  &= 0xff ^ (1 << AUX1_LED2_PIN);
+            AUX1_LED2_PORT |= (1 << AUX1_LED2_PIN);
+            #endif
+            break;
+        default:  // LED high
+            AUX1_LED_DDR  |= (1 << AUX1_LED_PIN);
+            AUX1_LED_PORT |= (1 << AUX1_LED_PIN);
+            #ifdef AUX1_LED2_PIN  // second LED mirrors the first
+            AUX1_LED2_DDR  |= (1 << AUX1_LED2_PIN);
+            AUX1_LED2_PORT |= (1 << AUX1_LED2_PIN);
+            #endif
+            break;
+    }
+}
+#endif
+
+#ifdef USE_AUXRGB_LEDS
+void mcu_set_auxrgb_power (uint8_t value) {
+    #error attiny85 does not support RGB AUX LEDs
+    // value: 0b00BBGGRR
+    // each of RR/GG/BB is: 0/1/2 = off/low/high
+    // this function is repetitive, but unrolling it made the ROM smaller
+    // AND more flexible (can use a different port per pin this way)
+
+    uint8_t lvl;
+
+    // red
+    lvl = (value >> (0)) & 0x03;
+    switch (lvl) {
+        case 0:  // LED off
+            AUXRGB_R_DDR  &= 0xff ^ (1 << AUXRGB_R_PIN);
+            AUXRGB_R_PUE  &= 0xff ^ (1 << AUXRGB_R_PIN);
+            AUXRGB_R_PORT &= 0xff ^ (1 << AUXRGB_R_PIN);
+            break;
+        case 1:  // LED low
+            AUXRGB_R_DDR  &= 0xff ^ (1 << AUXRGB_R_PIN);
+            AUXRGB_R_PUE  |= (1 << AUXRGB_R_PIN);
+            AUXRGB_R_PORT |= (1 << AUXRGB_R_PIN);
+            break;
+        default:  // LED high
+            AUXRGB_R_DDR  |= (1 << AUXRGB_R_PIN);
+            AUXRGB_R_PUE  |= (1 << AUXRGB_R_PIN);
+            AUXRGB_R_PORT |= (1 << AUXRGB_R_PIN);
+            break;
+    }
+
+    // green
+    lvl = (value >> (2)) & 0x03;
+    switch (lvl) {
+        case 0:  // LED off
+            AUXRGB_G_DDR  &= 0xff ^ (1 << AUXRGB_G_PIN);
+            AUXRGB_G_PUE  &= 0xff ^ (1 << AUXRGB_G_PIN);
+            AUXRGB_G_PORT &= 0xff ^ (1 << AUXRGB_G_PIN);
+            break;
+        case 1:  // LED low
+            AUXRGB_G_DDR  &= 0xff ^ (1 << AUXRGB_G_PIN);
+            AUXRGB_G_PUE  |= (1 << AUXRGB_G_PIN);
+            AUXRGB_G_PORT |= (1 << AUXRGB_G_PIN);
+            break;
+        default:  // LED high
+            AUXRGB_G_DDR  |= (1 << AUXRGB_G_PIN);
+            AUXRGB_G_PUE  |= (1 << AUXRGB_G_PIN);
+            AUXRGB_G_PORT |= (1 << AUXRGB_G_PIN);
+            break;
+    }
+
+    // blue
+    lvl = (value >> (4)) & 0x03;
+    switch (lvl) {
+        case 0:  // LED off
+            AUXRGB_B_DDR  &= 0xff ^ (1 << AUXRGB_B_PIN);
+            AUXRGB_B_PUE  &= 0xff ^ (1 << AUXRGB_B_PIN);
+            AUXRGB_B_PORT &= 0xff ^ (1 << AUXRGB_B_PIN);
+            break;
+        case 1:  // LED low
+            AUXRGB_B_DDR  &= 0xff ^ (1 << AUXRGB_B_PIN);
+            AUXRGB_B_PUE  |= (1 << AUXRGB_B_PIN);
+            AUXRGB_B_PORT |= (1 << AUXRGB_B_PIN);
+            break;
+        default:  // LED high
+            AUXRGB_B_DDR  |= (1 << AUXRGB_B_PIN);
+            AUXRGB_B_PUE  |= (1 << AUXRGB_B_PIN);
+            AUXRGB_B_PORT |= (1 << AUXRGB_B_PIN);
+            break;
+    }
+}
+#endif
+
 ////////// misc //////////
 
 void reboot() {

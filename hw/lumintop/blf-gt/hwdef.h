@@ -1,5 +1,5 @@
 // BLF GT driver layout
-// Copyright (C) 2018-2023 Selene ToyKeeper
+// Copyright (C) 2018-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -20,15 +20,15 @@
 
 // channel modes
 // * 0. main LEDs
-#define NUM_CHANNEL_MODES   1
-enum CHANNEL_MODES {
+#define NUM_CHANNEL_MODES  1
+enum channel_modes_e {
     CM_MAIN = 0,
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b00000001
+#define CHANNEL_MODES_ENABLED  0b00000001
 
 
 #define PWM_CHANNELS 2  // old, remove this
@@ -50,17 +50,21 @@ enum CHANNEL_MODES {
 #define CH2_PIN  PB1        // pin 6
 #define CH2_PWM  OCR0B      // OCR0B is the output compare register for PB1
 
-#define AUXLED_PIN   PB4    // pin 3
+// lighted button and 1-channel front aux
+#define USE_AUX1_LED
+#define AUX1_LED_PIN   PB4    // pin 3
+#define AUX1_LED_PORT  PORTB
+#define AUX1_LED_DDR   DDRB
 
 // e-switch
 #define SWITCH_PIN   PB3    // pin 2
 #define SWITCH_PCINT PCINT3 // pin 2 pin change interrupt
 
 // VCC is regulated, so measure battery on pin 7 instead
-#define USE_VOLTAGE_DIVIDER // use a voltage divider on pin 7, not VCC
-#define VOLTAGE_PIN PB2     // pin 7, voltage ADC
-#define VOLTAGE_CHANNEL 0x01 // MUX 01 corresponds with PB2
-#define VOLTAGE_ADC ADC1D  // Digital input disable bit corresponding with PB2
+#define USE_VOLTAGE_DIVIDER     // use a voltage divider on pin 7, not VCC
+#define VOLTAGE_PIN      PB2    // pin 7, voltage ADC
+#define VOLTAGE_CHANNEL  0x01   // MUX 01 corresponds with PB2
+#define VOLTAGE_ADC      ADC1D  // Digital input disable bit corresponding with PB2
 // inherited from arch/mcu.h
 //#define VOLTAGE_ADC_DIDR DIDR0  // DIDR for ADC1
 // 1.1V reference, left-adjust, ADC1/PB2

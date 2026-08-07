@@ -19,10 +19,10 @@ typedef enum {
         post_off_voltage_config_step,
     #endif
     #if defined(USE_AUX_THRESHOLD_CONFIG)
-        button_led_low_ramp_level_step,
-        button_led_high_ramp_level_step,
+        aux_low_ramp_level_step,
+        aux_high_ramp_level_step,
     #endif
-    #if defined(USE_INDICATOR_LED) || defined(USE_AUX_RGB_LEDS)
+    #if defined(USE_AUX1_LED) || defined(USE_AUXRGB_LEDS)
         aux_while_on_step,
     #endif
     voltage_config_num_steps

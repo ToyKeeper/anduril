@@ -1,5 +1,5 @@
 // BLF/Lumintop GT Mini driver layout
-// Copyright (C) 2018-2023 Selene ToyKeeper
+// Copyright (C) 2018-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -8,7 +8,8 @@
 #include "hank/emisar-d4/hwdef.h"
 
 // lighted button
-#ifndef AUXLED_PIN
-#define AUXLED_PIN   PB4    // pin 3
-#endif
+#define USE_AUX1_LED
+#define AUX1_LED_PIN   PB4    // pin 3
+#define AUX1_LED_PORT  PORTB
+#define AUX1_LED_DDR   DDRB
 

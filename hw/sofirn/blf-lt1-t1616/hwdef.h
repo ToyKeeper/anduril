@@ -1,9 +1,10 @@
 // BLF LT1 driver layout using the Attiny1616
-// Copyright (C) 2021-2023 (gchart), Selene ToyKeeper
+// Copyright (C) 2021-2026 (gchart), Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
 /*
+ * (based on BLF Q8-t1616 and BLF LT1 driver layouts)
  * Driver pinout:
  * eSwitch:    PA5
  * Aux LED:    PB5
@@ -34,7 +35,7 @@ enum channel_modes_e {
 };
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b00001000
+#define CHANNEL_MODES_ENABLED  0b00001000
 #define USE_CHANNEL_MODE_ARGS
 // _, _, _, 128=middle CCT, 0=warm-to-cool
 #define CHANNEL_MODE_ARGS     0,0,0,128,0,0
@@ -80,13 +81,14 @@ uint8_t ch2_pwm, ch2_dsm;
 #define CH2_PWM  TCA0.SINGLE.CMP1BUF  // CMP1 is the output compare register for PB1
 
 // lighted button
-#define AUXLED_PIN   PIN5_bp
-#define AUXLED_PORT  PORTB
+#define USE_AUX1_LED
+#define AUX1_LED_PIN   PIN5_bp
+#define AUX1_LED_PORT  PORTB
 
 // e-switch
 #define SWITCH_PIN      PIN5_bp
 #define SWITCH_PORT     VPORTA.IN
-#define SWITCH_ISC_REG  PORTA.PIN2CTRL
+#define SWITCH_ISC_REG  PORTA.PIN5CTRL
 #define SWITCH_VECT     PORTA_PORT_vect
 #define SWITCH_INTFLG   VPORTA.INTFLAGS
 

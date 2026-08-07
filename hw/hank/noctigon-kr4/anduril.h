@@ -1,10 +1,10 @@
 // Noctigon KR4 config options for Anduril
 // (and Emisar D4v2.5, which uses KR4 driver plus a button LED)
-// Copyright (C) 2020-2023 Selene ToyKeeper
+// Copyright (C) 2020-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "hank/noctigon-kr4/hwdef.h"
+#define HWDEF_H  hank/noctigon-kr4/hwdef.h
 #include "hank/anduril.h"
 
 // brightness w/ SST-20 4000K LEDs:
@@ -29,25 +29,25 @@
 //#define PWM2_LEVELS 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,20,30,41,52,63,75,87,99,112,125,138,151,165,179,194,208,224,239,255
 //#define PWM_TOPS 4095,4095,3760,3403,3020,2611,2176,3582,3062,2515,1940,3221,2761,2283,2998,2584,3004,2631,2899,2555,2735,2836,2538,2606,2636,2638,2387,2382,2361,2328,2286,2238,2185,2129,2070,2010,1949,1887,1826,1766,1706,1648,1591,1536,1482,1429,1379,1329,1242,1199,1122,1084,1016,953,895,842,791,723,659,602,549,482,422,367,302,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
 
-#define MAX_1x7135 130
-#define DEFAULT_LEVEL 50
-#define HALFSPEED_LEVEL 12
-#define QUARTERSPEED_LEVEL 4
+#define MAX_1x7135           130
+#define DEFAULT_LEVEL        50
+#define HALFSPEED_LEVEL      12
+#define QUARTERSPEED_LEVEL   4
 
-#define RAMP_SMOOTH_FLOOR 11  // low levels may be unreliable
-#define RAMP_SMOOTH_CEIL  130
+#define RAMP_SMOOTH_FLOOR    11  // low levels may be unreliable
+#define RAMP_SMOOTH_CEIL     130
 // 11 30 [50] 70 90 110 [130]
-#define RAMP_DISCRETE_FLOOR 11
-#define RAMP_DISCRETE_CEIL  RAMP_SMOOTH_CEIL
-#define RAMP_DISCRETE_STEPS 7
+#define RAMP_DISCRETE_FLOOR  11
+#define RAMP_DISCRETE_CEIL   RAMP_SMOOTH_CEIL
+#define RAMP_DISCRETE_STEPS  7
 
 // safe limit ~30% power / ~1300 lm (can sustain 900 lm)
-#define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
-#define SIMPLE_UI_CEIL 120
-#define SIMPLE_UI_STEPS 5
+#define SIMPLE_UI_FLOOR      RAMP_DISCRETE_FLOOR
+#define SIMPLE_UI_CEIL       120
+#define SIMPLE_UI_STEPS      5
 
 // stop panicking at ~1300 lm
-#define THERM_FASTER_LEVEL 120
+#define THERM_FASTER_LEVEL  120
 
 #define THERM_CAL_OFFSET 5
 
@@ -56,6 +56,11 @@
 #define DEFAULT_JUMP_START_LEVEL 21
 #define BLINK_BRIGHTNESS DEFAULT_LEVEL
 #define BLINK_ONCE_TIME 12
+
+
+// AUX
+
+#define USE_AUX_THRESHOLD_CONFIG
 
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
@@ -73,6 +78,9 @@
 #define POLICE_STROBE_USES_AUX
 #define POLICE_COLOR_STROBE_CH1        CM_AUXRED
 #define POLICE_COLOR_STROBE_CH2        CM_AUXBLU
+
+
+// Misc
 
 // the default of 26 looks a bit rough, so increase it to make it smoother
 #define CANDLE_AMPLITUDE 33

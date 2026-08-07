@@ -3,20 +3,22 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
+#define USE_CHANNEL_FLAGS
+
 #define NUM_AUX_CHANNEL_MODES  1
 
 // include / exclude field based on compile options
-#ifdef USE_CHANNEL_MODE_ARGS
-    #define AUX_HAS_ARGS , .has_args = 0
+#ifdef USE_CHANNEL_FLAGS
+    #define AUX_FLAGS , .flags = CHANNEL_FLAG_IS_AUX
 #else
-    #define AUX_HAS_ARGS
+    #define AUX_FLAGS
 #endif
 
 #define AUX_CHANNELS \
     { \
         .set_level    = set_level_aux, \
         .gradual_tick = gradual_tick_null \
-        AUX_HAS_ARGS \
+        AUX_FLAGS \
     }
 
 void set_level_aux(uint8_t level);

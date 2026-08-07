@@ -1,18 +1,9 @@
 // Fireflies ROT66 (14x7135) config options for Anduril
-// Copyright (C) 2018-2023 Selene ToyKeeper
+// Copyright (C) 2018-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "fireflies/rot66/hwdef.h"
-
-// the button lights up
-#define USE_INDICATOR_LED
-// the button is visible while main LEDs are on
-#define USE_INDICATOR_LED_WHILE_RAMPING
-
-// off mode: high (2)
-// lockout: blinking (3)
-#define INDICATOR_LED_DEFAULT_MODE ((3<<2) + 2)
+#define HWDEF_H  fireflies/rot66/hwdef.h
 
 #define RAMP_SIZE 150
 
@@ -26,13 +17,15 @@
 // level_calc.py ninth 3 150 7135 1 1.4 110.1 7135 15 1 1644.16 FET 1 10 4500
 #define PWM2_LEVELS 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,17,18,19,20,21,22,23,25,26,27,29,30,32,34,35,37,39,41,43,46,48,50,53,55,58,61,64,67,70,73,77,81,84,88,92,97,101,106,110,115,120,126,131,137,143,149,156,162,169,177,184,192,200,208,217,226,235,245,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0
 #define PWM3_LEVELS 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,13,21,28,35,43,51,60,68,77,87,96,106,117,127,138,150,161,173,186,199,212,226,240,255
-#define MAX_1x7135          65
-#define MAX_Nx7135          125
-#define HALFSPEED_LEVEL     14
-#define QUARTERSPEED_LEVEL  8
 
-#define RAMP_SMOOTH_FLOOR  1
-#define RAMP_SMOOTH_CEIL   MAX_Nx7135
+#define MAX_1x7135           65
+#define MAX_Nx7135           125
+#define HALFSPEED_LEVEL      14
+#define QUARTERSPEED_LEVEL   8
+
+#define RAMP_SMOOTH_FLOOR    1
+#define RAMP_SMOOTH_CEIL     MAX_Nx7135
+
 // safe limit max regulated power
 // 20 46 72 98 [125]
 #define SIMPLE_UI_FLOOR  RAMP_DISCRETE_FLOOR
@@ -40,11 +33,24 @@
 #define SIMPLE_UI_STEPS  5
 
 // regulate down faster when the FET is active, slower otherwise
-#define THERM_FASTER_LEVEL 130  // throttle back faster when high
+#define THERM_FASTER_LEVEL  130  // throttle back faster when high
+
+
+// AUX
+
+// front aux is visible while main LEDs are on
+#undef USE_AUX1_LED_WHILE_RAMPING
+// off mode: high (2)
+// lockout: blinking (3)
+#define AUX1_DEFAULT_MODE  aux1_cfg_byte(aux_high_e, aux_blinking_e)
+
+
+// Misc
 
 // don't do this
-#undef BLINK_AT_RAMP_MIDDLE
 #undef BLINK_AT_RAMP_CEIL
+#undef BLINK_AT_RAMP_MIDDLE
+#undef BLINK_AT_RAMP_FLOOR
 
 // enable extra features
 #define USE_SMOOTH_STEPS

@@ -1,5 +1,5 @@
 // Noctigon K9.3 config options for Anduril
-// Copyright (C) 2020-2023 Selene ToyKeeper
+// Copyright (C) 2020-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -15,12 +15,13 @@
 
 // flood and throw only, by default
 #undef CHANNEL_MODES_ENABLED
-#define CHANNEL_MODES_ENABLED 0b0000000000000011
+#define CHANNEL_MODES_ENABLED  0b0000000000000011
 // _, _, _, 128=equal flood/throw, 255=low-throw-to-high-flood
 #undef CHANNEL_MODE_ARGS
-#define CHANNEL_MODE_ARGS     0,0,0,128,255,RGB_AUX_CM_ARGS
+#define CHANNEL_MODE_ARGS     0,0,0,128,255,AUXRGB_CM_ARGS
 
 // blink numbers on the main LEDs by default (but allow user to change it)
+#undef DEFAULT_BLINK_CHANNEL
 #define DEFAULT_BLINK_CHANNEL  CM_BOTH
 
 #undef POLICE_COLOR_STROBE_CH1

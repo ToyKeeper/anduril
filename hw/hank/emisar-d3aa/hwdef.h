@@ -1,5 +1,5 @@
 // hwdef for Emisar D3AA
-// Copyright (C) 2023 thefreeman, Selene ToyKeeper
+// Copyright (C) 2023-2026 thefreeman, Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -47,16 +47,22 @@
 // channel modes:
 // * 0. main LEDs
 // * 1+. aux RGB
-#define NUM_CHANNEL_MODES   (1 + NUM_RGB_AUX_CHANNEL_MODES)
-enum CHANNEL_MODES {
+#define NUM_CHANNEL_MODES   (2 + NUM_AUXRGB_CHANNEL_MODES)
+enum channel_modes_e {
     CM_MAIN = 0,
-    RGB_AUX_ENUMS
+    CM_HSV,
+    AUXRGB_CM_ENUMS
 };
 
 #define DEFAULT_CHANNEL_MODE  CM_MAIN
 
 // right-most bit first, modes are in fedcba9876543210 order
-#define CHANNEL_MODES_ENABLED 0b0000000000000001
+#define CHANNEL_MODES_ENABLED  0b0000000000000001
+#define USE_CHANNEL_MODE_ARGS
+#define CHANNEL_MODE_ARGS  0,0,AUXRGB_CM_ARGS
+#define USE_CUSTOM_CHANNEL_3H_MODES
+#define USE_CIRCULAR_TINT_3H
+#define USE_HSV2RGB
 
 
 // DAC max is 1023, Anduril is written for 255, so regulate at 4X speed
@@ -67,9 +73,11 @@ enum CHANNEL_MODES {
 #define PWM_DATATYPE  uint16_t
 #define PWM_DATATYPE2 uint32_t  // only needs 32-bit if ramp values go over 255
 #define PWM1_DATATYPE uint16_t  // main LED ramp
-#define PWM1_GET(l)   PWM_GET16(pwm1_levels, l)
+#define PWM1_GET(x)   PWM_GET16(pwm1_levels, x)
 #define PWM2_DATATYPE uint8_t   // DAC Vref table
-#define PWM2_GET(l)   PWM_GET8(pwm2_levels, l)
+#define PWM2_GET(x)   PWM_GET8(pwm2_levels, x)
+#define PWM3_DATATYPE uint8_t   // aux RGB ramp
+#define PWM3_GET(x)   PWM_GET8(pwm3_levels, x)
 
 // main LED outputs
 // (DAC_LVL + DAC_VREF + Vref values are defined in arch/*.h)
@@ -129,20 +137,32 @@ enum CHANNEL_MODES {
 #define VOLTAGE_FUDGE_FACTOR 0  // using a PFET so no appreciable drop
 #endif
 
-// this driver allows for aux LEDs under the optic
-#define AUXLED_R_PIN  PIN3_bp
-#define AUXLED_G_PIN  PIN2_bp
-#define AUXLED_B_PIN  PIN0_bp
-#define AUXLED_RGB_PORT PORTA
+// this light has RGB aux LEDs
+#define USE_AUXRGB_LEDS
 
-// this light has three aux LED channels: R, G, B
-#define USE_AUX_RGB_LEDS
+// aux RGB passive
+#define AUXRGB_R_PORT  PORTA
+#define AUXRGB_R_PIN   PIN3_bp
+#define AUXRGB_G_PORT  PORTA
+#define AUXRGB_G_PIN   PIN2_bp
+#define AUXRGB_B_PORT  PORTA
+#define AUXRGB_B_PIN   PIN0_bp
+
+// aux RGB PWM
+#define RGB_BITS  8
+#define CH_R_PIN  PA3
+#define CH_R_PWM  TCA0.SPLIT.HCMP0
+#define CH_G_PIN  PA2
+#define CH_G_PWM  TCA0.SPLIT.LCMP2
+#define CH_B_PIN  PA0
+#define CH_B_PWM  TCA0.SPLIT.LCMP0
+
+#define PWM_RGB_TOP_INIT  255
 
 // A: button LED
-#ifndef BUTTON_LED_PIN
-#define BUTTON_LED_PIN  PIN7_bp
-#define BUTTON_LED_PORT PORTA
-#endif
+#define USE_AUX1_LED
+#define AUX1_LED_PIN   PIN7_bp
+#define AUX1_LED_PORT  PORTA
 
 
 inline void hwdef_setup() {
@@ -197,6 +217,12 @@ inline void hwdef_setup() {
     // TODO: instead of enabling the DAC at boot, pull pin down
     //       to generate a zero without spending power on the DAC
     //       (and do this in set_level_zero() too)
+
+    // TCA/TCB/TCD aren't used at boot time, so turn them off
+    TCA0.SINGLE.CTRLA = 0;
+    TCB0.CTRLA = 0;
+    TCB1.CTRLA = 0;
+    TCD0.CTRLA = 0;
 
 }
 
