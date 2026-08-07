@@ -107,11 +107,15 @@ without having to modify the original source files.
 
 ### AVRdude
 
+AVRdude is recommended in most cases.
+
 Usually avrdude installs in a single command:
 
 `sudo apt install avrdude`
 
 ### PyMCUprog
+
+PyMCUprog is used for 3-pin UPDI MCUs when avrdude >= 7.0 isn't available.
 
 If you use `pymcuprog` to flash firmware, a few extras are needed:
 
@@ -119,7 +123,7 @@ If you use `pymcuprog` to flash firmware, a few extras are needed:
 sudo apt install python3 python3-pip python3-venv
 python3 -m venv .venv
 source .venv/bin/activate
-pip install pymcuprog
+pip3 install pymcuprog
 ```
 
 You'll need to `source .venv/bin/activate` every time you start a fresh shell,

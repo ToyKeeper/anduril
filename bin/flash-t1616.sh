@@ -5,5 +5,5 @@
 # So... kludge together similar behavior.
 
 BASEDIR=$(dirname -- "$0")
-exec $BASEDIR/flash-generic.sh "$@" avr32dd20
+exec $BASEDIR/flash-generic.sh "$@" t1616
 
