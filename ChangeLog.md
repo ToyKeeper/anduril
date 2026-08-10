@@ -14,6 +14,72 @@ formats:
 
 # Next
 
+# 2026-08-11
+
+Has been a while.  Rewrote a lot of code.  New models, shiny new RGB stuff,
+better aux control, new API for aux LEDs, and some bugfixes and tweaks.
+
+General:
+
+- Breaking change: Rewrote the entire aux LED API, then fixed and tested
+  nearly every supported model.  Big patch.  Will probably break people's
+  custom configs.  Compare your configs to the new `anduril.h` and `hwdef.*`
+  files for examples of how to update things.  A visual diff tool would be
+  helpful.  Maybe also check commit b7632ccd3bd47a66dcf73fbdca4f76f28d0fcba4
+  for extra details.
+- Added dimmable RGB aux on models which are capable of doing it.
+  - Added "smooth POVD" to display voltage by color with much higher
+    resolution.  Roughly 60 steps instead of 6.  This only works while the
+    main LEDs are on (RGB button) and during POVD.  In standby mode, it still
+    uses 6-level passive aux colors to save power.
+  - Added a HSV (hue saturation value) channel mode, but it's mostly for
+    testing purposes, to make sure RGB works correctly.
+  - Models: &hank-lume-x1, &hank-emisar-d3aa, &hank-kr1aa, and thefreeman
+    drivers.
+- Added config option for "aux while on".  Batt Check -> 7H -> Option 5:
+  - 0: aux LEDs disabled while main LEDs are on
+  - 1: single color aux LEDs only
+  - 2: RGB aux only
+  - 3: both
+- Added 2 more standby blinky animations: 2 blinks on low, or 1 blink on low.
+  This is for lights like D3AA where "steady low" mode uses too much power,
+  so you can reduce standby power by using a low blink instead.  Increases
+  standby time about 4X to 10X on some lights.
+- Added channel mode flags like "is aux", so real-time RGB button display
+  won't override aux channels any more.
+- Added docs for POVD (Post-Off Voltage Display).
+- Updated flashing scripts and docs since avrdude supports newer MCUs now.
+
+New lights:
+
+- &hank-kr1aa (0162): Added build target for Noctigon KR1AA, since it needs
+  a different ramp than D3AA, and it also needs to be more lenient about weak
+  battery detection.
+- &hank-dm1.12 (0264): Added build target for Noctigon DM1.12.  It's like the
+  Noctigon K9.3 build (0261), but tuned better for the DM1.12 host.
+- &wurkkos-ts26 (0721): Added build target for Wurkkos TS26 Anduril.
+
+Hardware-specific changes:
+
+- Added dimmable RGB and "Smooth POVD" to models which can do it.
+- &hank-emisar-d3aa (0161), &hank-kr1aa (0162): Fixed bug 81: Stepped ramp
+  could get stuck when using a weak battery.
+- &hank-lume-x1 (0281): Enabled RGB while main LEDs are on, by default.
+  User may need to turn this off if they don't have a RGB button.
+- &blf-lt1-t1616 (0622): Fixed reversed warm and cool channels.  Fixed
+  bumpiness in ramp.  Fixed "v" shaped ramp at low levels.  Set default to
+  enable only 1 channel mode.
+- Several: Changed flags on some attiny85 builds to make the ROM fit.
+- Several: Fixed incorrect e-switch pin assignments in hwdef.  Didn't break
+  anything, but it made derivative drivers fail sometimes if those pins were
+  used for other things.  (reported by INeedMoreLumens)
+
+The aux and RGB changes help lay the groundwork for supporting some newer
+hardware features, like loneoceans' new dimmable RGB aux chip which uses
+a separate controller just for aux LEDs.  Those devices are *not* supported
+yet, but should be soon.
+
+
 # 2025-07-07
 
 Merged a few pull requests, minor improvements, nothing big.  Users can now
@@ -53,6 +119,7 @@ New lights:
   created at Wurkkos's request, to stop new batches of low-Vf lights from
   damaging themselves.
 
+
 # 2024-04-20
 
 General:
@@ -85,6 +152,7 @@ New lights:
 Hardware-specific changes:
 
 - &lumintop-fw3x-lume1: Reduced visible pulsing on low modes.
+
 
 # 2023-12-03
 
@@ -151,6 +219,7 @@ Hardware-specific changes:
   UI by default.  Simple mode is simpler, and the factory settings should be
   more consistent with other lights now.  (0623)
 
+
 # 2023-10-31
 
 General:
@@ -199,6 +268,7 @@ Hardware-specific changes:
 
 - &wurkkos-ts10, &wurkkos-ts10-rgbaux: Fixed too-high default ceiling.  (0713, 0714)
 
+
 # 2023-10-01
 
 General:
@@ -242,12 +312,14 @@ Hardware-specific changes:
 - &wurkkos: Raised default temperature limit to 50 C.  (07xx)
 - &wurkkos-ts10: Better / smoother ramp.  (0713, 0714)
 
+
 # 2023-06-29
 
 - Fixed red aux blink on 1st frame of post-off voltage display
 - Removed Harry Potter references because its author (J.K. Rowling) spreads 
   hate
 - &noctigon-kr4: Fixed thermal regulation (0211, 0212, 0213, 0214, 0215, 0216)
+
 
 # 2023-05-30
 
@@ -271,10 +343,12 @@ Hardware-specific changes:
 - &emisar-d4v2: Changed number blinks from aux to main LEDs by default (0113, 
   0114, 0115, 0123)
 
+
 # 2023-05-17
 
 - &noctigon-dm11-12v: Renamed to noctigon-dm11-boost (0273)
 - &noctigon-dm11-boost: Now supported in multi-channel branch (0273)
+
 
 # 2023-05-02
 
@@ -306,6 +380,7 @@ Hardware-specific changes:
   (0715)
 - &wurkkos: Added Wurkkos FC13 and TS11 (0716, 0717)
 
+
 # 2023-04-29
 
 - Changed lockout mode:
@@ -323,6 +398,7 @@ Hardware-specific changes:
 - &noctigon-kr4: Converted to multi-channel (0211, 0212, 0213, 0214)
 - &noctigon-kr4: Don't blink at top of regulated power (0211, 0213, 0214)
 
+
 # 2023-04-28
 
 - Added voltage display (by color) on RGB aux LEDs after turning the main LEDs 
@@ -336,6 +412,7 @@ Hardware-specific changes:
 - &emisar-d4v2: Smoother ramp (0113, 0114)
 - &emisar-d4v2: Added hidden channel modes for RGB aux LEDs (0113, 0114, 0115)
 
+
 # 2023-04-27
 
 - Changed channel mode menu to preview channels during configuration
@@ -346,6 +423,7 @@ Hardware-specific changes:
 - Fixed sleep voltage measurement on attiny1616
 - &noctigon-kr4-tintramp: Converted to multi-channel, renamed to 
   noctigon-kr4-2ch (0215)
+
 
 # 2023-04-25
 
@@ -367,11 +445,13 @@ Hardware-specific changes:
   (0135)
 - &sofirn-lt1s-pro: Updated to use today's new code internals (0623)
 
+
 # 2023-04-19
 
 - Added stepped tint ramping
 - Documented new channel modes system
 - &sofirn-lt1s-pro: Added white-only auto-tint mode (0623)
+
 
 # Older: TODO
 
