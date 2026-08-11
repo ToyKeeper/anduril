@@ -126,14 +126,44 @@ inline uint8_t mcu_vdivider_raw2cooked(uint16_t measurement) {
 }
 #endif
 
+#define DEVICE_SIGNATURE_TEMP_GAIN 0x2C
+
 inline uint16_t mcu_temp_raw2cooked(uint16_t measurement) {
+    uint8_t gain, read_sig = _BV(SPMEN) | _BV(RSIG);
+    int8_t offset;
+
     // convert raw ADC values to calibrated temperature
     // In: ADC raw temperature (16-bit, or left-aligned)
     // Out: Kelvin << 6
     // Precision: 1/64th Kelvin (but noisy)
     // attiny1634 datasheet section 19.12
-    // nothing to do; input value is already "cooked"
-    return measurement;
+    asm volatile (
+        "ldi r31, 0\n\t"
+        "ldi r30, %[gain_addr]\n\t"
+        "cli\n\t"
+        "out %[spmcsr], %[read_sig]\n\t"
+        "lpm %[gain_reg], Z+\n\t"
+        "out %[spmcsr], %[read_sig]\n\t"
+        "lpm %[offset_reg], Z\n\t"
+        "sei\n\t"
+        : [gain_reg] "=r"(gain), [offset_reg] "=r"(offset), [read_sig] "+r"(read_sig)
+        : [gain_addr] "M"(DEVICE_SIGNATURE_TEMP_GAIN), [spmcsr] "M"(_SFR_IO_ADDR(SPMCSR))
+        : "cc", "r30", "r31"
+    );
+    // avoid 32-bit math by going back to right aligned briefly: saves ~52 bytes
+    //  highest reasonable value of measurement is 375<<6 (105 C)
+    //  multiply by at most 127 cannot overflow, keep the 128s place
+    //  divide by 128 correctly rounding
+    //  if gain was >=128, add the original measurement back
+    //  add offset, then return to left aligned
+    //  must add 2 post (256 pre) for compat because Anduril subtracts 275,
+    //   but the value is now in K proper
+    measurement >>= 6;
+    uint16_t result = (measurement * (gain & 0x7F) + 319) >> 7;
+    if (gain & 0x80)
+        result += measurement;
+    result += (int16_t)offset;
+    return result << 6;
 }
 
 inline uint8_t mcu_adc_lsb() {
