@@ -42,7 +42,11 @@ uint8_t smooth_povd_state(Event event, uint16_t arg) {
 
     // any button press event: abort and let event fall through
     // (also abort if animation complete)
-    else if ((event & B_CLICK) || (phase > (2 + smooth_povd_phase_start))) {
+    // (also abort if we're already asleep, like we got here from autolock)
+    else if ((event & B_CLICK)
+            || (event == EV_sleep_tick)
+            || (phase > (2 + smooth_povd_phase_start))
+            ) {
         pop_state();
         return EVENT_NOT_HANDLED;
     }
