@@ -14,6 +14,21 @@ formats:
 
 # Next
 
+# 2026-08-12
+
+Just one bugfix in this release.
+
+Hardware-specific changes:
+
+- Fixed bug where auto-lock didn't work quite right when Smooth POVD was
+  enabled.  Only affected lights with the brand new Smooth POVD feature:
+  &hank-emisar-d3aa, &hank-kr1aa, &hank-lume-x1, and thefreeman drivers.
+  It would get stuck when changing from Off mode to Lockout mode, and not
+  fully lock until the user pressed a button.  Mostly, this meant that if
+  Lockout mode had a blinky aux pattern, and it got locked automatically, it
+  wouldn't blink until the user pressed a button once.
+
+
 # 2026-08-11
 
 Has been a while.  Rewrote a lot of code.  New models, shiny new RGB stuff,
