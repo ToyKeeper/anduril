@@ -427,16 +427,18 @@ PROGMEM const uint8_t voltage_blinks[] = {
 };
 #endif
 void battcheck() {
+    // protect against modification from ISR and also reduce code size
+    const uint8_t volt = voltage;
     #ifdef BATTCHECK_VpT
-        blink_num(voltage / dV);
+        blink_num(volt / dV);
         #ifdef USE_EXTRA_BATTCHECK_DIGIT
             // 0.02V precision, 0 1 2 3 4 remainder -> .00 .02 .04 .06 .08V
-            blink_num((voltage % dV) * (10/dV));
+            blink_num((volt % dV) * (10/dV));
         #endif
     #else
         uint8_t i;
         for(i=0;
-            voltage >= pgm_read_byte(voltage_blinks + i);
+            volt >= pgm_read_byte(voltage_blinks + i);
             i++) {}
         #ifdef DONT_DELAY_AFTER_BATTCHECK
             blink_digit(i);
