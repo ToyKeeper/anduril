@@ -17,6 +17,7 @@ void set_level_led34a_blend(uint8_t level);
 void set_level_led34b_blend(uint8_t level);
 void set_level_hsv(uint8_t level);
 void set_level_auto3(uint8_t level);
+void set_level_chaos(uint8_t level);
 
 bool gradual_tick_main2(uint8_t gt);
 bool gradual_tick_led3(uint8_t gt);
@@ -26,6 +27,8 @@ bool gradual_tick_led34a_blend(uint8_t gt);
 bool gradual_tick_led34b_blend(uint8_t gt);
 bool gradual_tick_hsv(uint8_t gt);
 bool gradual_tick_auto3(uint8_t gt);
+bool gradual_tick_chaos(uint8_t gt);
+uint8_t chaos_3h(Event event, uint16_t arg);
 
 
 Channel channels[] = {
@@ -69,13 +72,18 @@ Channel channels[] = {
         .gradual_tick = gradual_tick_auto3,
         .flags        = 0
     },
+    { // chaotic pendulum color animation
+        .set_level    = set_level_chaos,
+        .gradual_tick = gradual_tick_chaos,
+        .flags        = CHANNEL_FLAG_HAS_ARGS
+    },
     AUXRGB_CHANNELS
 };
 
-// HSV mode needs a different 3H handler
+// HSV and chaos modes need different 3H handlers
 StatePtr channel_3H_modes[NUM_CHANNEL_MODES] = {
     NULL, NULL, NULL, NULL,
-    NULL, NULL, circular_tint_3h, NULL,
+    NULL, NULL, circular_tint_3h, NULL, chaos_3h,
 };
 
 void set_level_zero() {
@@ -359,5 +367,161 @@ bool gradual_tick_auto3(uint8_t gt) {
     PWM_DATATYPE red, warm, cool;
     calc_auto_3ch_blend(&red, &warm, &cool, gt);
     return gradual_adjust(cool, warm, red);
+}
+
+///// Chaotic pendulum color animation mode /////
+
+// State variables for coupled oscillator chaos
+static int16_t chaos_theta1 = 0;      // hue position (scaled, wraps at 65536)
+static int16_t chaos_omega1 = 1500;   // hue angular velocity (tuned for full color wheel coverage)
+static int16_t chaos_theta2 = 0;      // saturation oscillator
+static int16_t chaos_omega2 = 800;    // saturation velocity
+
+// Convert triangle_wave output (0-255) to signed (-128..127)
+static inline int8_t signed_wave(uint8_t phase) {
+    return (int8_t)(triangle_wave(phase) - 128);
+}
+
+// Frame counter for driving oscillation
+static uint8_t chaos_frame = 0;
+
+// Physics update for coupled chaotic pendulum
+static void chaos_update(void) {
+    // Get energy from user config (0-255)
+    // Map to useful range: avoid too-slow (boring) and too-fast (just white)
+    uint8_t energy = cfg.channel_mode_args[channel_mode];
+    // scale: 6-12 (was 4-19) - narrower range for perceptually useful speeds
+    int16_t scale = 6 + ((energy * 6) >> 8);  // 6 + 0..5 = 6..11
+
+    // Use triangle wave as sinusoidal approximation
+    int8_t wave1 = signed_wave((uint8_t)(chaos_theta1 >> 8));
+    int8_t wave2 = signed_wave((uint8_t)(chaos_theta2 >> 8));
+    int8_t wave_diff = signed_wave((uint8_t)((chaos_theta2 - chaos_theta1) >> 8));
+
+    // Driving force: periodic kick to sustain oscillations
+    // This creates a driven double pendulum which exhibits true chaos
+    chaos_frame++;
+    int8_t drive = signed_wave(chaos_frame * 3);  // slow driving frequency
+    // drive amplitude: 40-56 (was 32-63) - narrower for better behavior
+    int16_t drive_force = (drive * (int16_t)(40 + (energy >> 4))) >> 7;
+
+    // Coupled pendulum acceleration with driving
+    int16_t acc1 = ((-20 * wave1) >> 4) + ((16 * wave_diff) >> 4) + drive_force;
+    int16_t acc2 = ((-16 * wave2) >> 4) - ((16 * wave_diff) >> 4);
+
+    // Very light damping (prevents runaway but allows sustained motion)
+    chaos_omega1 = chaos_omega1 - (chaos_omega1 >> 9) + acc1;
+    chaos_omega2 = chaos_omega2 - (chaos_omega2 >> 9) + acc2;
+
+    // Velocity limits
+    if (chaos_omega1 > 3000) chaos_omega1 = 3000;
+    if (chaos_omega1 < -3000) chaos_omega1 = -3000;
+    if (chaos_omega2 > 2500) chaos_omega2 = 2500;
+    if (chaos_omega2 < -2500) chaos_omega2 = -2500;
+
+    // Position update (scaled by energy)
+    chaos_theta1 += (chaos_omega1 * scale) >> 4;
+    chaos_theta2 += (chaos_omega2 * scale) >> 4;
+}
+
+void set_level_chaos(uint8_t level) {
+    if (0 == level) { set_level_zero(); return; }
+
+    // Advance chaos physics
+    chaos_update();
+
+    // Map theta1 to hue (full 0-255 range)
+    uint8_t hue = (uint8_t)(chaos_theta1 >> 8);
+
+    // Map theta2 to saturation with sqrt-like expansion
+    // This spends less time near white (center) and more at saturated colors
+    int8_t sat_raw = (int8_t)(chaos_theta2 >> 9);  // -128 to +127
+    // Sqrt-like expansion: small values get pushed away from zero
+    // Use (sign * sqrt(abs)) approximation via: sign * (128 - (128-abs)^2/128)
+    uint8_t sat_abs = sat_raw < 0 ? -sat_raw : sat_raw;
+    uint8_t inv = 128 - sat_abs;
+    uint8_t sat_expanded = 128 - ((inv * inv) >> 7);  // sqrt-ish curve
+    int16_t sat = 140 + (sat_raw < 0 ? -sat_expanded : sat_expanded);
+    if (sat < 40) sat = 40;    // allow more saturated colors
+    if (sat > 240) sat = 240;
+
+    // Brightness from ramp level
+    PWM_DATATYPE val = PWM_GET(pwm1_levels, level);
+
+    // Convert to RGB and output
+    RGB_t color = hsv2rgb(hue, (uint8_t)sat, val);
+    set_hw_levels(color.r, color.g, color.b, 0, 0, 0);
+}
+
+bool gradual_tick_chaos(uint8_t gt) {
+    // Always advance chaos animation (this is how we get continuous animation)
+    chaos_update();
+
+    // Compute target color
+    uint8_t hue = (uint8_t)(chaos_theta1 >> 8);
+    // Sqrt-like saturation expansion (same as set_level_chaos)
+    int8_t sat_raw = (int8_t)(chaos_theta2 >> 9);
+    uint8_t sat_abs = sat_raw < 0 ? -sat_raw : sat_raw;
+    uint8_t inv = 128 - sat_abs;
+    uint8_t sat_expanded = 128 - ((inv * inv) >> 7);
+    int16_t sat = 140 + (sat_raw < 0 ? -sat_expanded : sat_expanded);
+    if (sat < 40) sat = 40;
+    if (sat > 240) sat = 240;
+
+    PWM_DATATYPE val = PWM_GET(pwm1_levels, gt);
+    RGB_t color = hsv2rgb(hue, (uint8_t)sat, val);
+
+    // Smooth transition toward target
+    gradual_adjust(color.r, color.g, color.b);
+
+    // Always return false to keep animation running continuously
+    return false;
+}
+
+///// 3H handler for chaos mode energy adjustment /////
+// Shows brightness proportional to energy during hold, blinks on wrap
+void save_config();  // forward declaration
+uint8_t chaos_3h(Event event, uint16_t arg) {
+    static int8_t direction = 1;
+    static uint8_t active = 0;
+    static uint8_t saved_level = 0;
+    uint8_t energy = cfg.channel_mode_args[channel_mode];
+
+    // click, click, hold: adjust energy with visual feedback
+    if (event == EV_click3_hold) {
+        // reset at beginning of movement
+        if (! arg) {
+            active = 1;
+            saved_level = actual_level;  // remember brightness to restore later
+        }
+        if (! active) return EVENT_NOT_HANDLED;
+
+        uint8_t old_energy = energy;
+        energy += direction;
+        cfg.channel_mode_args[channel_mode] = energy;
+
+        // detect wrap-around and blink
+        if ((old_energy == 255 && energy == 0) || (old_energy == 0 && energy == 255)) {
+            set_level(0);
+            delay_4ms(8);  // brief off
+        }
+
+        // show brightness proportional to energy (min 1 to keep light on)
+        uint8_t display_level = 1 + (energy * (uint16_t)(MAX_LEVEL - 1)) / 255;
+        set_level(display_level);
+
+        return EVENT_HANDLED;
+    }
+
+    // click, click, hold, release: restore brightness and save
+    else if (event == EV_click3_hold_release) {
+        active = 0;
+        direction = -direction;  // reverse for next time
+        save_config();
+        set_level(saved_level);  // restore original brightness
+        return EVENT_HANDLED;
+    }
+
+    return EVENT_NOT_HANDLED;
 }
 
