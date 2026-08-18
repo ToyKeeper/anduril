@@ -211,16 +211,22 @@ void test_4click_unlock(void) {
     anduril_multi_click(avr, 4);
     anduril_run_ticks(avr, 20);  // Let lockout settle
 
-    // Exit lockout with 4 clicks
+    // Exit lockout with 4 clicks; lockout-mode.c exits straight to
+    // steady mode at the memorized level ("exit and turn on")
     anduril_multi_click(avr, 4);
-    anduril_run_ticks(avr, 20);  // Let state settle
-
-    // Now click should turn on
-    anduril_click(avr);
-    anduril_run_ticks(avr, LONG_TIMEOUT);
+    anduril_run_ticks(avr, LONG_TIMEOUT);  // Let the click sequence finalize
 
     if (!anduril_is_light_on(avr)) {
         TEST_FAIL("Light should turn ON after exiting lockout");
+        return;
+    }
+
+    // And a click from there should turn it off again
+    anduril_click(avr);
+    anduril_run_ticks(avr, LONG_TIMEOUT);
+
+    if (anduril_is_light_on(avr)) {
+        TEST_FAIL("Light should turn OFF on click after unlock");
         return;
     }
 
