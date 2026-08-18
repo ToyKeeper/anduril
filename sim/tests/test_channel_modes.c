@@ -11,11 +11,30 @@
 
 static avr_t* avr = NULL;
 
+// 3C = next channel mode in Anduril's UI (3H adjusts the mode's tint/arg
+// instead, and in argless modes falls through to momentary turbo)
+static void next_channel_mode(void) {
+    anduril_multi_click(avr, 3);
+    anduril_run_ticks(avr, LONG_TIMEOUT);
+}
+
+// The D4K-3ch drives its LEDs by delta-sigma modulation, so raw PWM
+// samples jitter by one high-byte step (~128 on main2, ~1 on led3/led4)
+// even in a steady state.  Compare patterns by weighted distance with a
+// threshold safely above that dither instead of by exact equality.
+static int pwm_distance(pwm_state_t a, pwm_state_t b) {
+    int d = abs((int)a.main2 - (int)b.main2);
+    d += 16 * abs((int)a.led3 - (int)b.led3);
+    d += 16 * abs((int)a.led4 - (int)b.led4);
+    return d;
+}
+#define PWM_CHANGE_THRESHOLD 300
+
 // =============================================================================
 // Test Cases
 // =============================================================================
 
-// Test: 3H from ON changes channel mode (PWM pattern changes)
+// Test: 3C from ON changes channel mode (PWM pattern changes)
 void test_channel_switch(void) {
     TEST_BEGIN("channel_switch");
 
@@ -30,42 +49,22 @@ void test_channel_switch(void) {
     // Get initial PWM state (default channel mode)
     pwm_state_t initial = anduril_get_pwm(avr);
 
-    // 3H should switch channel modes
-    // First do 2 clicks, then hold
-    anduril_button_set(avr, 1);
-    anduril_run_ticks(avr, CLICK_TICKS);
-    anduril_button_set(avr, 0);
-    anduril_run_ticks(avr, CLICK_GAP_TICKS);
-
-    anduril_button_set(avr, 1);
-    anduril_run_ticks(avr, CLICK_TICKS);
-    anduril_button_set(avr, 0);
-    anduril_run_ticks(avr, CLICK_GAP_TICKS);
-
-    // Third press - hold
-    anduril_button_set(avr, 1);
-    anduril_run_ticks(avr, HOLD_THRESHOLD + 30);
-    anduril_button_set(avr, 0);
-    anduril_run_ticks(avr, LONG_TIMEOUT);
+    // 3C switches to the next channel mode
+    next_channel_mode();
 
     // Should still be on
-    ASSERT(anduril_is_light_on(avr), "Should be ON after 3H");
+    ASSERT(anduril_is_light_on(avr), "Should be ON after 3C");
 
     // Get new PWM state
-    pwm_state_t after_3h = anduril_get_pwm(avr);
+    pwm_state_t after_3c = anduril_get_pwm(avr);
 
     // Channel mode should have changed (PWM pattern different)
-    // At minimum, the ratio between channels should change
-    int same_pattern = (initial.main2 == after_3h.main2 &&
-                        initial.led3 == after_3h.led3 &&
-                        initial.led4 == after_3h.led4);
-
-    if (same_pattern) {
+    if (pwm_distance(initial, after_3c) < PWM_CHANGE_THRESHOLD) {
         char msg[200];
         snprintf(msg, sizeof(msg),
-                 "3H should change channel mode: before(m2=%u l3=%u l4=%u) after(m2=%u l3=%u l4=%u)",
+                 "3C should change channel mode: before(m2=%u l3=%u l4=%u) after(m2=%u l3=%u l4=%u)",
                  initial.main2, initial.led3, initial.led4,
-                 after_3h.main2, after_3h.led3, after_3h.led4);
+                 after_3c.main2, after_3c.led3, after_3c.led4);
         TEST_FAIL(msg);
         return;
     }
@@ -85,21 +84,8 @@ void test_channel_mode_persists(void) {
 
     ASSERT(anduril_is_light_on(avr), "Should be ON");
 
-    // Switch channel mode with 3H (2C then hold)
-    anduril_button_set(avr, 1);
-    anduril_run_ticks(avr, CLICK_TICKS);
-    anduril_button_set(avr, 0);
-    anduril_run_ticks(avr, CLICK_GAP_TICKS);
-
-    anduril_button_set(avr, 1);
-    anduril_run_ticks(avr, CLICK_TICKS);
-    anduril_button_set(avr, 0);
-    anduril_run_ticks(avr, CLICK_GAP_TICKS);
-
-    anduril_button_set(avr, 1);
-    anduril_run_ticks(avr, HOLD_THRESHOLD + 30);
-    anduril_button_set(avr, 0);
-    anduril_run_ticks(avr, LONG_TIMEOUT);
+    // Switch channel mode with 3C
+    next_channel_mode();
 
     // Record PWM state after channel switch
     pwm_state_t after_switch = anduril_get_pwm(avr);
@@ -144,7 +130,7 @@ void test_channel_mode_persists(void) {
     TEST_PASS();
 }
 
-// Test: Multiple 3H cycles through different channel modes
+// Test: Multiple 3C presses cycle through different channel modes
 void test_channel_cycles(void) {
     TEST_BEGIN("channel_cycles");
 
@@ -159,37 +145,21 @@ void test_channel_cycles(void) {
     pwm_state_t modes[4];
     modes[0] = anduril_get_pwm(avr);
 
-    // Do 3H three more times to collect different mode patterns
+    // Do 3C three more times to collect different mode patterns
     for (int i = 1; i < 4; i++) {
-        // 3H: 2C then hold
-        anduril_button_set(avr, 1);
-        anduril_run_ticks(avr, CLICK_TICKS);
-        anduril_button_set(avr, 0);
-        anduril_run_ticks(avr, CLICK_GAP_TICKS);
+        next_channel_mode();
 
-        anduril_button_set(avr, 1);
-        anduril_run_ticks(avr, CLICK_TICKS);
-        anduril_button_set(avr, 0);
-        anduril_run_ticks(avr, CLICK_GAP_TICKS);
-
-        anduril_button_set(avr, 1);
-        anduril_run_ticks(avr, HOLD_THRESHOLD + 30);
-        anduril_button_set(avr, 0);
-        anduril_run_ticks(avr, LONG_TIMEOUT);
-
-        ASSERT(anduril_is_light_on(avr), "Should still be ON after 3H");
+        ASSERT(anduril_is_light_on(avr), "Should still be ON after 3C");
 
         modes[i] = anduril_get_pwm(avr);
     }
 
-    // Count how many unique patterns we got
+    // Count how many clearly-distinct patterns we got
     int unique_patterns = 1;
     for (int i = 1; i < 4; i++) {
         int is_unique = 1;
         for (int j = 0; j < i; j++) {
-            if (modes[i].main2 == modes[j].main2 &&
-                modes[i].led3 == modes[j].led3 &&
-                modes[i].led4 == modes[j].led4) {
+            if (pwm_distance(modes[i], modes[j]) < PWM_CHANGE_THRESHOLD) {
                 is_unique = 0;
                 break;
             }
@@ -229,7 +199,7 @@ void test_channel_mode_leds(void) {
 
     ASSERT(anduril_is_light_on(avr), "Should be ON");
 
-    // Default mode (CM_MAIN2) should primarily use main2
+    // Default mode (CM_ALL on the D4K-3ch) drives main2
     pwm_state_t mode0 = anduril_get_pwm(avr);
 
     // Expect main2 to be dominant in default mode
@@ -243,34 +213,16 @@ void test_channel_mode_leds(void) {
         return;
     }
 
-    // Do 3H to switch to next mode (CM_LED3)
-    anduril_button_set(avr, 1);
-    anduril_run_ticks(avr, CLICK_TICKS);
-    anduril_button_set(avr, 0);
-    anduril_run_ticks(avr, CLICK_GAP_TICKS);
+    // 3C switches to the next mode
+    next_channel_mode();
 
-    anduril_button_set(avr, 1);
-    anduril_run_ticks(avr, CLICK_TICKS);
-    anduril_button_set(avr, 0);
-    anduril_run_ticks(avr, CLICK_GAP_TICKS);
-
-    anduril_button_set(avr, 1);
-    anduril_run_ticks(avr, HOLD_THRESHOLD + 30);
-    anduril_button_set(avr, 0);
-    anduril_run_ticks(avr, LONG_TIMEOUT);
-
-    // After 3H, should be in a different mode with different LED active
+    // After 3C, should be in a different mode with a different LED mix
     pwm_state_t mode1 = anduril_get_pwm(avr);
 
-    // At least one channel should have changed
-    int channel_changed = (mode0.main2 != mode1.main2 ||
-                           mode0.led3 != mode1.led3 ||
-                           mode0.led4 != mode1.led4);
-
-    if (!channel_changed) {
+    if (pwm_distance(mode0, mode1) < PWM_CHANGE_THRESHOLD) {
         char msg[200];
         snprintf(msg, sizeof(msg),
-                 "LED pattern should change after 3H: before(m2=%u l3=%u l4=%u) after(m2=%u l3=%u l4=%u)",
+                 "LED pattern should change after 3C: before(m2=%u l3=%u l4=%u) after(m2=%u l3=%u l4=%u)",
                  mode0.main2, mode0.led3, mode0.led4,
                  mode1.main2, mode1.led3, mode1.led4);
         TEST_FAIL(msg);
