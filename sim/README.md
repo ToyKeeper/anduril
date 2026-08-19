@@ -6,9 +6,9 @@ cycle-accurate AVR emulation.
 ## Quick Start
 
 ```bash
-# 1. Clone simavr with ATtiny1634 support (one-time setup)
+# 1. Clone simavr (one-time setup; upstream has ATtiny1634 support)
 cd /path/to/anduril
-git clone https://github.com/GlassOnTin/simavr.git
+git clone https://github.com/buserror/simavr.git
 
 # 2. Build simavr
 cd simavr/simavr
@@ -22,15 +22,19 @@ make test
 ## Requirements
 
 - **simavr** with ATtiny1634 core support
-  - Fork: https://github.com/GlassOnTin/simavr
-  - Upstream PR: https://github.com/buserror/simavr/pull/568
+  - Upstream https://github.com/buserror/simavr works as of Dec 2025:
+    the ATtiny1634 core ([#568](https://github.com/buserror/simavr/pull/568))
+    and an ihex loader use-after-free fix
+    ([#569](https://github.com/buserror/simavr/pull/569),
+    [#574](https://github.com/buserror/simavr/pull/574)) are merged
 - **avr-gcc** toolchain (for building firmware)
-- **libelf-dev** (simavr dependency)
+- **libelf-dev** (optional; simavr uses it for loading ELF firmware,
+  but these tests load .hex files)
 
 ### Ubuntu/Debian
 
 ```bash
-sudo apt install gcc make libelf-dev avr-libc gcc-avr
+sudo apt install gcc make avr-libc gcc-avr
 ```
 
 ## Directory Structure
@@ -45,8 +49,6 @@ anduril/
 │   │   ├── test_basic_ui.c # Basic UI tests (8 tests)
 │   │   ├── test_ramping.c  # Ramping tests (6 tests)
 │   │   └── test_channel_modes.c  # Channel mode tests (4 tests)
-│   └── simavr-core/
-│       └── sim_tiny1634.*  # ATtiny1634 core (also in simavr fork)
 ├── simavr/                 # Clone simavr here (sibling to sim/)
 │   └── simavr/
 │       └── obj-x86_64-linux-gnu/
@@ -201,9 +203,10 @@ ls ../simavr/simavr/obj-x86_64-linux-gnu/libsimavr.so.1
 
 ### "undefined reference to sim_tiny1634"
 
-The simavr fork doesn't have ATtiny1634 support. Use:
+The simavr checkout predates ATtiny1634 support (merged upstream Dec 2025).
+Update it:
 ```bash
-git clone https://github.com/GlassOnTin/simavr.git ../simavr
+cd ../simavr && git pull && cd simavr && make
 ```
 
 ### Tests fail with "target does not answer"

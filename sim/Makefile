@@ -26,7 +26,7 @@ AVR_TARGET = sim-d4k-3ch-avr
 AVR_CFLAGS = $(CFLAGS) $(SIMAVR_INC)
 # Use absolute rpath and link directly to .so.1 to avoid system libsimavr
 SIMAVR_RPATH = $(shell cd $(SIMAVR_OBJ) && pwd)
-AVR_LDFLAGS = -L$(SIMAVR_OBJ) -Wl,-rpath,$(SIMAVR_RPATH) $(SIMAVR_OBJ)/libsimavr.so.1 -lpthread -lm -lelf
+AVR_LDFLAGS = -L$(SIMAVR_OBJ) -Wl,-rpath,$(SIMAVR_RPATH) $(SIMAVR_OBJ)/libsimavr.so.1 -lpthread -lm
 
 # Firmware hex file
 HEX_FILE = ../hex/anduril.hank-emisar-d4k-3ch.hex
@@ -145,7 +145,7 @@ help:
 	@echo "Anduril Firmware Test Suite"
 	@echo ""
 	@echo "Setup:"
-	@echo "  git clone https://github.com/GlassOnTin/simavr.git ../simavr"
+	@echo "  git clone https://github.com/buserror/simavr.git ../simavr"
 	@echo "  cd ../simavr/simavr && make"
 	@echo ""
 	@echo "Test Targets:"
