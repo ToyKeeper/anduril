@@ -1,14 +1,15 @@
 #!/usr/bin/env sh
 # Atmel DFP download/install/setup script
-# Copyright (C) 2023 Selene ToyKeeper
+# Copyright (C) 2023-2026 Selene ToyKeeper
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 set -e
 
-V_ATTINY='2.0.368'
-V_AVRDD='2.2.253'
-F_ATTINY="Atmel.ATtiny_DFP.${V_ATTINY}.atpack"
-F_AVRDD="Atmel.AVR-Dx_DFP.${V_AVRDD}.atpack"
+V_ATTINY='3.4.278'
+V_AVRDD='2.8.343'
+F_ATTINY="Microchip.ATtiny_DFP.${V_ATTINY}.atpack"
+F_AVRDD="Microchip.AVR-Dx_DFP.${V_AVRDD}.atpack"
+BASEURL="https://packs.download.microchip.com/"
 
 cd arch
 
@@ -19,8 +20,8 @@ cd dfp
 # download the zipped pack files if they don't exist yet
 mkdir -p zip
 cd zip
-[ ! -f "${F_ATTINY}" ] && wget "http://packs.download.atmel.com/${F_ATTINY}"
-[ ! -f "${F_AVRDD}"  ] && wget "http://packs.download.atmel.com/${F_AVRDD}"
+[ ! -f "${F_ATTINY}" ] && wget "${BASEURL}${F_ATTINY}"
+[ ! -f "${F_AVRDD}"  ] && wget "${BASEURL}${F_AVRDD}"
 
 # extract the packs
 # attiny
