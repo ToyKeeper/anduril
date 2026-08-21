@@ -18,18 +18,34 @@
 #
 
 def main(args):
+    # determine highest value for ramp and MCU internal limit
     max_pwm = 1023
+    mcu_max_pwm = 1023
+    if (len(args) > 1):
+        max_pwm = int(args[0])
+        del args[0]
+    if (len(args) > 1):
+        mcu_max_pwm = int(args[0])
+        del args[0]
+
+    # get desired brightness levels and set up vars
     raw_pwm = [int(x) for x in args[0].split(',')]
     ratio = raw_pwm[-1] / 2500.0
     cooked = [[]]
 
     def limit(p):
+        return min(mcu_max_pwm, int(p))
+
+    def turbo_limit(p):
         return min(max_pwm, int(p))
 
     phase = 0
     for raw in raw_pwm:
+        # limit maximum power maybe
+        if max_pwm != mcu_max_pwm:
+            raw = raw * max_pwm / mcu_max_pwm
         if 0 == phase:
-            if raw <= 1023:
+            if raw <= mcu_max_pwm:
                 cooked[-1].append(limit(raw))
             else:
                 phase += 1
@@ -47,7 +63,7 @@ def main(args):
                 phase += 1
                 cooked.append([])
         if 3 == phase:
-            cooked[-1].append(limit(raw * 1.024 / 2.5 / ratio))
+            cooked[-1].append(turbo_limit(raw * 1.024 / 2.5 / ratio))
 
     # "gear change" boundaries
     b1 =      len(cooked[0])
