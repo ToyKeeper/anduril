@@ -729,23 +729,27 @@ void set_level_and_therm_target(uint8_t level) {
 #ifdef USE_MANUAL_MEMORY
 void manual_memory_restore() {
     memorized_level = cfg.manual_memory;
-    #if NUM_CHANNEL_MODES > 1
-        channel_mode = cfg.channel_mode = cfg.manual_memory_channel_mode;
-    #endif
-    #ifdef USE_CHANNEL_MODE_ARGS
-        for (uint8_t i=0; i<NUM_CHANNEL_MODES; i++)
-          cfg.channel_mode_args[i] = cfg.manual_memory_channel_args[i];
+    #ifdef MANUAL_MEMORY_SAVE_CHANNEL
+        #if NUM_CHANNEL_MODES > 1
+            channel_mode = cfg.channel_mode = cfg.manual_memory_channel_mode;
+        #endif
+        #ifdef USE_CHANNEL_MODE_ARGS
+            for (uint8_t i=0; i<NUM_CHANNEL_MODES; i++)
+              cfg.channel_mode_args[i] = cfg.manual_memory_channel_args[i];
+        #endif
     #endif
 }
 
 void manual_memory_save() {
     cfg.manual_memory = actual_level;
-    #if NUM_CHANNEL_MODES > 1
-        cfg.manual_memory_channel_mode = channel_mode;
-    #endif
-    #ifdef USE_CHANNEL_MODE_ARGS
-        for (uint8_t i=0; i<NUM_CHANNEL_MODES; i++)
-          cfg.manual_memory_channel_args[i] = cfg.channel_mode_args[i];
+    #ifdef MANUAL_MEMORY_SAVE_CHANNEL
+        #if NUM_CHANNEL_MODES > 1
+            cfg.manual_memory_channel_mode = channel_mode;
+        #endif
+        #ifdef USE_CHANNEL_MODE_ARGS
+            for (uint8_t i=0; i<NUM_CHANNEL_MODES; i++)
+              cfg.manual_memory_channel_args[i] = cfg.channel_mode_args[i];
+        #endif
     #endif
 }
 #endif  // ifdef USE_MANUAL_MEMORY
