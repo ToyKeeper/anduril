@@ -110,7 +110,17 @@ RGB_t voltage_to_rgb_t (rgb_uint_t brightness) {
 void rgb_led_update(uint8_t mode, uint16_t arg) {
     static uint8_t rainbow = 0;  // track state of rainbow mode
     static uint8_t frame = 0;  // track state of animation mode
-
+	
+    // For lights that have the charging indicator circuit controlled by the MCU,
+    // detect if charging is active.  If so, keep the aux turned off for now.
+    #ifdef CHARGE_IND_CTRL
+    // Charging aux is handled in WDT_inner(), so the only action we need to do is to turn off the lights and exit
+    if (is_plugged_in) {
+        rgb_led_set(0);
+        return;
+    }
+    #endif
+	
     // turn off aux LEDs when battery is empty
     // (but if voltage==0, that means we just booted and don't know yet)
     uint8_t volts = voltage;  // save a few bytes by caching volatile value
