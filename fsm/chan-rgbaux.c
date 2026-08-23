@@ -31,5 +31,16 @@ void set_level_auxwht(uint8_t level) {
     set_auxrgb_power(0b010101 << !(!(level)));  // red+green+blue, high (level > 0) or low
 }
 
+#ifdef USE_AUX_VOLTAGE_CHANNEL_MODE
+// defined in anduril/aux-leds.c, which the UI includes after this file;
+// returns a ready-made set_auxrgb_power() pattern chosen by battery voltage
+uint8_t voltage_to_rgb();
+
+void set_level_auxvoltage(uint8_t level) {
+    // same shape as the fixed-color modes above, only the color varies
+    set_auxrgb_power(voltage_to_rgb() << !(!(level)));  // high (level > 0) or low
+}
+#endif
+
 bool gradual_tick_null(uint8_t gt) { return true; }  // do nothing
 
