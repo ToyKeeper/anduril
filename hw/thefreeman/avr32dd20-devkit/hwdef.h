@@ -133,6 +133,8 @@ uint8_t voltage_raw2cooked(uint16_t measurement);
 
 // this light has RGB aux LEDs
 #define USE_AUXRGB_LEDS
+// ... and the aux RGB is dimmable, not just on/off
+#define USE_DIMMABLE_AUXRGB
 
 // aux RGB passive
 #define AUXRGB_R_PORT  PORTA

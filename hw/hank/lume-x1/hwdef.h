@@ -122,6 +122,8 @@ enum channel_modes_e {
 // this light has RGB aux LEDs
 // (and some builds tie these also to a RGB side button)
 #define USE_AUXRGB_LEDS
+// ... and the aux RGB is dimmable, not just on/off
+#define USE_DIMMABLE_AUXRGB
 
 // aux RGB passive
 #define AUXRGB_R_PORT  PORTA
