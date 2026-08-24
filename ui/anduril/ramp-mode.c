@@ -403,7 +403,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
             if (event == EV_3clicks) {
                 uint8_t enabled = 0;
                 for (uint8_t m=0; m<NUM_CHANNEL_MODES; m++)
-                    enabled += channel_mode_enabled(m);
+                    enabled += channel_mode_enabled(m) && (! channel_blink_only(m));
                 if (enabled > 1)
                     return EVENT_NOT_HANDLED;
             }

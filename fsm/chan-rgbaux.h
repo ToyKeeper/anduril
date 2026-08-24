@@ -80,8 +80,8 @@
 #define AUXRGB_VOLTAGE_CHANNEL \
     , { \
         .set_level    = set_level_auxvoltage, \
-        .gradual_tick = gradual_tick_null \
-        AUXRGB_FLAGS \
+        .gradual_tick = gradual_tick_null, \
+        .flags        = CHANNEL_FLAG_IS_AUX | CHANNEL_FLAG_BLINK_ONLY \
     }
 void set_level_auxvoltage(uint8_t level);
 #else

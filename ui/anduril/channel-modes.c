@@ -34,7 +34,8 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
         do {
             count ++;
             next = (next + 1) % NUM_CHANNEL_MODES;
-        } while ((! channel_mode_enabled(next)) && count < NUM_CHANNEL_MODES);
+        } while (((! channel_mode_enabled(next)) || channel_blink_only(next))
+                 && count < NUM_CHANNEL_MODES);
         //} while ((! channel_modes_enabled[next]) && count < NUM_CHANNEL_MODES);
 
         // undo change if infinite loop detected (redundant?)

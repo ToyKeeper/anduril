@@ -75,6 +75,15 @@ StatePtr channel_3H_modes[NUM_CHANNEL_MODES];
 // which modes are displayed on the aux LEDs?
 #define channel_is_aux(n)    (channels[n].flags & CHANNEL_FLAG_IS_AUX)
 
+#ifdef USE_AUX_VOLTAGE_CHANNEL_MODE
+// modes whose output is derived from live data, and which therefore only
+// make sense for number blinks (where set_level() runs for every blink)
+#define CHANNEL_FLAG_BLINK_ONLY  0b00000100
+#define channel_blink_only(n)    (channels[n].flags & CHANNEL_FLAG_BLINK_ONLY)
+#else
+#define channel_blink_only(n)    0
+#endif
+
 #ifdef USE_CHANNEL_MODE_ARGS
     #ifndef USE_CFG
     // one byte of extra data per channel mode, like for tint value
