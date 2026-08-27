@@ -149,7 +149,7 @@ enum channel_modes_e {
 #define AUX1_LED_PORT  PORTA
 
 
-// Define e-switch Pin and ISR
+// e-switch
 #ifndef SWITCH_PIN   // PD4
 #define SWITCH_PIN     PIN4_bp
 #define SWITCH_PORT    VPORTD.IN
@@ -158,10 +158,11 @@ enum channel_modes_e {
 #define SWITCH_INTFLG  VPORTD.INTFLAGS
 #endif
 
-// average drop across diode on this hardware
-#ifndef VOLTAGE_FUDGE_FACTOR
-#define VOLTAGE_FUDGE_FACTOR 1  // PFET for RRP, essentially 0 v-drop, but experimentally add 0.05V for better UX
-#endif
+// calibrate the battery voltage sensor here
+#undef VOLTAGE_SLOPE
+#undef VOLTAGE_OFFSET
+#define VOLTAGE_SLOPE   1014  // default = 1024, higher = higher voltage
+#define VOLTAGE_OFFSET  0     // 0 cV
 
 //***************************************
 //**          HARDWARE INIT            **

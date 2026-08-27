@@ -66,10 +66,22 @@ inline void mcu_adc_off();
 
 inline uint16_t mcu_adc_result();
 
+// fine-tune the voltage measurement slope and offset
+#define VOLTAGE_SLOPE   1024
+#define VOLTAGE_OFFSET  0
+#define VOLTAGE_CORRECTION_IS_OFFSET
+
 // return Volts * 50, range 0 to 5.10V
 #define voltage_raw2cooked  mcu_vdd_raw2cooked
-inline uint8_t mcu_vdd_raw2cooked(uint16_t measurement);
-inline uint8_t mcu_vdivider_raw2cooked(uint16_t measurement);
+uint8_t mcu_vdd_raw2cooked(uint16_t measurement);
+// return Volts * 6400, range 0 to 10.24V
+#define voltage_raw2cooked16  mcu_vdd_raw2cooked16
+uint16_t mcu_vdd_raw2cooked16(uint16_t measurement);
+
+//#define voltage_raw2cooked    mcu_vdivider_raw2cooked
+//#define voltage_raw2cooked16  mcu_vdivider_raw2cooked16
+uint8_t  mcu_vdivider_raw2cooked(uint16_t measurement);
+uint16_t mcu_vdivider_raw2cooked16(uint16_t measurement);
 
 // return (temp in Kelvin << 6)
 #define temp_raw2cooked  mcu_temp_raw2cooked

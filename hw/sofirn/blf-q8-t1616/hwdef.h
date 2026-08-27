@@ -17,3 +17,8 @@
 // identical to TS10 hwdef
 #include "wurkkos/ts10/hwdef.h"
 
+#undef VOLTAGE_SLOPE
+#define VOLTAGE_SLOPE   1010  // default = 1024, higher = higher voltage
+#undef VOLTAGE_OFFSET
+#define VOLTAGE_OFFSET  30    // cV
+

@@ -95,36 +95,66 @@ inline uint16_t mcu_adc_result() {
 }
 */
 
-inline uint8_t mcu_vdd_raw2cooked(uint16_t measurement) {
+uint8_t mcu_vdd_raw2cooked(uint16_t measurement) {
     // In : 65535 * 1.1 / Vbat
     // Out: uint8_t: Vbat * 50
     // 1.1 = ADC Vref
-    #if 0
-    // 1024 = how much ADC resolution we're using (10 bits)
-    // (12 bits available, but it costs an extra 84 bytes of ROM to calculate)
-    uint8_t vbat = (uint16_t)(10 * dV * 1.1 * 1024) / (measurement >> 6);
-    #else
-    // ... spend the extra 84 bytes of ROM for better precision
-    // 4096 = how much ADC resolution we're using (12 bits)
-    uint8_t vbat = (uint32_t)(10 * dV * 1.1 * 4096) / (measurement >> 4);
-    #endif
-    return vbat;
+    // just truncate the 16-bit version
+    // (add 0.01V to round up above a 0.02V step boundary)
+    uint8_t result = (voltage_raw2cooked16(measurement) + cV16) / 128;
+    return result;
 }
 
+// fine voltage, 0 to 10.24V in 1/6400th V steps
+uint16_t mcu_vdd_raw2cooked16(uint16_t measurement) {
+    // In : 65535 * 1.1 / Vbat
+    // Out: Vbat * 6400
+    // Out: 65535 * (Vbat / 10) / 1.024V
+    #ifdef VOLTAGE_CORRECTION_IS_OFFSET
+        uint16_t result = ((uint32_t)(1.1 * 4096 * 100 * VOLTAGE_SLOPE)
+                           / measurement)
+                        + (VOLTAGE_OFFSET * cV16);
+    #else
+        // voltage correction applies to slope, not offset
+        // (nice, but adds ~600 bytes to ROM size)
+        uint16_t result = ((uint32_t)(1.1 * 4096 * 100
+                             * (VOLTAGE_SLOPE + (3 * VOLTAGE_CORRECTION)))
+                           / measurement)
+                        + (VOLTAGE_OFFSET * cV16);
+    #endif
+    return result;
+}
 
-#ifdef USE_VOLTAGE_DIVIDER
-inline uint8_t mcu_vdivider_raw2cooked(uint16_t measurement) {
+uint8_t mcu_vdivider_raw2cooked(uint16_t measurement) {
     // In : 4095 * Vdiv / 1.1V
     // Out: uint8_t: Vbat * 50
     // Vdiv = Vbat / 4.3  (typically)
     // 1.1 = ADC Vref
-    const uint16_t adc_per_volt =
-            (((uint16_t)ADC_44 << 4) - ((uint16_t)ADC_22 << 4))
-            / (dV * (44-22));
-    uint8_t result = measurement / adc_per_volt;
+    // (add 0.01V to round up above a 0.02V step boundary)
+    uint8_t result = (voltage_raw2cooked16(measurement) + cV16) / 128;
     return result;
 }
-#endif
+
+uint16_t mcu_vdivider_raw2cooked16(uint16_t measurement) {
+    // In : 4095 * Vdiv / 1.1V
+    // Out: Vbat * 6400
+    // Out: 65535 * (Vbat / 10) / 1.024V
+    // Vdiv = Vbat / 4.3  (typically)
+    // 1.1 = ADC Vref
+    // default slope: 1024
+    // default offset: 1
+    #ifdef VOLTAGE_CORRECTION_IS_OFFSET
+        uint16_t result = ((uint32_t)(measurement) * 473 / VOLTAGE_SLOPE)
+                        + (VOLTAGE_OFFSET * cV16);
+    #else
+        // voltage correction applies to slope, not offset
+        // (nice, but makes ROM bigger)
+        uint16_t result = ((uint32_t)(measurement) * 473
+                           / (VOLTAGE_SLOPE + (-3 * VOLTAGE_CORRECTION)))
+                        + (VOLTAGE_OFFSET * cV16);
+    #endif
+    return result;
+}
 
 inline uint16_t mcu_temp_raw2cooked(uint16_t measurement) {
     // convert raw ADC values to calibrated temperature

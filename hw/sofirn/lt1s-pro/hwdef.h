@@ -85,10 +85,11 @@ enum channel_modes_e {
 #define SWITCH_VECT     PORTA_PORT_vect
 #define SWITCH_INTFLG   VPORTA.INTFLAGS
 
-// average drop across diode on this hardware
-#ifndef VOLTAGE_FUDGE_FACTOR
-#define VOLTAGE_FUDGE_FACTOR 7  // add 0.35V
-#endif
+// calibrate the battery voltage sensor here
+#undef VOLTAGE_SLOPE
+#undef VOLTAGE_OFFSET
+#define VOLTAGE_SLOPE   1022  // default = 1024, higher = higher voltage
+#define VOLTAGE_OFFSET  26    // cV
 
 
 inline void hwdef_setup() {

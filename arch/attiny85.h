@@ -57,6 +57,7 @@ inline uint16_t mcu_adc_result();
 #define voltage_raw2cooked  mcu_vdd_raw2cooked
 inline uint8_t mcu_vdd_raw2cooked(uint16_t measurement);
 inline uint8_t mcu_vdivider_raw2cooked(uint16_t measurement);
+#define VOLTAGE_CORRECTION_IS_OFFSET
 
 // return (temp in Kelvin << 6)
 #define temp_raw2cooked  mcu_temp_raw2cooked

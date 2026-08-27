@@ -68,19 +68,14 @@ enum channel_modes_e {
 
 #undef voltage_raw2cooked
 #define voltage_raw2cooked  mcu_vdivider_raw2cooked
+#undef voltage_raw2cooked16
+#define voltage_raw2cooked16  mcu_vdivider_raw2cooked16
 
-// Raw ADC readings at 4.4V and 2.2V
-// calibrate the voltage readout here
-// estimated / calculated values are:
-//   (voltage - D1) * (R2/(R2+R1) * 1024 / 1.1)
-// Resistors are 300,000 and 100,000
-#ifndef ADC_44
-#define ADC_44 (4*1023)  // raw value at 4.40V
-#endif
-#ifndef ADC_22
-#define ADC_22 (4*512)  // raw value at 2.20V
-#endif
-
+// calibrate the battery voltage sensor here
+#undef VOLTAGE_SLOPE
+#undef VOLTAGE_OFFSET
+#define VOLTAGE_SLOPE   1091  // default = 1024, higher = lower voltage
+#define VOLTAGE_OFFSET  0     // cV
 
 
 inline void hwdef_setup() {

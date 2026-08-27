@@ -6,10 +6,6 @@
 #define HWDEF_H  wurkkos/ts25/hwdef.h
 #include "wurkkos/anduril.h"
 
-// voltage readings were a little high with the Q8 value
-#undef VOLTAGE_FUDGE_FACTOR
-#define VOLTAGE_FUDGE_FACTOR 5  // add 0.25V, not 0.35V
-
 #define RAMP_SIZE 150
 
 #if 0  // 2022 version

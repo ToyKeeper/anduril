@@ -213,18 +213,6 @@ bool gradual_tick_hsv(uint8_t gt) {
 
 ///// Voltage measurement and weak battery detection
 
-#ifdef USE_VOLTAGE_DIVIDER
-uint8_t voltage_raw2cooked(uint16_t measurement) {
-    // In : 65535 * BATTLVL / 1.024V
-    // Out: uint8_t: Vbat * 50
-    // BATTLVL = Vbat * (100.0/(330+100)) = Vbat / 4.3
-    // So, Out = In * 4.3 / 1280
-    uint8_t result = (uint32_t)(measurement + (65535 * 4 / 1024))
-                     * 43 / 12800;
-    return result;
-}
-#endif
-
 #ifdef USE_WEAK_BATTERY_PROTECTION
 uint8_t quick_volt_measurement() {
     // wait for next hardware measurement
