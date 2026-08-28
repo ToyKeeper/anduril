@@ -30,6 +30,10 @@ output is unstable so there is very visible ripple.  The user can either raise
 the ramp floor to a level high enough to avoid these issues, or learn to live
 with the ripple and preflash.
 
+**Voltage**: This light doesn't have 16-bit voltage support yet.  Mostly
+because I can't seem to find my flashing adapter with swappable pins.  So
+I don't have a practical way to flash this thing to test and calibrate it.
+
 LoneOceans has some extra notes here, which mostly apply only to older versions
 of the code: https://budgetlightforum.com/t/anduril-2/62656/531
 

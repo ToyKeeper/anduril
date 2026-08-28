@@ -19,21 +19,14 @@
 #define ADMUX_VOLTAGE_DIVIDER  0b10000110
 #undef voltage_raw2cooked
 #define voltage_raw2cooked  mcu_vdivider_raw2cooked
+#undef voltage_raw2cooked16
+#define voltage_raw2cooked16  mcu_vdivider_raw2cooked16
 
 #define ADC_PRSCL   0x07    // clk/128
 
-// Raw ADC readings at 4.4V and 2.2V
-// calibrate the voltage readout here
-// estimated / calculated values are:
-//   (voltage - D1) * (R2/(R2+R1) * 1024 / 1.1)
-// D1, R1, R2 = 0, 330, 100
-#ifndef ADC_44
-//#define ADC_44 (4*981)  // raw value at 4.40V
-#define ADC_44 (4*967)  // manually tweaked so 4.16V will blink out 4.2
-#endif
-#ifndef ADC_22
-//#define ADC_22 (4*489)  // raw value at 2.20V
-#define ADC_22 (4*482)  // manually tweaked so 4.16V will blink out 4.2
-#endif
-
+// calibrate the battery voltage sensor here
+#undef VOLTAGE_SLOPE
+#undef VOLTAGE_OFFSET
+#define VOLTAGE_SLOPE   1046  // default = 1024, higher = lower voltage
+#define VOLTAGE_OFFSET  0     // cV
 

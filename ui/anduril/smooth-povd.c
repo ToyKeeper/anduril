@@ -63,11 +63,9 @@ uint8_t smooth_povd_state(Event event, uint16_t arg) {
             adc_voltage_mode();
             return EVENT_HANDLED;
         }
-        else {  // update 'voltage'
-            ADC_voltage_handler();
-            // speed up measurement
-            // (sync to latest raw value, then lowpass until next tick)
-            adc_smooth[0] = adc_raw[0];
+        else {
+            // update cooked voltage measurement
+            v16_force_update();
         }
 
         // wait a moment before starting

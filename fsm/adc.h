@@ -6,7 +6,15 @@
 
 // voltage is 0.00V to 5.10V in 0.02V steps, from 0 to 255
 // so one deci-Volt is 5 steps
-#define dV 5
+#define dV    5
+// high-res voltage is 640 steps per 0.1V or 64 steps per 0.01V
+#define dV16  640
+#define cV16  64
+#define v8to16(v8)   ((uint16_t)v8*128)
+#define v16to8(v16)  (v16>>7)
+// convert "351" to internal representation of 3.51V in 8 or 16 bits
+#define Vto8(v)  (v>>1)
+#define Vto16(v) (v*cV16)
 
 #if defined(USE_LVP) || defined(USE_THERMAL_REGULATION)
 // use raw value instead of lowpassed value for the next N measurements
@@ -21,19 +29,22 @@ volatile uint8_t adc_reset = 2;
 #endif
 // low-battery threshold in volts * 50
 #ifndef VOLTAGE_LOW
-#define VOLTAGE_LOW (29*dV)
+#define VOLTAGE_LOW  Vto8(290)
 #endif
 // battery is low but not critical
 #ifndef VOLTAGE_RED
-#define VOLTAGE_RED (33*dV)
+#define VOLTAGE_RED  Vto8(330)
 #endif
-// MCU sees voltage 0.X volts lower than actual, add X/2 to readings
-#ifndef VOLTAGE_FUDGE_FACTOR
-#ifdef USE_VOLTAGE_DIVIDER
-#define VOLTAGE_FUDGE_FACTOR 0
-#else
-#define VOLTAGE_FUDGE_FACTOR 5
-#endif
+// has been removed / deprecated except on attiny85
+#if ROM_SIZE < 10000
+    // MCU sees voltage 0.X volts lower than actual, add X/2 to readings
+    #ifndef VOLTAGE_FUDGE_FACTOR
+        #ifdef USE_VOLTAGE_DIVIDER
+            #define VOLTAGE_FUDGE_FACTOR 0
+        #else
+            #define VOLTAGE_FUDGE_FACTOR 5
+        #endif
+    #endif
 #endif
 
 
@@ -55,14 +66,18 @@ void adc_deferred();  // do the actual ADC-related calculations
 
 static void ADC_voltage_handler();
 uint8_t voltage = 0;
+#ifdef USE_VOLTAGE16
+uint16_t voltage16 = 0;
+void v16_force_update();
+#endif
 #ifdef USE_VOLTAGE_CORRECTION
     #ifdef USE_CFG
-        #define VOLT_CORR cfg.voltage_correction
+        // range: -0.20V to +0.20V in 0.01V steps,
+        // where "1" is -0.19V, "20" is 0.00V, and "40" is +0.20V
+        #define VOLTAGE_CORRECTION  (cfg.voltage_correction - 20)
     #else
-        // same 0.05V units as fudge factor,
-        // but 7 is neutral, and the expected range is from 1 to 13
-        uint8_t voltage_correction = 7;
-        #define VOLT_CORR voltage_correction
+        const uint8_t voltage_correction = 0;
+        #define VOLTAGE_CORRECTION  voltage_correction
     #endif
 #endif
 #ifdef USE_LVP

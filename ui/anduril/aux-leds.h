@@ -40,25 +40,25 @@ const PROGMEM uint8_t voltage_colors[] = {
         0, 0, // black
     #ifdef DUAL_VOLTAGE_FLOOR
     // AA / NiMH voltages
-     8*dV, 0, // black
-     9*dV, 1, // R
-    10*dV, 2, // R+G
-    11*dV, 3, //   G
-    12*dV, 4, //   G+B
-    13*dV, 5, //     B
-    14*dV, 6, // R + B
-    16*dV, 7, // R+G+B
-    20*dV, 0, // black
+    Vto8( 80), 0, // black
+    Vto8( 90), 1, // R
+    Vto8(100), 2, // R+G
+    Vto8(110), 3, //   G
+    Vto8(120), 4, //   G+B
+    Vto8(130), 5, //     B
+    Vto8(140), 6, // R + B
+    Vto8(160), 7, // R+G+B
+    Vto8(200), 0, // black
     #endif
     // li-ion voltages
-    29*dV, 0, // black
-    30*dV, 1, // R
-    33*dV, 2, // R+G
-    35*dV, 3, //   G
-    37*dV, 4, //   G+B
-    39*dV, 5, //     B
-    41*dV, 6, // R + B
-    44*dV, 7, // R+G+B  // skip; looks too similar to G+B
+    Vto8(290), 0, // black
+    Vto8(300), 1, // R
+    Vto8(330), 2, // R+G
+    Vto8(350), 3, //   G
+    Vto8(370), 4, //   G+B
+    Vto8(390), 5, //     B
+    Vto8(410), 6, // R + B
+    Vto8(440), 7, // R+G+B  // skip; looks too similar to G+B
       255, 7, // R+G+B
 };
 

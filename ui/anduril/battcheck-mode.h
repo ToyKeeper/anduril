@@ -3,7 +3,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
+#ifdef USE_SMOOTH_POVD
+// show color instead of blinking numbers
+uint8_t batt_color_mode = 0;
+#endif
+
 uint8_t battcheck_state(Event event, uint16_t arg);
+void battcheck_iter();
 
 #if defined(USE_VOLTAGE_CORRECTION) || defined(USE_POST_OFF_VOLTAGE) || defined(USE_AUX_THRESHOLD_CONFIG)
 void voltage_config_save(uint8_t step, uint8_t value);

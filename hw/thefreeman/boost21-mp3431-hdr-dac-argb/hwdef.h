@@ -100,10 +100,11 @@ enum channel_modes_e {
 #define SWITCH_INTFLG   VPORTC.INTFLAGS
 #endif
 
-// average drop across diode on this hardware
-#ifndef VOLTAGE_FUDGE_FACTOR
-#define VOLTAGE_FUDGE_FACTOR 0  // using a PFET so no appreciable drop
-#endif
+// calibrate the battery voltage sensor here
+#undef VOLTAGE_SLOPE
+#undef VOLTAGE_OFFSET
+#define VOLTAGE_SLOPE   1020  // default = 1024, higher = higher voltage
+#define VOLTAGE_OFFSET  0  // 0 cV
 
 // this light has RGB aux LEDs
 #define USE_AUXRGB_LEDS

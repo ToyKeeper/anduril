@@ -128,9 +128,9 @@ Config cfg = {
     ///// voltage and temperature
 
     #ifdef USE_VOLTAGE_CORRECTION
-        // same 0.05V units as fudge factor,
-        // but 7 is neutral, and the expected range is from 1 to 13
-        .voltage_correction = 7,
+        // range: -0.20V to +0.20V in 0.01V steps
+        // 10 = -0.10V, 20 = +0.00V, 30 = +0.10V
+        .voltage_correction = 20,
     #endif
     #ifdef USE_THERMAL_REGULATION
         .therm_ceil = DEFAULT_THERM_CEIL,

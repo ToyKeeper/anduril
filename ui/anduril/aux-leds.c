@@ -71,11 +71,13 @@ RGB_t voltage_to_rgb_t (rgb_uint_t brightness) {
     // by doing linear interpolation between voltage_colors[] entries
 
     // adjust down slightly to better match non-smooth povd colors
-    uint8_t volts = voltage - (voltage / (6*dV));
+    uint16_t volts = voltage16 - (voltage16 / 30);
 
     RGB_t color;
     uint8_t i;
-    for (i = 0;  volts >= pgm_read_byte(voltage_colors + i);  i += 2) {}
+    for (i = 0;
+         volts >= v8to16(pgm_read_byte(voltage_colors + i));
+         i += 2) {}
     uint8_t voltage_low   = pgm_read_byte(voltage_colors + (i - 2));
     uint8_t color_num_low = pgm_read_byte(voltage_colors + (i - 2) + 1);
     uint8_t voltage_hi    = pgm_read_byte(voltage_colors + (i + 0));
@@ -84,16 +86,19 @@ RGB_t voltage_to_rgb_t (rgb_uint_t brightness) {
     uint8_t color_hi  = pgm_read_byte(rgb_led_colors + color_num_hi);
     // 0 to N-1 where 0 = low color and N = hi color
     // (N is 5 minimum, or 20 max usually, but may occasionally be 50+)
-    uint8_t steps = voltage_hi - voltage_low;
-    rgb_uint_t levels_per_step = brightness / steps;
-    if (brightness && (! levels_per_step)) levels_per_step = 1;
-    uint8_t ratio = volts - voltage_low;
-    color.r = (levels_per_step * ratio * (color_hi & 0b00000001))
-        + (levels_per_step * (steps - ratio) * (color_low & 0b00000001));
-    color.g = (levels_per_step * ratio * ((color_hi & 0b00000100) >> 2))
-        + (levels_per_step * (steps - ratio) * ((color_low & 0b00000100) >> 2));
-    color.b = (levels_per_step * ratio * ((color_hi & 0b00010000) >> 4))
-        + (levels_per_step * (steps - ratio) * ((color_low & 0b00010000) >> 4));
+    const uint16_t steps = 256;
+    // ratio = 0 to 256, for the balance between prev and next color
+    uint8_t ratio = (uint16_t)((volts - v8to16(voltage_low))<<1)
+                  / (voltage_hi - voltage_low);
+    color.r = (((uint16_t)brightness * ratio * (color_hi & 0b00000001))
+        + ((uint16_t)brightness * (steps - ratio) * (color_low & 0b00000001)))
+        / steps;
+    color.g = (((uint16_t)brightness * ratio * ((color_hi & 0b00000100) >> 2))
+        + ((uint16_t)brightness * (steps - ratio) * ((color_low & 0b00000100) >> 2)))
+        / steps;
+    color.b = (((uint16_t)brightness * ratio * ((color_hi & 0b00010000) >> 4))
+        + ((uint16_t)brightness * (steps - ratio) * ((color_low & 0b00010000) >> 4)))
+        / steps;
 
     // scale to requested brightness
     //color.r = (uint16_t)color.r * brightness / RGB_MAX;

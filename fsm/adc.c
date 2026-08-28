@@ -30,23 +30,6 @@ void adc_voltage_mode() {
 }
 
 
-#if 0
-#ifdef USE_VOLTAGE_DIVIDER
-static inline uint8_t calc_voltage_divider(uint16_t value) {
-    // use 9.7 fixed-point to get sufficient precision
-    uint16_t adc_per_volt = ((ADC_44<<5) - (ADC_22<<5)) / (44-22);
-    // shift incoming value into a matching position
-    uint8_t result = ((value / adc_per_volt)
-                     + VOLTAGE_FUDGE_FACTOR
-                     #ifdef USE_VOLTAGE_CORRECTION
-                        + VOLT_CORR - 7
-                     #endif
-                     ) >> 1;
-    return result;
-}
-#endif
-#endif
-
 // Each full cycle runs ~2X per second with just voltage enabled,
 // or ~1X per second with voltage and temperature.
 #if defined(USE_LVP) && defined(USE_THERMAL_REGULATION)
@@ -166,6 +149,21 @@ void adc_deferred() {
 
 
 #ifdef USE_LVP
+#ifdef USE_VOLTAGE16
+void v16_force_update() {
+    // assume full battery at boot
+    static uint16_t prev_v16 = Vto16(420);
+    // update voltage16 from hardware measurements
+    ADC_voltage_handler();
+    // averaging lowpass filter
+    voltage16 = (prev_v16/2) + (prev_v16/4) + (prev_v16/8) + (voltage16/8);
+    prev_v16 = voltage16;
+    // speed up measurement
+    // (sync to latest raw value, then regular lowpass until next tick)
+    adc_smooth[0] = adc_raw[0];
+}
+#endif  // #ifdef USE_VOLTAGE16
+
 static void ADC_voltage_handler() {
     // rate-limit low-voltage warnings to a max of 1 per N seconds
     static uint8_t lvp_timer = 0;
@@ -212,11 +210,25 @@ static void ADC_voltage_handler() {
     // convert raw ADC value to FSM voltage units: Volts * 50
     // 0 .. 250 = 0.0V .. 5.0V
     voltage = voltage_raw2cooked(measurement)
-              + (VOLTAGE_FUDGE_FACTOR << 1)
-              #ifdef USE_VOLTAGE_CORRECTION
-                 + ((VOLT_CORR - 7) << 1)
-              #endif
-              ;
+            #ifdef VOLTAGE_FUDGE_FACTOR
+                + (VOLTAGE_FUDGE_FACTOR << 1)
+            #endif
+            #if defined(USE_VOLTAGE_CORRECTION) && defined(VOLTAGE_CORRECTION_IS_OFFSET)
+                + (VOLTAGE_CORRECTION >> 1)
+            #endif
+            ;
+    #ifdef USE_VOLTAGE16
+    // convert raw ADC value to FSM voltage16 units: Volts * 6400
+    // 0 .. 65535 = 0.0V .. 10.24V
+    voltage16 = voltage_raw2cooked16(measurement)
+            #ifdef VOLTAGE_FUDGE_FACTOR
+                + (VOLTAGE_FUDGE_FACTOR << 8)
+            #endif
+            #if defined(USE_VOLTAGE_CORRECTION) && defined(VOLTAGE_CORRECTION_IS_OFFSET)
+                + (VOLTAGE_CORRECTION << 6)
+            #endif
+            ;
+    #endif
 
     // if low, callback EV_voltage_low / EV_voltage_critical
     //         (but only if it has been more than N seconds since last call)
@@ -392,46 +404,56 @@ static void ADC_temperature_handler() {
 #ifdef USE_BATTCHECK
 #ifdef BATTCHECK_4bars
 PROGMEM const uint8_t voltage_blinks[] = {
-    30*dV,
-    35*dV,
-    38*dV,
-    40*dV,
-    42*dV,
+    Vto8(300),
+    Vto8(350),
+    Vto8(380),
+    Vto8(400),
+    Vto8(420),
     255,
 };
 #endif
 #ifdef BATTCHECK_6bars
 PROGMEM const uint8_t voltage_blinks[] = {
-    30*dV,
-    34*dV,
-    36*dV,
-    38*dV,
-    40*dV,
-    41*dV,
-    43*dV,
+    Vto8(300),
+    Vto8(340),
+    Vto8(360),
+    Vto8(380),
+    Vto8(400),
+    Vto8(410),
+    Vto8(430),
     255,
 };
 #endif
 #ifdef BATTCHECK_8bars
 PROGMEM const uint8_t voltage_blinks[] = {
-    30*dV,
-    33*dV,
-    35*dV,
-    37*dV,
-    38*dV,
-    39*dV,
-    40*dV,
-    41*dV,
-    42*dV,
+    Vto8(300),
+    Vto8(330),
+    Vto8(350),
+    Vto8(370),
+    Vto8(380),
+    Vto8(390),
+    Vto8(400),
+    Vto8(410),
+    Vto8(420),
     255,
 };
 #endif
 void battcheck() {
     #ifdef BATTCHECK_VpT
-        blink_num(voltage / dV);
-        #ifdef USE_EXTRA_BATTCHECK_DIGIT
-            // 0.02V precision, 0 1 2 3 4 remainder -> .00 .02 .04 .06 .08V
-            blink_num((voltage % dV) * (10/dV));
+        #ifdef USE_VOLTAGE16
+            // 3.69V -> 36
+            blink_num(voltage16 / dV16);
+            #ifdef USE_EXTRA_BATTCHECK_DIGIT
+                // 0.01V precision
+                // 3.69V -> 9
+                blink_num((voltage16 % dV16) / cV16);
+            #endif
+        #else
+            blink_num(voltage / dV);
+            #ifdef USE_EXTRA_BATTCHECK_DIGIT
+                // 0.02V precision, 0 1 2 3 4 remainder -> .00 .02 .04 .06 .08V
+                blink_num((voltage % dV) * (10/dV));
+            #endif
         #endif
     #else
         uint8_t i;

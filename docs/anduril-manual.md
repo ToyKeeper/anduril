@@ -438,13 +438,16 @@ In more detail, this is what each blinky / utility mode does:
 Blinks out the battery voltage per cell.  Full is 4.20V, empty is
 about 3.00V.  The light blinks the whole-number digit first, pauses,
 then blinks out the "tenths" digit, pauses, then blinks out the "hundredths"
-digit, in 0.02V steps.  So for 4.16V, it would be "4 blinks, 1 blink,
+digit, in 0.01V steps.  So for 4.16V, it would be "4 blinks, 1 blink,
 6 blinks".  Then if it is in Advanced UI, it pauses for a bit longer and
 repeats.  In Simple UI, it turns off after one readout.
 
 A "zero" digit is represented by a very quick blink.
 
 The battery check format has changed a few times:
+
+  - For Anduril 2 from 2026-09 or later, the battery voltage resolution is
+    0.01V steps.
 
   - For Anduril 2 from 2024-04 or later, the battery voltage resolution is
     0.02V steps (the last digit can be 0, 2, 4, 6, or 8).
@@ -467,21 +470,20 @@ The voltage config menu has these settings:
 
   1. Voltage correction factor.  This adjusts the battery
      measurement sensor, allowing the user to add or subtract up to
-     0.30V in 0.05V steps.  Click N times to enter a value:
+     0.20V in 0.01V steps.  Click N times to enter a value:
 
-     `1C`: -0.30V  
-     `2C`: -0.25V  
-     `3C`: -0.20V  
-     `4C`: -0.15V  
-     `5C`: -0.10V  
-     `6C`: -0.05V  
-     `7C`: default, 0V  
-     `8C`: +0.05V  
-     `9C`: +0.10V  
-     `10C`: +0.15V  
-     `11C`: +0.20V  
-     `12C`: +0.25V  
-     `13C`: +0.30V
+     ...  
+     `17`: -0.03V  
+     `18`: -0.02V  
+     `19`: -0.01V  
+     `20`: +0.00V (default)  
+     `21`: +0.01V  
+     `22`: +0.02V  
+     `23`: +0.03V  
+     ...
+
+     It is recommended to use `1H` to add 10, then use `1C` for 1.
+     For example, if you want +0.03V, do `1H` twice then `1C` three times.
 
   2. Post-off voltage display timeout.  (only on lights with RGB aux)
      This setting determines how many seconds the RGB aux LEDs
@@ -1202,11 +1204,11 @@ This is a table of all button mappings in Anduril, in one place:
 | Batt check     | Full   | `3C`    | Next channel mode (for number blinks only)
 | Batt check     | Full   | `7H`    | Voltage config menu
 |                |        |         | 1: voltage correction factor
-|                |        |         | ... 5: -0.10V
-|                |        |         | ... 6: -0.05V
-|                |        |         | ... 7: no correction
-|                |        |         | ... 8: +0.05V
-|                |        |         | ... 9: +0.10V
+|                |        |         | ... 18: -0.02V
+|                |        |         | ... 19: -0.01V
+|                |        |         | ... 20: no correction
+|                |        |         | ... 21: +0.01V
+|                |        |         | ... 22: +0.02V
 |                |        |         | 2: post-off voltage display seconds
 |                |        |         | 3: aux low ramp level
 |                |        |         | ... 0: disabled

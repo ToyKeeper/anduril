@@ -5,11 +5,9 @@
 
 // For flashlights using the Loneoceans Lume-X1-40W boost driver (AVR32DD20)
 // - Same firmware for 6V, 9V, or 12V configs
-// same as loneoceans lume-x1-avr32dd20 but with Hank-specific defaults
 
 #define HWDEF_H hank/lume-x1/hwdef.h
 #include "hank/anduril.h"
-
 
 
 //***************************************

@@ -64,11 +64,6 @@ enum channel_modes_e {
 #define SWITCH_VECT     PORTB_PORT_vect
 #define SWITCH_INTFLG   VPORTB.INTFLAGS
 
-// average drop across diode on this hardware
-#ifndef VOLTAGE_FUDGE_FACTOR
-#define VOLTAGE_FUDGE_FACTOR 0  // using a PFET so no appreciable drop
-#endif
-
 // lighted button
 #define USE_AUX1_LED
 #define AUX1_LED_PIN   PIN5_bp
