@@ -48,15 +48,13 @@
 #define SIMPLE_UI_CEIL       125
 #define SIMPLE_UI_STEPS      5
 
-#define STROBE_BRIGHTNESS  MAX_LEVEL
-
 // stop panicking at ~50% power or ~2000 lm
-#define THERM_FASTER_LEVEL 130
+#define THERM_FASTER_LEVEL  130
 
 #define THERM_CAL_OFFSET 5
 
 
-// AUX
+// AUX + channel modes
 
 #define USE_AUX_THRESHOLD_CONFIG
 
@@ -77,6 +75,8 @@
 
 // the default of 26 looks a bit rough, so increase it to make it smoother
 #define CANDLE_AMPLITUDE 33
+
+#define STROBE_BRIGHTNESS  MAX_LEVEL
 
 // don't blink while ramping
 #ifdef BLINK_AT_RAMP_MIDDLE

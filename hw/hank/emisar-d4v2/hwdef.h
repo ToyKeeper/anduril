@@ -87,13 +87,6 @@ enum channel_modes_e {
 #define SWITCH_VECT  PCINT0_vect  // ISR for PCINT[7:0]
 
 
-#define ADC_PRSCL   0x07    // clk/128
-
-// average drop across diode on this hardware
-#ifndef VOLTAGE_FUDGE_FACTOR
-#define VOLTAGE_FUDGE_FACTOR 4  // add 0.20V  (measured 0.22V)
-#endif
-
 // this light has RGB aux LEDs
 #define USE_AUXRGB_LEDS
 
@@ -117,6 +110,16 @@ enum channel_modes_e {
 #define AUX1_LED_PORT  PORTA
 #define AUX1_LED_DDR   DDRA
 #define AUX1_LED_PUE   PUEA
+
+
+#define ADC_PRSCL   0x07    // clk/128
+
+// calibrate the battery voltage sensor here
+#undef VOLTAGE_SLOPE
+#undef VOLTAGE_OFFSET
+#define VOLTAGE_SLOPE   1027  // default = 1024, higher = higher voltage
+#define VOLTAGE_OFFSET  17    // cV
+
 
 
 inline void hwdef_setup() {

@@ -214,18 +214,3 @@ bool gradual_tick_hsv(uint8_t gt) {
     return gradual_adjust_rgb(color.r, color.g, color.b);
 }
 
-
-///// Voltage measurement and weak battery detection
-
-uint8_t voltage_raw2cooked(uint16_t measurement) {
-    // In : 65535 * BATTLVL / 1.024V
-    // Out: uint8_t: Vbat * 50
-    // BATTLVL = Vbat * (100.0/(330+100)) = Vbat / 4.3
-    // So, Out = In * 4.3 / 1280
-    // (plus a bit of fudging to fix the slope and offset,
-    //  based on measuring actual hardware)
-    uint8_t result = (uint32_t)(measurement + (65535 * 4 / 1024))
-                     * 43 / 12880;
-    return result;
-}
-

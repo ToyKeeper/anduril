@@ -139,22 +139,58 @@ inline uint16_t mcu_adc_result() {
     return ADC0.RES;
 }
 
-inline uint8_t mcu_vdd_raw2cooked(uint16_t measurement) {
+uint8_t mcu_vdd_raw2cooked(uint16_t measurement) {
     // In : 65535 * (Vbat / 10) / 1.024V
     // Out: uint8_t: Vbat * 50
-    // (add 80 to round up near a boundary)
-    uint8_t vbat50 = (uint16_t)(measurement + 64) / 128;
-    return vbat50;
+    // just truncate the 16-bit version
+    // (add 0.01V to round up above a 0.02V step boundary)
+    uint8_t result = (voltage_raw2cooked16(measurement) + cV16) / 128;
+    return result;
 }
 
-#if 0
-inline uint16_t mcu_vdd_raw2fine(uint16_t measurement) {
+// fine voltage, 0 to 10.24V in 1/6400th V steps
+uint16_t mcu_vdd_raw2cooked16(uint16_t measurement) {
     // In : 65535 * (Vbat / 10) / 1.024V
-    // Out: 65535 * (Vbat / 10) / 1.024V
+    // Out: Vbat * 6400
+    // (same as input, since 65535 / 10.24 = 6400)
     // This MCU's native format is already correct
-    return measurement;
+    // (but it might need slight tweaking)
+    #if VOLTAGE_CORRECTION_IS_OFFSET
+        return ((uint32_t)measurement
+                * VOLTAGE_SLOPE / 1024)
+               + (VOLTAGE_OFFSET * cV16);
+    #else
+        return ((uint32_t)measurement
+                * (VOLTAGE_SLOPE + (3 * VOLTAGE_CORRECTION)) / 1024)
+               + (VOLTAGE_OFFSET * cV16);
+    #endif
 }
-#endif
+
+uint8_t mcu_vdivider_raw2cooked(uint16_t measurement) {
+    // In : 65535 * (Vbat / 10) / 1.024V
+    // Out: uint8_t: Vbat * 50
+    // (add 0.01V to round up above a 0.02V step boundary)
+    uint8_t result = (voltage_raw2cooked16(measurement) + cV16) / 128;
+    return result;
+}
+
+uint16_t mcu_vdivider_raw2cooked16(uint16_t measurement) {
+    // In : 65535 * BATTLVL / 1.024V
+    // Out: uint16_t: Vbat * 6400
+    // BATTLVL = Vbat * (100.0/(330+100)) = Vbat / 4.3
+    // So, Out = (In * 4.3 / 10) + (offset)
+    // (plus a bit of fudging to fix the slope and offset,
+    //  based on measuring actual hardware)
+    #if VOLTAGE_CORRECTION_IS_OFFSET
+        uint16_t result = ((uint32_t)(measurement) * 430 / VOLTAGE_SLOPE)
+                        + (VOLTAGE_OFFSET * cV16);
+    #else
+        uint16_t result = ((uint32_t)(measurement) * 430
+                           / (VOLTAGE_SLOPE + (-3 * VOLTAGE_CORRECTION)))
+                        + (VOLTAGE_OFFSET * cV16);
+    #endif
+    return result;
+}
 
 inline uint16_t mcu_temp_raw2cooked(uint16_t measurement) {
     // convert raw ADC values to calibrated temperature

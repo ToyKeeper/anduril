@@ -146,6 +146,8 @@
 #if ROM_SIZE > 10000
     // battcheck displays 1.25V instead of 1.2V
     #define USE_EXTRA_BATTCHECK_DIGIT
+    // high-resolution voltage, 16 bits
+    #define USE_VOLTAGE16
 #endif
 // allow the user to calibrate the voltage readings?
 // (adjust in 0.05V increments from -0.30V to +0.30V)

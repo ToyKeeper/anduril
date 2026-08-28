@@ -63,10 +63,11 @@ enum channel_modes_e {
 #define SWITCH_VECT     PORTB_PORT_vect
 #define SWITCH_INTFLG   VPORTB.INTFLAGS
 
-// average drop across diode on this hardware
-#ifndef VOLTAGE_FUDGE_FACTOR
-#define VOLTAGE_FUDGE_FACTOR 8  // 4 = add 0.20V
-#endif
+// calibrate the battery voltage sensor here
+#undef VOLTAGE_SLOPE
+#undef VOLTAGE_OFFSET
+#define VOLTAGE_SLOPE   1028  // default = 1024, higher = higher voltage
+#define VOLTAGE_OFFSET  30    // cV
 
 // lighted button (single channel, passive)
 #define USE_AUX1_LED

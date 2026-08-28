@@ -1,4 +1,4 @@
-Models: 83
+Models: 84
 
 Model     MCU         Name
 -----     ---         ----
@@ -37,7 +37,7 @@ Model     MCU         Name
 0261      attiny1634  hank-noctigon-k9.3
 0262      attiny1634  hank-noctigon-k9.3-nofet
 0263      attiny1634  hank-noctigon-k9.3-219
-0264      attiny1634  hank-dm1.12
+0264      attiny1634  hank-dm1.12  (may ship with 0261)
 0265      attiny1634  noctigon-k9.3-tintramp-nofet  (old, use 0262)
 0266      attiny1634  noctigon-k9.3-tintramp-fet    (old, use 0261)
 0267      attiny1634  noctigon-k9.3-tintramp-219    (old, use 0263)
@@ -76,16 +76,44 @@ Model     MCU         Name
 0712      attiny1616  wurkkos-ts10-rgbaux-lowfet
 0713      attiny1616  wurkkos-ts10-rgbaux
 0714      attiny1616  wurkkos-ts10
-0715      attiny1616  wurkkos-ts25 (may need 0716 / 0717 on some models)
-0716      attiny1616  wurkkos-fc13 (may ship with 0715) (also, TS30S Pro)
-0717      attiny1616  wurkkos-ts11 (may ship with 0715)
+0715      attiny1616  wurkkos-ts25  (may need 0716 / 0717 on some models)
+0716      attiny1616  wurkkos-fc13  (may ship with 0715) (also, TS30S Pro)
+0717      attiny1616  wurkkos-ts11  (may ship with 0715)
 0721      attiny1616  wurkkos-ts26
 1618      attiny1616  gchart-fet1-t1616
 1630      attiny1616  thefreeman-lin16dac
 1631      attiny1616  thefreeman-boost21-mp3431-hdr-dac-argb
 1632      attiny1616  thefreeman-boost-fwaa-mp3432-hdr-dac-rgb
 1632dd20  avr32dd20   thefreeman-avr32dd20-devkit
+1969-07-20  (any)     (error code: somebody built the firmware wrong)
 
-Duplicates:
 
-Missing:
+CHOOSING MODEL NUMBERS FOR NEW LIGHTS
+=====================================
+
+A few guidelines:
+
+- Don't use zero (0) digits in the middle of a model number.
+  People have a hard time telling the difference between a 0 and a 1,
+  because it's just a short blink vs a slightly longer blink.
+  So don't use a 0 except as a prefix.
+
+- Don't use anything which looks like a year.
+  (don't use anything from 1900 to 29xx)
+
+- Use only digits 1 to 9 for production models.
+
+- Use 2 digits for the brand and 2 digits for the product number.
+  If a brand runs out of space in their model number range,
+  it is okay to use digits A to F, or potentially add another digit.
+  11-99: allows 70 brands, each with 81 product numbers
+    (19-29 are excluded from brands due to looking like years)
+  11-FF: allows 214 brands, each with 225 product numbers
+  111-999: allows an extension of 729 extra products, 810 total per brand
+  111-FFF: allows extension of 3375 extra products, 3600 total per brand
+
+Exceptions are okay for dev lights and custom specialty lights, but these
+rules should be followed for any models which are expected to be produced
+commercially.  The `1632dd20` model number, for example, is a dev-only
+design where only a few were ever made, so it is exempt from the rules.
+

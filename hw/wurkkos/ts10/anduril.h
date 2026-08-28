@@ -7,10 +7,6 @@
 #define HWDEF_H  wurkkos/ts10/hwdef.h
 #include "wurkkos/anduril.h"
 
-// voltage readings were a little high with the Q8 value
-#undef VOLTAGE_FUDGE_FACTOR
-#define VOLTAGE_FUDGE_FACTOR 5  // add 0.25V, not 0.35V
-
 #define RAMP_SIZE 150
 
 #if 0  // 2022 version by SammysHP, smooth but only level 1/150 is underclocked

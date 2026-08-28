@@ -94,14 +94,14 @@ uint8_t ch1_pwm, ch1_dsm;
 // don't use the default VDD converter
 #undef voltage_raw2cooked
 #define voltage_raw2cooked  mcu_vdivider_raw2cooked
+#undef voltage_raw2cooked16
+#define voltage_raw2cooked16  mcu_vdivider_raw2cooked16
 
-// Raw ADC readings at 4.4V and 2.2V
-// calibrate the voltage readout here
-// estimated / calculated values are:
-//   (voltage - D1) * (R2/(R2+R1) * 4096 / 1.1)
-// Resistors are 330k and 100k
-#define ADC_44  4095  // raw value at 4.40V
-#define ADC_22  2048  // raw value at 2.20V
+// calibrate the battery voltage sensor here
+#undef VOLTAGE_SLOPE
+#undef VOLTAGE_OFFSET
+#define VOLTAGE_SLOPE   1094  // default = 1024, higher = lower voltage
+#define VOLTAGE_OFFSET  0     // cV
 
 // this light has RGB aux LEDs
 #define USE_AUXRGB_LEDS

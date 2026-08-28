@@ -80,6 +80,9 @@
 #undef BLINK_AT_RAMP_MIDDLE
 #endif
 
+// battery calibration differs from TS25 parent code
+#define VOLTAGE_SLOPE_OVERRIDE  1006
+
 // enable factory reset on 13H without loosening tailcap (required)
 #define USE_SOFT_FACTORY_RESET
 

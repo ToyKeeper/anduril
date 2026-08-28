@@ -120,8 +120,17 @@ uint8_t ch1_pwm, ch1_dsm;
 #define ADMUX_VOLTAGE_DIVIDER 0b00000101
 #define ADC_PRSCL   0x06    // clk/64
 
+// FIXME: no 16-bit voltage support here,
+//        since this host is difficult to flash and test and calibrate
+#define USE_LEGACY_VOLTAGE_CODE
 #undef voltage_raw2cooked
-#define voltage_raw2cooked  mcu_vdivider_raw2cooked
+//#define voltage_raw2cooked  mcu_vdivider_raw2cooked
+uint8_t hwdef_vdivider_raw2cooked(uint16_t measurement);
+#define voltage_raw2cooked  hwdef_vdivider_raw2cooked
+#undef voltage_raw2cooked16
+//#define voltage_raw2cooked16  mcu_vdivider_raw2cooked16
+uint16_t hwdef_vdivider_raw2cooked16(uint16_t measurement);
+#define voltage_raw2cooked16  hwdef_vdivider_raw2cooked16
 
 // Raw ADC readings at 4.4V and 2.2V
 // calibrate the voltage readout here

@@ -106,7 +106,14 @@ enum channel_modes_e {
 #define DUAL_VOLTAGE_LOW_LOW   ( 7*dV)  // the lower voltage range's danger zone 0.7 volts (NiMH)
 // don't use the default VDD converter
 #undef voltage_raw2cooked
+#undef voltage_raw2cooked16
 #define voltage_raw2cooked  mcu_vdivider_raw2cooked
+#define voltage_raw2cooked16  mcu_vdivider_raw2cooked16
+// calibrate the battery voltage sensor here
+#undef VOLTAGE_SLOPE
+#undef VOLTAGE_OFFSET
+#define VOLTAGE_SLOPE   1026  // default = 1024, higher = bigger divider
+#define VOLTAGE_OFFSET  0  // 0 cV
 
 // this light has RGB aux LEDs
 #define USE_AUXRGB_LEDS
@@ -137,15 +144,6 @@ enum channel_modes_e {
 #define AUX1_LED_PIN   PIN1_bp
 #define AUX1_LED_PORT  PORTC
 #endif
-
-
-// Raw ADC readings at 4.4V and 2.2V
-// calibrate the voltage readout here
-// estimated / calculated values are:
-//   (voltage - D1) * (R2/(R2+R1) * 4096 / 1.1)
-// Resistors are 330k and 100k
-#define ADC_44  3810  // raw value at 4.40V
-#define ADC_22  1905  // raw value at 2.20V
 
 
 inline void hwdef_setup() {

@@ -123,13 +123,17 @@ enum channel_modes_e {
 // don't use the default VDD converter
 // convert BATT LVL pin readings to FSM volt units
 #undef voltage_raw2cooked
-uint8_t voltage_raw2cooked(uint16_t measurement);
+//uint8_t voltage_raw2cooked(uint16_t measurement);
+#define voltage_raw2cooked  mcu_vdivider_raw2cooked
+#undef voltage_raw2cooked16
+//uint16_t voltage_raw2cooked16(uint16_t measurement);
+#define voltage_raw2cooked16  mcu_vdivider_raw2cooked16
 
-
-// average drop across diode on this hardware
-#ifndef VOLTAGE_FUDGE_FACTOR
-#define VOLTAGE_FUDGE_FACTOR 0  // using a PFET so no appreciable drop
-#endif
+// calibrate the battery voltage sensor here
+#undef VOLTAGE_SLOPE
+#undef VOLTAGE_OFFSET
+#define VOLTAGE_SLOPE   1011  // default = 1024, higher = lower voltage
+#define VOLTAGE_OFFSET  1     // 1 cV
 
 // this light has RGB aux LEDs
 #define USE_AUXRGB_LEDS

@@ -97,46 +97,6 @@ enum channel_modes_e {
 #define IN_NFET_ENABLE_PIN   PIN4_bp
 #define IN_NFET_ENABLE_PORT  PORTD_OUT
 
-// e-switch
-#ifndef SWITCH_PIN
-#define SWITCH_PIN      PIN4_bp
-#define SWITCH_PORT     VPORTA.IN
-#define SWITCH_ISC_REG  PORTA.PIN4CTRL
-#define SWITCH_VECT     PORTA_PORT_vect
-#define SWITCH_INTFLG   VPORTA.INTFLAGS
-#endif
-
-#define DUAL_VOLTAGE_FLOOR     (21*dV)  // for AA/14500 boost drivers, don't indicate low voltage if below this level
-#define DUAL_VOLTAGE_LOW_LOW   ( 7*dV)  // the lower voltage range's danger zone 0.7 volts (NiMH)
-// comment out to use VDDIO2 instead of external voltage divider
-#define USE_VOLTAGE_DIVIDER
-#ifdef USE_VOLTAGE_DIVIDER
-    // AVR datasheet table 3.1 I/O Multiplexing, PA5 ADC0 = AIN25
-    #define ADMUX_VOLTAGE_DIVIDER  ADC_MUXPOS_AIN25_gc
-    // don't use the default VDD converter
-    // convert BATT LVL pin readings to FSM volt units
-    #undef voltage_raw2cooked
-    uint8_t voltage_raw2cooked(uint16_t measurement);
-#else
-    // doesn't work on this hardware in AA mode
-    #define USE_VOLTAGE_VDDIO2
-#endif
-
-// Alkaline AA can't handle the power this light wants,
-// so try to detect it and limit the maximum power
-// (also helps protect firmware flashing adapters from overload)
-#define USE_RAMP_LEVEL_HARD_LIMIT
-#define USE_WEAK_BATTERY_PROTECTION
-// define this next to the ramp table instead
-//#define WEAK_BATTERY_TEST_MAX_LEVEL       75  // about 300 mA
-#define WEAK_BATTERY_SAG_THRESHOLD_AA     (3*4)  // 0.3 V
-#define WEAK_BATTERY_SAG_THRESHOLD_LIION  (6*4)  // 0.6 V
-
-// average drop across diode on this hardware
-#ifndef VOLTAGE_FUDGE_FACTOR
-#define VOLTAGE_FUDGE_FACTOR 0  // using a PFET so no appreciable drop
-#endif
-
 // this light has RGB aux LEDs
 #define USE_AUXRGB_LEDS
 
@@ -163,6 +123,55 @@ enum channel_modes_e {
 #define USE_AUX1_LED
 #define AUX1_LED_PIN   PIN7_bp
 #define AUX1_LED_PORT  PORTA
+
+
+// e-switch
+#ifndef SWITCH_PIN
+#define SWITCH_PIN      PIN4_bp
+#define SWITCH_PORT     VPORTA.IN
+#define SWITCH_ISC_REG  PORTA.PIN4CTRL
+#define SWITCH_VECT     PORTA_PORT_vect
+#define SWITCH_INTFLG   VPORTA.INTFLAGS
+#endif
+
+// battery and voltage stuff
+
+#define DUAL_VOLTAGE_FLOOR    Vto8(210)  // for AA/14500 boost drivers, don't indicate low voltage if below this level
+#define DUAL_VOLTAGE_LOW_LOW  Vto8( 70)  // the lower voltage range's danger zone 0.7 volts (NiMH)
+// comment out to use VDDIO2 instead of external voltage divider
+#define USE_VOLTAGE_DIVIDER
+#ifdef USE_VOLTAGE_DIVIDER
+    // AVR datasheet table 3.1 I/O Multiplexing, PA5 ADC0 = AIN25
+    #define ADMUX_VOLTAGE_DIVIDER  ADC_MUXPOS_AIN25_gc
+    // don't use the default VDD converter
+    // convert BATT LVL pin readings to FSM volt units
+    #undef voltage_raw2cooked
+    //uint8_t voltage_raw2cooked(uint16_t measurement);
+    #define voltage_raw2cooked  mcu_vdivider_raw2cooked
+    #undef voltage_raw2cooked16
+    //uint16_t voltage_raw2cooked16(uint16_t measurement);
+    #define voltage_raw2cooked16  mcu_vdivider_raw2cooked16
+#else
+    // doesn't work on this hardware in AA mode
+    #define USE_VOLTAGE_VDDIO2
+#endif
+
+// Alkaline AA can't handle the power this light wants,
+// so try to detect it and limit the maximum power
+// (also helps protect firmware flashing adapters from overload)
+#define USE_RAMP_LEVEL_HARD_LIMIT
+#define USE_WEAK_BATTERY_PROTECTION
+// define this next to the ramp table instead
+//#define WEAK_BATTERY_TEST_MAX_LEVEL       75  // about 300 mA
+#define WEAK_BATTERY_SAG_THRESHOLD_AA     (3*4)  // 0.3 V
+#define WEAK_BATTERY_SAG_THRESHOLD_LIION  (6*4)  // 0.6 V
+
+// calibrate the battery voltage sensor here
+#undef VOLTAGE_SLOPE
+#undef VOLTAGE_OFFSET
+#define VOLTAGE_SLOPE   995   // default = 1024, higher = lower voltage
+#define VOLTAGE_OFFSET  1     // 1 cV
+
 
 
 inline void hwdef_setup() {
