@@ -7,7 +7,7 @@
 #include "anduril/channel-modes.h"  // for circular_tint_3h()
 #include "fsm/chan-rgbaux.c"
 
-uint8_t is_boost_currently_on = 0;   // for turn-on delay during first turn on
+uint8_t is_boost_currently_on = 0;  // for turn-on delay during first turn on
 
 void set_level_zero();
 
@@ -67,17 +67,18 @@ void set_level_udr(uint8_t level) {
     PWM1_DATATYPE dac_lvl  = PWM1_GET(level) << 6;  // dac register is left-aligned
     PWM2_DATATYPE dac_vref = PWM2_GET(level);
 
-    if(is_boost_currently_on != 1){
-        // boost is not on, enable buck and add boot-up delay
+    if (is_boost_currently_on != 1) {
+        // regulator is not on, enable regulator and add boot-up delay
         is_boost_currently_on = 1;
-        BST_ENABLE_PORT |= (1 << BST_ENABLE_PIN);   // turn on buck and amplifier
+        BST_ENABLE_PORT |= (1 << BST_ENABLE_PIN);   // turn on regulator and amplifier
         delay_4ms(BST_ON_DELAY/4);                  // boot-up delay
     }
+
     // set the DAC
     DAC_LVL  = dac_lvl;
     DAC_VREF = dac_vref;
 
-    // set the power paths
+    // ... and the power paths
     set_power_path(level);
 }
 
@@ -135,6 +136,8 @@ void set_power_path(uint8_t ramp_level) {
 ///// RGB aux PWM stuff
 
 void enable_auxrgb_pwm() {
+    set_auxrgb_power(0);
+
     // set up the PWM for aux RGB
     // AVR32_16DD20_14_Prel_DataSheet_DS40002413-2997818.pdf
     // data sheet section 23.4 Register Summary - Normal Mode

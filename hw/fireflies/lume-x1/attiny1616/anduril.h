@@ -1,13 +1,13 @@
-// Fireflies Lume-X1 (avr32dd20, 40W) config options for Anduril
+// Fireflies Lume-X1 (attiny1616, 40W) config options for Anduril
 // Copyright (C) 2017-2026 Selene ToyKeeper
-//               2022-2024 Loneoceans
+//               2021-2024 loneoceans
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-// For flashlights using the Loneoceans Lume-X1-40W boost driver (AVR32DD20)
-// - Same firmware for 6V, 9V, or 12V configs
+// For flashlights using the Loneoceans Lume-X1-40W boost driver (ATTINY1616)
+// - Models include: X1S, X1L, etc
 
-#define HWDEF_H  fireflies/lume-x1/avr32dd20/hwdef.h
+#define HWDEF_H  fireflies/lume-x1/attiny1616/hwdef.h
 #include "fireflies/anduril.h"
 
 
@@ -17,25 +17,26 @@
 
 #define RAMP_SIZE 150
 
-// maximum 83.6% power for 40W turbo
-// levels 1 to 5:
-//   ./bin/level_calc.py 5.2 1 5 7135 100 0.01 0.1 --pwm 2500
-//   (with the last 2 values divided to fit)
-// levels 6 to 150:
-//   ./bin/dac-scale.py 856 1023 $( ./bin/level_calc.py 5.07 1 145 7135 21 0.2 3000 --pwm 275000 | grep PWM1 | cut -d : -f 2- )
-// top level for each "gear": 3 5 / 38 50 / 127 150
+// levels 1 to 9:
+//   ./bin/level_calc.py 5.2 1 9 7135 100 0.01 0.1 --pwm 2500
+//   (scaled by `x*255/550` or `x*255/2500` to fit)
+// levels 10 to 150:
+//   ./bin/dac-scale.py 255 255 $( ./bin/level_calc.py 5.055 1 141 7135 26 0.5 3000 --pwm 218000 | grep PWM1 | cut -d : -f 2- )
+// top level for each "gear": 4 9 31 50 105 150
 #define PWM1_LEVELS \
-         100, 359, 790, 588,1023, \
-          17,  20,  25,  29,  34,  40,  47,  55,  64,  73,  85,  97, 111, 127, 144, 164, 184, 208, 234, 262, 293, 327, 364, 404, 448, 496, 548, 604, 664, 729, 799, 876, 957, \
-         427, 465, 507, 550, 598, 647, 701, 758, 818, 883, 951,1023, \
-          24,  26,  28,  30,  32,  34,  36,  39,  42,  44,  47,  50,  54,  57,  61,  65,  68,  73,  77,  81,  86,  91,  96, 102, 108, 113, 120, 126, 133, 140, 147, 155, 163, 171, 179, 188, 198, 207, 217, 228, 238, 249, 261, 273, 286, 298, 312, 326, 340, 355, 370, 386, 402, 419, 437, 455, 474, 493, 513, 534, 555, 577, 599, 623, 647, 671, 697, 723, 750, 778, 807, 837, 867, 898, 931, 964, 998, \
-         423, 438, 453, 468, 484, 501, 518, 535, 553, 571, 590, 609, 629, 649, 670, 691, 713, 736, 759, 782, 806, 831, 856
+        46,  98, 166, 254,  \
+        80, 111, 150, 197, 255,  \
+        12,  15,  18,  22,  26,  31,  37,  43,  50,  57,  66,  75,  85,  96, 108, 122, 137, 153, 171, 190, 210, 233, \
+        56,  62,  68,  75,  82,  90,  98, 107, 117, 127, 138, 149, 162, 175, 189, 204, 220, 237, 255, \
+        14,  15,  16,  17,  18,  20,  21,  22,  24,  26,  27,  29,  31,  33,  35,  37,  39,  42,  44,  47,  49,  52,  55,  58,  61,  65,  68,  72,  76,  80,  84,  88,  92,  97, 102, 107, 112, 117, 123, 129, 135, 141, 148, 154, 161, 169, 176, 184, 192, 200, 209, 217, 227, 236, 246, \
+        56,  58,  61,  63,  65,  68,  71,  74,  76,  79,  82,  85,  89,  92,  95,  99, 102, 106, 110, 114, 118, 122, 126, 131, 135, 140, 145, 149, 154, 160, 165, 170, 176, 182, 187, 193, 200, 206, 212, 219, 226, 233, 240, 247, 255
 #define PWM2_LEVELS \
-         V10, V10, V10, V25, V25, \
-         V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, \
-         V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, \
-         V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, \
-         V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25
+        V05, V05, V05, V05,  \
+        V25, V25, V25, V25, V25,  \
+        V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, \
+        V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, \
+        V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, V05, \
+        V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25
 
 // RGB aux ramp
 // ./bin/level_calc.py 1.6 1 150 7135 2 0.01 60 --pwm 255
@@ -43,7 +44,7 @@
         2,2,3,3,3,4,4,5,5,6,6,7,7,8,9,9,10,11,12,12,13,14,15,16,17,18,19,19,20,21,22,24,25,26,27,28,29,30,31,33,34,35,36,38,39,40,42,43,44,46,47,48,50,51,53,54,56,57,59,60,62,63,65,67,68,70,72,73,75,77,78,80,82,84,85,87,89,91,93,94,96,98,100,102,104,106,108,110,112,114,116,118,120,122,124,126,128,130,132,134,136,138,140,143,145,147,149,151,154,156,158,160,163,165,167,170,172,174,177,179,181,184,186,188,191,193,196,198,201,203,206,208,211,213,216,218,221,223,226,228,231,234,236,239,242,244,247,250,252,255
 
 #define LED_PATH1_PIN_LEVEL_MIN   1
-#define LED_PATH2_PIN_LEVEL_MIN   6
+#define LED_PATH2_PIN_LEVEL_MIN  10
 #define LED_PATH3_PIN_LEVEL_MIN  51
 
 #define HALFSPEED_LEVEL     20
@@ -73,15 +74,16 @@
 //**       THERMAL SETTINGS            **
 //***************************************
 
-#define AVRXMEGA3   // used in factory-reset.c for thermal offset cal, probably should refactor
-
 // set thermal ceiling
 
 #define DEFAULT_THERM_CEIL 50
 
-// stop panicking at 6W (not sure of this numbers yet since it depends on the host..)
-#define THERM_FASTER_LEVEL  100  // about 6W
-#define MIN_THERM_STEPDOWN  60   // similar to single amc7135 in a 3V light
+#define THERM_FASTER_LEVEL  110
+#define MIN_THERM_STEPDOWN  50
+
+// thermal tweaking by loneoceans, unsure if necessary
+#define THERM_NEXT_WARNING_THRESHOLD  16  // 24 by default -> increase for fewer adjustments (more stable output on large time scale)
+#define THERM_RESPONSE_MAGNITUDE      32  // 64 by default -> decrease for smaller adjustments (removes dip post turbo)
 
 
 //***************************************
@@ -125,9 +127,12 @@
 // smoother candle mode with bigger oscillations
 #define CANDLE_AMPLITUDE 30  // default 25
 
-// avr32dd20 has enough space to smooth out voltage readings
+// attiny1616 has enough space to smooth out voltage readings
 #define USE_VOLTAGE_LOWPASS
 
 // enable long-blink as negative sign
 #define USE_LONG_BLINK_FOR_NEGATIVE_SIGN
+
+// has a powerbank host function
+#define USE_POWERBANK_HOST_MODE
 

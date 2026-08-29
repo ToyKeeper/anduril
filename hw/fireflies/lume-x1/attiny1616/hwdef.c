@@ -1,16 +1,19 @@
-// thefreeman boost driver 2.1 output helper functions
-// Copyright (C) 2023-2026 Selene ToyKeeper
+// Fireflies Lume-X1 helper functions
+// Copyright (C) 2017-2023 Selene ToyKeeper
+//               2021-2023 loneoceans
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
 #include "anduril/channel-modes.h"  // for circular_tint_3h()
 #include "fsm/chan-rgbaux.c"
-#include "fsm/ramping.h"
+
+uint8_t is_boost_currently_on = 0;  // for turn-on delay during first turn on
 
 void set_level_zero();
 
-void set_level_main(uint8_t level);
+void set_level_udr(uint8_t level);
 bool gradual_tick_main(uint8_t gt);
+void set_power_path(uint8_t ramp_level);
 
 void enable_auxrgb_pwm();
 void disable_auxrgb_pwm();
@@ -21,7 +24,7 @@ bool gradual_tick_hsv(uint8_t gt);
 
 Channel channels[] = {
     { // main LEDs
-        .set_level    = set_level_main,
+        .set_level    = set_level_udr,
         .gradual_tick = gradual_tick_main,
         .flags        = 0
     },
@@ -41,65 +44,55 @@ StatePtr channel_3H_modes[NUM_CHANNEL_MODES] = {
 void set_level_zero() {
     DAC_LVL  = 0;  // DAC off
     mcu_set_dac_vref(V055);  // low Vref
-    HDR_ENABLE_PORT &= ~(1 << HDR_ENABLE_PIN);  // HDR off
 
-    // prevent post-off flash
-    IN_NFET_ENABLE_PORT |= (1 << IN_NFET_ENABLE_PIN);
-    delay_4ms(IN_NFET_DELAY_TIME/4);
-    IN_NFET_ENABLE_PORT &= ~(1 << IN_NFET_ENABLE_PIN);
+    // turn off DC/DC converter and amplifier
+    BST_ENABLE_PORT &= ~(1 << BST_ENABLE_PIN);
+    is_boost_currently_on = 0;
 
-    // turn off boost last
-    BST_ENABLE_PORT &= ~(1 << BST_ENABLE_PIN);  // BST off
+    // turn off all UDR paths
+    LED_PATH1_PORT &= ~LED_PATH1_PIN;
+    LED_PATH2_PORT &= ~LED_PATH2_PIN;
+    LED_PATH3_PORT &= ~LED_PATH3_PIN;
 
     // turn off PWM for aux RGB
     disable_auxrgb_pwm();
 }
 
-// single set of LEDs with 1 regulated power channel
-// and low/high HDR plus low/high Vref as different "gears"
-void set_level_main(uint8_t level) {
-    uint8_t noflash = 0;
+// UDR for set_level, which sets the led brightness based on ramp tables.
+// single set of LEDs, regulated boost at all levels
+void set_level_udr(uint8_t level) {
+    if (level == actual_level - 1) return;  //  no-op
 
-    // when turning on from off, use IN_NFET to prevent a flash
-    if ((! actual_level) && (level < HDR_ENABLE_LEVEL_MIN)) {
-        noflash = 1;
-        IN_NFET_ENABLE_PORT |= (1 << IN_NFET_ENABLE_PIN);
-    }
-
-    // BST on first, to give it a few extra microseconds to spin up
-    BST_ENABLE_PORT |= (1 << BST_ENABLE_PIN);
-
-    // pre-load ramp data so it can be assigned faster later
+    // get the ramp data
     PWM1_DATATYPE dac_lvl  = PWM1_GET(level);
     PWM2_DATATYPE dac_vref = PWM2_GET(level);
 
-    // enable HDR on top half of ramp
-    if (level >= (HDR_ENABLE_LEVEL_MIN-1))
-        HDR_ENABLE_PORT |= (1 << HDR_ENABLE_PIN);
-    else
-        HDR_ENABLE_PORT &= ~(1 << HDR_ENABLE_PIN);
+    if (is_boost_currently_on != 1) {
+        // regulator is not on, enable regulator and add boot-up delay
+        is_boost_currently_on = 1;
+        BST_ENABLE_PORT |= (1 << BST_ENABLE_PIN);   // turn on regulator and amplifier
+        delay_4ms(BST_ON_DELAY/4);                  // boot-up delay
+    }
 
-    // set these in successive clock cycles to avoid getting out of sync
-    // (minimizes ramp bumps when changing gears)
+    // set the DAC
     DAC_LVL  = dac_lvl;
     mcu_set_dac_vref(dac_vref);
 
-    if (noflash) {
-        // wait for flash prevention to finish
-        delay_4ms(IN_NFET_DELAY_TIME/4);
-        IN_NFET_ENABLE_PORT &= ~(1 << IN_NFET_ENABLE_PIN);
-    }
+    // ... and the power paths
+    set_power_path(level);
 }
 
+// handles dynamic Vref used in the ramp tables
 bool gradual_tick_main(uint8_t gt) {
-    // if HDR and Vref "engine gear" is the same, do a small adjustment...
-    // otherwise, simply jump to the next ramp level
-    //   and let set_level() handle any gear changes
+    // TODO overall smoothness can be improved due to gt using linear
+    // adjustments, but ramp table is non-linear.
 
-    PWM2_DATATYPE vref_next = PWM2_GET(gt);
-
+    // if Vref is the same, make gradual adjustments.
+    // else, jump to the next ramp level and use set_level() to handle power paths.
     // different gear = full adjustment
-    if (vref_next != (DAC_VREF & VREF_DAC0REFSEL_gm)) return true;  // let parent set_level() for us
+    PWM2_DATATYPE vref_next = PWM2_GET(gt);
+    // let parent set_level() for us
+    if (vref_next != (DAC_VREF & VREF_DAC0REFSEL_gm)) return true;
 
     // same gear = small adjustment
     PWM1_DATATYPE dac_next = PWM1_GET(gt);
@@ -109,36 +102,65 @@ bool gradual_tick_main(uint8_t gt) {
     return false;  // not done yet
 }
 
+// handles dynamic power pathways based on threshold levels
+void set_power_path(uint8_t ramp_level) {
+    ramp_level ++;  // convert to 1-based indexing
+
+    if (ramp_level >= LED_PATH3_PIN_LEVEL_MIN) {
+        // high mode
+        LED_PATH1_PORT |=  LED_PATH1_PIN;
+        LED_PATH2_PORT |=  LED_PATH2_PIN;
+        LED_PATH3_PORT |=  LED_PATH3_PIN;
+    }
+    else if (ramp_level >= LED_PATH2_PIN_LEVEL_MIN) {
+        // low mode
+        LED_PATH1_PORT |=  LED_PATH1_PIN;
+        LED_PATH2_PORT |=  LED_PATH2_PIN;
+        LED_PATH3_PORT &= ~LED_PATH3_PIN;
+    }
+    else if (ramp_level >= LED_PATH1_PIN_LEVEL_MIN) {
+        // firefly mode
+        LED_PATH1_PORT |=  LED_PATH1_PIN;
+        LED_PATH2_PORT &= ~LED_PATH2_PIN;
+        LED_PATH3_PORT &= ~LED_PATH3_PIN;
+    }
+}
+
+
 ///// RGB aux PWM stuff
 
 void enable_auxrgb_pwm() {
     set_auxrgb_power(0);
 
     // set up the PWM for aux RGB
-    // AVR32_16DD20_14_Prel_DataSheet_DS40002413-2997818.pdf
-    // (should use attiny16 docs, but avr32dd config worked)
-    // data sheet section 23.4 Register Summary - Normal Mode
-    // PA0 is TCA0:WO0, use TCA_SINGLE_CMP0EN_bm
-    // PA1 is TCA0:WO1, use TCA_SINGLE_CMP1EN_bm
-    // PA2 is TCA0:WO2, use TCA_SINGLE_CMP2EN_bm
-    // For Fast (Single Slope) PWM use TCA_SINGLE_WGMODE_SINGLESLOPE_gc
-    // For Phase Correct (Dual Slope) PWM use TCA_SINGLE_WGMODE_DSBOTTOM_gc
-    // See the manual for other pins, clocks, configs, portmux, etc
-    // enable the comparators we need
+    // ATtiny1614-16-17-DataSheet-DS40002204A.pdf
+    // enable TCA0 for the green + blue channels
+    // data sheet section 20 - TCA - 16-bit Timer/Counter Type A
     TCA0.SINGLE.CTRLB = TCA_SINGLE_CMP0EN_bm
                       | TCA_SINGLE_CMP1EN_bm
-                      | TCA_SINGLE_CMP2EN_bm
                       | TCA_SINGLE_WGMODE_DSBOTTOM_gc;
     // enable and start
     TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc
                       | TCA_SINGLE_ENABLE_bm;
-    PWM_RGB_TOP = PWM_RGB_TOP_INIT;
+    PWM_GB_TOP = PWM_RGB_TOP_INIT;
+    // enable TCB0 for red channel
+    // data sheet section 21 - TCB - 16-bit Timer/Counter Type B
+    // enable PWM (ds 21.5.2)
+    TCB0.CTRLB = TCB_CNTMODE_gm  // 8-bit PWM mode
+               | TCB_CCMPEN_bm;  // enable output
+    // sync with TCA0 (ds 21.5.1) and start
+    TCB0.CTRLA = TCB_CLKSEL_1_bm  // sync start from TCA0 (note, ds has wrong value)
+               | TCB_SYNCUPD_bm  // sync reset from TCA0
+               | TCB_ENABLE_bm;  // start
+    PWM_R_TOP  = PWM_RGB_TOP_INIT;
 }
 
 void disable_auxrgb_pwm() {
-    // TCA no longer being used, so turn it off
+    // TCA/TCB no longer being used, so turn it off
     TCA0.SINGLE.CTRLB = 0;
     TCA0.SINGLE.CTRLA = 0;
+    TCB0.CTRLA = 0;
+    TCB0.CTRLB = 0;
     set_auxrgb_power(0);
 }
 

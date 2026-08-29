@@ -462,6 +462,15 @@ The battery check format has changed a few times:
   - On old attiny85 lights with only 8 KiB of ROM, battery voltage resolution
     is 0.1V, even on newer versions of Anduril.
 
+Some lights have a "Batt Color" mode too.  Press `1H` in Batt Check mode to
+toggle this.  Instead of blinking, it shows battery fullness by color.  It
+updates the color rapidly, for real-time info.
+
+Some lights have a "Powerbank Host" mode.  Press `2H` in Batt Check mode to
+toggle between powerbank host or guest.  This controls whether the flashlight
+gets charged when using a USB C-to-C cable to another device, or whether the
+other device gets charged.
+
 On lights with more than one set of LEDs, pressing `3C` during batt
 check mode can select which set of LEDs (which channel mode) it uses
 to blink out numbers.
@@ -1200,6 +1209,8 @@ This is a table of all button mappings in Anduril, in one place:
 | Mode           | UI     | Button  | Action
 | :---           | :--    | ------: | :-----
 | Batt check     | Any    | `1C`    | Off
+| Batt check     | Any    | `1H`    | Toggle Batt Color mode (on some models)
+| Batt check     | Any    | `2H`    | Toggle Powerbank Host mode (on some models)
 | Batt check     | Full   | `2C`    | Next blinky mode (Temp check, Beacon, SOS)
 | Batt check     | Full   | `3C`    | Next channel mode (for number blinks only)
 | Batt check     | Full   | `7H`    | Voltage config menu
