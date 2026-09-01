@@ -23,7 +23,7 @@ MODEL=$(dirname "$TARGET")
 PROGRAM="ui/$UI/$UI"
 
 # figure out the model number
-MODEL_NUMBER=$(head -1 "$MODEL/model")
+MODEL_NUMBER=$(head -1 "$MODEL/model" | sed 'y/abcdefABCDEF/:;<=>?:;<=>?/')
 
 # figure out the MCU type and set some vars
 eval "$( bin/detect-mcu.sh "$TARGET" )"
