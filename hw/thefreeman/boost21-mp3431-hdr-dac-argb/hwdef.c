@@ -96,13 +96,13 @@ bool gradual_tick_main(uint8_t gt) {
     // otherwise, simply jump to the next ramp level
     //   and let set_level() handle any gear changes
 
-    PWM1_DATATYPE dac_next  = PWM1_GET(gt);
     PWM2_DATATYPE vref_next = PWM2_GET(gt);
 
     // different gear = full adjustment
     if (vref_next != (DAC_VREF & VREF_DAC0REFSEL_gm)) return true;  // let parent set_level() for us
 
     // same gear = small adjustment
+    PWM1_DATATYPE dac_next = PWM1_GET(gt);
     GRADUAL_ADJUST_SIMPLE(dac_next, DAC_LVL);
     if (dac_next == DAC_LVL) return true;  // done
 
@@ -188,6 +188,4 @@ bool gradual_tick_hsv(uint8_t gt) {
 
     return gradual_adjust_rgb(color.r, color.g, color.b);
 }
-
-
 

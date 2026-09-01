@@ -6,6 +6,10 @@
 #include "anduril/battcheck-mode.h"
 
 uint8_t battcheck_state(Event event, uint16_t arg) {
+    #ifdef USE_SMOOTH_POVD
+    static uint8_t lvp_counter = 0;
+    #endif  // #ifdef USE_SMOOTH_POVD
+
     // 1 click: off
     if (event == EV_1click) {
         set_state(off_state, 0);
@@ -13,15 +17,34 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
     }
 
     #ifdef USE_SMOOTH_POVD
-    // Batt Color mode
+    // 1H: toggle Batt Color mode
     else if (event == EV_click1_hold) {
-        if (0 == arg) {
+        if (! arg) {
             batt_color_mode = (! batt_color_mode);
             blink_once();
         }
         return EVENT_HANDLED;
     }
     #endif  // #ifdef USE_SMOOTH_POVD
+
+    #ifdef USE_POWERBANK_HOST_MODE
+    // 2H: toggle Powerbank Host mode
+    else if (event == EV_click2_hold) {
+        if (! arg) {
+            if (powerbank_is_in_host_mode)
+                set_powerbank_guest_mode();
+            else
+                set_powerbank_host_mode();
+            blink_once();
+        }
+        return EVENT_HANDLED;
+    }
+    // turn off powerbank host mode when exiting Batt Check
+    else if (event == EV_leave_state) {
+        set_powerbank_guest_mode();
+        return EVENT_HANDLED;
+    }
+    #endif  // ifdef USE_POWERBANK_HOST_MODE
 
     #ifdef USE_SIMPLE_UI
     else if (cfg.simple_ui_active) {
@@ -63,6 +86,20 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
         return EVENT_HANDLED;
     }
     #endif
+
+    #ifdef USE_SMOOTH_POVD
+    // FIXME? use a better symbol for this, like USE_BATT_COLOR_MODE or similar
+    else if (event == EV_voltage_low) {
+        // while charging, chargers can sometimes drop voltage really low for a moment,
+        // so don't react unless it stays low for a while
+        lvp_counter ++;
+        if (lvp_counter > 16) return EVENT_NOT_HANDLED;  // allow light to turn off
+        else return EVENT_HANDLED;  // ignore until we're sure
+    }
+    else if (! voltage_is_low) {
+        lvp_counter = 0;
+    }
+    #endif  // #ifdef USE_SMOOTH_POVD
 
     return EVENT_NOT_HANDLED;
 }

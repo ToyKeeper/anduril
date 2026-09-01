@@ -235,11 +235,7 @@ static void ADC_voltage_handler() {
     if (lvp_timer) {
         lvp_timer --;
     } else {  // it has been long enough since the last warning
-        #ifdef DUAL_VOLTAGE_FLOOR
-        if (((voltage < VOLTAGE_LOW) && (voltage > DUAL_VOLTAGE_FLOOR)) || (voltage < DUAL_VOLTAGE_LOW_LOW)) {
-        #else
-        if (voltage < VOLTAGE_LOW) {
-        #endif
+        if (voltage_is_low) {
             // send out a warning
             emit(EV_voltage_low, 0);
             // reset rate-limit counter
@@ -363,7 +359,12 @@ static void ADC_temperature_handler() {
             warning_threshold = THERM_NEXT_WARNING_THRESHOLD - (uint8_t)howmuch;
 
             // send a warning
+            #ifndef HWDEF_EV_TEMPERATURE_HIGH
             emit(EV_temperature_high, howmuch);
+            #else
+            // in case the hwdef wants special thermal regulation behavior
+            HWDEF_EV_TEMPERATURE_HIGH(howmuch);
+            #endif
         }
     }
 

@@ -1,4 +1,4 @@
-// hardware definitions for hank-lume-x1
+// hardware definitions for Lume-X1-avr32dd20
 // Copyright (C) 2017-2026 Selene ToyKeeper
 //               2021-2024 loneoceans
 // SPDX-License-Identifier: GPL-3.0-or-later
@@ -35,7 +35,7 @@
 
 */
 
-#define HWDEF_C  hank/lume-x1/hwdef.c
+#define HWDEF_C  fireflies/lume-x1/avr32dd20/hwdef.c
 
 // allow using aux LEDs as extra channel modes
 #include "fsm/chan-rgbaux.h"
@@ -158,8 +158,8 @@ enum channel_modes_e {
 // calibrate the battery voltage sensor here
 #undef VOLTAGE_SLOPE
 #undef VOLTAGE_OFFSET
-#define VOLTAGE_SLOPE   1014  // default = 1024, higher = higher voltage
-#define VOLTAGE_OFFSET  0     // 0 cV
+#define VOLTAGE_SLOPE   1017  // default = 1024, higher = higher voltage
+#define VOLTAGE_OFFSET  6     // cV
 
 //***************************************
 //**          HARDWARE INIT            **

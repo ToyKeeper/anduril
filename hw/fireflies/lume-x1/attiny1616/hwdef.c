@@ -1,6 +1,6 @@
-// Emisar/Noctigon Lume-X1 helper functions
+// Fireflies Lume-X1 helper functions
 // Copyright (C) 2017-2026 Selene ToyKeeper
-//               2021-2024 loneoceans
+//               2021-2023 loneoceans
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -42,8 +42,8 @@ StatePtr channel_3H_modes[NUM_CHANNEL_MODES] = {
 };
 
 void set_level_zero() {
-    DAC_LVL  = 0;  // DAC off
-    DAC_VREF = V10;  // set DAC Vref to lowest
+    DAC_LVL = 0;  // DAC off
+    mcu_set_dac_vref(V055);  // low Vref
 
     // turn off DC/DC converter and amplifier
     BST_ENABLE_PORT &= ~(1 << BST_ENABLE_PIN);
@@ -64,7 +64,7 @@ void set_level_udr(uint8_t level) {
     if (level == actual_level - 1) return;  //  no-op
 
     // get the ramp data
-    PWM1_DATATYPE dac_lvl  = PWM1_GET(level) << 6;  // dac register is left-aligned
+    PWM1_DATATYPE dac_lvl  = PWM1_GET(level);
     PWM2_DATATYPE dac_vref = PWM2_GET(level);
 
     if (is_boost_currently_on != 1) {
@@ -76,7 +76,7 @@ void set_level_udr(uint8_t level) {
 
     // set the DAC
     DAC_LVL  = dac_lvl;
-    DAC_VREF = dac_vref;
+    mcu_set_dac_vref(dac_vref);
 
     // ... and the power paths
     set_power_path(level);
@@ -91,19 +91,13 @@ bool gradual_tick_main(uint8_t gt) {
     // else, jump to the next ramp level and use set_level() to handle power paths.
     // different gear = full adjustment
     PWM2_DATATYPE vref_next = PWM2_GET(gt);
-    if (vref_next != DAC_VREF) return true;  // let parent set_level() for us
+    // let parent set_level() for us
+    if (vref_next != (DAC_VREF & VREF_DAC0REFSEL_gm)) return true;
 
     // same gear = small adjustment
-    PWM1_DATATYPE dac_now  = DAC_LVL >> 6;  // register is left-aligned
     PWM1_DATATYPE dac_next = PWM1_GET(gt);
-
-    // only adjust 1 dac level, max is 1023
-    // (but speed it up with "#define GRADUAL_ADJUST_SPEED  4" elsewhere)
-    GRADUAL_ADJUST_SIMPLE(dac_next, dac_now);
-
-    DAC_LVL = dac_now << 6;
-
-    if (dac_next == dac_now) return true;  // done
+    GRADUAL_ADJUST_SIMPLE(dac_next, DAC_LVL);
+    if (dac_next == DAC_LVL) return true;  // done
 
     return false;  // not done yet
 }
@@ -139,45 +133,34 @@ void enable_auxrgb_pwm() {
     set_auxrgb_power(0);
 
     // set up the PWM for aux RGB
-    // AVR32_16DD20_14_Prel_DataSheet_DS40002413-2997818.pdf
-    // data sheet section 23.4 Register Summary - Normal Mode
-    // PA1 is TCA0:WO1, use TCA_SINGLE_CMP1EN_bm
-    // PA2 is TCA0:WO2, use TCA_SINGLE_CMP2EN_bm
-    // PA3 is TCA0:WO3, only available in split mode (i.e. this doesn't work)
-    // For Fast (Single Slope) PWM use TCA_SINGLE_WGMODE_SINGLESLOPE_gc
-    // For Phase Correct (Dual Slope) PWM use TCA_SINGLE_WGMODE_DSBOTTOM_gc
-    // See the manual for other pins, clocks, configs, portmux, etc
-    //TCA0.SINGLE.CTRLB = TCA_SINGLE_CMP0EN_bm
-    //                  | TCA_SINGLE_CMP1EN_bm
-    //                  | TCA_SINGLE_CMP2EN_bm
-    //                  | TCA_SINGLE_WGMODE_DSBOTTOM_gc;
-    //TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc
-    //                  | TCA_SINGLE_ENABLE_bm;
-    //PWM_RGB_TOP = PWM_RGB_TOP_INIT;
-
-    // data sheet section 23.6 Register Summary - Split Mode
-    // PA1 is TCA0:WO1, use TCA_SPLIT_LCMP1EN_bm
-    // PA2 is TCA0:WO2, use TCA_SPLIT_LCMP2EN_bm
-    // PA3 is TCA0:WO3, use TCA_SPLIT_HCMP0EN_bm
-    // PWM is locked by hardware to single-slope fast mode only
-    // set split mode
-    TCA0.SPLIT.CTRLD = TCA_SPLIT_SPLITM_bm;
-    // must set period for both counters individually
-    TCA0.SPLIT.LPER = PWM_RGB_TOP_INIT;
-    TCA0.SPLIT.HPER = PWM_RGB_TOP_INIT;
-    // enable the comparators we need
-    TCA0.SPLIT.CTRLB = TCA_SPLIT_LCMP1EN_bm
-                     | TCA_SPLIT_LCMP2EN_bm
-                     | TCA_SPLIT_HCMP0EN_bm;
+    // ATtiny1614-16-17-DataSheet-DS40002204A.pdf
+    // enable TCA0 for the green + blue channels
+    // data sheet section 20 - TCA - 16-bit Timer/Counter Type A
+    TCA0.SINGLE.CTRLB = TCA_SINGLE_CMP0EN_bm
+                      | TCA_SINGLE_CMP1EN_bm
+                      | TCA_SINGLE_WGMODE_DSBOTTOM_gc;
     // enable and start
-    TCA0.SPLIT.CTRLA = TCA_SPLIT_CLKSEL_DIV1_gc
-                     | TCA_SPLIT_ENABLE_bm;
+    TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc
+                      | TCA_SINGLE_ENABLE_bm;
+    PWM_GB_TOP = PWM_RGB_TOP_INIT;
+    // enable TCB0 for red channel
+    // data sheet section 21 - TCB - 16-bit Timer/Counter Type B
+    // enable PWM (ds 21.5.2)
+    TCB0.CTRLB = TCB_CNTMODE_gm  // 8-bit PWM mode
+               | TCB_CCMPEN_bm;  // enable output
+    // sync with TCA0 (ds 21.5.1) and start
+    TCB0.CTRLA = TCB_CLKSEL_1_bm  // sync start from TCA0 (note, ds has wrong value)
+               | TCB_SYNCUPD_bm  // sync reset from TCA0
+               | TCB_ENABLE_bm;  // start
+    PWM_R_TOP  = PWM_RGB_TOP_INIT;
 }
 
 void disable_auxrgb_pwm() {
-    // TCA no longer being used, so turn it off
+    // TCA/TCB no longer being used, so turn it off
     TCA0.SINGLE.CTRLB = 0;
     TCA0.SINGLE.CTRLA = 0;
+    TCB0.CTRLA = 0;
+    TCB0.CTRLB = 0;
     set_auxrgb_power(0);
 }
 

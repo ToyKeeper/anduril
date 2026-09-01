@@ -1,4 +1,4 @@
-// Hank Emisar/Noctigon Lume-X1 config options for Anduril
+// Fireflies Lume-X1 (avr32dd20, 40W) config options for Anduril
 // Copyright (C) 2017-2026 Selene ToyKeeper
 //               2022-2024 Loneoceans
 // SPDX-License-Identifier: GPL-3.0-or-later
@@ -7,8 +7,8 @@
 // For flashlights using the Loneoceans Lume-X1-40W boost driver (AVR32DD20)
 // - Same firmware for 6V, 9V, or 12V configs
 
-#define HWDEF_H hank/lume-x1/hwdef.h
-#include "hank/anduril.h"
+#define HWDEF_H  fireflies/lume-x1/avr32dd20/hwdef.h
+#include "fireflies/anduril.h"
 
 
 //***************************************
@@ -17,24 +17,26 @@
 
 #define RAMP_SIZE 150
 
+// maximum 83.6% power for 40W turbo
 // levels 1 to 5:
 //   ./bin/level_calc.py 5.2 1 5 7135 100 0.01 0.1 --pwm 2500
 //   (with the last 2 values divided to fit)
 // levels 6 to 150:
-//   ./bin/dac-scale.py $( ./bin/level_calc.py 5.3 1 145 7135 17 0.2 3000 --pwm 240000 | grep PWM1 | cut -d : -f 2- )
-// top level for each "gear": 3 5 / 39 50 / 123 150
+//   ./bin/dac-scale.py 856 1023 $( ./bin/level_calc.py 5.07 1 145 7135 21 0.2 3000 --pwm 275000 | grep PWM1 | cut -d : -f 2- )
+// top level for each "gear": 3 5 / 38 50 / 127 150
 #define PWM1_LEVELS \
          100, 359, 790, 588,1023, \
-          17,  21,  24,  29,  34,  39,  46,  54,  62,  71,  82,  94, 107, 122, 138, 157, 177, 199, 223, 250, 279, 311, 346, 385, 426, 471, 520, 573, 630, 692, 758, 830, 907, 990, \
-         441, 480, 522, 567, 615, 666, 720, 778, 840, 905, 974, \
-          26,  28,  30,  33,  35,  37,  40,  43,  46,  49,  52,  56,  59,  63,  67,  71,  76,  80,  85,  90,  96, 101, 107, 113, 120, 126, 133, 141, 148, 156, 165, 173, 182, 192, 202, 212, 222, 234, 245, 257, 269, 282, 296, 310, 324, 339, 355, 371, 387, 405, 422, 441, 460, 480, 501, 522, 544, 567, 590, 614, 640, 665, 692, 720, 748, 778, 808, 839, 872, 905, 939, 975,1011, \
-         429, 445, 461, 478, 495, 513, 531, 550, 570, 589, 610, 631, 653, 675, 698, 721, 745, 770, 795, 821, 848, 875, 903, 932, 962, 992,1023
+          17,  20,  25,  29,  34,  40,  47,  55,  64,  73,  85,  97, 111, 127, 144, 164, 184, 208, 234, 262, 293, 327, 364, 404, 448, 496, 548, 604, 664, 729, 799, 876, 957, \
+         427, 465, 507, 550, 598, 647, 701, 758, 818, 883, 951,1023, \
+          24,  26,  28,  30,  32,  34,  36,  39,  42,  44,  47,  50,  54,  57,  61,  65,  68,  73,  77,  81,  86,  91,  96, 102, 108, 113, 120, 126, 133, 140, 147, 155, 163, 171, 179, 188, 198, 207, 217, 228, 238, 249, 261, 273, 286, 298, 312, 326, 340, 355, 370, 386, 402, 419, 437, 455, 474, 493, 513, 534, 555, 577, 599, 623, 647, 671, 697, 723, 750, 778, 807, 837, 867, 898, 931, 964, 998, \
+         423, 438, 453, 468, 484, 501, 518, 535, 553, 571, 590, 609, 629, 649, 670, 691, 713, 736, 759, 782, 806, 831, 856
 #define PWM2_LEVELS \
          V10, V10, V10, V25, V25, \
-         V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, \
-         V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, \
-         V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, \
-         V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25
+         V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, \
+         V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, \
+         V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, V10, \
+         V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25, V25
+
 // RGB aux ramp
 // ./bin/level_calc.py 1.6 1 150 7135 2 0.01 60 --pwm 255
 #define PWM3_LEVELS \
@@ -48,7 +50,7 @@
 #define QUARTERSPEED_LEVEL  10
 
 #define DEFAULT_LEVEL  50
-#define MAX_1x7135     49
+#define MAX_1x7135     50
 
 #define RAMP_SMOOTH_FLOOR    1
 #define RAMP_SMOOTH_CEIL     130
@@ -71,9 +73,23 @@
 //**       THERMAL SETTINGS            **
 //***************************************
 
+#define AVRXMEGA3   // used in factory-reset.c for thermal offset cal, probably should refactor
+
+// set thermal ceiling
+
+#define DEFAULT_THERM_CEIL 50
+
 // stop panicking at 6W (not sure of this numbers yet since it depends on the host..)
 #define THERM_FASTER_LEVEL  100  // about 6W
 #define MIN_THERM_STEPDOWN  60   // similar to single amc7135 in a 3V light
+
+
+//***************************************
+//**          USER INTERFACE           **
+//***************************************
+
+#define BLINK_BRIGHTNESS 30
+#define BLINK_ONCE_TIME 15
 
 //***************************************
 //**       AUX LEDs and MISC           **
@@ -84,6 +100,8 @@
 #define USE_AUX_THRESHOLD_CONFIG
 #define USE_SMOOTH_POVD
 #define USE_AUXRGB_LEDS_WHILE_ON  25
+// don't light up front aux while on, by default
+#define DEFAULT_AUX_WHILE_ON  0b01
 
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
@@ -91,6 +109,7 @@
 // blink numbers on the main LEDs by default (but allow user to change it)
 #define DEFAULT_BLINK_CHANNEL  CM_MAIN
 
+// this light only has one main led channel
 // use aux red + aux blue for police strobe
 #define USE_POLICE_COLOR_STROBE_MODE
 #define POLICE_STROBE_USES_AUX

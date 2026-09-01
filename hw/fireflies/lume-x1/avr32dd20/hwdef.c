@@ -1,4 +1,4 @@
-// Emisar/Noctigon Lume-X1 helper functions
+// Fireflies Lume-X1 helper functions
 // Copyright (C) 2017-2026 Selene ToyKeeper
 //               2021-2024 loneoceans
 // SPDX-License-Identifier: GPL-3.0-or-later
