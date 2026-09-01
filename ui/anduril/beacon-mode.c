@@ -5,13 +5,47 @@
 
 #include "anduril/beacon-mode.h"
 
+#if defined(USE_SMOOTH_STEPS) && (ROM_SIZE > 10000)
+    #define USE_SMOOTH_BEACON
+#endif
+
+#ifdef USE_SMOOTH_BEACON
+    void beacon_mode_set_level(uint8_t level, uint8_t speed) {
+        if (cfg.smooth_steps_style) {
+            set_level_smooth(level, speed);
+            while (smooth_steps_in_progress && (! button_last_state))
+                smooth_steps_iter();
+        }
+        else set_level(level);
+    }
+#else
+    #define beacon_mode_set_level(level, speed)  set_level(level)
+#endif
+
 inline void beacon_mode_iter() {
     // one iteration of main loop()
     if (! button_last_state) {
-        set_level(memorized_level);
-        nice_delay_ms(100);
-        set_level(0);
-        nice_delay_ms(((cfg.beacon_seconds) * 1000) - 100);
+        // configure behavior
+        #ifdef USE_SMOOTH_BEACON
+            uint16_t beacon_pulse_ms = 100;
+            uint16_t beacon_anim_ms = 0;
+            if (cfg.smooth_steps_style) {
+                beacon_pulse_ms = 50;
+                beacon_anim_ms = 450;
+            }
+        #else
+            #define beacon_pulse_ms  100
+            #define beacon_anim_ms     0
+        #endif
+
+        // turn on, and wait a short time
+        beacon_mode_set_level(memorized_level, 3);
+        nice_delay_ms(beacon_pulse_ms);
+
+        // turn off, then wait for next pulse
+        beacon_mode_set_level(0, 8);
+        nice_delay_ms(((cfg.beacon_seconds) * 1000)
+                      - beacon_pulse_ms - beacon_anim_ms);
     }
 }
 
