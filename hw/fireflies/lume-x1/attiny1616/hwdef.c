@@ -1,5 +1,5 @@
 // Fireflies Lume-X1 helper functions
-// Copyright (C) 2017-2023 Selene ToyKeeper
+// Copyright (C) 2017-2026 Selene ToyKeeper
 //               2021-2023 loneoceans
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
@@ -42,7 +42,7 @@ StatePtr channel_3H_modes[NUM_CHANNEL_MODES] = {
 };
 
 void set_level_zero() {
-    DAC_LVL  = 0;  // DAC off
+    DAC_LVL = 0;  // DAC off
     mcu_set_dac_vref(V055);  // low Vref
 
     // turn off DC/DC converter and amplifier

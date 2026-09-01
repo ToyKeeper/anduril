@@ -162,9 +162,12 @@ enum channel_modes_e {
 #define VOLTAGE_SLOPE   1017  // default = 1024, higher = higher voltage
 #define VOLTAGE_OFFSET  5     // cV
 
-// define power-bank enable pin
-#define POWER_BANK_EN_PIN  PIN4_bm
-#define POWER_BANK_EN_PORT PORTA_OUT
+// power-bank enable pin
+#define POWERBANK_EN_PIN  PIN4_bm
+#define POWERBANK_EN_PORT PORTA_OUT
+#define powerbank_is_in_host_mode  (POWERBANK_EN_PORT & POWERBANK_EN_PIN)
+void set_powerbank_host_mode()  { POWERBANK_EN_PORT |=   POWERBANK_EN_PIN ; }
+void set_powerbank_guest_mode() { POWERBANK_EN_PORT &= (~POWERBANK_EN_PIN); }
 
 //***************************************
 //**          HARDWARE INIT            **
@@ -182,14 +185,15 @@ inline void hwdef_setup() {
                | PIN6_bm   // DAC out
                | PIN7_bm;  // moon path
     VPORTB.DIR = PIN0_bm | PIN1_bm  // aux G+B
+               //| PIN2_bm  // DD FET
                | PIN3_bm  // boost enable
                | PIN4_bm | PIN5_bm;  // high + low path
     VPORTC.DIR = PIN0_bm   // aux R
                | PIN1_bm;  // switch LED
 
-    #ifdef USE_OTG_IN_MOMENTARY
+    #ifdef USE_POWERBANK_HOST_MODE
     // disable powerbank host mode at startup
-    POWER_BANK_EN_PORT &= (~POWER_BANK_EN_PIN);
+    set_powerbank_guest_mode();
     #endif
 
     // WTF?

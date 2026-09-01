@@ -31,17 +31,18 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
     // 2H: toggle Powerbank Host mode
     else if (event == EV_click2_hold) {
         if (! arg) {
-            if (POWER_BANK_EN_PORT & POWER_BANK_EN_PIN)
-                POWER_BANK_EN_PORT &= (~POWER_BANK_EN_PIN);
+            if (powerbank_is_in_host_mode)
+                set_powerbank_guest_mode();
             else
-                POWER_BANK_EN_PORT |= POWER_BANK_EN_PIN;
+                set_powerbank_host_mode();
             blink_once();
         }
         return EVENT_HANDLED;
     }
     // turn off powerbank host mode when exiting Batt Check
     else if (event == EV_leave_state) {
-        POWER_BANK_EN_PORT &= (~POWER_BANK_EN_PIN);
+        set_powerbank_guest_mode();
+        return EVENT_HANDLED;
     }
     #endif  // ifdef USE_POWERBANK_HOST_MODE
 
