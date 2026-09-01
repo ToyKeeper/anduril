@@ -1,4 +1,4 @@
-Models: 87
+Models: 88
 
 Model     MCU         Name
 -----     ---         ----
@@ -61,6 +61,7 @@ Model     MCU         Name
 0423      attiny85    fireflies-pl47g2
 0424      attiny85    fireflies-pl47g2-219
 0441      attiny85    fireflies-e01
+0451      attiny1616  fireflies-lume1-6af
 0461      attiny1616  fireflies-lume-x1-attiny1616
 0462      avr32dd20   fireflies-lume-x1-avr32dd20
 0463      avr32dd20   fireflies-lume-x1-avr32dd20-32w

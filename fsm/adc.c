@@ -359,7 +359,12 @@ static void ADC_temperature_handler() {
             warning_threshold = THERM_NEXT_WARNING_THRESHOLD - (uint8_t)howmuch;
 
             // send a warning
+            #ifndef HWDEF_EV_TEMPERATURE_HIGH
             emit(EV_temperature_high, howmuch);
+            #else
+            // in case the hwdef wants special thermal regulation behavior
+            HWDEF_EV_TEMPERATURE_HIGH(howmuch);
+            #endif
         }
     }
 
