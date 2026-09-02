@@ -118,24 +118,35 @@ uint8_t smooth_povd_state(Event event, uint16_t arg) {
 
 
 uint8_t calc_smooth_povd_brightness (uint8_t level) {
-    uint8_t povd_brightness;
+    if (! level) return 0;
+
     // instead of using hard thresholds, ramp brightness down
     #ifdef USE_AUX_THRESHOLD_CONFIG
-        if (level < cfg.aux_low_ramp_level) povd_brightness = 0;
-        else if (level < cfg.aux_high_ramp_level) {
-            povd_brightness = RAMP_SIZE
-                * (level - cfg.aux_low_ramp_level)
-                / (cfg.aux_high_ramp_level - cfg.aux_low_ramp_level);
+        // ensure hi is bigger than lo, to avoid math errors
+        uint8_t hi, lo;
+        // 0..(RAMP_SIZE-1) = normal, 255 = disabled
+        hi = (uint8_t)(cfg.aux_high_ramp_level + 1)
+            ? (cfg.aux_high_ramp_level + 1)
+            : 255;
+        lo = (cfg.aux_low_ramp_level < hi)
+            ? cfg.aux_low_ramp_level
+            : (hi - 1);
+
+        // level is 1-indexed, hi+lo are 0-indexed
+        if (level < lo) return 0;
+        else if (level < hi) {
+            return RAMP_SIZE
+                * (level - lo)
+                / (hi - lo);
         }
     #else
         if (level < POST_OFF_VOLTAGE_BRIGHTNESS) {
-            povd_brightness = RAMP_SIZE
+            return RAMP_SIZE
                 * level
                 / POST_OFF_VOLTAGE_BRIGHTNESS;
         }
     #endif
-    else povd_brightness = RAMP_SIZE;
-    return povd_brightness;
+    else return RAMP_SIZE;
 }
 
 void draw_smooth_povd (uint8_t level) {
