@@ -37,11 +37,18 @@ void smooth_steps_iter() {
 }
 
 void set_level_smooth(uint8_t level, uint8_t speed) {
+    #ifdef USE_RAMP_LEVEL_HARD_LIMIT
+        // don't let animations get stuck when target exceeds limit
+        if (ramp_level_hard_limit && (level > ramp_level_hard_limit))
+            smooth_steps_target = ramp_level_hard_limit;
+        else
+    #endif
     smooth_steps_target = level;
     smooth_steps_speed = speed;  // higher = slower
     smooth_steps_in_progress = 1;
     // for setting prev_level after animation ends
     smooth_steps_start = actual_level;
+
 }
 
 #endif
