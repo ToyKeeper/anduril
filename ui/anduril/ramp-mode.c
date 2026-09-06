@@ -74,6 +74,10 @@ uint8_t steady_state(Event event, uint16_t arg) {
            ) { turbo_level = mode_max; }
         else { turbo_level = MAX_LEVEL; }
     #endif
+    #ifdef USE_RAMP_LEVEL_HARD_LIMIT
+        if (turbo_level > ramp_level_hard_limit)
+            turbo_level = ramp_level_hard_limit;
+    #endif
 
     #ifdef USE_SUNSET_TIMER
     // handle the shutoff timer first
@@ -175,9 +179,8 @@ uint8_t steady_state(Event event, uint16_t arg) {
             if (event == EV_click2_hold) { ramp_direction = -1; }
             // make it ramp down instead, if already at max
             #ifdef USE_RAMP_LEVEL_HARD_LIMIT
-            else if ( ramp_level_hard_limit
-                    && (actual_level >= ramp_level_hard_limit)
-                    ) { ramp_direction = -1; }
+            else if (actual_level >= ramp_level_hard_limit)
+                ramp_direction = -1;
             #endif
             else if (actual_level >= mode_max) { ramp_direction = -1; }
             // make it ramp up if already at min
@@ -668,7 +671,7 @@ uint8_t nearest_level(int16_t target) {
     }
 
     #ifdef USE_RAMP_LEVEL_HARD_LIMIT
-    if (ramp_level_hard_limit && (target > ramp_level_hard_limit))
+    if (target > ramp_level_hard_limit)
         return ramp_level_hard_limit;
     #endif
     if (target < mode_min) return mode_min;
@@ -704,7 +707,7 @@ void ramp_update_config() {
 #if defined(USE_THERMAL_REGULATION) || defined(USE_SMOOTH_STEPS)
 void set_level_and_therm_target(uint8_t level) {
     #ifdef USE_RAMP_LEVEL_HARD_LIMIT
-    if (ramp_level_hard_limit && (level > ramp_level_hard_limit))
+    if (level > ramp_level_hard_limit)
         level = ramp_level_hard_limit;
     #endif
     #ifdef USE_THERMAL_REGULATION

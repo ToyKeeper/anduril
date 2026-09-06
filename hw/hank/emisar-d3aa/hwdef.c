@@ -230,7 +230,7 @@ void detect_weak_battery() {
     //   (ramp up until battery becomes unstable)
     // - blink to indicate weak battery mode, if active
 
-    ramp_level_hard_limit = 0;
+    ramp_level_hard_limit = RAMP_SIZE;
 
     uint16_t resting, loaded;
 
@@ -279,7 +279,7 @@ void detect_weak_battery() {
     // - 3 blinks: Weak battery, power severely limited
 
     uint8_t extra_blinks = 0;
-    if (ramp_level_hard_limit) extra_blinks += 2;
+    if (ramp_level_hard_limit < RAMP_SIZE) extra_blinks += 2;
 
     for (uint8_t i=0; i<extra_blinks; i++) {
         delay_4ms(300/4);
@@ -289,7 +289,7 @@ void detect_weak_battery() {
     #ifdef USE_WEAK_BATTERY_PROTECTION_READOUT
     // this numeric display isn't really needed by default,
     // but the code remains in case anyone wants to use it
-    if (ramp_level_hard_limit) {
+    if (ramp_level_hard_limit < RAMP_SIZE) {
         delay_4ms(255);
         // not booted far enough for this to work yet
         //blink_num(ramp_level_hard_limit);

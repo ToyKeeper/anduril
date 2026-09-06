@@ -12,7 +12,7 @@ uint8_t actual_level = 0;
 // (start non-zero at boot to make aux LEDs turn on faster)
 uint8_t prev_level = RAMP_SIZE / 5;
 #ifdef USE_RAMP_LEVEL_HARD_LIMIT
-uint8_t ramp_level_hard_limit = 0;
+uint8_t ramp_level_hard_limit = RAMP_SIZE;
 #endif
 
 void set_level(uint8_t level);
