@@ -1,13 +1,13 @@
-// Hank Emisar/Noctigon Lume-X1 config options for Anduril
+// Hank Emisar/Noctigon Lume-X1-C config options for Anduril
 // Copyright (C) 2017-2026 Selene ToyKeeper
 //               2022-2024 Loneoceans
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-// For flashlights using the Loneoceans Lume-X1-40W boost driver (AVR32DD20)
+// For flashlights using the Loneoceans Lume-X1-C boost driver (AVR32DD20)
 // - Same firmware for 6V, 9V, or 12V configs
 
-#define HWDEF_H hank/lume-x1/hwdef.h
+#define HWDEF_H  hank/lume-x1-c/hwdef.h
 #include "hank/anduril.h"
 
 
@@ -84,6 +84,8 @@
 #define USE_AUX_THRESHOLD_CONFIG
 #define USE_SMOOTH_POVD
 #define USE_AUXRGB_LEDS_WHILE_ON  25
+// don't light up front aux while on, by default
+#define DEFAULT_AUX_WHILE_ON  0b01
 
 // show each channel while it scroll by in the menu
 #define USE_CONFIG_COLORS
