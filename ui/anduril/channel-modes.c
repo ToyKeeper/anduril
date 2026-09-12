@@ -55,7 +55,10 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
 
     #ifdef USE_CUSTOM_CHANNEL_3H_MODES
     // defer to mode-specific function if defined
-    else if (channel_3H_modes[channel_mode]) {
+    // (for 3C/3H events only)
+    else if (channel_3H_modes[channel_mode]
+        && ((3 | B_CLICK) == (event & (B_CLICK | B_COUNT)))
+    ) {
         StatePtr tint_func = channel_3H_modes[channel_mode];
         uint8_t err = tint_func(event, arg);
         if (EVENT_HANDLED == err) return EVENT_HANDLED;
@@ -128,6 +131,18 @@ uint8_t channel_mode_state(Event event, uint16_t arg) {
         return EVENT_NOT_HANDLED;
     }
     #endif
+
+    #ifdef USE_AW2016
+    // 8H: change aux RGB "On" brightness
+    else if ((event == EV_click8_hold) && channel_is_aux(channel_mode)) {
+        if (0 == (arg & 0b00111111)) {  // every second or so
+            cfg.aw2016_level_on = aw2016_next_ramp_row(cfg.aw2016_level_on, 1);
+            aw2016_set_ramp_current(cfg.aw2016_level_on);
+            save_config();
+        }
+        return EVENT_HANDLED;
+    }
+    #endif  // #ifdef USE_AW2016
 
     #if NUM_CHANNEL_MODES > 1
     // channel toggle menu on ... 9H?

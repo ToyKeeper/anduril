@@ -1,10 +1,10 @@
-// hardware definitions for hank-lume-x1
+// hardware definitions for hank-lume-x1-c
 // Copyright (C) 2017-2026 Selene ToyKeeper
 //               2021-2024 loneoceans
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-/*  Loneoceans Lume-X1 with AVR32DD20
+/*  Loneoceans Lume-X1-C with AVR32DD20
 
     40W Boost Driver with Ultra Dynamic Range, RGB & SW Aux, Powerbank.
 
@@ -22,20 +22,15 @@
     - PA6 / PP3  - PATH2 - Low Range
     - PA7 / PP4  - PATH1 - Moon Range
     - PC1 / PP5  - Enable for Boost, Amplifier
-    - PC2 / PP6  - Enable for Microphone - N/C
-    - PC3 / PP7  - Neo Dat - N/C
     - PD4 / PP9  - E-Switch
-    - PD5 / PP10 - Mic Output - N/C
     - PD6 / PP11 - DAC Out
-    - PD7 / PP12 - Power Bank - N/C
-    - PA1 / PP18 - AUX R LED
-    - PA2 / PP19 - AUX G LED
-    - PA3 / PP20 - AUX B LED
+    - PA2 / PP19 - SDA  (aw2016 aux RGB)
+    - PA3 / PP20 - SCL  (aw2016 aux RGB)
     - PA4 / PP1  - AUX SW LED
 
 */
 
-#define HWDEF_C  hank/lume-x1/hwdef.c
+#define HWDEF_C  hank/lume-x1-c/hwdef.c
 
 // allow using aux LEDs as extra channel modes
 #include "fsm/chan-rgbaux.h"
@@ -124,25 +119,17 @@ enum channel_modes_e {
 // (and some builds tie these also to a RGB side button)
 #define USE_AUXRGB_LEDS
 
-// aux RGB passive
-#define AUXRGB_R_PORT  PORTA
-#define AUXRGB_R_PIN   PIN1_bp
-#define AUXRGB_G_PORT  PORTA
-#define AUXRGB_G_PIN   PIN2_bp
-#define AUXRGB_B_PORT  PORTA
-#define AUXRGB_B_PIN   PIN3_bp
+// aw2016 dimmable RGB
+#include "lib/aw2016/aw2016.h"
 
-// aux RGB PWM
-#define RGB_BITS  8
-#define CH_R_PIN  PA1
-#define CH_R_PWM  TCA0.SPLIT.LCMP1
-#define CH_G_PIN  PA2
-#define CH_G_PWM  TCA0.SPLIT.LCMP2
-#define CH_B_PIN  PA3
-#define CH_B_PWM  TCA0.SPLIT.HCMP0
+// which pin each color is connected to
+#undef AW_R_CH
+#undef AW_G_CH
+#undef AW_B_CH
+#define AW_R_CH  1
+#define AW_G_CH  0
+#define AW_B_CH  2
 
-//#define PWM_RGB_TOP       TCA0.SINGLE.PERBUF
-#define PWM_RGB_TOP_INIT  255
 
 // button LED
 #define USE_AUX1_LED
@@ -176,7 +163,7 @@ inline void hwdef_setup() {
     mcu_clock_speed();
 
     // set output pins
-    VPORTA.DIR = PIN1_bm | PIN2_bm | PIN3_bm |  // aux RGB
+    VPORTA.DIR = // PIN2_bm | PIN3_bm |  // aw2016
                  PIN4_bm |  // aux button LED
                  PIN5_bm | PIN6_bm | PIN7_bm;  // high/low/moon path
     VPORTC.DIR = PIN1_bm;  // boost enable
@@ -184,9 +171,9 @@ inline void hwdef_setup() {
 
     // now set pullups on input pins, and unused pins (reduce power)
     PORTA.PIN0CTRL = PORT_PULLUPEN_bm;  // FET (unused)
-    //PORTA.PIN1CTRL = PORT_PULLUPEN_bm;  // AUX R
-    //PORTA.PIN2CTRL = PORT_PULLUPEN_bm;  // AUX G
-    //PORTA.PIN3CTRL = PORT_PULLUPEN_bm;  // AUX B
+    PORTA.PIN1CTRL = PORT_PULLUPEN_bm;  // none
+    //PORTA.PIN2CTRL = PORT_PULLUPEN_bm;  // aw2016
+    //PORTA.PIN3CTRL = PORT_PULLUPEN_bm;  // aw2016
     //PORTA.PIN4CTRL = PORT_PULLUPEN_bm;  // AUX SW
     //PORTA.PIN5CTRL = PORT_PULLUPEN_bm;  // PATH3
     //PORTA.PIN6CTRL = PORT_PULLUPEN_bm;  // PATH2
@@ -230,6 +217,9 @@ inline void hwdef_setup() {
     TCB0.CTRLA = 0;
     TCB1.CTRLA = 0;
     TCD0.CTRLA = 0;
+
+    // init aw2016
+    aw2016_hwdef_setup();
 
 }
 

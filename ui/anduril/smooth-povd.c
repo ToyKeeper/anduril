@@ -28,7 +28,8 @@ uint8_t smooth_povd_state(Event event, uint16_t arg) {
     if (event == EV_enter_state) {
         phase = 0;
         brightness = 0;
-        ticks = cfg.post_off_voltage * (1000 / MS_PER_TICK);
+        // 1 second shorter because ramp up/down takes time
+        ticks = 1 + (cfg.post_off_voltage - 1) * (1000 / MS_PER_TICK);
         //ticks = cfg.post_off_voltage * (1000 / 4);
         return EVENT_HANDLED;
     }
@@ -152,6 +153,11 @@ uint8_t calc_smooth_povd_brightness (uint8_t level) {
 void draw_smooth_povd (uint8_t level) {
     rgb_uint_t pwm = get_level_auxrgb(level);
     RGB_t color = voltage_to_rgb_t(pwm);
+    #ifdef USE_AW2016
+        if (! aw2016_is_pwm_mode) { enable_auxrgb_pwm(); }
+        uint8_t row = cfg.aw2016_level_povd;
+        if (aw2016_ramp_row != row) aw2016_set_ramp_current(row);
+    #endif
     set_auxrgb_pwm(color);
 }
 

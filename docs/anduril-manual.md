@@ -553,6 +553,10 @@ seconds between pulses are configurable:
     For example, to do a 10-second alpine beacon, hold the button
     for 10 seconds.
 
+If Smooth Steps is enabled, the beacon ramps up quickly, then fades
+gradually.  This simulates the behavior of an analog incandescent bulb,
+which needs time to heat up and cool off.
+
 ### SOS mode:
 
 Blinks out a distress signal.  Three short, three long, three short.
@@ -923,6 +927,12 @@ The aux LEDs on most lights only turn on when the light is asleep.
 When a light has a single-color aux LED and no RGB, it fast-blinks the
 aux LED in "off" modes when voltage is low.
 
+For lights with an aux RGB control chip, the brightness of the "low" and
+"high" modes can be configured.  To do this, go to Off mode, set the pattern
+to "low" or "high", then use `8H` to change the brightness.  This only works
+on specific models from 2026 or later which have a dedicated chip to manage
+the RGB aux LEDs.
+
 The aux LED behavior can be configured further by entering the Voltage Config
 Menu inside of Batt Check mode.
 
@@ -992,6 +1002,9 @@ POVD mode.  The "aux low ramp level" and "aux high ramp level" mostly work
 the same, except the brightness ramps between the two.  The same brightness
 ramp applies in that range during regular "on" modes, if enabled.
 
+On some models, POVD brightness can be adjusted further.  To do this, enter
+Batt Color mode then use `8H`.  This sets the peak brightness for POVD.
+
 
 Misc Config Menu
 ----------------
@@ -1035,6 +1048,7 @@ times unless they're overridden by the mode the light is in:
 
   - `3C`: Next channel mode
   - `3H`: Adjust current channel mode (ramp tint, for example)
+  - `8H`: Adjust aux RGB brightness (aux channels only, on specific hardware)
   - `9H`: Channel mode config menu
 
 Details depend on the exact type of light used.  For example, if a light
@@ -1087,6 +1101,12 @@ Custom channel modes may work differently.
 On lights with channel modes, manual memory (`Ramp -> 10C`) saves the
 current brightness *and* channel mode.
 
+For lights with an aux RGB control chip, the brightness of the aux RGB modes
+can be configured.  To do this, go a mode like Ramp or Strobe, enable an aux
+channel mode, then use `8H` to change the brightness.  This only works on
+specific models from 2026 or later which have a dedicated chip to manage
+the RGB aux LEDs.
+
 
 FAQ
 ---
@@ -1121,6 +1141,9 @@ This is a table of all button mappings in Anduril, in one place:
 | Off            | Full   | `6C`    | Tactical mode
 | Off            | Full   | `7C`    | Aux LEDs: Next pattern
 | Off            | Full   | `7H`    | Aux LEDs: Next color
+| Off            | Full   | `8H`    | Aux LEDs: Next brightness (some models)
+|                |        |         | (set pattern to "low" or "high" first,
+|                |        |         |  to adjust brightness of that pattern)
 | Off            | Full   | `9H`    | Misc Config menu (varies per light):
 |                |        |         | ?1: tint ramp style
 |                |        |         | ?2: jump start level
@@ -1168,6 +1191,8 @@ This is a table of all button mappings in Anduril, in one place:
 | :---           | :--    | ------: | :-----
 | Any            | Any    | `3C`    | Next channel mode (i.e. next color mode)
 | Any            | Any    | `3H`    | Tint ramp (if this mode can)
+| Any            | Full   | `8H`    | Change aux RGB brightness (if hardware can)
+|                |        |         | (for the "On" modes like ramp and strobe)
 | Any            | Full   | `9H`    | Channel mode enable/disable menu:
 |                |        |         | N: click (or not) to enable (disable) mode N
 
@@ -1208,12 +1233,12 @@ This is a table of all button mappings in Anduril, in one place:
 
 | Mode           | UI     | Button  | Action
 | :---           | :--    | ------: | :-----
-| Batt check     | Any    | `1C`    | Off
-| Batt check     | Any    | `1H`    | Toggle Batt Color mode (on some models)
-| Batt check     | Any    | `2H`    | Toggle Powerbank Host mode (on some models)
-| Batt check     | Full   | `2C`    | Next blinky mode (Temp check, Beacon, SOS)
-| Batt check     | Full   | `3C`    | Next channel mode (for number blinks only)
-| Batt check     | Full   | `7H`    | Voltage config menu
+| Batt Check     | Any    | `1C`    | Off
+| Batt Check     | Any    | `1H`    | Toggle Batt Color mode (on some models)
+| Batt Check     | Any    | `2H`    | Toggle Powerbank Host mode (on some models)
+| Batt Check     | Full   | `2C`    | Next blinky mode (Temp check, Beacon, SOS)
+| Batt Check     | Full   | `3C`    | Next channel mode (for number blinks only)
+| Batt Check     | Full   | `7H`    | Voltage config menu
 |                |        |         | 1: voltage correction factor
 |                |        |         | ... 18: -0.02V
 |                |        |         | ... 19: -0.01V
@@ -1232,12 +1257,13 @@ This is a table of all button mappings in Anduril, in one place:
 |                |        |         | ... 1: single-color aux only
 |                |        |         | ... 2: RGB aux only
 |                |        |         | ... 3: both
+| Batt Color     | Full   | `8H`    | Change POVD brightness (if hardware can)
 
 | Mode           | UI     | Button  | Action
 | :---           | :--    | ------: | :-----
-| Temp check     | Full   | `1C`    | Off
-| Temp check     | Full   | `2C`    | Next blinky mode (Beacon, SOS, Batt check)
-| Temp check     | Full   | `7H`    | Thermal config menu
+| Temp Check     | Full   | `1C`    | Off
+| Temp Check     | Full   | `2C`    | Next blinky mode (Beacon, SOS, Batt check)
+| Temp Check     | Full   | `7H`    | Thermal config menu
 |                |        |         | 1: set current temperature
 |                |        |         | 2: set temperature limit
 

@@ -16,6 +16,11 @@ void set_channel_mode(uint8_t mode) {
     // turn off old LEDs before changing channel
     set_level(0);
 
+    // let the hwdef do anything special it needs
+    #ifdef hwdef_set_channel_mode
+        hwdef_set_channel_mode(mode);
+    #endif
+
     // change the channel
     channel_mode = mode;
 

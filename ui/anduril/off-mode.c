@@ -364,6 +364,30 @@ uint8_t off_state(Event event, uint16_t arg) {
     }
     #endif
 
+    #ifdef USE_AW2016
+    // 8H: change aux RGB brightness
+    else if (event == EV_click8_hold) {
+        if (0 == (arg & 0b00111111)) {  // every second or so
+            // check if aux is currently low or high,
+            // and rotate the appropriate config setting
+            // through aux ramp levels
+            uint8_t mode = cfg.auxrgb_off_mode >> 4;  // off/low/high/blinking
+            uint8_t hi = (mode > aux_low_e) ? 1 : 0;
+            uint8_t aux_level = hi
+                    ? cfg.aw2016_level_hi
+                    : cfg.aw2016_level_lo;
+            aux_level = aw2016_next_ramp_row(aux_level, 0);
+            if (hi) cfg.aw2016_level_hi = aux_level;
+            else cfg.aw2016_level_lo = aux_level;
+            aw2016_set_ramp_current(aux_level);
+            // preview with white aux
+            aw2016_set_auxrgb_power(0b010101 << hi);
+            save_config();
+        }
+        return EVENT_HANDLED;
+    }
+    #endif  // #ifdef USE_AW2016
+
     #ifdef USE_GLOBALS_CONFIG
     // 9 clicks, but hold last click: configure misc global settings
     else if ((event == EV_click9_hold) && (!arg)) {

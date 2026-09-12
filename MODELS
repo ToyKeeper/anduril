@@ -46,6 +46,7 @@ Model     MCU         Name
 0273      attiny1634  hank-noctigon-dm11-boost
 0274      attiny1634  hank-noctigon-dm11-sbt90
 0281      avr32dd20   hank-lume-x1
+0283      avr32dd20   hank-lume-x1-c
 0311      attiny85    lumintop-fw3a
 0312      attiny85    lumintop-fw3a-219
 0313      attiny85    lumintop-fw3a-nofet

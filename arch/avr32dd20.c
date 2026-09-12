@@ -307,39 +307,7 @@ void mcu_set_aux1_power (uint8_t power) {
 }
 #endif
 
-#ifdef USE_AUXRGB_LEDS
-#if 0  // cleaner, but also 63 bytes bigger
-void mcu_set_auxrgb_power (uint8_t value) {
-    // value: 0b00BBGGRR
-    // each of RR/GG/BB is: 0/1/2 = off/low/high
-
-    uint8_t pins[] = { AUXRGB_R_PIN, AUXRGB_G_PIN, AUXRGB_B_PIN };
-    PORT_t * ports[] = { &AUXRGB_R_PORT, &AUXRGB_G_PORT, &AUXRGB_B_PORT };
-
-    for (uint8_t i=0; i<3; i++) {
-        uint8_t power = (value >> (i<<1)) & 0x03;
-        uint8_t pin = pins[i];
-        PORT_t * port = ports[i];
-
-        switch (power) {
-            case 0:  // LED off
-                (*port).DIRSET = (1 << pin); // set as output
-                (*port).OUTCLR = (1 << pin); // set output low
-                break;
-            case 1:  // LED low
-                (*port).DIRCLR = (1 << pin); // set as input
-                // enable internal pull-up
-                // this resolves to PORTx.PINxCTRL = PORT_PULLUPEN_bm;
-                *((uint8_t *)port + 0x10 + pin) = PORT_PULLUPEN_bm;
-                break;
-            default:  // LED high
-                (*port).DIRSET = (1 << pin); // set as output
-                (*port).OUTSET = (1 << pin); // set as high
-                break;
-        }
-    }
-}
-#else
+#if defined(USE_AUXRGB_LEDS) && defined(AUXRGB_R_PORT)
 void mcu_set_auxrgb_power (uint8_t value) {
     // value: 0b00BBGGRR
     // each of RR/GG/BB is: 0/1/2 = off/low/high
@@ -405,7 +373,6 @@ void mcu_set_auxrgb_power (uint8_t value) {
             break;
     }
 }
-#endif
 #endif
 
 ////////// misc //////////
