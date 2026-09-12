@@ -29,7 +29,9 @@ MODEL_NUMBER=$(head -1 "$MODEL/model" | sed 'y/abcdefABCDEF/:;<=>?:;<=>?/')
 eval "$( bin/detect-mcu.sh "$TARGET" )"
 
 # detect and enable a relevant Atmel DFP
-if [[ $MCUNAME =~ "attiny" ]]; then
+if [[ $MCUNAME =~ "attiny1616" ]]; then
+  DFPPATH=$BASEDIR/arch/dfp/attiny1616
+elif [[ $MCUNAME =~ "attiny" ]]; then
   DFPPATH=$BASEDIR/arch/dfp/attiny
 elif [[ $MCUNAME =~ "avr" && $MCUNAME =~ "dd" ]]; then
   DFPPATH=$BASEDIR/arch/dfp/avrdd
