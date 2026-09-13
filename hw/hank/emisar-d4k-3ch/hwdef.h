@@ -49,8 +49,9 @@
 // - 6. 2ch blend (3rd + 4th LEDs, 16/16/8 wiring)
 // - 7. 3ch blend (HSV style)
 // - 8. 3ch auto blend (red-warm-cool style, led4-led3-main2)
-// - 9+. RGB aux (hidden)
-#define NUM_CHANNEL_MODES   (8 + NUM_AUXRGB_CHANNEL_MODES)
+// - 9. CCT ramp (2700K-6500K along Planckian locus)
+// - 10+. RGB aux (hidden)
+#define NUM_CHANNEL_MODES   (9 + NUM_AUXRGB_CHANNEL_MODES)
 enum channel_modes_e {
     CM_MAIN2 = 0,
     CM_LED3,
@@ -60,13 +61,14 @@ enum channel_modes_e {
     CM_BLEND34B,  // 16 / [16+8]
     CM_HSV,
     CM_AUTO3,
+    CM_CCT,       // CCT ramp: 2700K (warm) to 6500K (cool)
     AUXRGB_CM_ENUMS
 };
 
-#define CHANNEL_MODES_ENABLED  0b0000000000001111
+#define CHANNEL_MODES_ENABLED  0b0000000100001111
 #define USE_CHANNEL_MODE_ARGS
-// _, _, _, _, 128=middle CCT, 128=middle CCT, 213=purple, _
-#define CHANNEL_MODE_ARGS 0,0,0,0,128,128,213,0,AUXRGB_CM_ARGS
+// _, _, _, _, 128=middle CCT, 128=middle CCT, 213=purple, _, 128=~4600K
+#define CHANNEL_MODE_ARGS 0,0,0,0,128,128,213,0,128,AUXRGB_CM_ARGS
 #define USE_CUSTOM_CHANNEL_3H_MODES
 #define USE_CIRCULAR_TINT_3H
 
