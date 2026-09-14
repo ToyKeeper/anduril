@@ -514,7 +514,8 @@ The voltage config menu has these settings:
 
   5. Aux while on.  Determines which aux LEDs will be lit up while the main
      LEDs are on, like in ramping mode:  
-     0 = none, 1 = single color aux only, 2 = RGB aux only, 3 = both.
+     0 = none, 1 = single color aux only, 2 = RGB aux only, 3 = both.  
+     RGB aux LEDs while on always display the voltage color.
 
 ### Temperature check:
 
