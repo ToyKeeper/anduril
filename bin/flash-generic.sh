@@ -57,7 +57,8 @@ case "$FLASHPROG" in
             -c "$PROTO" \
             -p "$MCUTYPE" \
             $TTYARGS \
-            -u -Uflash:w:"$HEX"
+            -e \
+            -Uflash:w:"$HEX"
         ;;
 
     pymcuprog)
