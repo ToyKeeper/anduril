@@ -503,14 +503,14 @@ The voltage config menu has these settings:
   3. Aux low ramp level.  Controls behavior of aux button LEDs while the main
      LEDs are on.  Below this ramp level, button LEDs will not be lit up while
      the main LEDs are on.  At or above this level, button LEDs light up at the
-     "low" brightness level.  Setting it to 0 keeps the button LEDs off
-     completely while the main LEDs are on.  
-     Also controls brightness of post-off voltage display.
+     "low" brightness level.  Setting it to 0 is a shortcut for entering "255",
+     which is higher than the top of the ramp.  
+     Also controls brightness of post-off voltage display (POVD).
 
   4. Aux high ramp level.  At or above this ramp level, button LEDs light up at
-     the "high" brightness level.  Setting it to 0 disables button's high aux
-     mode while the main LEDs are on.  
-     Also controls brightness of post-off voltage display.
+     the "high" brightness level.  Setting it to 0 is a shortcut for "255",
+     which is higher than the top of the ramp.  
+     Also controls brightness of post-off voltage display (POVD).
 
   5. Aux while on.  Determines which aux LEDs will be lit up while the main
      LEDs are on, like in ramping mode:  
@@ -1247,11 +1247,11 @@ This is a table of all button mappings in Anduril, in one place:
 |                |        |         | ... 22: +0.02V
 |                |        |         | 2: post-off voltage display seconds
 |                |        |         | 3: aux low ramp level
-|                |        |         | ... 0: disabled
-|                |        |         | ... 1+: light up at this ramp level
+|                |        |         | ... 0: shortcut for 255
+|                |        |         | ... 1+: light up (low) at this ramp level
 |                |        |         | 4: aux high ramp level
-|                |        |         | ... 0: disabled
-|                |        |         | ... 1+: brighter at this ramp level
+|                |        |         | ... 0: shortcut for 255
+|                |        |         | ... 1+: high at/above this ramp level
 |                |        |         | 5: aux while on
 |                |        |         | ... 0: disabled
 |                |        |         | ... 1: single-color aux only
