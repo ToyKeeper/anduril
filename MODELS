@@ -48,6 +48,7 @@ Model     MCU         Name
 0281      avr32dd20   hank-lume-x1
 0282      avr32dd20   hank-lume-x1-32w
 0283      avr32dd20   hank-lume-x1-c
+0284      avr32dd20   hank-lume-x1-c-32w
 0311      attiny85    lumintop-fw3a
 0312      attiny85    lumintop-fw3a-219
 0313      attiny85    lumintop-fw3a-nofet
