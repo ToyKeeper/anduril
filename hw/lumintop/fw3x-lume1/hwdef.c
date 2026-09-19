@@ -165,7 +165,7 @@ uint16_t hwdef_vdivider_raw2cooked16(uint16_t measurement) {
     // Out: uint8_t: Vbat * 50
     // 1.1 = ADC Vref
     // just pad the 8-bit version
-    uint8_t result = voltage_raw2cooked(measurement) * 128;
+    uint16_t result = (uint16_t)voltage_raw2cooked(measurement) << 7;
     return result;
 }
 #endif  // #ifdef USE_LEGACY_VOLTAGE_CODE
