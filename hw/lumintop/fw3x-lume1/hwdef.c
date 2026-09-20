@@ -1,5 +1,5 @@
 // FW3X Lume1 helper functions
-// Copyright (C) 202-2026 Selene ToyKeeper
+// Copyright (C) 2020-2026 Selene ToyKeeper
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
@@ -141,32 +141,4 @@ uint16_t temp_raw2cooked(uint16_t measurement) {
 }
 
 #endif
-
-#ifdef USE_LEGACY_VOLTAGE_CODE
-// FIXME: legacy code
-// This host is a pain to flash because it has two pins swapped,
-// so this isn't tested.  I just copied the old code from arch/attiny1634.c
-// to here, to preserve the old behavior, since I can't easily calibrate
-// it properly for the newer 16-bit code.
-uint8_t hwdef_vdivider_raw2cooked(uint16_t measurement) {
-    // In : 4095 * Vdiv / 1.1V
-    // Out: uint8_t: Vbat * 50
-    // Vdiv = Vbat / 4.3  (typically)
-    // 1.1 = ADC Vref
-    const uint16_t adc_per_volt =
-            (((uint16_t)ADC_44 << 4) - ((uint16_t)ADC_22 << 4))
-            / (dV * (44-22));
-    uint8_t result = measurement / adc_per_volt;
-    return result;
-}
-
-uint16_t hwdef_vdivider_raw2cooked16(uint16_t measurement) {
-    // In : 65535 * 1.1 / Vbat
-    // Out: uint8_t: Vbat * 50
-    // 1.1 = ADC Vref
-    // just pad the 8-bit version
-    uint8_t result = voltage_raw2cooked(measurement) * 128;
-    return result;
-}
-#endif  // #ifdef USE_LEGACY_VOLTAGE_CODE
 
