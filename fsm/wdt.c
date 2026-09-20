@@ -36,6 +36,45 @@ void WDT_inner() {
     // cache again, in case the value changed
     ticks_since_last = ticks_since_last_event;
 
+    // For lights that have the charging circuit controlled by the MCU,
+    // detect if charging is active.  If so, keep the aux turned off for now
+    #ifdef CHARGE_IND_CTRL
+    /*
+	inline uint8_t roundToNextPowerOf2(uint8_t n) {
+		if (n == 0) return 1; // Handle the case of 0, next power of 2 is 1
+		n--; // Decrement to handle cases where n is already a power of 2
+		n |= n >> 1;
+		n |= n >> 2;
+		n |= n >> 4;
+		n++;
+		return n;
+	}
+	uint8_t tps = roundToNextPowerOf2((go_to_standby) ? SLEEP_TICKS_PER_SECOND : TICKS_PER_SECOND);
+	*/
+    if(is_plugged_in) {
+        if(fully_charged) {
+            CHARGE_IND_PORT.OUTSET = (1 << CHARGE_IND_GRN);  // set the green LED to high
+            CHARGE_IND_PORT.OUTCLR = (1 << CHARGE_IND_RED);  // set the red LED to low
+        }
+        //else if (ticks_since_last & tps) {
+		else {
+            CHARGE_IND_PORT.OUTCLR = (1 << CHARGE_IND_GRN);  // set the green LED to low
+            CHARGE_IND_PORT.OUTSET = (1 << CHARGE_IND_RED);  // set the red LED to high
+        }
+		/*
+        else {
+            CHARGE_IND_PORT.OUTCLR = (1 << CHARGE_IND_GRN);  // set the green LED to low
+            CHARGE_IND_PORT.OUTCLR = (1 << CHARGE_IND_RED);  // set the red LED to low
+        }
+		*/
+    }
+    else {
+        CHARGE_IND_PORT.OUTCLR = (1 << CHARGE_IND_GRN);  // set the green LED to low
+        CHARGE_IND_PORT.OUTCLR = (1 << CHARGE_IND_RED);  // set the red LED to low
+    }
+    
+    #endif
+
     #ifdef TICK_DURING_STANDBY
     // handle standby mode specially
     if (go_to_standby) {
