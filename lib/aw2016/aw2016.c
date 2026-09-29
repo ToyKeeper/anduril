@@ -277,7 +277,92 @@ static void aw2016_set_global_pwm (uint8_t pwm) {
 }
 
 
-////////// stock animations //////////
+////////// animations //////////
+
+// start or continue an animation
+void aw2016_animation_do (uint8_t pattern, uint8_t color) {
+    // don't interrupt if animation is already correct
+    if ((pattern == aw2016_animation_running)
+        && (color == aw2016_animation_color)) return;
+
+    // wake up
+    if (! aw2016_animation_running) {
+        aw2016_init();
+        aw2016_wake();
+    }
+
+    uint8_t current, pwm, speed;
+    switch (pattern) {
+        case aux_aw2016_breathing_e:
+            current = cfg.aw2016_level_lo;
+            pwm = 127;
+            speed = 0xa6;
+            break;
+        case aux_aw2016_breathing_fast_e:
+            current = cfg.aw2016_level_lo;
+            pwm = 255;
+            speed = 0x17;
+            break;
+        case aux_aw2016_breathing_heavy_e:
+            current = cfg.aw2016_level_hi;
+            pwm = 255;
+            speed = 0x75;
+            break;
+        //case aux_aw2016_rainbow_e:
+        //    break;
+    }
+
+    // update pattern
+    if (pattern != aw2016_animation_running) {
+        aw2016_set_ramp_current(current);
+        aw2016_breathe(color, speed, pwm);
+    }
+    // update color but not pattern
+    else {
+        aw2016_set_led(AW_R_CH, (color & 0b000011) ? pwm : 0);
+        aw2016_set_led(AW_G_CH, (color & 0b001100) ? pwm : 0);
+        aw2016_set_led(AW_B_CH, (color & 0b110000) ? pwm : 0);
+    }
+
+    aw2016_animation_running = pattern;
+    aw2016_animation_color = color;
+}
+
+void aw2016_breathe (uint8_t color, uint8_t speed, uint8_t pwm) {
+    // animations must be off during setup
+    aw2016_set_animation_mode(false);
+
+    // enable/disable color channels to breathe in correct color
+    aw2016_set_led(AW_R_CH, (color & 0b000011) ? pwm : 0);
+    aw2016_set_led(AW_G_CH, (color & 0b001100) ? pwm : 0);
+    aw2016_set_led(AW_B_CH, (color & 0b110000) ? pwm : 0);
+
+    // rise = speed & 0xf0, hold up = 0
+    uint8_t t1t2 = speed & 0b11110000;
+    // fall = speed & 0xf0, hold down = speed & 0x0f
+    uint8_t t3t4 = speed;
+
+    // set T1/T2
+    aw2016_write_reg(0x37 + (AW_R_CH * 3), t1t2);
+    aw2016_write_reg(0x37 + (AW_G_CH * 3), t1t2);
+    aw2016_write_reg(0x37 + (AW_B_CH * 3), t1t2);
+
+    // set T3/T4
+    aw2016_write_reg(0x38 + (AW_R_CH * 3), t3t4);
+    aw2016_write_reg(0x38 + (AW_G_CH * 3), t3t4);
+    aw2016_write_reg(0x38 + (AW_B_CH * 3), t3t4);
+
+    // set T0/Repeat
+    aw2016_write_reg(0x39 + (AW_R_CH * 3), 0x00);
+    aw2016_write_reg(0x39 + (AW_G_CH * 3), 0x00);
+    aw2016_write_reg(0x39 + (AW_B_CH * 3), 0x00);
+
+    // start the animation
+    aw2016_set_animation_mode(true);
+    aw2016_enable_leds();
+
+    aw2016_animation_running = 1;
+}
 
 // rainbow fade but pauses at r, g, and b
 void aw2016_rainbow_rgb () {

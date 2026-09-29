@@ -14,11 +14,19 @@
 #ifdef RGB_LED_LOCkOUT_DEFAULT
 #undef RGB_LED_LOCkOUT_DEFAULT
 #endif
-#define RGB_LED_OFF_DEFAULT \
-    auxrgb_cfg_byte(aux_low_e, aux_rgb_rainbow_e)
-#define RGB_LED_LOCKOUT_DEFAULT \
-    auxrgb_cfg_byte(aux_blinking_e, aux_rgb_voltage_e)
-
+#ifdef USE_AW2016
+    // animated RGB aux LEDs
+    #define RGB_LED_OFF_DEFAULT \
+        auxrgb_cfg_byte(aux_aw2016_breathing_e, aux_rgb_rainbow_e)
+    #define RGB_LED_LOCKOUT_DEFAULT \
+        auxrgb_cfg_byte(aux_aw2016_breathing_fast_e, aux_rgb_voltage_e)
+#else
+    // passive RGB aux LEDs
+    #define RGB_LED_OFF_DEFAULT \
+        auxrgb_cfg_byte(aux_low_e, aux_rgb_rainbow_e)
+    #define RGB_LED_LOCKOUT_DEFAULT \
+        auxrgb_cfg_byte(aux_blinking_e, aux_rgb_voltage_e)
+#endif
 // half a second per color in rainbow mode
 //#define RGB_RAINBOW_SPEED 0x03
 

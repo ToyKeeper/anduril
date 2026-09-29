@@ -207,6 +207,9 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
     #ifdef USE_AUX1_LED
     uint8_t button_led_result;
     #endif
+    #ifdef USE_AW2016
+    bool animated = false;
+    #endif
     switch (pattern) {
         case 0:  // off
             result = 0;
@@ -220,6 +223,18 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
             button_led_result = 1;
             #endif
             break;
+        #ifdef USE_AW2016
+            case aux_aw2016_breathing_e:
+            case aux_aw2016_breathing_fast_e:
+            case aux_aw2016_breathing_heavy_e:
+            //case aux_aw2016_rainbow_e:
+                animated = true;
+                result = actual_color;
+                #ifdef USE_AUX1_LED
+                button_led_result = 1;
+                #endif
+                break;
+        #endif  // #ifdef USE_AW2016
         default:  // high
             result = (actual_color << 1);
             #ifdef USE_AUX1_LED
@@ -227,7 +242,13 @@ void rgb_led_update(uint8_t mode, uint16_t arg) {
             #endif
             break;
     }
+
+    #ifdef USE_AW2016
+        if (animated) aw2016_animation_do(pattern, result);
+        else
+    #endif
     set_auxrgb_power(result);
+
     #ifdef USE_AUX1_LED
     set_aux1_power(button_led_result);
     #endif

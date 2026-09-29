@@ -882,6 +882,17 @@ Aux LED modes typically include:
   - High
   - Blinking
 
+It may also include:
+
+  - Low double blink
+  - Low single blink
+
+On lights with an aw2016 RGB animation chip, it may also include:
+
+  - Breathing (slow and gentle)
+  - Fast breathing (a smooth pulse beacon)
+  - Heavy breathing (slow and bright)
+
 To configure the aux LEDs, go to the mode you want to configure and then
 click the button 7 times.  This should change the aux LEDs to the next
 mode supported on this light.
