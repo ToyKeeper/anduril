@@ -77,6 +77,7 @@ PROGMEM const uint8_t aw2016_ramp[] = {
 uint8_t aw2016_is_awake = 0;
 uint8_t aw2016_is_pwm_mode = 0;
 uint8_t aw2016_animation_running = 0;
+uint8_t aw2016_animation_color = 0;
 uint8_t aw2016_ramp_row = 0;
 // allow sleep by default, set to 1 if fast response required from driver
 uint8_t aw2016_do_not_sleep = 0;
@@ -96,7 +97,11 @@ void aw2016_set_ramp_current (uint8_t row);
 // helper for rotating through ramp levels
 uint8_t aw2016_next_ramp_row (uint8_t row, bool nopwm);
 
+// start or continue an animation
+void aw2016_animation_do (uint8_t pattern, uint8_t color);
+
 // pre-built effects
+void aw2016_breathe (uint8_t color, uint8_t speed, uint8_t pwm);
 void aw2016_rainbow_rgb ();
 void aw2016_rainbow_blend ();
 

@@ -76,6 +76,12 @@ typedef enum {
     aux_off_e = 0,
     aux_low_e,
     aux_high_e,
+    #ifdef USE_AW2016
+        aux_aw2016_breathing_e,
+        aux_aw2016_breathing_fast_e,
+        aux_aw2016_breathing_heavy_e,
+        //aux_aw2016_rainbow_e,
+    #endif
     #ifdef TICK_DURING_STANDBY
         aux_blinking_e,
         #ifdef USE_AUXRGB_LEDS

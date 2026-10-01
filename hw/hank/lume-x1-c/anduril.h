@@ -8,6 +8,7 @@
 // - Same firmware for 6V, 9V, or 12V configs
 
 #define HWDEF_H  hank/lume-x1-c/hwdef.h
+#define USE_AW2016
 #include "hank/anduril.h"
 
 
