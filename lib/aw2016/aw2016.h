@@ -51,6 +51,9 @@ PROGMEM const uint8_t aw2016_ramp[] = {
     AW2016_15mA, 15, 4, 5, 255,  //  15 mA
     AW2016_30mA, 12, 3, 4, 255,  //  24 mA
     AW2016_30mA, 15, 4, 5, 255,  //  30 mA  <-- "On" or "R G Bling" modes
+    // duplicate, to make it easier to hit the top level
+    // (requested by Hank)
+    AW2016_30mA, 15, 4, 5, 255,  //  dupe
 };
 #define aw2016_ramp_get(row,col)  pgm_read_byte(aw2016_ramp + (5*row) + col)
 #define AW2016_RAMP_SIZE    (sizeof(aw2016_ramp))
