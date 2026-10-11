@@ -89,9 +89,11 @@ enum channel_modes_e {
 //#define FET_LVL  TCA0.SINGLE.CMP2BUF
 #define FET_PORT  PORTB
 #define FET_PIN   PIN2_bp
+#ifndef NO_DDFET_TURBO
 // DD FET with only 1 level needs special care in thermal regulation
 #define HWDEF_EV_TEMPERATURE_HIGH  hwdef_EV_temperature_high
 void hwdef_EV_temperature_high(int16_t howmuch);
+#endif  // #ifndef NO_DDFET_TURBO
 
 // Buck and Amplifier Enable (PB3)
 #define BCK_ENABLE_PIN   PIN3_bp

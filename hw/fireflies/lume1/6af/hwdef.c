@@ -65,6 +65,7 @@ void set_level_udrf(uint8_t level) {
     if (level == actual_level - 1) return;  //  no-op
 
     // weird driver, turbo is 1 level only
+    #ifndef NO_DDFET_TURBO
     if (level >= (RAMP_SIZE - 1)) {  // level is 0..149, RAMP_SIZE is 150
         // fet is on, disable buck converter
         BCK_ENABLE_PORT &= ~(1 << BCK_ENABLE_PIN);
@@ -78,6 +79,7 @@ void set_level_udrf(uint8_t level) {
         // ... and we're done
         return;
     }
+    #endif  // #ifndef NO_DDFET_TURBO
 
     // everything *except* turbo below
 
@@ -109,6 +111,7 @@ bool gradual_tick_main(uint8_t gt) {
     // TODO overall smoothness can be improved due to gt using linear
     // adjustments, but ramp table is non-linear.
 
+    #ifndef NO_DDFET_TURBO
     // let parent handle FET levels.. don't adjust gradually
     if (gt >= (RAMP_SIZE - 2)) return true;
 
@@ -116,6 +119,7 @@ bool gradual_tick_main(uint8_t gt) {
     PWM3_DATATYPE fet_next = PWM3_GET(gt);
     GRADUAL_ADJUST_SIMPLE(fet_next, FET_LVL);
     #endif
+    #endif  // #ifndef NO_DDFET_TURBO
 
     // if Vref is the same, make gradual adjustments.
     // else, jump to the next ramp level and use set_level() to handle power paths.
