@@ -11,8 +11,8 @@
 #ifdef RGB_LED_OFF_DEFAULT
 #undef RGB_LED_OFF_DEFAULT
 #endif
-#ifdef RGB_LED_LOCkOUT_DEFAULT
-#undef RGB_LED_LOCkOUT_DEFAULT
+#ifdef RGB_LED_LOCKOUT_DEFAULT
+#undef RGB_LED_LOCKOUT_DEFAULT
 #endif
 #ifdef USE_AW2016
     // animated RGB aux LEDs

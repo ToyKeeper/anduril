@@ -162,7 +162,7 @@ enum channel_modes_e {
 #define VOLTAGE_SLOPE   1017  // default = 1024, higher = higher voltage
 #define VOLTAGE_OFFSET  5     // cV
 
-// power-bank enable pin
+// Powerbank host enable
 #define POWERBANK_EN_PIN  PIN4_bm
 #define POWERBANK_EN_PORT PORTA_OUT
 #define powerbank_is_in_host_mode  (POWERBANK_EN_PORT & POWERBANK_EN_PIN)
@@ -181,7 +181,7 @@ inline void hwdef_setup() {
 
     // set pins as 1 for output pins
 
-    VPORTA.DIR = PIN4_bm   // OTG (unused?)
+    VPORTA.DIR = PIN4_bm   // Powerbank host enable
                | PIN6_bm   // DAC out
                | PIN7_bm;  // moon path
     VPORTB.DIR = PIN0_bm | PIN1_bm  // aux G+B
