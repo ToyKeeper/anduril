@@ -229,6 +229,10 @@
 #include "anduril/smooth-povd.c"
 #endif
 
+#ifdef USE_AW2016
+#include "lib/aw2016/aw2016.c"
+#endif
+
 
 // runs one time at boot, when power is connected
 void setup() {

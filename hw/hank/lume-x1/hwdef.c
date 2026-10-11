@@ -67,7 +67,7 @@ void set_level_udr(uint8_t level) {
     PWM1_DATATYPE dac_lvl  = PWM1_GET(level) << 6;  // dac register is left-aligned
     PWM2_DATATYPE dac_vref = PWM2_GET(level);
 
-    if (is_boost_currently_on != 1) {
+    if (! is_boost_currently_on) {
         // regulator is not on, enable regulator and add boot-up delay
         is_boost_currently_on = 1;
         BST_ENABLE_PORT |= (1 << BST_ENABLE_PIN);   // turn on regulator and amplifier

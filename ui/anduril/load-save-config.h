@@ -184,6 +184,14 @@ Config cfg = {
             .aux_while_on = 0b01,
         #endif
     #endif
+    #ifdef USE_AW2016
+        .aw2016_level_lo = AW2016_DEFAULT_LO,
+        .aw2016_level_hi = AW2016_DEFAULT_HI,
+        .aw2016_level_on = AW2016_DEFAULT_ON,
+        #ifdef USE_POST_OFF_VOLTAGE
+            .aw2016_level_povd = AW2016_DEFAULT_POVD,
+        #endif
+    #endif
 
     ///// misc other mode settings
 

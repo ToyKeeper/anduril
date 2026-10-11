@@ -115,6 +115,14 @@ typedef struct Config {
     #if defined(USE_AUX1_LED) || defined(USE_AUXRGB_LEDS)
         uint8_t aux_while_on;
     #endif
+    #ifdef USE_AW2016
+        uint8_t aw2016_level_lo;
+        uint8_t aw2016_level_hi;
+        uint8_t aw2016_level_on;
+        #ifdef USE_POST_OFF_VOLTAGE
+            uint8_t aw2016_level_povd;
+        #endif
+    #endif
 
     ///// misc other mode settings
     #ifdef USE_AUTOLOCK

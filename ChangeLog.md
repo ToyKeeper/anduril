@@ -14,6 +14,123 @@ formats:
 
 # Next
 
+# 2026-09-12
+
+Lots of changes this time... several new models, new features, and more
+underlying architectural stuff rewritten.
+
+New lights:
+
+  - Added &hank-lume-x1-c (0283).  Mostly done, but still missing support for
+    standby animations ("smooth rainbow" and "breathing").  Work in progress.
+    Adds ability to change aux RGB brightness (details below).
+
+  - Added &fireflies-lume-x1-attiny1616 (0461).
+
+  - Added &fireflies-lume-x1-avr32dd20 (0462).
+
+  - Added &fireflies-lume-x1-avr32dd20-32w (0463).
+
+  - Added &fireflies-lume1-6af (0451).  Mostly works, but turbo is weird
+    on this model and I can't fix it because it's a hardware problem.
+    (ramp is regulated from level 1 to 149, and turbo is 150 only)
+
+General:
+
+  - Added Powerbank Host mode, for a couple lights which have a pin to
+    control whether the flashlight receives power (charge the flashlight) or
+    sends power (charge the other device).  Use `Batt Check -> 2H` to enable
+    host mode.  Powerbank Host mode ends when you leave Batt Check mode.  It
+    is recommended that the user also enable Batt Color mode while charging
+    another device.
+
+  - Beacon mode uses Smooth Steps, if enabled.  This "Smooth Beacon" is used
+    instead of the dedicated "Beacon Tower Mode" some FF lights had.
+
+  - Fixed bugs when user set aux ramp levels to weird values.
+
+Dimmable RGB w/ AW2016 chip:  (lume-x1-c)
+
+  - The new AW2016 chip on Hank's Lume-X1-C is the reason why I've been
+    focusing so much on things related to aux RGB lately.  All these changes
+    were necessary to support this chip and the features it provides.
+
+  - Added ability to change aux RGB brightness.  There are 4 settings:
+    - Standby low brightness
+    - Standby high brightness
+    - POVD brightness
+    - "On" or "Active" brightness: For ramp, strobes, etc.
+
+  - To change standby low or high brightness: Go to "Off" mode, use `7C` to
+    reach the standby "low" or "high" mode, then use `8H` to select
+    a brightness.  There are 14 steps, with the lowest 5 using PWM.
+
+  - To change POVD brightness: Go to Batt Color mode (`Batt Check -> 1H`),
+    then use `8H` to select a brightness.  There are 9 steps.
+
+  - To change "On" / "Active" brightness: Go to a mode which uses this, like
+    the main Ramp mode (with an aux channel enabled), or a strobe mode (with
+    an aux channel enabled).  Then use `8H` to select brightness.  There are
+    9 steps.
+
+Battery / voltage upgrades:
+
+  - Fixed flicker in Smooth POVD, by increasing voltage precision and adding
+    a lowpass filter to the animation color.  Instead of ~60 color steps, it
+    now has well over 1000.
+
+  - Increased battery voltage precision from 8 bits to 16 bits on most models
+    (everything except attiny85).  Before, it was 0.00V to 5.10V in 0.02V
+    steps (1/50th of a Volt).  Now it's 0.000V to 10.24V in 0.00015625V steps
+    (1/6400th of a Volt).  Had to recalibrate every affected model.
+
+  - Batt Check now displays 0.01V precision instead of 0.02V.
+
+  - Breaking change: Increased precision of user-configurable voltage
+    calibration.  Was 0.05V steps before, is 0.01V steps now.
+    `Batt Check -> 7H -> Option 1` uses "20" as its neutral value now, for
+    +0.00V, and each step above or below that adds or subtracts 0.01V.
+
+  - Made user voltage calibration handle dual fuel better, on avr32dd lights.
+    Now adjusts the slope instead of the offset, so adding +0.10V at 3.9V
+    only adds about +0.03V at 1.2V.
+
+  - Added "Batt Color" mode.  Use `Batt Check -> 1H` to toggle between colors
+    or digits.  This is like Smooth POVD, but runs until you stop it.  It is
+    intended to be used while charging, so you can stop charging when it
+    turns purple, instead of having to count digits.
+
+  - Changed a lot of internal stuff to make all this work.
+
+Build / dev tools:
+
+  - Updated the Atmel DFP version.  Optional.  Note, however, that if the
+    wrong DFP is used, or if the build can't find it, it may break the
+    Factory Reset function on some lights.
+
+  - Added guidelines for how model numbers are intended to work, and how to
+    assign them.  Please stop choosing model numbers with a 0 in the middle.
+
+  - Build script now shows the full version string of each model.
+
+  - Build script handles improperly-formatted hex digits now, and translates
+    them to the required internal format, so loneoceans git commit IDs should
+    have digits now instead of just buzzing.
+
+  - DAC ramp calculator handles 8-bit and 10-bit DACs now, and allows
+    limiting the maximum power.
+
+Hardware-specific changes:
+
+  - Every new model has a new ramp, so expect some changes in the
+    brightness of specific ramp steps.  The Fireflies models in particular
+    had all sorts of weird ramps, and I've tried to make them more consistent
+    between models, and more similar to the ramps from other brands.
+
+  - Fixed bug where `2C` return-from-turbo didn't work while using a weak
+    battery, on lights with weak battery detection.
+
+
 # 2026-08-12
 
 Just one bugfix in this release.

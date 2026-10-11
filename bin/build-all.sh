@@ -32,6 +32,10 @@ function main {
         # friendly name for this build
         NAME=$(echo "$TARGET" | perl -ne 's|/|-|g; /hw-(.*)-'"$UI"'.h/ && print "$1\n";')
 
+        # figure out the model number
+        MODEL_NAME=$(dirname "$TARGET")
+        MODEL_NUMBER=$(head -1 "$MODEL_NAME/model")
+
         # limit builds to searched patterns, if given
         SKIP=0
         if [ ${#SEARCH[@]} -gt 0 ]; then
@@ -44,7 +48,7 @@ function main {
         if [ 1 = $SKIP ]; then continue ; fi
 
         # announce what we're going to build
-        echo "===== $UI $REV : $NAME ====="
+        echo "===== $UI ${MODEL_NUMBER}.${REV} : $NAME ====="
 
         # try to compile, track result, and rename compiled files
         if bin/build.sh "$TARGET" ; then

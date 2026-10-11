@@ -101,6 +101,10 @@ enum channel_modes_e {
     current sense resolution especially at the low end. Using UDR, Lume1/X1
     is capable of ultra-low firefly / moonlight levels with a dynamic range
     on the order of >10-50 million : 1.
+
+    This is overkill, so it is recommended to start the ramp at around
+    level 100 of 2500 on the firefly channel.  Below that is basically
+    not visible to a human eye.  Mostly, it's useful for preventing preflash.
 */
 
 // For UDR Path 1 (firefly mode) - PA7
@@ -179,7 +183,7 @@ inline void hwdef_setup() {
     VPORTD.DIR = PIN6_bm;  // DAC out
 
     // now set pullups on input pins, and unused pins (reduce power)
-    PORTA.PIN0CTRL = PORT_PULLUPEN_bm;  // FET
+    PORTA.PIN0CTRL = PORT_PULLUPEN_bm;  // FET (unused)
     //PORTA.PIN1CTRL = PORT_PULLUPEN_bm;  // AUX R
     //PORTA.PIN2CTRL = PORT_PULLUPEN_bm;  // AUX G
     //PORTA.PIN3CTRL = PORT_PULLUPEN_bm;  // AUX B
@@ -188,21 +192,21 @@ inline void hwdef_setup() {
     //PORTA.PIN6CTRL = PORT_PULLUPEN_bm;  // PATH2
     //PORTA.PIN7CTRL = PORT_PULLUPEN_bm;  // PATH1
 
-    //PORTC.PIN1CTRL = PORT_PULLUPEN_bm;  // ENABLE
-    PORTC.PIN2CTRL = PORT_PULLUPEN_bm;  // MIC ENABLE
-    PORTC.PIN3CTRL = PORT_PULLUPEN_bm;  // NEO
+    //PORTC.PIN1CTRL = PORT_PULLUPEN_bm;  // boost enable
+    PORTC.PIN2CTRL = PORT_PULLUPEN_bm;  // none
+    PORTC.PIN3CTRL = PORT_PULLUPEN_bm;  // none
 
     //PORTD.PIN4CTRL = PORT_PULLUPEN_bm;  // ESW (100kR PULLUP)
-    PORTD.PIN5CTRL = PORT_PULLUPEN_bm;  // MIC OUT
+    PORTD.PIN5CTRL = PORT_PULLUPEN_bm;  // none
     //PORTD.PIN6CTRL = PORT_PULLUPEN_bm;  // DAC OUT
     PORTD.PIN7CTRL = PORT_PULLUPEN_bm;  // PWR BNK ENABLE
 
     // clear some pins we don't need for now or want to initialize as low
     PORTC_OUT &= ~(1 << PIN1_bp);   // ENABLE
-    PORTC_OUT &= ~(1 << PIN2_bp);   // MIC ENABLE
+    PORTC_OUT &= ~(1 << PIN2_bp);   // none
     PORTD_OUT &= ~(1 << PIN7_bp);   // PWR BNK ENABLE
 
-    // E-Switch (now uses external pullup)
+    // e-switch (uses external pullup)
     PORTD.DIRCLR = PIN4_bm; // set ESW as input pin
     PORTD.PIN4CTRL = PORT_ISC_BOTHEDGES_gc;
 

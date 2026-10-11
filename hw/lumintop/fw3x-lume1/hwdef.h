@@ -120,29 +120,16 @@ uint8_t ch1_pwm, ch1_dsm;
 #define ADMUX_VOLTAGE_DIVIDER 0b00000101
 #define ADC_PRSCL   0x06    // clk/64
 
-// FIXME: no 16-bit voltage support here,
-//        since this host is difficult to flash and test and calibrate
-#define USE_LEGACY_VOLTAGE_CODE
 #undef voltage_raw2cooked
-//#define voltage_raw2cooked  mcu_vdivider_raw2cooked
-uint8_t hwdef_vdivider_raw2cooked(uint16_t measurement);
-#define voltage_raw2cooked  hwdef_vdivider_raw2cooked
+#define voltage_raw2cooked  mcu_vdivider_raw2cooked
 #undef voltage_raw2cooked16
-//#define voltage_raw2cooked16  mcu_vdivider_raw2cooked16
-uint16_t hwdef_vdivider_raw2cooked16(uint16_t measurement);
-#define voltage_raw2cooked16  hwdef_vdivider_raw2cooked16
+#define voltage_raw2cooked16  mcu_vdivider_raw2cooked16
 
-// Raw ADC readings at 4.4V and 2.2V
-// calibrate the voltage readout here
-// estimated / calculated values are:
-// [(Vbatt)*(R2/(R2+R1)) / 2.5V] * 1023
-// R1 = R2 = 100kR
-#ifndef ADC_44
-#define ADC_44 (4*900)
-#endif
-#ifndef ADC_22
-#define ADC_22 (4*450)
-#endif
+// calibrate the battery voltage sensor here
+#undef VOLTAGE_SLOPE
+#undef VOLTAGE_OFFSET
+#define VOLTAGE_SLOPE   972  // default = 1024, higher = lower voltage
+#define VOLTAGE_OFFSET  0  // 0 cV
 
 // Default ADMUX_THERM for Temperature is: 0b10001110 in arch/mcu.h
 // REFS[1:0] as 10 for analog reference at internal 1.1Vref

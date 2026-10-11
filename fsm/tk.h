@@ -11,11 +11,25 @@
 
 // AVR GCC has no boolean type by default
 // (this isn't native bool, but it's mostly okay)
-#define bool uint8_t
-#define false 0
-#define true 1
-#define FALSE 0
-#define TRUE 1
+//#include <stdbool.h>  // makes the ROM bigger
+typedef enum {
+    FALSE = 0,
+    TRUE = 1,
+    false = 0,
+    true = 1,
+} bool;
+
+typedef struct RGB8_t {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+} RGB8_t;
+
+typedef struct RGB16_t {
+    uint16_t r;
+    uint16_t g;
+    uint16_t b;
+} RGB16_t;
 
 // create a way to include files defined at the command line,
 // like with "gcc -DCONFIGFILE=foo.h"

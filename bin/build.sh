@@ -23,16 +23,20 @@ MODEL=$(dirname "$TARGET")
 PROGRAM="ui/$UI/$UI"
 
 # figure out the model number
-MODEL_NUMBER=$(head -1 "$MODEL/model")
+MODEL_NUMBER=$(head -1 "$MODEL/model" | sed 'y/abcdefABCDEF/:;<=>?:;<=>?/')
 
 # figure out the MCU type and set some vars
 eval "$( bin/detect-mcu.sh "$TARGET" )"
 
 # detect and enable a relevant Atmel DFP
-if [[ $MCUNAME =~ "attiny" ]]; then
-  DFPPATH=$BASEDIR/arch/dfp/attiny
+DFPBASE="${BASEDIR}/arch/dfp"
+[ -n "$ANDURIL_DFP_PATH" ] && DFPBASE="$ANDURIL_DFP_PATH"
+if [[ $MCUNAME =~ "attiny1616" ]]; then
+  DFPPATH="${DFPBASE}/attiny1616"
+elif [[ $MCUNAME =~ "attiny" ]]; then
+  DFPPATH="${DFPBASE}/attiny"
 elif [[ $MCUNAME =~ "avr" && $MCUNAME =~ "dd" ]]; then
-  DFPPATH=$BASEDIR/arch/dfp/avrdd
+  DFPPATH="${DFPBASE}/avrdd"
 else
   echo "Unrecognized MCU type: '$MCUNAME'"
   exit 1

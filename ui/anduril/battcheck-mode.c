@@ -87,6 +87,18 @@ uint8_t battcheck_state(Event event, uint16_t arg) {
     }
     #endif
 
+    #ifdef USE_AW2016
+    // 8H: change Batt Color and POVD brightness
+    else if (batt_color_mode && (event == EV_click8_hold)) {
+        if (0 == (arg & 0b00111111)) {  // every second or so
+            cfg.aw2016_level_povd = aw2016_next_ramp_row(cfg.aw2016_level_povd, 1);
+            aw2016_set_ramp_current(cfg.aw2016_level_povd);
+            save_config();
+        }
+        return EVENT_HANDLED;
+    }
+    #endif  // #ifdef USE_AW2016
+
     #ifdef USE_SMOOTH_POVD
     // FIXME? use a better symbol for this, like USE_BATT_COLOR_MODE or similar
     else if (event == EV_voltage_low) {
