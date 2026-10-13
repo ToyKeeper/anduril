@@ -66,10 +66,15 @@ The firmware can be deeply customized by modifying it and compiling your own
 versions, and this is encouraged.
 
 To compile the firmware, it is strongly recommended that you use a Linux
-computer, ideally running Debian or Ubuntu (but almost any distro should work).
-Virtual machines work well, such as running WSL inside Windows.  There is also
-a Docker container available (TODO: add link(s) here), if that is more
-convenient.
+computer, ideally running Debian or Ubuntu; Debian 13 Trixie and Ubuntu
+26.04 are known to work (previous versions do not), but almost any distro
+should work as long as it has gcc-avr 14 or newer and related packages
+(gcc-avr 1:14.2.0-2, avr-libc 1:2.2.1-1 and binutils-avr 2.43.50.20250108-1
+are the current ones in the default Debian 13 Trixie distro repos and are
+known to work).
+
+Virtual machines work well, such as running WSL inside Windows. There is also
+a Docker container available [here](https://github.com/SammysHP/anduril-buildenv-docker/), but as of 2026-08-21 it has [some issues](https://github.com/SammysHP/anduril-buildenv-docker/issues/1).
 
 ### Prerequisites:
 
