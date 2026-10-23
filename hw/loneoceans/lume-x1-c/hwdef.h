@@ -120,8 +120,6 @@ enum CHANNEL_MODES {
 #ifdef USE_AUX_RGB_ADV
 
 #include "pheripherals/aw2016/aw2016.h"
-#define TWI_TIMEOUT 50000
-#define TWI_BAUD(F_SCL) ((((F_CPU / F_SCL) - 10) / 2))
 
 // add RGB LED Calibration Data 
 #define RED_LED_CAL_VAL 15
@@ -230,9 +228,7 @@ inline void hwdef_setup() {
 
     // init adv led driver
     #ifdef USE_AUX_RGB_ADV
-    TWI0.MBAUD = TWI_BAUD(400000);
-    TWI0.MCTRLA = TWI_ENABLE_bm | TWI_SMEN_bm;  // Smart Mode (auto sends ACK)
-    TWI0.MSTATUS = TWI_BUSSTATE_IDLE_gc;        // Release bus
+    aw2016_hwdef_setup();
     #endif
 
 }

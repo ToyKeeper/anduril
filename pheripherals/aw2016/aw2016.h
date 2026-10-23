@@ -1,5 +1,5 @@
 // aw2016.h: Device driver for AW2016 pheripheral 
-// Copyright (C) 2025 - 2026 Loneoceans
+// Copyright (C) 2025 - 2026 Loneoceans, stcarlso
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #ifndef AW2016_H
@@ -21,6 +21,7 @@ typedef enum {
 extern uint8_t adv_rgb_do_not_sleep;
 
 // public API
+inline void aw2016_hwdef_setup ();
 void aw2016_init(void);
 void aw2016_set_rgb_calibration(uint8_t r, uint8_t g, uint8_t b);
 

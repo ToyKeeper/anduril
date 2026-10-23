@@ -1,11 +1,13 @@
 // aw2016.c: Device driver for AW2016 pheripheral 
-// Copyright (C) 2025 - 2026 Loneoceans
+// Copyright (C) 2025 - 2026 Loneoceans, stcarlso
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "drivers/twi/twi_master.h"
+#include "drivers/twi/twi.h"
 #include <util/delay.h>
 
 #define AW2016_REG_GCR2 0x04
+#define AW2016_TWI_BAUD 400000
+#define TWI_BAUD(F_SCL)  ((((F_CPU / F_SCL) - 10) / 2))
 
 // default channels (user can modify in hwdef.h)
 #ifndef AUX_CH_RED
@@ -30,73 +32,6 @@ static uint8_t current_b = 0;
 // ##      HELPER ROUTINES           ##
 // ####################################
 
-uint8_t twi_write(uint8_t addr, uint8_t *data, uint8_t len)
-{
-    TWI0.MADDR = (addr << 1);                   // send address (write)
-    while (!(TWI0.MSTATUS & TWI_WIF_bm));       // wait for write interrupt flag
-    if (TWI0.MSTATUS & TWI_RXACK_bm) return 1;  // NACK received
-    for (uint8_t i = 0; i < len; i++)
-    {
-        TWI0.MDATA = data[i];
-        while (!(TWI0.MSTATUS & TWI_WIF_bm));   // wait
-        if (TWI0.MSTATUS & TWI_RXACK_bm) return 1;
-    }
-    TWI0.MCTRLB = TWI_MCMD_STOP_gc;             // send stop
-    return 0;                                   // success
-}
-
-uint8_t twi_read(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len)
-{
-    uint32_t timeout;
-
-    // ---- START + slave addr (write) ----
-    TWI0.MADDR = (addr << 1) | 0;   // LSB=0 for WRITE
-
-    timeout = TWI_TIMEOUT;
-    while (!(TWI0.MSTATUS & (TWI_WIF_bm | TWI_RIF_bm))) {
-        if (--timeout == 0) return 1;
-    }
-    if (TWI0.MSTATUS & TWI_RXACK_bm) return 2; // NACK
-
-    // ---- Send register address ----
-    TWI0.MDATA = reg;
-
-    timeout = TWI_TIMEOUT;
-    while (!(TWI0.MSTATUS & TWI_WIF_bm)) {
-        if (--timeout == 0) return 3;
-    }
-    if (TWI0.MSTATUS & TWI_RXACK_bm) return 4;
-
-    // ---- Repeated START + slave addr (read) ----
-    TWI0.MADDR = (addr << 1) | 1;   // LSB=1 for READ
-
-    timeout = TWI_TIMEOUT;
-    while (!(TWI0.MSTATUS & (TWI_WIF_bm | TWI_RIF_bm))) {
-        if (--timeout == 0) return 5;
-    }
-    if (TWI0.MSTATUS & TWI_RXACK_bm) return 6;
-
-    // ---- Read bytes ----
-    for (uint8_t i = 0; i < len; i++)
-    {
-        timeout = TWI_TIMEOUT;
-        while (!(TWI0.MSTATUS & TWI_RIF_bm)) {
-            if (--timeout == 0) return 7;
-        }
-
-        buf[i] = TWI0.MDATA;
-
-        if (i == (len - 1)) {
-            // Last byte → send NACK + STOP
-            TWI0.MCTRLB = TWI_ACKACT_bm | TWI_MCMD_STOP_gc;
-        } else {
-            // More bytes → send ACK
-            TWI0.MCTRLB = TWI_MCMD_RECVTRANS_gc;
-        }
-    }
-    return 0; // success
-}
-
 static void aw2016_write_reg(uint8_t reg, uint8_t val)
 {
     uint8_t buf[2] = {reg, val};
@@ -106,6 +41,13 @@ static void aw2016_write_reg(uint8_t reg, uint8_t val)
 // ####################################
 // ##      EXTERNAL API              ##
 // ####################################
+
+inline void aw2016_hwdef_setup () {
+    TWI0.MBAUD = TWI_BAUD(AW2016_TWI_BAUD);
+    TWI0.MCTRLA = TWI_ENABLE_bm | TWI_SMEN_bm;  // smart mode (auto sends ACK)
+    TWI0.MSTATUS = TWI_BUSSTATE_IDLE_gc;        // release bus
+    aw2016_init();
+}
 
 void aw2016_init(void) 
 // AW2016 initialization 
@@ -130,17 +72,13 @@ void aw2016_init(void)
 void aw2016_set_rgb_calibration(uint8_t r, uint8_t g, uint8_t b)
 // uses the Anduril mode configuration register's CUR bits to for a 4 bit calibration
 {
-    uint8_t reg_r;
-    uint8_t reg_g;
-    uint8_t reg_b;
-
     r &= 0x0F;  // clamp to 0-15
     g &= 0x0F;
     b &= 0x0F;
 
-    twi_read(AW2016_ADDR, 0x31+AUX_CH_RED, &reg_r, 1);
-    twi_read(AW2016_ADDR, 0x31+AUX_CH_GRN, &reg_g, 1);
-    twi_read(AW2016_ADDR, 0x31+AUX_CH_BLU, &reg_b, 1);
+    uint8_t reg_r = twi_read_byte(AW2016_ADDR, 0x31 + AUX_CH_RED);
+    uint8_t reg_g = twi_read_byte(AW2016_ADDR, 0x31 + AUX_CH_GRN);
+    uint8_t reg_b = twi_read_byte(AW2016_ADDR, 0x31 + AUX_CH_BLU);
 
     // replace lower 4 bits with value
     reg_r = (reg_r & 0xF0) | r;
@@ -157,7 +95,7 @@ void aw2016_set_global_current(aw2016_current_t cur)
 {
     static uint8_t reg;
     // Step 1: Read the current value of GCR2
-    twi_read(AW2016_ADDR, AW2016_REG_GCR2, &reg, 1);
+    reg = twi_read_byte(AW2016_ADDR, AW2016_REG_GCR2);
     // Step 2: Clear bits 1:0 (mask 0b11111100)
     reg &= ~0x03;
     // Step 3: Insert new setting into bits 1:0
@@ -171,7 +109,7 @@ void aw2016_set_manual_pattern_mode(uint8_t channel, uint8_t mode)
 // mode = 0 : manual, 1: pattern mode
 {
     static uint8_t reg;
-    twi_read(AW2016_ADDR, 0x31+channel, &reg, 1);
+    reg = twi_read_byte(AW2016_ADDR, 0x31 + channel);
     if (mode==0){
         // manual mode
         reg &= ~(1 << 4);  // clear bit 4

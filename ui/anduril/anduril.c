@@ -233,6 +233,7 @@
 #endif
 
 #ifdef USE_AUX_RGB_ADV
+#include "drivers/twi/twi.c"
 #include "pheripherals/aw2016/aw2016.c"
 #include "anduril/aux-leds-adv.c"
 #endif
