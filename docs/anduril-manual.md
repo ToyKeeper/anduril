@@ -985,10 +985,9 @@ yellow, green, cyan, blue, and purple.  These are created by turning
 red/green/blue LEDs on and off.  Smooth POVD has a full rainbow, with
 a different shade for every possible voltage value.  The colors go in the
 same order and indicate the same voltage ranges, but instead of 6 main
-shades, it has more like 60 shades.  (from 3.00V to 4.20V, in 0.02V steps,
-that works out to ~60 different colors)  So after getting a feel for it, the
-user may be able to tell the battery voltage within 0.02V or 0.04V, just
-based on what color the POVD mode shows.
+shades, it has well over 1000 shades.  So after getting a feel for it, the
+user may be able to tell the battery voltage within a relatively small
+range, just based on what color the POVD mode shows.
 
 After the main POVD readout finishes, the aux LEDs resume their configured
 standby mode, and may change color if using the "voltage" mode on a light
