@@ -186,6 +186,7 @@ and they will carry over to Simple UI:
   - hardware-specific "misc menu" settings
   - channel modes
   - channel mode for number blinks
+  - aux LED brightness with `8H` (if hardware can)
 
 
 Advanced UI
