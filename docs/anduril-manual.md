@@ -1102,9 +1102,9 @@ On lights with channel modes, manual memory (`Ramp -> 10C`) saves the
 current brightness *and* channel mode.
 
 For lights with an aux RGB control chip, the brightness of the aux RGB modes
-can be configured.  To do this, go a mode like Ramp or Strobe, enable an aux
-channel mode, then use `8H` to change the brightness.  This only works on
-specific models from 2026 or later which have a dedicated chip to manage
+can be configured.  To do this, go to a mode like Ramp or Strobe, enable an
+aux channel mode, then use `8H` to change the brightness.  This only works
+on specific models from 2026 or later which have a dedicated chip to manage
 the RGB aux LEDs.
 
 
