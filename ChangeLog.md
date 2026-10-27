@@ -14,6 +14,65 @@ formats:
 
 # Next
 
+# 2026-10-26
+
+Mostly just new models, and hardware-specific fixes.  Also some internal
+build system stuff.  If your models aren't on the list, there is no need to
+update.
+
+New lights:
+
+  - Added &hank-lume-x1-32w (0282).  Same as hank-lume-x1, but limited to 70%
+    power.
+
+  - Added &hank-lume-x1-c-32w (0284).  Same as hank-lume-x1-c, but limited to
+    70% power.
+
+  - Added &fireflies-lume10 (0453).  Includes aw2016 chip for dimmable RGB
+    aux, plus powerbank host mode, and single-level DD FET turbo.
+
+  - Added &fireflies-lume1-6af-nofet (0452).  Same as lume1-6af, but without
+    the single-level DD FET turbo.  Some models use this, and it can be kind
+    of nice even on lights which have the FET installed.
+
+Hardware-specific changes:
+
+  - Added breathing modes to lights with a aw2016 chip (lume-x1-c, lume10).
+    Works in standby modes.  Options include "breathing", "fast breathing",
+    and for the degenerates out there (you know who you are), there is also
+    "heavy breathing".
+
+    These are `Off -> 7C` patterns, so they can be combined with `Off -> 7H`
+    colors like red, blue, rainbow, voltage, etc.  Note that "disco
+    breathing" is a little glitchy, but harmless.
+
+  - Fixed battery measurement on &lumintop-fw3x-lume1.  It broke when I did
+    the voltage rewrite.
+
+  - &hank-lume-x1 and &hank-lume-x1-c have a higher default smooth ramp
+    floor, at Hank's request.  Users will need to lower it if they want
+    firefly modes.
+
+  - Fixed glitchy party strobe on &fireflies-lume1-6af.
+
+General:
+
+  - Documentation: Clarified what a "0" means in the aux low/high ramp level
+    config.
+
+Build / dev tools:
+
+  - Updated Atmel DFP / Microchip DFP versions to the most recent releases
+    which actually work.  Tested every release to figure out what's good.
+
+  - Added DFP environment var, to keep things consistent when working with
+    multiple worktrees.
+    `export ANDURIL_DFP_PATH="$HOME/src/anduril/arch/dfp"`
+
+  - Added explicit erase flag to avrdude commands, to reduce cases of users
+    retaining old eeprom after flashing new firmware.
+
+
 # 2026-09-12
 
 Lots of changes this time... several new models, new features, and more
