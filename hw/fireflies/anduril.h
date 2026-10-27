@@ -11,10 +11,19 @@
 #ifdef RGB_LED_LOCKOUT_DEFAULT
 #undef RGB_LED_LOCKOUT_DEFAULT
 #endif
-#define RGB_LED_OFF_DEFAULT \
-    auxrgb_cfg_byte(aux_low_e, aux_rgb_rainbow_e)
-#define RGB_LED_LOCKOUT_DEFAULT \
-    auxrgb_cfg_byte(aux_blinking_e, aux_rgb_voltage_e)
+#ifdef USE_AW2016
+    // animated RGB aux LEDs
+    #define RGB_LED_OFF_DEFAULT \
+        auxrgb_cfg_byte(aux_aw2016_breathing_e, aux_rgb_rainbow_e)
+    #define RGB_LED_LOCKOUT_DEFAULT \
+        auxrgb_cfg_byte(aux_aw2016_breathing_fast_e, aux_rgb_voltage_e)
+#else
+    // passive RGB aux LEDs
+    #define RGB_LED_OFF_DEFAULT \
+        auxrgb_cfg_byte(aux_low_e, aux_rgb_rainbow_e)
+    #define RGB_LED_LOCKOUT_DEFAULT \
+        auxrgb_cfg_byte(aux_blinking_e, aux_rgb_voltage_e)
+#endif
 
 // maybe disable POVD by default since it confuses some customers
 //#define DEFAULT_POST_OFF_VOLTAGE_SECONDS  0
@@ -33,9 +42,6 @@
 
 // double click while on goes to full-power turbo, not ramp ceiling
 #define DEFAULT_2C_STYLE 1
-
-// Fireflies users expect Beacontower blinky mode to exist
-#define USE_BEACONTOWER_MODE
 
 // doing "loosen, press, tighten, hold" is hard on many lights
 // so also do factory reset on "Off -> 13H"
