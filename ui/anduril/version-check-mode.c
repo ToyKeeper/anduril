@@ -22,7 +22,7 @@ inline void version_check_iter() {
         else {  // "buzz" for non-numeric characters
             for(uint8_t frame=0; frame<25; frame++) {
                 set_level((frame&1) << 5);
-                nice_delay_ms(16);
+				nice_delay_ms(BUZZ_SPEED);
             }
             nice_delay_ms(BLINK_SPEED * 8 / 12);
         }
