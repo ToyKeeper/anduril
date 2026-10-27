@@ -18,6 +18,7 @@
 // use clock_prescale_set(n) instead; it's safer
 //#define CLOCK_DIVIDER_SET(n) {CLKPR = 1<<CLKPCE; CLKPR = n;}
 
+inline void mcu_setup();
 
 ////////// default hw_setup() //////////
 

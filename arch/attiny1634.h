@@ -13,6 +13,9 @@
 #define BOGOMIPS  (F_CPU/4000)
 #define DELAY_ZERO_TIME  1020
 
+#define DEVICE_SIGNATURE_TEMP_GAIN 0x2C
+
+inline void mcu_setup();
 inline void mcu_clock_speed();
 
 ///// clock dividers

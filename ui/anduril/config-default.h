@@ -20,7 +20,7 @@
 
 // overheat protection
 #define USE_THERMAL_REGULATION
-#if (MCU==0x85) || (MCU==0x1634)
+#if (MCU==0x85)
 // sloppy temperature sensor needs bigger error margin
 #define DEFAULT_THERM_CEIL 45  // try not to get hotter than this (in C)
 #else

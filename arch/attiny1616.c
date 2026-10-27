@@ -14,6 +14,9 @@ inline void mcu_clock_speed() {
                       CLKCTRL_PDIV_2X_gc | CLKCTRL_PEN_bm );
 }
 
+inline void mcu_setup() {
+}
+
 ///// clock dividers
 // this should work, but needs further validation
 inline void clock_prescale_set(uint8_t n) {
