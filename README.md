@@ -18,7 +18,8 @@ to use it are:
   - Hold to change brightness
 
 For more in-depth use, read its [user manual](docs/anduril-manual.md)
-for full details.
+for full details.  There is also an unofficial, interactive version of the
+UI map online (community-made):  https://diRk262.github.io/anduril2-ui-map/
 
 If you want to know what changed recently, check the [ChangeLog](ChangeLog.md).
 
@@ -55,6 +56,10 @@ A few things are needed to flash firmware:
     do it, as long as you can plug the adapter in and run a flashing program.
 
 One particularly useful guide is at https://anduril.click/ .
+
+There is also an unofficial Windows GUI tool (community-made) which wraps
+avrdude to back up and flash lights, and can download releases directly:
+https://github.com/diRk262/anduril2-flasher
 
 More info about installing flashing programs is below, in
 [Flashing Programs](#flashing-programs).
