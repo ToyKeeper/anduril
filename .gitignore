@@ -12,6 +12,7 @@ releases/
 venv/
 *~
 *.cpp
+ .DS_Store
 *.elf
 *.hex
 *.html

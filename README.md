@@ -67,9 +67,10 @@ versions, and this is encouraged.
 
 To compile the firmware, it is strongly recommended that you use a Linux
 computer, ideally running Debian or Ubuntu (but almost any distro should work).
-Virtual machines work well, such as running WSL inside Windows.  There is also
-a Docker container available (TODO: add link(s) here), if that is more
-convenient.
+Virtual machines work well, such as running WSL inside Windows.
+
+Instructions for setting up docker are in the subdirectory [dockerfiles](./dockerfiles/README.md)
+This will install the pre-requesites below and not taint your current desktop environment.
 
 ### Prerequisites:
 
